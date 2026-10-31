@@ -31,7 +31,8 @@ main [data-search-results-section] [data-search-results-toolbar] [data-search-so
 @media(max-width:639px){
 [data-premium-search-header="ux-premium-header-1"]>div{height:62px!important}
 [data-premium-search-header="ux-premium-header-1"] img[alt="AkarFinder"]{height:31px!important;width:auto!important}
-[data-search-controls-section]>div{padding-top:10px!important;padding-bottom:10px!important}
+/* Preserve 56px search / 44px quick filters while reclaiming empty mobile framing. */
+[data-search-controls-section]>div{padding-top:4px!important;padding-bottom:4px!important}
 [data-premium-searchbar="ux-premium-searchbar-1"] [data-search-primary-filter-row]{gap:8px!important}
 [data-premium-searchbar="ux-premium-searchbar-1"] .premium-search-input{height:48px!important;padding-left:46px!important;padding-right:18px!important;font-size:13.5px!important;box-shadow:0 2px 10px rgb(24 56 96/.055),inset 0 1px 0 rgb(255 255 255/.95)!important}
 [data-premium-searchbar="ux-premium-searchbar-1"] .premium-filter-trigger{width:48px!important;min-width:48px!important;height:48px!important;padding:0!important;box-shadow:0 2px 10px rgb(24 56 96/.055),inset 0 1px 0 rgb(255 255 255/.95)!important}

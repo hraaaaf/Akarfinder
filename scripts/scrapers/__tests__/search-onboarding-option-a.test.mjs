@@ -95,4 +95,8 @@ test("mobile Search toolbar overrides legacy !important no-wrap for visible resu
   assert.match(switcherCss, /flex: 0 0 156px/);
   assert.match(switcherCss, /min-width: 156px/);
   assert.ok(proof.includes("MOBILE_VIEW_SWITCHER_CLIPPED"));
+  const baseDensity = read("app/search/search-density.css");
+  assert.doesNotMatch(baseDensity, /\[data-search-mobile-view-select\]\s*\{\s*max-width:\s*5\.25rem/);
+  const premiumDensity = read("app/search/search-premium-card-density.css");
+  assert.ok(premiumDensity.includes("[data-search-controls-section]>div{padding-top:4px!important;padding-bottom:4px!important}"));
 });
