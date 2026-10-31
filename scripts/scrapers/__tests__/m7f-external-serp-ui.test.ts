@@ -96,11 +96,13 @@ test("visible labels scrub direct contact transport markers", () => {
   assert.equal(presentation.displayUrl?.includes("tel:"), false);
 });
 
-test("search toolbar keeps the indexed total as the dominant result count", () => {
+test("search toolbar preserves indexed totals but does not claim results when visible set is empty", () => {
   const shell = readFileSync("components/search/LightZillowSearchShell.tsx", "utf8");
   assert.match(shell, /indexedTotalCount/);
-  assert.match(shell, /const totalResultCount = indexedTotalCount == null/);
-  assert.match(shell, /totalResultCount\.toLocaleString\("fr-FR"\)/);
+  assert.match(shell, /const totalResultCount = Math\.max\(/);
+  assert.ok(shell.includes("const displayedResultCount = !isSearching && !hasAnyResults ? 0 : totalResultCount"));
+  assert.ok(shell.includes('displayedResultCount.toLocaleString("fr-FR")'));
+  assert.ok(shell.includes("totalPages > 1 && hasAnyResults"));
   assert.match(shell, /setIndexedTotalCount\(payload\.total_count\)/);
 });
 
