@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowUpRight, Building2, ChevronDown, ChevronUp, MapPin } from "lucide-react";
 import { IndexedTransactionArtwork } from "@/components/search/IndexedTransactionArtwork";
+import { buildExternalResultPresentation } from "@/lib/search/external-result-presentation";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 import { formatPriceMad, isPriceToVerify } from "@/lib/search-gateway/price-verification";
 
@@ -75,8 +76,11 @@ export function ExternalIndexedResultCard({
   const propertyType = cleanToken(representative.normalized_property_type);
   const intent = getIntentLabel(representative.normalized_intent);
   const visualTransaction = getIntentVisualKey(representative.normalized_intent);
-  const priceLabel = formatPriceMad(representative.normalized_price_mad);
-  const priceToVerify = isPriceToVerify(representative);
+  // Q0/link-only results must not republish even normalized source pricing.
+  // Rich fields are only consumed from the serving presentation contract.
+  const presentation = buildExternalResultPresentation(representative);
+  const priceLabel = formatPriceMad(presentation.priceMad);
+  const priceToVerify = priceLabel !== null && isPriceToVerify(representative);
   const sourcePages = [
     ...new Map(
       visibleResults.map((result) => [
