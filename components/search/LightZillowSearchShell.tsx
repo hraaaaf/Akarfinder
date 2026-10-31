@@ -548,17 +548,17 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
       </section>
 
       <section data-search-results-section className="mx-auto max-w-[1480px] px-4 py-2.5 sm:px-6 sm:py-3">
-        <div data-search-results-toolbar className="flex items-center justify-between gap-2 border-b border-border/12 pb-2.5 dark:border-white/8">
-          <div className="flex min-w-0 items-center gap-2">
+        <div data-search-results-toolbar className="flex flex-wrap items-center justify-between gap-2 border-b border-border/12 pb-2.5 sm:flex-nowrap dark:border-white/8">
+          <div className="flex w-full min-w-0 items-center gap-2 sm:w-auto">
             {isSearching ? <Loader2 size={15} strokeWidth={2.5} className="shrink-0 animate-spin text-bronze-500" aria-hidden="true" /> : null}
-            <h1 className="min-w-0 truncate text-[14px] font-extrabold text-foreground sm:text-[15px]">
+            <h1 className="min-w-0 break-words text-[14px] font-extrabold text-foreground sm:truncate sm:text-[15px]">
               {isSearching && displayedResultCount === 0
                 ? "Recherche…"
                 : `${displayedResultCount.toLocaleString("fr-FR")} résultat${displayedResultCount !== 1 ? "s" : ""}${filters.search.trim() ? ` pour “${filters.search.trim()}”` : ""}`}
             </h1>
           </div>
 
-          <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
+          <div className="flex w-full min-w-0 items-center justify-between gap-1.5 sm:w-auto sm:shrink-0 sm:justify-end sm:gap-2">
             <SearchViewSwitcher value={view} onChange={setView} />
             <select
               data-search-sort-select
