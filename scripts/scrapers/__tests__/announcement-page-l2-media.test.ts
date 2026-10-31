@@ -126,20 +126,42 @@ describe("ANN-L2 fail-closed media projection", () => {
     ]);
   });
 
-  it("DB provider thumbnails remain a single preview and never become gallery media", () => {
+  it("DB provider thumbnail flag cannot override unknown, source-link-only or forbidden rights", () => {
+    const previous = process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED;
+    process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED = "true";
+    try {
+      for (const permission of ["unknown", "forbidden", "source_link_only"] as const) {
+        const value = buildPropertyMediaModel(listing({
+          thumbnail_url: "https://provider.example/preview.jpg",
+          can_show_thumbnail: true,
+          image_permission_status: permission,
+          source_access_level: "indexed_only",
+          can_show_gallery: false,
+        }));
+        assert.equal(value.mode, "fallback", permission);
+        assert.equal(value.items.length, 0, permission);
+      }
+    } finally {
+      if (previous == null) delete process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED;
+      else process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED = previous;
+    }
+  });
+
+  it("DB provider thumbnails remain a single authorized preview, never a gallery", () => {
     const previous = process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED;
     process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED = "true";
     try {
       const value = buildPropertyMediaModel(listing({
         thumbnail_url: "https://provider.example/preview.jpg",
         can_show_thumbnail: true,
-        image_permission_status: "unknown",
-        source_access_level: "indexed_only",
+        image_permission_status: "allowed",
+        source_access_level: "preview_allowed",
         can_show_gallery: false,
       }));
       assert.equal(value.mode, "provider_preview");
       assert.equal(value.count, 1);
       assert.equal(value.items[0]?.kind, "provider_preview");
+      assert.equal(value.galleryAllowed, false);
     } finally {
       if (previous == null) delete process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED;
       else process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED = previous;
