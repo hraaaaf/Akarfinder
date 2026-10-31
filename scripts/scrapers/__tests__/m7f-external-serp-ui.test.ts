@@ -142,5 +142,10 @@ test("minimal logical cards stay source-first and rich-field safe", () => {
   assert.doesNotMatch(card, /normalized_price_mad/);
   assert.doesNotMatch(card, /normalized_surface_m2/);
   assert.doesNotMatch(card, /thumbnail_url/);
+  // Always enforce the Q0/link-only price boundary at the actual rendered card,
+  // not only in the presentation builder unit tests.
+  assert.match(card, /buildExternalResultPresentation\(representative\)/);
+  assert.match(card, /formatPriceMad\(presentation\.priceMad\)/);
+  assert.match(card, /priceLabel !== null && isPriceToVerify\(representative\)/);
   assert.match(card, /AkarFinder indexe la page et vous renvoie vers la source originale/);
 });
