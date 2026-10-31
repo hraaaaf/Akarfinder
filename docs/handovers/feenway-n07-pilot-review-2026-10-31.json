@@ -1,0 +1,124 @@
+{
+  "schema": "FEENWAY_N07_PILOT_REVIEW_V1",
+  "date": "2026-10-31",
+  "basis": "N03d historical 81-row evidence; deterministic N04 selection",
+  "sample_size": 10,
+  "selection": [
+    {
+      "feenway_id": 196346,
+      "portal": "avito.ma",
+      "source": "historical",
+      "availability": "unverified",
+      "freshness": "unverified",
+      "physical_uniqueness": "unverified",
+      "reuse_rights": "unverified",
+      "eligible_for_db": false
+    },
+    {
+      "feenway_id": 196843,
+      "portal": "avito.ma",
+      "source": "historical",
+      "availability": "unverified",
+      "freshness": "unverified",
+      "physical_uniqueness": "unverified",
+      "reuse_rights": "unverified",
+      "eligible_for_db": false
+    },
+    {
+      "feenway_id": 197393,
+      "portal": "avito.ma",
+      "source": "historical",
+      "availability": "unverified",
+      "freshness": "unverified",
+      "physical_uniqueness": "unverified",
+      "reuse_rights": "unverified",
+      "eligible_for_db": false
+    },
+    {
+      "feenway_id": 197851,
+      "portal": "avito.ma",
+      "source": "historical",
+      "availability": "unverified",
+      "freshness": "unverified",
+      "physical_uniqueness": "unverified",
+      "reuse_rights": "unverified",
+      "eligible_for_db": false
+    },
+    {
+      "feenway_id": 169266,
+      "portal": "mubawab.ma",
+      "source": "historical",
+      "availability": "unverified",
+      "freshness": "unverified",
+      "physical_uniqueness": "unverified",
+      "reuse_rights": "unverified",
+      "eligible_for_db": false
+    },
+    {
+      "feenway_id": 194307,
+      "portal": "mubawab.ma",
+      "source": "historical",
+      "availability": "unverified",
+      "freshness": "unverified",
+      "physical_uniqueness": "unverified",
+      "reuse_rights": "unverified",
+      "eligible_for_db": false
+    },
+    {
+      "feenway_id": 194642,
+      "portal": "mubawab.ma",
+      "source": "historical",
+      "availability": "unverified",
+      "freshness": "unverified",
+      "physical_uniqueness": "unverified",
+      "reuse_rights": "unverified",
+      "eligible_for_db": false
+    },
+    {
+      "feenway_id": 182418,
+      "portal": "agenz.ma",
+      "source": "historical",
+      "availability": "unverified",
+      "freshness": "unverified",
+      "physical_uniqueness": "unverified",
+      "reuse_rights": "unverified",
+      "eligible_for_db": false
+    },
+    {
+      "feenway_id": 184798,
+      "portal": "agenz.ma",
+      "source": "historical",
+      "availability": "unverified",
+      "freshness": "unverified",
+      "physical_uniqueness": "unverified",
+      "reuse_rights": "unverified",
+      "eligible_for_db": false
+    },
+    {
+      "feenway_id": 183131,
+      "portal": "yakeey.com",
+      "source": "historical",
+      "availability": "unverified",
+      "freshness": "unverified",
+      "physical_uniqueness": "unverified",
+      "reuse_rights": "unverified",
+      "eligible_for_db": false
+    }
+  ],
+  "counts": {
+    "candidate": 10,
+    "currently_verified_available": 0,
+    "verified_fresh": 0,
+    "verified_unique": 0,
+    "rights_verified": 0,
+    "eligible_for_db": 0
+  },
+  "decision": "BLOCKED_PRE_ACCESS_NOT_CLOSED",
+  "limitations": [
+    "No current source-detail HTTP access proven",
+    "Historical 5-field matches do not prove availability",
+    "Source portal permissions and reuse rights not verified",
+    "No representative inference to 73715 URLs"
+  ],
+  "next": "Obtain source access/rights or close FeenWay as URL-only discovery; no DB import or Vercel deployment"
+}
