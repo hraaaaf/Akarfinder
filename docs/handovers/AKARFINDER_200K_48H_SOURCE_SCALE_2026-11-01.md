@@ -124,3 +124,12 @@ Après téléchargement des quatre artefacts existants et vérification de leurs
 Pour chaque annonce fournie par agence, promoteur, logiciel métier ou portail partenaire : `provider`, `listing_id`, `canonical_url`, `last_updated_at`, `active_status`, `transaction`, `property_type`, `city`, `district`, `price_mad|on_request`, `surface_m2`, droits explicites (`reuse_text`, `reuse_images`, `public_display`, `refresh`), suppression/désactivation, SLA de mise à jour. Exiger un échantillon daté avec comptage des IDs uniques et un accord de licence avant import. XML de **diffusion des agences vers un portail** ne signifie pas que ce portail propose un **flux de son stock vers Akarfinder**.
 
 Aucun email externe envoyé, aucun accord présumé, aucune publicité ou collecte récurrente activée.
+
+## 11. 01/11/2026 — Closeout du replay CI : GREEN et artefact vérifié
+
+- [GitHub Actions **#41322759990 — SUCCESS**](https://github.com/hraaaaf/Akarfinder/actions/runs/41322759990), HEAD exécuté `c181696a999e40ab34270eb15b886743df9df784`. Les 4 archives de preuves ont été restaurées, les tests Python ont réussi, la SQLite a été reconstruite et [l'artefact `akar-200k-isolated-inventory`](https://github.com/hraaaaf/Akarfinder/actions/runs/41322759990/artifacts/13090235968) a bien été publié.
+- Archive téléchargée puis **ouverte et vérifiée hors runner** : SHA-256 de l'archive ZIP `cdae6222a4a1d2db235ebbcbb654dfa1334359d8bf52d3968b9086fcd1a27503`, `sha256sum -c SHA256SUMS` passe pour `candidates.sqlite` et `inventory.json`, `PRAGMA integrity_check=ok`.
+- Mesure exacte SQLite depuis l'artefact de CI : **32 460 lignes**, Avito **27 106**, Mubawab **5 354** ; **32 460 `freshness_status=UNVERIFIED`**, **0 `ready_for_use`**, **0 `publication_eligible`**. L'artefact précise `production_writes=0`.
+- **Goal intermédiaire atteint** : consolidation des URL/ID d'archives certifiées entièrement reproductible sans Supabase et sans écriture DB. **Goal produit 200k/48h NON atteint** : écart de 167 540 identifiants *source* ; ce ne sont pas 200k biens uniques/frais et aucun bien du réservoir n'est éligible à publication.
+- **Prochaine action autonome** : relire les contrats d'acquisition et canaux partenaires du repo, chiffrer les gisements encore accessibles sans permission implicite ; soumettre un échantillon de feed réel autorisé au même gate `POLICY → FRESHNESS → DEDUP → QUALITY`. Toute sollicitation de partenaires ou activation d'un gros crawl dépend d'une validation source/politique explicite ; aucune automatisation 48h ou publication produit activée.
+
