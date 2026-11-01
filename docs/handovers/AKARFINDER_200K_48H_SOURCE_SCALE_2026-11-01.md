@@ -90,3 +90,23 @@ Sarouty, Yakeey, Sarout.ma, Masaken, autres sources du Source Registry **seuleme
 - **Zéro DB write** dans les canaries L8 ; aucune insertion de ces URLs dans Akarfinder. Les rapports restent des artefacts de CI/archives téléchargées. Les 97/313 liens ne doivent pas être présentés comme biens uniques cross-source, frais, ni ready-for-use.
 - **Feasibility gate pour 200k/48h : NOT PROVEN.** Les seuls grands volumes publiquement revendiqués appartiennent pour partie à des agrégateurs et se chevauchent. Les canaries n'établissent pas 200k annonces actives, ni l'autorisation de réutiliser les descriptions/photos. Une **source d'alimentation bulk sous accord** ou d'autres domaines explicitement autorisés est nécessaire pour garantir le volume visé.
 - **Next exact** : mesurer les flux bulk directement autorisés et le stock unique/frais disponible ; monter le débit seulement après certification des sources. Conserver l'architecture read-only + SQLite/artefacts avant toute promotion sélective vers la base produit.
+
+## 9. 01/11/2026 — Réservoir SQLite offline consolidé, preuve locale
+
+Après téléchargement des quatre artefacts existants et vérification de leurs URLs, un réservoir **SQLite local indépendant** a été construit : `akar_200k_reservoir_20261101.zip` livré dans la conversation avec le script reproductible `build_reservoir.py`, les 5 tests, le rapport JSON et SHA256SUMS.
+
+| Source | IDs distincts archive du 02/09 | IDs canary du 01/11 | Recouvrement archive/canary | IDs canary absents de l'archive | Union IDs/source |
+|---|---:|---:|---:|---:|---:|
+| Avito | 27 053 | 97 | 44 | 53 | 27 106 |
+| Mubawab | 5 195 | 313 | 154 | 159 | 5 354 |
+| **Total** | **32 248** | **410** | **198** | **212** | **32 460** |
+
+**Tests/validation locale vérifiés :** 5/5 tests Python PASS ; SQLite `PRAGMA integrity_check=ok`, exactement **32 460 clés uniques (source,source_id)** et **0 entrée publiable** ; `freshness_status=UNVERIFIED`, `publication_eligible=0`, `details_checked=0` pour toutes les lignes. Le réservoir ne fait ni réseau, ni écriture en production, ni crawl. Les quatre SHA-256 des artefacts ZIP d'entrée sont consignés dans `inventory_evidence.json`.
+
+**Distinctions impératives :** les **212** IDs n'étaient pas dans **CES** archives de septembre, mais ne sont pas nécessairement des annonces nouvellement publiées. Les **32 460** clés évitent uniquement les doublons de listing IDs par portail, **pas** les doublons de biens inter-portails ; et **0** de ces fiches a été nouvellement certifiée active et `ready_for_use`. Écart vers 200k **clés URL/source** : 167 540 ; l'écart vers 200k annonces **publiables** reste entier tant que la qualification n'est pas faite. Le chiffre du compteur de site ne se traduit pas en catalogue accessible, autorisé ou actif.
+
+**Conclusion de faisabilité :** l'objectif 200k/48h demeure `NOT_PROVEN`. Cette consolidation constitue un inventaire audit-able, pas un lancement de scraping massif. Aucun déploiement ou modification de `main`.
+
+**Stratégie prioritaire pour augmenter réellement le réservoir :** accords de flux XML/CSV/JSON avec agences, promoteurs ou portails, attestant le droit de réutilisation et la date de mise à jour. FeenWay est un concurrent agrégateur (pas une source de données indépendante) : un éventuel accord de licence serait à négocier et ne démontrerait pas à lui seul 200k biens uniques. Les accès `PERMISSION_REQUIRED`/`HOLD` restent non activables pour acquisition directe.
+
+**Next exact :** obtenir un contrat/flux explicitement autorisé à fort volume, vérifier inventaire (identifiant stable + URL + updated_at + type + ville + statut actif) et droits de redistribution ; préparer le connecteur read-only vers le réservoir local puis calibrer le débit sur un échantillon frais. Les demandes commerciales externes requièrent une décision explicite avant envoi.
