@@ -1,0 +1,5 @@
+# Browser binaries must be installed for the selected Playwright release.
+# Tested locally with beautifulsoup4 4.14.3 and Playwright 1.57.0.
+curl_cffi>=0.10,<1
+beautifulsoup4>=4.12,<5
+playwright==1.57.0

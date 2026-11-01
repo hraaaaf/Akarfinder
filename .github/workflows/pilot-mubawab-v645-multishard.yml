@@ -1,0 +1,81 @@
+# Experimental page 1 across 3 distinct city/quarter shards. No schedule or production DB.
+name: EXPERIMENT - Mubawab V6.4.5 three city listing pages
+on:
+  push:
+    branches: [sandbox/akar-chrome-probe-20261101]
+    paths:
+      - scripts/pilots/mubawab-v645/**
+      - .github/workflows/pilot-mubawab-v645-multishard.yml
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: pilot-mubawab-v645-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  supervised-three-shards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Dependencies and regular Chromium
+        run: |
+          python -m pip install --disable-pip-version-check -r scripts/pilots/mubawab-v645/requirements.txt
+          python -m playwright install --with-deps chromium
+      - name: Verify source safety gate before any network
+        run: |
+          python scripts/pilots/mubawab-v645/test_manifest.py
+          python scripts/pilots/mubawab-v645/akarfinder_scraper.py --engine http --pages 2 && exit 2 || test "$?" -eq 3
+      - name: Restore validated previous SQLite state and SHA-256
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p pilot_state
+          gh run download 41315575782 --repo "$GITHUB_REPOSITORY" --name scraper-state --dir pilot_state
+          (cd pilot_state && sha256sum -c SHA256SUMS)
+          cp pilot_state/akarfinder.db akarfinder.db
+          echo 'restored_from_run:41315575782' > pilot_state_restore.txt
+      - name: Run real V6.4.5 scraper on the three verified source shards
+        run: |
+          set -euo pipefail
+          PYTHONUNBUFFERED=1 python scripts/pilots/mubawab-v645/akarfinder_scraper.py \
+            --engine auto --pages 1 \
+            --urls-file scripts/pilots/mubawab-v645/pilot-urls.txt 2>&1 | tee pilot.log
+      - name: Independent full-quality and continuity gate
+        id: quality_gate
+        run: python scripts/pilots/mubawab-v645/verify_multi_shard.py
+      - name: Refresh resumable SQLite state after quality PASS only
+        if: ${{ steps.quality_gate.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          cp akarfinder.db pilot_state/akarfinder.db
+          (cd pilot_state && sha256sum akarfinder.db > SHA256SUMS)
+          cp multi_pilot_validation.json pilot_state/multi_pilot_validation.json
+      - name: Save validated SQLite to artifacts, never to production DB
+        if: ${{ steps.quality_gate.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-v645-multishard-sqlite-state
+          path: pilot_state/
+          retention-days: 30
+          if-no-files-found: error
+      - name: Upload diagnostics even if some pages fail
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-v645-multishard-diagnostics
+          path: |
+            pilot.log
+            pilot_state_restore.txt
+            multi_pilot_validation.json
+            akarfinder_diagnostics.json
+            akarfinder_data.json
+            akarfinder_report.md
+            akarfinder_price_m2_flags.json
+            akarfinder_quality_signals.json
+          retention-days: 30
+          if-no-files-found: warn
