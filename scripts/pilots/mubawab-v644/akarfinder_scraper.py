@@ -1,0 +1,1041 @@
+#!/usr/bin/env python3
+"""Akarfinder scraper V6.4.4: durable price reviews, source-aware coverage and anomaly signals.
+
+Dependencies: pip install curl_cffi beautifulsoup4 playwright
+Offline tests: python -m unittest discover -s tests -v
+
+This program does not claim that its CSS selectors match the current source HTML:
+validate them using permitted, representative HTML fixtures before live use.
+"""
+
+from __future__ import annotations
+
+import argparse
+import asyncio
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+import hashlib
+import json
+import os
+from pathlib import Path
+import random
+import re
+import sqlite3
+from statistics import median
+from typing import Any
+from urllib.parse import urljoin, urlsplit, urlunsplit
+
+from bs4 import BeautifulSoup
+
+BASE_URL = "https://www.mubawab.ma/fr/st/rabat/appartements-a-vendre"
+BASE_DOMAIN = "https://www.mubawab.ma"
+MAX_PAGES = 1  # Default: one verified result page; --pages overrides explicitly.
+DB_NAME = "akarfinder.db"
+CONCURRENCY_LIMIT = 2
+MAX_RETRIES = 3
+MIN_ACCEPTANCE_RATE = 0.90  # Reject weak cards, ignoring proven promo/empty slots.
+MIN_PRICE_COVERAGE = 0.85  # Conservative policy, not an externally verified threshold.
+MAX_PRICE_ON_REQUEST_RATIO = 0.40  # Fail closed on an unusually large masked-price share.
+MIN_SURFACE_COVERAGE = 0.85
+MIN_LOCALITY_COVERAGE = 0.85  # Source locality drift gate, not a claim all districts are known.
+PRICE_CONFIRMATION_CYCLES = 3  # Qualified observations, NOT arbitrary program runs.
+MIN_PRICE_CONFIRMATION_INTERVAL = timedelta(hours=24)  # UTC elapsed time between credits.
+PRICE_M2_MIN_SAMPLE = 8  # Median reference is not reliable with very few comparables.
+PRICE_M2_LOW_RATIO = 0.20  # Heuristic REVIEW flag, never automatic price correction.
+PRICE_M2_HIGH_RATIO = 5.0
+
+# Conservative numeric grammar: unrecognised or ambiguous formats return None.
+_NUMBER_CHARS = r"[0-9][0-9., \u00a0\u202f\u2009]*"
+_PRICE_RE = re.compile(
+    rf"^\s*(?P<number>{_NUMBER_CHARS})\s*(?P<unit>m\s*dh|mdh|dhs?|mad)?\s*$",
+    re.IGNORECASE,
+)
+_SURFACE_RE = re.compile(
+    rf"(?<![A-Za-z0-9])(?P<number>{_NUMBER_CHARS})\s*(?:m²|m2|sqm)(?![A-Za-z0-9])",
+    re.IGNORECASE,
+)
+_BEDROOMS_RE = re.compile(r"(?<!\d)(\d+)\s*(?:chambres?|ch\.?|br\.?)\b", re.IGNORECASE)
+_ROOMS_RE = re.compile(r"(?<!\d)(\d+)\s*(?:pi[eè]ces?)\b", re.IGNORECASE)
+_ID_RE = re.compile(r"/a/([0-9]{5,})(?=/|$)")
+
+
+@dataclass(frozen=True)
+class FetchResult:
+    url: str
+    status: str  # ok | blocked | http_error | network_error
+    html: str | None = None
+    code: int | None = None
+    attempts: int = 0
+    error: str | None = None
+
+
+@dataclass
+class ImportStats:
+    inserted: int = 0
+    updated: int = 0
+    unchanged: int = 0
+    duplicates: int = 0
+    anomalous_prices: int = 0
+    pending_prices: int = 0
+    unstable_prices: int = 0
+    anomalies: list[dict[str, Any]] = field(default_factory=list)
+
+
+@dataclass
+class ParseAudit:
+    listings: list[dict[str, Any]] = field(default_factory=list)
+    total_cards: int = 0
+    modern_locality_expected: int = 0
+    modern_locality_valid: int = 0
+    ignored: dict[str, int] = field(default_factory=dict)
+    rejected: dict[str, int] = field(default_factory=dict)
+
+    def mark(self, reason: str, *, ignored: bool = False) -> None:
+        counts = self.ignored if ignored else self.rejected
+        counts[reason] = counts.get(reason, 0) + 1
+
+    @property
+    def eligible_cards(self) -> int:
+        return self.total_cards - sum(self.ignored.values())
+
+    @property
+    def acceptance_rate(self) -> float:
+        return len(self.listings) / self.eligible_cards if self.eligible_cards else 0.0
+
+    @property
+    def price_coverage(self) -> float:
+        return sum(item["price_mad"] is not None for item in self.listings) / self.eligible_cards if self.eligible_cards else 0.0
+
+    @property
+    def price_recognition_coverage(self) -> float:
+        """Numeric or explicitly undisclosed is recognized; missing CSS is not."""
+        return sum(item.get("price_source_status") in ("numeric", "on_request")
+                   for item in self.listings) / self.eligible_cards if self.eligible_cards else 0.0
+
+    @property
+    def price_on_request_ratio(self) -> float:
+        return (sum(item.get("price_source_status") == "on_request" for item in self.listings) /
+                self.eligible_cards if self.eligible_cards else 0.0)
+
+    @property
+    def locality_coverage(self) -> float:
+        """Both district and city must be explicitly present to certify source locality."""
+        # Only enforce for the source template that exposes .listingTit/.listingH3.
+        # Legacy .listingTitle fixtures never promised locality.
+        return (self.modern_locality_valid / self.modern_locality_expected
+                if self.modern_locality_expected else 1.0)
+
+    @property
+    def surface_coverage(self) -> float:
+        return sum(item["surface_m2"] is not None for item in self.listings) / self.eligible_cards if self.eligible_cards else 0.0
+
+    @property
+    def passes_quality(self) -> bool:
+        return bool(self.listings) and (
+            self.acceptance_rate >= MIN_ACCEPTANCE_RATE and
+            self.price_recognition_coverage >= MIN_PRICE_COVERAGE and
+            self.price_on_request_ratio <= MAX_PRICE_ON_REQUEST_RATIO and
+            self.surface_coverage >= MIN_SURFACE_COVERAGE and
+            self.locality_coverage >= MIN_LOCALITY_COVERAGE
+        )
+
+    @property
+    def quality_reasons(self) -> list[str]:
+        reasons = []
+        if self.eligible_cards == 0 or not self.listings:
+            reasons.append("no_usable_listings")
+        if self.eligible_cards and self.acceptance_rate < MIN_ACCEPTANCE_RATE:
+            reasons.append("acceptance_below_threshold")
+        if self.eligible_cards and self.price_recognition_coverage < MIN_PRICE_COVERAGE:
+            reasons.append("price_coverage_below_threshold")
+        if self.eligible_cards and self.price_on_request_ratio > MAX_PRICE_ON_REQUEST_RATIO:
+            reasons.append("excessive_on_request_prices")
+        if self.eligible_cards and self.surface_coverage < MIN_SURFACE_COVERAGE:
+            reasons.append("surface_coverage_below_threshold")
+        if self.eligible_cards and self.locality_coverage < MIN_LOCALITY_COVERAGE:
+            reasons.append("locality_coverage_below_threshold")
+        return reasons
+
+
+def price_source_status(text: str | None, numeric_price: int | None) -> str:
+    if numeric_price is not None:
+        return "numeric"
+    if text and re.fullmatch(r"\s*(?:prix\s+(?:à\s+consulter|sur\s+demande|nous\s+consulter|à\s+discuter)|nous\s+contacter)\s*", text, re.I):
+        return "on_request"
+    return "missing_or_unrecognized"
+
+
+def _normalise_number(raw: str) -> Decimal | None:
+    """Parse French/English grouping, with 3-digit suffix treated as thousands.
+
+    Examples: 125.000 => 125000; 82,5 => 82.5; 1,250,000.50 => 1250000.50.
+    Reject mixed/bad grouping rather than guessing or concatenating digits.
+    """
+    raw = re.sub(r"[\u00a0\u202f\u2009]", " ", raw.strip())
+    if not raw or not re.fullmatch(r"[0-9][0-9., ]*", raw):
+        return None
+    if " " in raw:
+        if not re.fullmatch(r"\d{1,3}(?: \d{3})+(?:[.,]\d{1,2})?", raw):
+            return None
+        raw = raw.replace(" ", "")
+
+    dots, commas = raw.count("."), raw.count(",")
+    if dots and commas:
+        decimal_mark = "." if raw.rfind(".") > raw.rfind(",") else ","
+        grouping_mark = "," if decimal_mark == "." else "."
+        integer, fraction = raw.rsplit(decimal_mark, 1)
+        if not re.fullmatch(r"\d{1,2}", fraction):
+            return None
+        if not (integer.isdigit() or re.fullmatch(rf"\d{{1,3}}(?:\{grouping_mark}\d{{3}})+", integer)):
+            return None
+        normal = integer.replace(grouping_mark, "") + "." + fraction
+    elif dots or commas:
+        mark = "." if dots else ","
+        parts = raw.split(mark)
+        if len(parts) > 2:
+            if not (re.fullmatch(r"\d{1,3}", parts[0]) and
+                    all(re.fullmatch(r"\d{3}", p) for p in parts[1:])):
+                return None
+            normal = "".join(parts)
+        elif len(parts) == 2:
+            a, b = parts
+            if not a.isdigit() or not b.isdigit():
+                return None
+            if len(b) == 3 and 1 <= len(a) <= 3:
+                normal = a + b  # 125.000 = 125000 in this convention.
+            elif 1 <= len(b) <= 2:
+                normal = a + "." + b
+            else:
+                return None
+        else:
+            return None
+    else:
+        normal = raw
+    try:
+        value = Decimal(normal)
+        return value if value.is_finite() and value > 0 else None
+    except InvalidOperation:
+        return None
+
+
+def parse_price(text: str | None) -> int | None:
+    """Return positive integer MAD or None; never invent a number from a range."""
+    if not text:
+        return None
+    match = _PRICE_RE.fullmatch(text.strip())
+    if not match:
+        return None
+    value = _normalise_number(match.group("number"))
+    if value is None:
+        return None
+    unit = re.sub(r"\s", "", (match.group("unit") or "").lower())
+    if unit == "mdh":
+        # '1.500 MDH' is ambiguous (1.5 vs 1500 million); reject.
+        num = match.group("number").strip()
+        if re.fullmatch(r"\d{1,3}[.,]\d{3}", num):
+            return None
+        value *= 1_000_000
+    result = int(value.quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+    return result if result > 0 else None
+
+
+def parse_surface(text: str | None) -> float | None:
+    """Read a number explicitly adjacent to a surface unit, never room counts."""
+    if not text:
+        return None
+    # A concatenated text such as "Étage 2 110 m²" must not become 2 110 m².
+    text = re.sub(r"\b(?:étage|etage|floor|niveau)\s*(?:n[°o.]?\s*)?\d{1,2}\b", " ", text, flags=re.I)
+    for match in _SURFACE_RE.finditer(text):
+        value = _normalise_number(match.group("number"))
+        if value is not None and value <= 1_000_000:
+            return float(value)
+    return None
+
+
+def parse_counts(text: str | None) -> tuple[int | None, int | None]:
+    """Return (rooms / pièces, bedrooms / chambres), keeping them distinct."""
+    if not text:
+        return None, None
+    room_match = _ROOMS_RE.search(text)
+    bedroom_match = _BEDROOMS_RE.search(text)
+    rooms = int(room_match.group(1)) if room_match else None
+    bedrooms = int(bedroom_match.group(1)) if bedroom_match else None
+    return rooms, bedrooms
+
+
+def canonical_url(raw_link: str | None) -> str | None:
+    if not raw_link or not isinstance(raw_link, str):
+        return None
+    raw_link = raw_link.strip()
+    if not raw_link or any(ord(ch) < 32 for ch in raw_link):
+        return None
+    absolute = urljoin(BASE_DOMAIN + "/", raw_link)
+    try:
+        parsed = urlsplit(absolute)
+        host = parsed.hostname
+        port = parsed.port
+    except ValueError:
+        return None
+    if (parsed.scheme != "https" or not host or
+            (host != "mubawab.ma" and not host.endswith(".mubawab.ma")) or
+            parsed.username is not None or parsed.password is not None or
+            port not in (None, 443)):
+        return None
+    if not parsed.path or parsed.path == "/":
+        return None
+    # Listing identity is path-based: strip query, fragment and trailing slash.
+    return urlunsplit(("https", host + (":443" if port == 443 else ""),
+                       parsed.path.rstrip("/"), "", ""))
+
+
+def listing_id_from_url(link: str) -> str:
+    path = urlsplit(link).path
+    match = _ID_RE.search(path)
+    if match:
+        return match.group(1)
+    return "url:" + hashlib.sha256(link.encode("utf-8")).hexdigest()[:24]
+
+
+def looks_like_block_page(html: str) -> bool:
+    """Only strong challenge titles/text count; script filenames are not proof.
+
+    HTTP 403/429 are classified separately by fetch_page. Ordinary result pages
+    often include a challenge-platform JS resource or a captcha widget.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    title = soup.title.get_text(" ", strip=True).lower() if soup.title else ""
+    strong = ("attention required", "checking your browser", "verify you are human",
+              "just a moment")
+    if any(phrase in title for phrase in strong):
+        return True
+    for element in soup.select("script,style,template,noscript"):
+        element.decompose()
+    body = (soup.body or soup).get_text(" ", strip=True).lower()
+    if soup.select_one(".listingBox"):
+        return False
+    return any(phrase in body for phrase in strong)
+
+
+def parse_listings_audited(html: str | None) -> ParseAudit:
+    """Classify every listingBox, ignoring non-listing placeholders by evidence."""
+    audit = ParseAudit()
+    if not html:
+        return audit
+    if looks_like_block_page(html):
+        audit.mark("challenge_page")
+        return audit
+    soup = BeautifulSoup(html, "html.parser")
+    cards = soup.select(".listingBox")
+    audit.total_cards = len(cards)
+    for card in cards:
+        classes = set(card.get("class", []))
+        if "emptyBox" in classes:
+            audit.mark("empty_placeholder", ignored=True)
+            continue
+        link_el = card.select_one("a[href*='/a/']") or card.select_one("a[href]")
+        raw_link = card.get("linkref") or (link_el.get("href") if link_el else None)
+        link = canonical_url(raw_link)
+        if not link or not _ID_RE.search(urlsplit(link).path):
+            if "adBoostBox" in classes:
+                audit.mark("promotion_without_detail_link", ignored=True)
+            else:
+                audit.mark("missing_detail_link")
+            continue
+        title_el = card.select_one(".listingTit, .listingTitle")
+        if not title_el or not title_el.get_text(" ", strip=True):
+            audit.mark("missing_title")
+            continue
+        price_el = card.select_one(".priceTag, .hardPrice")
+        details_nodes = card.select(".adDetails .adDetailFeature") or card.select(".listingDetails span")
+        detail_features = [node.get_text(" ", strip=True) for node in details_nodes]
+        details_text = " ".join(detail_features)
+        rooms, bedrooms = parse_counts(details_text)
+        title = title_el.get_text(" ", strip=True)
+        price_raw = price_el.get_text(" ", strip=True) if price_el else None
+        price = parse_price(price_raw)
+        source_status = price_source_status(price_raw, price)
+        # Parse each feature independently: joining can fuse floor number and area.
+        surface = next((value for feature in detail_features
+                        if (value := parse_surface(feature)) is not None), None)
+        if all(v is None for v in (price, surface, rooms, bedrooms)):
+            audit.mark("missing_numeric_features")
+            continue
+        district_el = card.select_one(".listingH3")
+        location_text = district_el.get_text(" ", strip=True) if district_el else ""
+        locality = [part.strip() for part in location_text.split(",") if part.strip()]
+        district = locality[0] if len(locality) >= 2 else None
+        city = locality[-1] if len(locality) >= 2 else None
+        if district and district.casefold() == city.casefold():
+            district = None
+        if card.select_one(".listingTit"):
+            audit.modern_locality_expected += 1
+            if district and city:
+                audit.modern_locality_valid += 1
+        bath_match = re.search(r"(?<!\d)(\d+)\s*salles?\s+de\s+bains?\b", details_text, re.I)
+        bathrooms = int(bath_match.group(1)) if bath_match else None
+        audit.listings.append({
+            "id": listing_id_from_url(link),
+            "title": title,
+            "price_mad": price,
+            "price_source_status": source_status,
+            "surface_m2": surface,
+            "rooms": rooms,
+            "bedrooms": bedrooms,
+            "bathrooms": bathrooms,
+            "district": district,
+            "location": city,
+            "link": link,
+            "quality_signals": _quality_signals(title, price, surface, rooms, bedrooms),
+        })
+    return audit
+
+
+
+def _quality_signals(title: str, price: int | None, surface: float | None,
+                     rooms: int | None, bedrooms: int | None) -> list[str]:
+    signals = []
+    if rooms is not None and bedrooms is not None and bedrooms > rooms:
+        signals.append("bedrooms_exceed_rooms")
+    title_rooms = _ROOMS_RE.search(title)
+    if title_rooms is not None and rooms is not None and int(title_rooms.group(1)) != rooms:
+        signals.append("title_rooms_mismatch")
+    # "Appartement avec bureau" is a normal residential feature, not an office listing.
+    if re.search(r"\b(?:cabinet\s+m[eé]dical|bureau\s+(?:professionnel|commercial)|"
+                 r"bureaux\s+(?:professionnels|commerciaux)|local\s+commercial|"
+                 r"usage\s+professionnel)\b", title, re.I):
+        signals.append("possible_non_residential")
+    if price is not None and surface is not None and surface > 0 and price / surface < 500:
+        signals.append("price_m2_low_absolute_heuristic")
+    return signals
+
+
+def flag_possible_duplicates(items: list[dict[str, Any]]) -> dict[str, list[str]]:
+    """Only candidate correlations; never merge two IDs based on these fields."""
+    grouped: dict[tuple, list[str]] = {}
+    for item in items:
+        if item.get("price_mad") is None or item.get("surface_m2") is None or not item.get("district"):
+            continue
+        k = (item.get("location"), item["district"].casefold(), item["price_mad"], item["surface_m2"])
+        grouped.setdefault(k, []).append(item["id"])
+    flags = {}
+    for ids in grouped.values():
+        if len(set(ids)) > 1:
+            for ident in ids:
+                flags[ident] = sorted(set(ids) - {ident})
+    return flags
+
+
+def parse_listings(html: str | None) -> list[dict[str, Any]]:
+    """Stable compatibility API used by previous tests and consumers."""
+    return parse_listings_audited(html).listings
+
+
+async def fetch_page(session: Any, url: str, semaphore: asyncio.Semaphore,
+                     max_retries: int = MAX_RETRIES) -> FetchResult:
+    """Retry transient network/5xx/429 errors; don't retry blocked 403/challenges."""
+    last_code = None
+    for attempt in range(1, max_retries + 1):
+        await asyncio.sleep(random.uniform(0.5, 1.5))
+        try:
+            async with semaphore:
+                response = await session.get(url, impersonate="chrome120", timeout=25)
+            code = response.status_code
+            last_code = code
+            if code == 200:
+                html = response.text
+                if looks_like_block_page(html):
+                    return FetchResult(url, "blocked", code=code, attempts=attempt,
+                                       error="challenge/block HTML")
+                return FetchResult(url, "ok", html=html, code=code, attempts=attempt)
+            if code == 403:
+                return FetchResult(url, "blocked", code=code, attempts=attempt)
+            if code not in (429, 500, 502, 503, 504):
+                return FetchResult(url, "http_error", code=code, attempts=attempt)
+            error = f"HTTP {code}"
+        except Exception as exc:
+            error = f"{type(exc).__name__}: {exc}"
+        if attempt < max_retries:
+            await asyncio.sleep(min(20, 2 ** attempt + random.uniform(0, 1)))
+    return FetchResult(url, "http_error" if last_code is not None else "network_error",
+                       code=last_code, attempts=max_retries, error=error)
+
+
+def init_db(path: str = DB_NAME) -> sqlite3.Connection:
+    conn = sqlite3.connect(path)
+    conn.row_factory = sqlite3.Row
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS listings (
+            id TEXT PRIMARY KEY, title TEXT, price_mad INTEGER,
+            surface_m2 REAL, rooms INTEGER, bedrooms INTEGER,
+            bathrooms INTEGER, district TEXT, location TEXT, link TEXT,
+            first_seen TEXT DEFAULT CURRENT_TIMESTAMP,
+            last_seen TEXT DEFAULT CURRENT_TIMESTAMP,
+            price_status TEXT DEFAULT 'first_observation',
+            pending_price_mad INTEGER,
+            pending_price_count INTEGER DEFAULT 0,
+            pending_price_qualified_at TEXT,
+            pending_price_fluctuations INTEGER DEFAULT 0,
+            price_source_status TEXT,
+            price_review_status TEXT,
+            price_reviewed_at TEXT,
+            price_review_payload TEXT,
+            quality_signals_json TEXT,
+            quality_signals_reviewed_at TEXT
+        )
+    """)
+    existing = {r[1] for r in conn.execute("PRAGMA table_info(listings)")}
+    for column, kind in (("bedrooms", "INTEGER"), ("bathrooms", "INTEGER"), ("district", "TEXT"),
+                         ("price_status", "TEXT DEFAULT 'first_observation'"),
+                         ("pending_price_mad", "INTEGER"), ("pending_price_count", "INTEGER DEFAULT 0"),
+                         ("pending_price_qualified_at", "TEXT"),
+                         ("pending_price_fluctuations", "INTEGER DEFAULT 0"),
+                         ("price_source_status", "TEXT"),
+                         ("price_review_status", "TEXT"), ("price_reviewed_at", "TEXT"),
+                         ("price_review_payload", "TEXT"),
+                         ("quality_signals_json", "TEXT"),
+                         ("quality_signals_reviewed_at", "TEXT")):
+        if column not in existing:
+            conn.execute(f"ALTER TABLE listings ADD COLUMN {column} {kind}")
+    conn.commit()
+    return conn
+
+
+def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
+                    observed_at: datetime | None = None) -> tuple[ImportStats, list[str]]:
+    stats = ImportStats()
+    ordered_ids: list[str] = []
+    utc_now = observed_at if observed_at is not None else datetime.now(timezone.utc)
+    if utc_now.tzinfo is None or utc_now.utcoffset() is None:
+        raise ValueError("observed_at must be timezone-aware")
+    utc_now = utc_now.astimezone(timezone.utc)
+    now = utc_now.isoformat(timespec="seconds")
+    # Merge duplicate cards before import: later non-empty fields may complete
+    # earlier, partial cards of the same listing.
+    merged: dict[str, dict[str, Any]] = {}
+    for item in listings:
+        listing_id = item["id"]
+        if listing_id in merged:
+            stats.duplicates += 1
+            for key, value in item.items():
+                if merged[listing_id].get(key) is None and value is not None:
+                    merged[listing_id][key] = value
+        else:
+            merged[listing_id] = item.copy()
+    for item in merged.values():
+        listing_id = item["id"]
+        ordered_ids.append(listing_id)
+        old = conn.execute("SELECT * FROM listings WHERE id = ?", (listing_id,)).fetchone()
+        if old is None:
+            conn.execute("""INSERT INTO listings
+                (id,title,price_mad,surface_m2,rooms,bedrooms,bathrooms,district,location,link,first_seen,last_seen,price_source_status)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (listing_id, item["title"], item["price_mad"], item["surface_m2"],
+                 item["rooms"], item["bedrooms"], item.get("bathrooms"), item.get("district"), item["location"], item["link"],now,now,item.get("price_source_status")))
+            stats.inserted += 1
+            continue
+        changes: dict[str, Any] = {}
+        incoming_price = item.get("price_mad")
+        # Suspicious prices remain quarantined until THREE qualified observations,
+        # spaced by >= 24 elapsed hours each. Immediate reruns earn no credit.
+        if incoming_price is not None:
+            if old["price_mad"] is not None and old["price_mad"] > 0:
+                ratio = incoming_price / old["price_mad"]
+                suspect = ratio >= 10 or ratio <= 0.1
+            else:
+                ratio, suspect = None, False
+            if suspect:
+                previous_candidate = old["pending_price_mad"]
+                same_candidate = previous_candidate == incoming_price
+                previous_timestamp = None
+                try:
+                    raw_timestamp = old["pending_price_qualified_at"]
+                    if raw_timestamp:
+                        previous_timestamp = datetime.fromisoformat(raw_timestamp)
+                        if previous_timestamp.tzinfo is not None:
+                            previous_timestamp = previous_timestamp.astimezone(timezone.utc)
+                        else:
+                            previous_timestamp = None  # Legacy data cannot give a trustworthy credit.
+                except (TypeError, ValueError):
+                    pass
+                if same_candidate and previous_timestamp is not None:
+                    count = max(1, old["pending_price_count"] or 0)
+                    qualified = utc_now - previous_timestamp >= MIN_PRICE_CONFIRMATION_INTERVAL
+                    if qualified:
+                        count += 1
+                        changes["pending_price_qualified_at"] = now
+                else:
+                    # Legacy V6.4.1 pending counts lacked a clock: reset to 1.
+                    count = 1
+                    changes["pending_price_qualified_at"] = now
+                changes["pending_price_mad"] = incoming_price
+                changes["pending_price_count"] = count
+                fluctuations = old["pending_price_fluctuations"] or 0
+                if previous_candidate is not None and not same_candidate:
+                    fluctuations += 1
+                if fluctuations != (old["pending_price_fluctuations"] or 0):
+                    changes["pending_price_fluctuations"] = fluctuations
+                confirmed = count >= PRICE_CONFIRMATION_CYCLES
+                status = "confirmed_time_spaced" if confirmed else (
+                    "unstable" if fluctuations else "pending_confirmation")
+                changes["price_status"] = status
+                if confirmed:
+                    changes.update(price_mad=incoming_price, pending_price_mad=None,
+                                   pending_price_count=0, pending_price_qualified_at=None,
+                                   pending_price_fluctuations=0)
+                stats.anomalous_prices += 1
+                stats.anomalies.append({"id": listing_id, "previous_price_mad": old["price_mad"],
+                                        "candidate_price_mad": incoming_price,
+                                        "ratio": round(ratio, 4), "observed_at_utc": now,
+                                        "confirmation_count": count, "minimum_hours_between_credits": 24,
+                                        "fluctuations": fluctuations, "resolution": status})
+                if not confirmed:
+                    stats.pending_prices += 1
+                    if fluctuations:
+                        stats.unstable_prices += 1
+            else:
+                if incoming_price != old["price_mad"]:
+                    changes["price_mad"] = incoming_price
+                if old["pending_price_mad"] is not None:
+                    changes.update(pending_price_mad=None, pending_price_count=0,
+                                   pending_price_qualified_at=None, pending_price_fluctuations=0)
+                if old["price_status"] != "observed":
+                    changes["price_status"] = "observed"
+        for col in ("title", "surface_m2", "rooms", "bedrooms", "bathrooms", "district", "location", "link", "price_source_status"):
+            new = item.get(col)
+            if new is not None and new != old[col]:
+                changes[col] = new
+        if changes:
+            metadata_only = set(changes) <= {"price_status", "pending_price_mad", "pending_price_count",
+                                            "pending_price_qualified_at", "pending_price_fluctuations"}
+            assignments = ", ".join(f"{col} = ?" for col in changes)
+            conn.execute(f"UPDATE listings SET {assignments}, last_seen = ? WHERE id = ?",
+                         (*changes.values(), now, listing_id))
+            if metadata_only:
+                stats.unchanged += 1
+            else:
+                stats.updated += 1
+        else:
+            conn.execute("UPDATE listings SET last_seen = ? WHERE id = ?", (now, listing_id))
+            stats.unchanged += 1
+    conn.commit()
+    return stats, ordered_ids
+
+
+def review_price_per_m2(listings: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Flag statistical anomalies within this cycle. Never reject or rewrite prices.
+
+    Prefer same-city reference (>=8 valid comparable prices); otherwise the
+    whole page reference (>=8). These ratios are heuristic, not market truth.
+    Uses SOURCE price, even for a quarantined candidate; does not use DB price.
+    """
+    unique = {item["id"]: item for item in listings}
+    comparable: dict[str, tuple[dict[str, Any], float]] = {}
+    for item in unique.values():
+        price, surface = item.get("price_mad"), item.get("surface_m2")
+        if price is not None and price > 0 and surface is not None and surface > 0:
+            comparable[item["id"]] = (item, price / surface)
+    all_rates = [value for _, value in comparable.values()]
+    by_city: dict[str, list[float]] = {}
+    for item, rate in comparable.values():
+        if item.get("location"):
+            by_city.setdefault(item["location"], []).append(rate)
+    flags: dict[str, dict[str, Any]] = {}
+    for listing_id, (item, rate) in comparable.items():
+        city_rates = by_city.get(item.get("location"), [])
+        if len(city_rates) >= PRICE_M2_MIN_SAMPLE:
+            baseline = city_rates
+            reference_scope = "city"
+        else:
+            baseline = all_rates
+            reference_scope = "page"
+        if len(baseline) < PRICE_M2_MIN_SAMPLE:
+            status, reference, ratio = "insufficient_comparables", None, None
+        else:
+            reference = median(baseline)
+            ratio = rate / reference
+            status = ("review_low" if ratio < PRICE_M2_LOW_RATIO else
+                      "review_high" if ratio > PRICE_M2_HIGH_RATIO else "within_heuristic_range")
+        flags[listing_id] = {
+            "id": listing_id,
+            "source_price_mad": item["price_mad"],
+            "surface_m2": item["surface_m2"],
+            "source_price_per_m2_mad": round(rate, 2),
+            "reference_median_price_per_m2_mad": round(reference, 2) if reference is not None else None,
+            "reference_scope": reference_scope,
+            "comparable_count": len(baseline),
+            "ratio_to_median": round(ratio, 4) if ratio is not None else None,
+            "status": status,
+            "method": "heuristic_0.2x_5x_median_review_only"
+        }
+    return flags
+
+
+
+def persist_price_reviews(conn: sqlite3.Connection, reviews: dict[str, dict[str, Any]],
+                          *, reviewed_at: datetime | None = None) -> None:
+    """Keep human-review flags between cycles; clear only after new evidence.
+
+    The status is statistical, not a verification of the price or a human signoff.
+    """
+    moment = reviewed_at or datetime.now(timezone.utc)
+    if moment.tzinfo is None or moment.utcoffset() is None:
+        raise ValueError("reviewed_at must be timezone-aware")
+    when = moment.astimezone(timezone.utc).isoformat(timespec="seconds")
+    for ident, review in reviews.items():
+        prior = conn.execute("SELECT price_review_status, price_mad FROM listings WHERE id = ?", (ident,)).fetchone()
+        if not prior:
+            continue
+        current = review["status"]
+        # Only save anomalous signals, or an explicit clearance of a previous flag.
+        if current.startswith("review_"):
+            effective = current
+        elif current == "insufficient_comparables":
+            # A small sample is missing evidence, never evidence to clear a flag.
+            continue
+        elif current == "within_heuristic_range" and prior["price_review_status"] and prior["price_review_status"].startswith("review_"):
+            # A quarantined source-price candidate must not clear a flag for the
+            # still-stored historical price. Clear only after stored price changed.
+            if prior["price_mad"] != review.get("source_price_mad"):
+                continue
+            effective = "cleared_on_reobservation"
+        else:
+            continue
+        conn.execute("UPDATE listings SET price_review_status=?, price_reviewed_at=?, price_review_payload=? WHERE id=?",
+                     (effective,when,json.dumps(review,ensure_ascii=False),ident))
+    conn.commit()
+
+
+def persist_quality_signals(conn: sqlite3.Connection, listings: list[dict[str, Any]],
+                            duplicate_candidates: dict[str, list[str]], *,
+                            observed_at: datetime | None = None) -> None:
+    """Persist review-only findings; absence of an item from the next page does not clear it.
+
+    Signals are snapshots for manual review, not a claim of confirmed duplication.
+    An observed item with no current signal retains an older signal until manual review.
+    """
+    instant = observed_at or datetime.now(timezone.utc)
+    if instant.tzinfo is None or instant.utcoffset() is None:
+        raise ValueError("observed_at must be timezone-aware")
+    timestamp = instant.astimezone(timezone.utc).isoformat(timespec="seconds")
+    for item in listings:
+        signals = sorted(set(item.get("quality_signals") or []))
+        pairs = sorted(set(duplicate_candidates.get(item["id"], [])))
+        if not signals and not pairs:
+            continue
+        record = {"quality_signals": signals, "possible_duplicate_ids": pairs,
+                  "review_status": "pending_human_review", "observed_at_utc": timestamp}
+        conn.execute("""UPDATE listings SET quality_signals_json=?,
+                       quality_signals_reviewed_at=? WHERE id=?""",
+                     (json.dumps(record, ensure_ascii=False), timestamp, item["id"]))
+    conn.commit()
+
+
+def persistent_quality_signals(conn: sqlite3.Connection) -> dict[str, dict[str, Any]]:
+    findings = {}
+    for row in conn.execute("""SELECT id, quality_signals_json
+                               FROM listings WHERE quality_signals_json IS NOT NULL ORDER BY id"""):
+        findings[row["id"]] = json.loads(row["quality_signals_json"])
+    return findings
+
+
+def persistent_review_flags(conn: sqlite3.Connection) -> list[dict[str, Any]]:
+    result = []
+    for r in conn.execute("SELECT id, price_review_status, price_reviewed_at, price_review_payload FROM listings WHERE price_review_status LIKE 'review_%' ORDER BY id"):
+        source = json.loads(r["price_review_payload"]) if r["price_review_payload"] else {}
+        result.append({**source,"id":r["id"],"status":r["price_review_status"],"reviewed_at_utc":r["price_reviewed_at"]})
+    return result
+
+
+def _write_atomic(path: str, contents: str) -> None:
+    target = Path(path)
+    tmp = target.with_name(target.name + ".tmp")
+    try:
+        tmp.write_text(contents, encoding="utf-8")
+        os.replace(tmp, target)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+
+def export_reports(conn: sqlite3.Connection, cycle_ids: list[str], stats: ImportStats,
+                   page_stats: dict[str, int], json_path: str = "akarfinder_data.json",
+                   md_path: str = "akarfinder_report.md",
+                   price_m2_reviews: dict[str, dict[str, Any]] | None = None) -> None:
+    records = [dict(r) for r in conn.execute(
+        "SELECT * FROM listings ORDER BY last_seen DESC, id ASC")]
+    reviews = price_m2_reviews or {}
+    # Only the current cycle has a valid contemporaneous reference distribution.
+    for row in records:
+        review = reviews.get(row["id"])
+        # Persisted snapshot remains visible for unobserved listings.
+        row["price_m2_review"] = (review if review is not None else
+                                   json.loads(row["price_review_payload"]) if row.get("price_review_payload") else None)
+        if row.get("price_m2_review") is not None:
+            row["price_m2_review"]["reviewed_at_utc"] = row.get("price_reviewed_at")
+        row["quality_signals_review"] = (json.loads(row["quality_signals_json"])
+                                         if row.get("quality_signals_json") else None)
+    _write_atomic(json_path, json.dumps(records, ensure_ascii=False, indent=2) + "\n")
+    by_id = {r["id"]: r for r in records}
+    observed = [by_id[listing_id] for listing_id in cycle_ids if listing_id in by_id]
+    observed.sort(key=lambda r: (r["last_seen"], r["id"]), reverse=True)
+    generated_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    lines = [
+        "# Rapport d'extraction Akarfinder V6.4.4", "",
+        f"- Généré le (UTC) : {generated_at}",
+        f"- Pages : {page_stats['with_listings']} avec annonces / "
+        f"{page_stats['http_ok']} HTTP 200 direct / {page_stats.get('browser_ok', 0)} pages Chromium / "
+        f"{page_stats['requested']} demandées",
+        f"- Annonces uniques observées ce cycle : {len(cycle_ids)}",
+        f"- Nouvelles : {stats.inserted} | Modifiées : {stats.updated} | "
+        f"Inchangées : {stats.unchanged} | Doublons de pagination : {stats.duplicates}",
+        f"- Prix suspects observés ce cycle : {stats.anomalous_prices} (statut et candidat persistants)",
+        f"- Signalements prix/m² atypiques dans le cycle : {sum(x['status'].startswith('review_') for x in reviews.values())} (sans rejet automatique)",
+        f"- Total cumulé : {len(records)}", "",
+        "## Annonces observées durant cette session (maximum 50)", "",
+    ]
+    for idx, item in enumerate(observed[:50], 1):
+        title = (item.get("title") or "Sans titre").replace("\n", " ")
+        price = f"{item['price_mad']:,} MAD".replace(",", " ") if item["price_mad"] is not None else "Non communiqué"
+        surface = f"{item['surface_m2']:g} m²" if item["surface_m2"] is not None else "Non communiquée"
+        rooms = str(item["rooms"]) if item["rooms"] is not None else "N/D"
+        bedrooms = str(item["bedrooms"]) if item["bedrooms"] is not None else "N/D"
+        lines.extend([f"### {idx}. {title}", f"- Prix : {price}",
+                      f"- Secteur : {item.get('district') or 'N/D'} | Salles de bains : {item.get('bathrooms') if item.get('bathrooms') is not None else 'N/D'}",
+                      f"- Surface : {surface} | Pièces : {rooms} | Chambres : {bedrooms}",
+                      f"- Prix : statut={item.get('price_status')} | candidat={item.get('pending_price_mad')} | observations={item.get('pending_price_count')}",
+                      f"- Revue prix/m² : {(item.get('price_m2_review') or {}).get('status', 'non évalué ce cycle')} "
+                      f"| taux source={(item.get('price_m2_review') or {}).get('source_price_per_m2_mad')}",
+                      f"- Dernière vue : {item['last_seen']}",
+                      f"- Lien : {item['link']}", ""])
+    _write_atomic(md_path, "\n".join(lines))
+
+
+def needs_browser_fallback(result: FetchResult) -> bool:
+    """Use browser for blocked HTTP or a 200 response without usable cards.
+
+    Never retry a normal 404, an offline network failure, or generic 5xx in
+    a browser. Avoid making a challenge look like successful extraction.
+    """
+    return result.status == "blocked" or (
+        result.status == "ok" and not parse_listings_audited(result.html).passes_quality
+    )
+
+
+def build_page_diagnostics(results: list[FetchResult], urls: list[str],
+                           diagnostics: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Attach parser outcome to every URL, not just the successful pages."""
+    for idx, (url, result) in enumerate(zip(urls, results)):
+        d = diagnostics[idx]
+        audit = parse_listings_audited(result.html) if result.html else ParseAudit()
+        d.update({
+            "page": idx + 1,
+            "url": url,
+            "final_status": result.status,
+            "final_http_code": result.code,
+            "final_attempts": result.attempts,
+            "error": result.error,
+            "parsed_listings": len(audit.listings),
+            "price_coverage": round(audit.price_coverage, 4),
+            "price_on_request_ratio": round(audit.price_on_request_ratio, 4),
+            "price_recognition_coverage": round(audit.price_recognition_coverage, 4),
+            "locality_coverage": round(audit.locality_coverage, 4),
+            "source_price_on_request": sum(x.get("price_source_status") == "on_request" for x in audit.listings),
+            "surface_coverage": round(audit.surface_coverage, 4),
+            "quality_reasons": audit.quality_reasons,
+            "quality_accepted": result.status == "ok" and audit.passes_quality,
+        })
+        d.update({"total_cards": audit.total_cards, "ignored_cards": audit.ignored,
+                  "rejected_cards": audit.rejected, "eligible_cards": audit.eligible_cards,
+                  "acceptance_rate": round(audit.acceptance_rate, 4)})
+        if result.status == "ok":
+            d["final_status"] = ("ok" if audit.passes_quality else
+                                 "excluded_quality" if audit.listings else "empty")
+    return diagnostics
+
+
+async def gather_results(urls: list[str], engine: str = "auto",
+                         headed: bool = False,
+                         browser_path: str | None = None,
+                         diagnostics: list[dict[str, Any]] | None = None) -> list[FetchResult]:
+    """HTTP, browser or HTTP+JS fallback. Preserve usable HTTP on browser failure."""
+    if engine not in ("auto", "http", "browser"):
+        raise ValueError("engine must be auto, http, or browser")
+    notes = [{} for _ in urls]
+    if engine == "browser":
+        from browser_fetcher import BrowserFetcher, BrowserConfig
+        async with BrowserFetcher(BrowserConfig(headed=headed, executable_path=browser_path)) as browser:
+            results = list(await asyncio.gather(*(browser.fetch(url) for url in urls)))
+        for note in notes:
+            note.update({"http_status": "not_attempted", "browser_fallback": True})
+    else:
+        try:
+            from curl_cffi.requests import AsyncSession
+        except ImportError as exc:
+            raise RuntimeError("Installer curl_cffi: pip install curl_cffi") from exc
+        semaphore = asyncio.Semaphore(CONCURRENCY_LIMIT)
+        async with AsyncSession() as session:
+            results = list(await asyncio.gather(*(
+                fetch_page(session, url, semaphore) for url in urls
+            )))
+        for note, result in zip(notes, results):
+            note.update({"http_status": result.status, "http_code": result.code,
+                         "http_attempts": result.attempts, "browser_fallback": False})
+        if engine == "auto":
+            to_retry = [i for i, result in enumerate(results) if needs_browser_fallback(result)]
+            for index in to_retry:
+                notes[index]["browser_fallback"] = True
+            if to_retry:
+                from browser_fetcher import BrowserFetcher, BrowserConfig
+                try:
+                    async with BrowserFetcher(BrowserConfig(headed=headed,
+                                                           executable_path=browser_path)) as browser:
+                        rendered = await asyncio.gather(
+                            *(browser.fetch(urls[i]) for i in to_retry),
+                            return_exceptions=True,
+                        )
+                    for index, result in zip(to_retry, rendered):
+                        if isinstance(result, BaseException):
+                            notes[index]["browser_status"] = "error"
+                            notes[index]["fallback_error"] = f"{type(result).__name__}: {result}"
+                        else:
+                            notes[index]["browser_status"] = result.status
+                            # Never trade partial HTTP data for worse browser output.
+                            if (result.status == "ok" and
+                                    parse_listings_audited(result.html).passes_quality):
+                                results[index] = result
+                            elif results[index].status != "ok":
+                                results[index] = result
+                            elif not parse_listings_audited(results[index].html).listings:
+                                results[index] = result
+                            else:
+                                notes[index]["browser_quality_rejected"] = True
+                except (RuntimeError, ImportError, OSError) as exc:
+                    # Do not turn an unavailable optional browser into a total loss
+                    # if other HTTP pages have already succeeded.
+                    for index in to_retry:
+                        notes[index]["browser_status"] = "unavailable"
+                        notes[index]["fallback_error"] = f"{type(exc).__name__}: {exc}"
+    if diagnostics is not None:
+        diagnostics.extend(build_page_diagnostics(results, urls, notes))
+    return results
+
+
+def export_diagnostics(diagnostics: list[dict[str, Any]],
+                       path: str = "akarfinder_diagnostics.json") -> None:
+    report = {
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "pages": diagnostics,
+        "summary": {
+            "requested": len(diagnostics),
+            "with_listings": sum(d.get("final_status") == "ok" for d in diagnostics),
+            "excluded_quality": sum(d.get("final_status") == "excluded_quality" for d in diagnostics),
+            "blocked": sum(d.get("final_status") == "blocked" for d in diagnostics),
+            "empty": sum(d.get("final_status") == "empty" for d in diagnostics),
+            "browser_fallbacks": sum(bool(d.get("browser_fallback")) for d in diagnostics),
+            "browser_unavailable": sum(d.get("browser_status") == "unavailable" for d in diagnostics),
+            "total_cards": sum(d.get("total_cards", 0) for d in diagnostics),
+            "rejected_cards": sum(sum(d.get("rejected_cards", {}).values()) for d in diagnostics),
+            "pages_missing_price_coverage": sum("price_coverage_below_threshold" in d.get("quality_reasons", []) for d in diagnostics),
+            "pages_missing_surface_coverage": sum("surface_coverage_below_threshold" in d.get("quality_reasons", []) for d in diagnostics),
+        },
+    }
+    _write_atomic(path, json.dumps(report, ensure_ascii=False, indent=2) + "\n")
+
+
+async def main(engine: str = "auto", pages: int = MAX_PAGES,
+               headed: bool = False,
+               browser_path: str | None = None) -> int:
+    if pages < 1 or pages > 100:
+        print("[ERREUR] --pages doit être compris entre 1 et 100")
+        return 3
+    urls = [BASE_URL if page == 1 else f"{BASE_URL}:p:{page}"
+            for page in range(1, pages + 1)]
+    diagnostics: list[dict[str, Any]] = []
+    try:
+        results = await gather_results(urls, engine=engine, headed=headed,
+                                       browser_path=browser_path,
+                                       diagnostics=diagnostics)
+    except (RuntimeError, ImportError, OSError) as exc:
+        print(f"[ERREUR CONFIGURATION] {type(exc).__name__}: {exc}")
+        return 3
+
+    page_stats = {
+        "requested": len(urls),
+        # Count actual successful raw-HTTP attempts only. Browser success is
+        # recorded separately and must not inflate HTTP 200 counts.
+        "http_ok": sum(d.get("http_code") == 200 for d in diagnostics),
+        "browser_ok": sum(d.get("browser_status") == "ok" for d in diagnostics),
+        "with_listings": 0,
+    }
+    collected: list[dict[str, Any]] = []
+    for index, result in enumerate(results, 1):
+        if result.status != "ok":
+            print(f"[!] Page {index}: {result.status} (HTTP {result.code}, {result.error})")
+            continue
+        audit = parse_listings_audited(result.html)
+        listings = audit.listings
+        if not audit.passes_quality:
+            print(f"[!] Page {index}: qualité insuffisante "
+                  f"({len(listings)}/{audit.eligible_cards}, prix={audit.price_coverage:.1%}, "
+                  f"surface={audit.surface_coverage:.1%}, motifs={audit.quality_reasons}). Page exclue.")
+            diagnostics[index - 1]["final_status"] = "excluded_quality" if listings else "empty"
+            diagnostics[index - 1]["quality_accepted"] = False
+            continue
+        if not listings:
+            print(f"[!] Page {index}: HTTP 200 mais aucune annonce valide.")
+            continue
+        page_stats["with_listings"] += 1
+        collected.extend(listings)
+    if not collected:
+        export_diagnostics(diagnostics)
+        print("[ERREUR] Aucune annonce exploitable : aucun export de données généré.")
+        print("Diagnostic généré : akarfinder_diagnostics.json")
+        return 2
+
+    conn = init_db()
+    try:
+        price_m2_reviews = review_price_per_m2(collected)
+        stats, cycle_ids = import_listings(conn, collected)
+        persist_price_reviews(conn, price_m2_reviews)
+        duplicate_candidates = flag_possible_duplicates(collected)
+        persist_quality_signals(conn, collected, duplicate_candidates)
+        stored_flags = persistent_review_flags(conn)
+        stored_quality = persistent_quality_signals(conn)
+        export_reports(conn, cycle_ids, stats, page_stats, price_m2_reviews=price_m2_reviews)
+    finally:
+        conn.close()
+    _write_atomic("akarfinder_price_anomalies.json",
+                  json.dumps(stats.anomalies, indent=2, ensure_ascii=False) + "\n")
+    _write_atomic("akarfinder_price_m2_flags.json", json.dumps(
+        {"generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+         "page_scope": "current_cycle_plus_persisted_history", "observations": len(price_m2_reviews),
+         "heuristic_ratio_limits": [PRICE_M2_LOW_RATIO, PRICE_M2_HIGH_RATIO],
+         "flags": stored_flags,
+         "current_cycle_flags": [x for x in price_m2_reviews.values() if x["status"].startswith("review_")]},
+        ensure_ascii=False, indent=2) + "\n")
+    _write_atomic("akarfinder_quality_signals.json", json.dumps({
+        "flags_by_listing": stored_quality,
+        "page_scope": "current_cycle_plus_persisted_history",
+        "signals_are_review_only": True}, ensure_ascii=False, indent=2) + "\n")
+    incomplete = page_stats["with_listings"] < page_stats["requested"]
+    print(f"Pages avec annonces: {page_stats['with_listings']}/{page_stats['requested']}; "
+          f"annonces uniques: {len(cycle_ids)}; nouvelles: {stats.inserted}; "
+          f"modifiées: {stats.updated}; doublons: {stats.duplicates}; "
+          f"statut: {'PARTIEL' if incomplete else 'COMPLET (sur pages demandées)'}")
+    export_diagnostics(diagnostics)
+    print("Exports générés: akarfinder_data.json, akarfinder_report.md, akarfinder_diagnostics.json")
+    return 0 if not incomplete else 1
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Akarfinder Scraper V6.4.4")
+    parser.add_argument("--engine", choices=("auto", "http", "browser"),
+                        default="auto", help="auto: HTTP + fallback navigateur JavaScript")
+    parser.add_argument("--pages", type=int, default=MAX_PAGES)
+    parser.add_argument("--headed", action="store_true", help="affiche le navigateur Chromium")
+    parser.add_argument("--browser-path", default=None,
+                        help="chemin optionnel vers un exécutable Chromium déjà installé")
+    args = parser.parse_args()
+    raise SystemExit(asyncio.run(main(engine=args.engine, pages=args.pages,
+                                     headed=args.headed, browser_path=args.browser_path)))

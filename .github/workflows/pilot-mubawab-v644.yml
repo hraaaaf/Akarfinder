@@ -1,0 +1,83 @@
+# Branch-only supervised one page pilot. No schedule, no deploy.
+name: EXPERIMENT - Mubawab V6.4.4 supervised pilot
+on:
+  push:
+    branches:
+      - sandbox/akar-chrome-probe-20261101
+    paths:
+      - .github/workflows/pilot-mubawab-v644.yml
+      - scripts/pilots/mubawab-v644/**
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  page1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned dependencies and Chromium
+        run: |
+          python -m pip install --disable-pip-version-check -r scripts/pilots/mubawab-v644/requirements.txt
+          python -m playwright install --with-deps chromium
+      - name: Restore last green DB state, otherwise first run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          previous="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow pilot-mubawab-v644.yml --branch sandbox/akar-chrome-probe-20261101 --status success --json databaseId --limit 5 --jq '.[0].databaseId // empty')"
+          if [ -z "$previous" ]; then
+            echo fresh_initial_run > pilot_state_restore.txt
+          else
+            mkdir -p .pilot_state
+            gh run download "$previous" --repo "$GITHUB_REPOSITORY" --name scraper-state --dir .pilot_state
+            (cd .pilot_state && sha256sum -c SHA256SUMS)
+            cp .pilot_state/akarfinder.db akarfinder.db
+            echo "restored_from_run:$previous" > pilot_state_restore.txt
+          fi
+      - name: Run actual V6.4.4 --engine auto --pages 1
+        run: |
+          set -euo pipefail
+          PYTHONUNBUFFERED=1 python scripts/pilots/mubawab-v644/akarfinder_scraper.py --engine auto --pages 1 2>&1 | tee pilot.log
+      - name: Independent quality gate
+        id: quality_gate
+        run: python scripts/pilots/mubawab-v644/verify_pilot.py
+      - name: Package verified DB state
+        if: ${{ steps.quality_gate.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          mkdir -p .pilot_state
+          cp akarfinder.db .pilot_state/akarfinder.db
+          (cd .pilot_state && sha256sum akarfinder.db > SHA256SUMS)
+          cp pilot_validation.json .pilot_state/pilot_validation.json
+      - name: Save state across ephemeral runners only after PASS
+        if: ${{ steps.quality_gate.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraper-state
+          path: .pilot_state/
+          retention-days: 60
+          if-no-files-found: error
+      - name: Upload diagnostics even when failing
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraper-supervised-diagnostic
+          path: |
+            pilot.log
+            pilot_state_restore.txt
+            pilot_validation.json
+            akarfinder_diagnostics.json
+            akarfinder_data.json
+            akarfinder_report.md
+            akarfinder_price_anomalies.json
+            akarfinder_price_m2_flags.json
+            akarfinder_quality_signals.json
+          retention-days: 30
+          if-no-files-found: warn
