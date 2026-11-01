@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        source: [avito, mubawab]
+        source: [avito]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -66,18 +66,20 @@ jobs:
             if(u.protocol!=='https:'||u.username||u.password)return false;
             if(source==='avito')return ['avito.ma','www.avito.ma'].includes(u.hostname)&&u.pathname.startsWith('/fr/')&&isAvitoShardUrl(raw);
             return ['mubawab.ma','www.mubawab.ma'].includes(u.hostname)&&isRobotsSafeUrl(raw)&&Boolean(shardKind(raw));
-          }catch{return false;}}).slice(0,25);
+          }catch{return false;}}).slice(0,5);
           if(!urls.length)throw new Error('zero eligible shards');
-          let requests=0,stop=null,errors=0;
+          let requests=0,stop=null,errors=0,httpStatus={};
           if(source==='avito'){
             for(const url of urls){
               requests++;
               try{
-                const r=await fetch(url,{redirect:'error',signal:AbortSignal.timeout(15000),headers:{'user-agent':'AkarFinder-public-index/4.0 (+https://akarfinder.ma)',accept:'text/html'}});
+                const r=await fetch(url,{redirect:'follow',signal:AbortSignal.timeout(15000),headers:{'user-agent':'AkarFinder-public-index/4.0 (+https://akarfinder.ma)',accept:'text/html'}});
+                httpStatus[r.status]=(httpStatus[r.status]||0)+1;
+                if(!['avito.ma','www.avito.ma'].includes(new URL(r.url).hostname)){errors++;continue;}
                 if(r.status===429){stop='http_429';break;}
                 if(!r.ok){errors++;continue;}
                 for(const link of extractAvitoListingsFromHtml(await r.text(),url)){const id=avitoListingId(link);if(id)byId.set(id,link);}
-              }catch{errors++;}
+              }catch{errors++;httpStatus.network_error=(httpStatus.network_error||0)+1;}
             }
           }else{
             const r=await enumerateMubawab({roots:urls,maxRequests:25,maxDepth:0});
@@ -85,7 +87,7 @@ jobs:
             errors=(r.shards||[]).filter(x=>x.status!==200).length;
             for(const link of r.listingUrls||[])byId.set(link,link);
           }
-          const result={source,selected:urls.length,requests,unique_listing_urls:byId.size,non_200_or_network:errors,stopped_early:stop,db_writes:0,ready_for_use_proven:false};
+          const result={source,selected:urls.length,requests,unique_listing_urls:byId.size,non_200_or_network:errors,http_status_histogram:httpStatus,stopped_early:stop,db_writes:0,ready_for_use_proven:false};
           fs.writeFileSync('source-canary-summary.json',JSON.stringify(result,null,2)+'\n');
           fs.writeFileSync('source-canary-urls.txt',[...byId.values()].join('\n')+'\n');
           console.log(JSON.stringify(result));
