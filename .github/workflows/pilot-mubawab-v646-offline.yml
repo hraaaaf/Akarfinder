@@ -1,0 +1,26 @@
+# Offline only: GitHub cannot acquire any Mubawab page or mutate production.
+name: EXPERIMENT - Mubawab V6.4.6 safety hardening (offline)
+on:
+  push:
+    branches: [sandbox/akar-chrome-probe-20261101]
+    paths:
+      - scripts/pilots/mubawab-v646/**
+      - .github/workflows/pilot-mubawab-v646-offline.yml
+permissions:
+  contents: read
+jobs:
+  offline-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check -r scripts/pilots/mubawab-v646/requirements.txt
+      - name: Run offline URL, robots, provenance and transaction tests
+        run: |
+          cd scripts/pilots/mubawab-v646
+          python -m unittest discover -s tests -v
+          python -m py_compile akarfinder_scraper.py
+      # No website requests, DB access, schedule, deployment or publication.
