@@ -49,6 +49,15 @@ def run():
                     anchor_count: document.querySelectorAll('a').length,
                     total_html_bytes: new Blob([document.documentElement.outerHTML]).size
                 })''')
+                # Bounded DOM fixture to diagnose parser selectors, no crawl.
+                samples = page.eval_on_selector_all('.listingBox', '''cards => cards.slice(0, 2).map(card => {
+                    const clone = card.cloneNode(true);
+                    clone.querySelectorAll('script,style,iframe,img,source,video').forEach(el => el.remove());
+                    return clone.outerHTML.slice(0, 24000);
+                })''')
+                (OUT / 'card_samples.html').write_text('<!doctype html><meta charset="utf-8">\n' + '\n'.join(samples), encoding='utf-8')
+                data['sample_count'] = len(samples)
+                data['sample_file'] = 'card_samples.html'
                 state = assess(title, body, dom)
                 data.update({'status': state, 'http_status': resp.status if resp else None,
                              'final_url': page.url, 'title': title, 'dom': dom,
