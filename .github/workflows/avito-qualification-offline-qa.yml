@@ -1,0 +1,26 @@
+name: EXPERIMENT - Avito qualification offline QA
+on:
+  push:
+    branches: [sandbox/akar-chrome-probe-20261101]
+    paths:
+      - scripts/audit_avito_qualification_offline.py
+      - scripts/test_audit_avito_qualification_offline.py
+      - .github/workflows/avito-qualification-offline-qa.yml
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit tests
+        run: PYTHONPATH=scripts python -m unittest scripts/test_audit_avito_qualification_offline.py -v
+      - name: Recalculate real archived JSON
+        run: python scripts/audit_avito_qualification_offline.py docs/handovers/avito-qualification-results.json | tee avito-offline-audit.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: avito-offline-audit
+          path: avito-offline-audit.json
