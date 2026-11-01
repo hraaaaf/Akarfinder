@@ -85,6 +85,18 @@ def run():
                     return found;
                 }''')
                 data['card_coverage'] = coverage
+                # Full single-page DOM fixture; no scripts, forms, or image bytes.
+                card_html = page.eval_on_selector_all('.listingBox', """cards =>
+                    cards.map(card => {
+                        const clone = card.cloneNode(true);
+                        clone.querySelectorAll('script,style,iframe,img,source,video,form').forEach(node => node.remove());
+                        return clone.outerHTML;
+                    })""")
+                (OUT / 'listing_cards_dom.html').write_text(
+                    '<!doctype html><html><head><meta charset="utf-8"><title>Rabat cards fixture</title></head><body>\n'
+                    + '\n'.join(card_html) + '</body></html>', encoding='utf-8')
+                data['fixture_card_count'] = len(card_html)
+                data['fixture_file'] = 'listing_cards_dom.html'
                 data['non_listing_card_samples'] = page.eval_on_selector_all('.listingBox', '''cards =>
                     [7, 33].filter(i => i < cards.length).map(i => {
                         const card = cards[i];

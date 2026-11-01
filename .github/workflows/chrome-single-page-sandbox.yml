@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/chrome-single-page-sandbox.yml
       - scripts/probes/chrome_page_diagnostic.py
+      - scripts/probes/inspect_html.py
 permissions:
   contents: read
 concurrency:
@@ -23,11 +24,20 @@ jobs:
           python-version: '3.12'
       - name: Install Chromium and dependencies
         run: |
-          python -m pip install --disable-pip-version-check 'playwright==1.56.0'
+          python -m pip install --disable-pip-version-check 'playwright==1.56.0' 'beautifulsoup4>=4.12,<5'
           python -m playwright install --with-deps chromium
           python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print("Chromium installed:",p.chromium.executable_path); p.stop()'
       - name: Diagnostic using real Chrome engine (single page)
         run: python scripts/probes/chrome_page_diagnostic.py
+      - name: Inspect the complete first-page card DOM in the same job
+        if: always()
+        run: |
+          if [ -f artifacts/chrome-diagnostic/listing_cards_dom.html ]; then
+            python scripts/probes/inspect_html.py artifacts/chrome-diagnostic/listing_cards_dom.html --json artifacts/chrome-diagnostic/coverage.json
+          else
+            echo "No HTML fixture from browser" >&2
+            exit 1
+          fi
       - name: Publish diagnostic and viewport screenshot
         if: always()
         uses: actions/upload-artifact@v4
