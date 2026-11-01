@@ -1,0 +1,17 @@
+name: Avito source quality gate
+on:
+  push:
+    paths:
+      - 'scripts/test_avito_source_quality_gate.py'
+      - 'docs/handovers/avito-shadow-staging-quality.json'
+      - '.github/workflows/avito-source-quality-gate.yml'
+  workflow_dispatch:
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check source quality invariants
+        run: python3 -m unittest discover -s scripts -p 'test_avito_source_quality_gate.py' -v
