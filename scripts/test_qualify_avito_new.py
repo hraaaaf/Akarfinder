@@ -1,6 +1,6 @@
 import unittest
 
-from qualify_avito_new import avito_id, discover, result_for
+from qualify_avito_new import avito_id, discover, enrich_fields, normalize_result, result_for
 
 
 class QualificationTests(unittest.TestCase):
@@ -18,6 +18,15 @@ class QualificationTests(unittest.TestCase):
     def test_blocked_status_is_not_available(self):
         r = result_for("https://www.avito.ma/fr/x/ad_58824170.htm", 403, None, "HTTP 403")
         self.assertEqual(r["availability"], "non_verifiable")
+
+    def test_recovers_visible_price_location_and_area_from_metadata(self):
+        enriched = enrich_fields({"title": "Appartement 100 m2 - 6 500 DH - Appartements à louer à Casablanca",
+                                  "description": "Appartement rénové avec balcon", "photos": []})
+        self.assertEqual(enriched["price"], "6 500 DH")
+        self.assertEqual(enriched["location"], "Casablanca")
+        self.assertEqual(enriched["area"], "100 m²")
+        result = normalize_result({"id": "12345678", "fields": enriched})
+        self.assertTrue(result["completeness_sufficient"])
 
     def test_discovery_unique_net_new_ids(self):
         import tempfile

@@ -91,6 +91,39 @@ def flatten_jsonld(items):
         elif isinstance(x, list): stack.extend(x)
 
 
+def enrich_fields(fields: dict) -> dict:
+    """Recover structured values visible in already-observed title/description metadata."""
+    fields = dict(fields)
+    title = html.unescape(fields.get("title") or "")
+    desc = fields.get("description") or ""
+    if not fields.get("price"):
+        pm = re.search(r"(?:-|–|—)\s*([\d\u202f\s,.]+)\s*(DH|DHS|MAD)\b", title, re.I)
+        if pm: fields["price"] = re.sub(r"\s+", " ", pm.group(1)).strip() + " " + pm.group(2).upper()
+    if not fields.get("area"):
+        am = re.search(r"\b(\d{1,5})\s*m(?:²|2)\b", " ".join([title, desc]), re.I)
+        if not am:
+            am = re.search(r"superficie\s*:\s*(\d{1,5})\s*m(?:²|2)\b", desc, re.I)
+        if am: fields["area"] = am.group(1) + " m²"
+    if not fields.get("location"):
+        lm = re.search(r"\b(?:à|in)\s+(Casablanca|Rabat|Agadir|Marrakech|Tanger|Tangier|Fès|Fes|Meknès|Meknes|Oujda|Tétouan|Tetouan|Kénitra|Kenitra|El Jadida|Safi|Mohammedia|Béni Mellal|Settat)\b", title, re.I)
+        if lm: fields["location"] = lm.group(1)
+    if fields.get("photos"):
+        fields["photos"] = sorted({x for x in fields["photos"] if "content.avito.ma/classifieds/images/" in x}) or None
+    return fields
+
+
+def normalize_result(item: dict) -> dict:
+    item = dict(item)
+    item["fields"] = enrich_fields(item.get("fields", {}))
+    item["field_states"] = {k: ("observed" if v not in (None, [], "") else "non_verifiable_from_available_metadata")
+                            for k, v in item["fields"].items()}
+    item["field_observation_scope"] = "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    f = item["fields"]
+    item["completeness_sufficient"] = bool(f.get("title") and f.get("price") and f.get("location") and
+                                            (f.get("area") or f.get("description") or f.get("photos")))
+    return item
+
+
 def result_for(url: str, status: int | None, body: str | None, error: str | None):
     result = {"url": url, "id": avito_id(url), "http_status": status,
               "availability": "non_verifiable", "fields": {}, "error": error,
@@ -112,12 +145,12 @@ def result_for(url: str, status: int | None, body: str | None, error: str | None
     published = meta.get("article:published_time") or meta.get("datepublished") or meta.get("date modified")
     photos = sorted(x for x in p.imgs if "content.avito.ma/classifieds/images/" in x)
     title_text = html.unescape(title or "")
-    if price is None:
-        pm = re.search(r"(?:-|–|—)\s*([\d\u202f\s,.]+)\s*(DH|DHS|MAD)\b", title_text, re.I)
-        if pm: price = re.sub(r"\s+", " ", pm.group(1)).strip() + " " + pm.group(2).upper()
-    if area is None:
-        am = re.search(r"\b(\d{1,5})\s*m(?:²|2)\b", " ".join([title_text, description or ""]), re.I)
-        if am: area = am.group(1) + " m²"
+    base_fields = enrich_fields({"title": title_text, "price": price, "location": locality,
+                                 "area": area, "description": description,
+                                 "photos": photos or None, "published_or_updated": published})
+    title, price, locality = base_fields["title"], base_fields["price"], base_fields["location"]
+    area, description, photos, published = (base_fields["area"], base_fields["description"],
+                                             base_fields["photos"], base_fields["published_or_updated"])
     evidence = " ".join(p.text_chunks).lower()
     if any(x in evidence for x in ("annonce indisponible", "annonce n'existe plus", "listing unavailable", "ad not found")):
         availability = "inactive_explicit_page_evidence"
@@ -150,7 +183,7 @@ def main():
     candidates = discover(args.live, args.history)
     previous = {}
     if args.resume and args.out.exists():
-        previous = {x["id"]: x for x in json.loads(args.out.read_text(encoding="utf-8")).get("results", [])}
+        previous = {x["id"]: normalize_result(x) for x in json.loads(args.out.read_text(encoding="utf-8")).get("results", [])}
     robots_url = "https://www.avito.ma/robots.txt"
     req = urllib.request.Request(robots_url, headers={"User-Agent": UA})
     try:
