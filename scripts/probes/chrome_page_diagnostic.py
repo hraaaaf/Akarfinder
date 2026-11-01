@@ -85,6 +85,21 @@ def run():
                     return found;
                 }''')
                 data['card_coverage'] = coverage
+                data['non_listing_card_samples'] = page.eval_on_selector_all('.listingBox', '''cards =>
+                    [7, 33].filter(i => i < cards.length).map(i => {
+                        const card = cards[i];
+                        const attrs = [...card.attributes].map(a => a.name).filter(n => n !== 'style');
+                        return {
+                            position: i + 1,
+                            class_name: card.className,
+                            attribute_names: attrs,
+                            text_preview: (card.innerText || '').trim().slice(0, 220),
+                            detail_link_count: card.querySelectorAll('a[href*="/fr/a/"]').length,
+                            title_count: card.querySelectorAll('.listingTit,.listingTitle').length,
+                            price_count: card.querySelectorAll('.priceTag,.hardPrice').length,
+                            feature_count: card.querySelectorAll('.adDetails .adDetailFeature').length
+                        };
+                    })''')
                 state = assess(title, body, dom)
                 data.update({'status': state, 'http_status': resp.status if resp else None,
                              'final_url': page.url, 'title': title, 'dom': dom,
