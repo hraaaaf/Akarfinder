@@ -1,0 +1,151 @@
+{
+  "source_records": 20,
+  "unique_source_ids": 20,
+  "source_payload_sha256": "5d9981c7e85e8d5ea7978e6f2f821948a748d688a1eeab9e1aec6ca11b35334f",
+  "duplicate_source_id_count": 0,
+  "duplicate_source_url_count": 0,
+  "coverage": {
+    "title": 20,
+    "price": 18,
+    "location": 20,
+    "area": 11,
+    "description": 20,
+    "photos": 17,
+    "published_or_updated": 0
+  },
+  "strict_four_fields_count": 11,
+  "strict_four_fields_ids": [
+    "54879803",
+    "58509254",
+    "58626767",
+    "58683280",
+    "58684263",
+    "58685536",
+    "58705742",
+    "58707942",
+    "58714484",
+    "58716556",
+    "58780919"
+  ],
+  "strict_incomplete_records": [
+    {
+      "id": "58590635",
+      "missing_fields": [
+        "area"
+      ]
+    },
+    {
+      "id": "58599879",
+      "missing_fields": [
+        "area"
+      ]
+    },
+    {
+      "id": "58600152",
+      "missing_fields": [
+        "price",
+        "area"
+      ]
+    },
+    {
+      "id": "58602326",
+      "missing_fields": [
+        "area"
+      ]
+    },
+    {
+      "id": "58652177",
+      "missing_fields": [
+        "area"
+      ]
+    },
+    {
+      "id": "58685976",
+      "missing_fields": [
+        "area"
+      ]
+    },
+    {
+      "id": "58781357",
+      "missing_fields": [
+        "area"
+      ]
+    },
+    {
+      "id": "58785491",
+      "missing_fields": [
+        "area"
+      ]
+    },
+    {
+      "id": "58791823",
+      "missing_fields": [
+        "price",
+        "area"
+      ]
+    }
+  ],
+  "legacy_threshold_count": 18,
+  "freshness_verified_count": 0,
+  "freshness_reported_date_count": 0,
+  "freshness_unknown_count": 20,
+  "active_confirmed": 0,
+  "commercial_reuse_confirmed": 0,
+  "possible_physical_duplicate_groups": [
+    {
+      "ids": [
+        "58685536",
+        "58707942"
+      ],
+      "shared_evidence": {
+        "location": "Rabat",
+        "area": "940 m²",
+        "price": "7 990 000 DH",
+        "description": "KB GROUP REAL ESTATE vous propose en exclusivité une villa à démolir à la vente, idéalement située au cœur du quartier prisé d'Agdal à Rabat.\n\nÉdifiée sur un terrain de 940 m², cette propriété représ..."
+      },
+      "photo_count_by_id": {
+        "58685536": 2,
+        "58707942": 2
+      },
+      "photos_differ": true,
+      "physical_duplicate_proven": false,
+      "auto_merged": false,
+      "review_required": true
+    }
+  ],
+  "physical_duplicates_proven": false,
+  "physical_duplicates_auto_merged": false,
+  "staged_offline_count": 14,
+  "staging_rejected_count": 6,
+  "staging_rejected_rows": [
+    {
+      "id": "58599879",
+      "reason": "surface_m2 obligatoire pour apartment"
+    },
+    {
+      "id": "58600152",
+      "reason": "surface_m2 obligatoire pour apartment"
+    },
+    {
+      "id": "58652177",
+      "reason": "surface_m2 obligatoire pour apartment"
+    },
+    {
+      "id": "58685976",
+      "reason": "surface_m2 obligatoire pour apartment"
+    },
+    {
+      "id": "58781357",
+      "reason": "surface_m2 obligatoire pour apartment"
+    },
+    {
+      "id": "58785491",
+      "reason": "surface_m2 obligatoire pour apartment"
+    }
+  ],
+  "publishable_count": 0,
+  "images_rights_confirmed_count": 0,
+  "network_requests": 0,
+  "photo_downloads": 0,
+  "db_writes": 0
+}

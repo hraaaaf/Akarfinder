@@ -1,0 +1,1075 @@
+{
+  "schema_version": "avito-shadow-stage-v1",
+  "source_file": "docs/handovers/avito-qualification-results.json",
+  "source_payload_sha256": "5d9981c7e85e8d5ea7978e6f2f821948a748d688a1eeab9e1aec6ca11b35334f",
+  "report": {
+    "source_payload_sha256": "5d9981c7e85e8d5ea7978e6f2f821948a748d688a1eeab9e1aec6ca11b35334f",
+    "source_records": 20,
+    "unique_source_ids": 20,
+    "duplicate_source_id_count": 0,
+    "staged_offline_count": 14,
+    "rejected_count": 6,
+    "rejected_rows": [
+      {
+        "id": "58599879",
+        "reason": "surface_m2 obligatoire pour apartment"
+      },
+      {
+        "id": "58600152",
+        "reason": "surface_m2 obligatoire pour apartment"
+      },
+      {
+        "id": "58652177",
+        "reason": "surface_m2 obligatoire pour apartment"
+      },
+      {
+        "id": "58685976",
+        "reason": "surface_m2 obligatoire pour apartment"
+      },
+      {
+        "id": "58781357",
+        "reason": "surface_m2 obligatoire pour apartment"
+      },
+      {
+        "id": "58785491",
+        "reason": "surface_m2 obligatoire pour apartment"
+      }
+    ],
+    "strict_four_fields_count": 11,
+    "strict_four_fields_ids": [
+      "54879803",
+      "58509254",
+      "58626767",
+      "58683280",
+      "58684263",
+      "58685536",
+      "58705742",
+      "58707942",
+      "58714484",
+      "58716556",
+      "58780919"
+    ],
+    "descriptions_present": 20,
+    "photos_present": 17,
+    "freshness_verified_count": 0,
+    "freshness_unknown_count": 20,
+    "suspected_physical_duplicate_groups": [
+      [
+        "58685536",
+        "58707942"
+      ]
+    ],
+    "physical_duplicates_merged": 0,
+    "publishable_count": 0,
+    "commercial_reuse_confirmed_count": 0,
+    "images_rights_confirmed_count": 0,
+    "network_requests": 0,
+    "photo_downloads": 0,
+    "database_writes": 0,
+    "partner_v2_bridge_calls": 0
+  },
+  "rows": [
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "54879803",
+        "source_url": "https://www.avito.ma/fr/sidi_othmane/local/Maison_92m2_RDC_Commercial_2%C3%A9tages_Hay_Raja_Casa__54879803.htm"
+      },
+      "facts": {
+        "title": "Maison 92m2 RDC Commercial 2étages Hay Raja Casa. - 1 850 000 DH - Local à vendre à Casablanca",
+        "price_observed": "1 850 000 DH",
+        "price_mad": 1850000,
+        "location_observed": "Casablanca",
+        "city": "Casablanca",
+        "district": null,
+        "property_type": "villa",
+        "transaction_type": "sale",
+        "surface_observed": "92 m²",
+        "surface_m2": 92,
+        "description": "Maison 92m2 chouka angle RDC Commercial 2étages Hay Raja Casa.",
+        "photos_present": true,
+        "photo_count_observed": 2,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": true,
+        "strict_missing_fields": [],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "staged_offline",
+        "action": "create",
+        "identity_key": "avito::external:54879803",
+        "canonical_source_url": "https://avito.ma/fr/sidi_othmane/local/Maison_92m2_RDC_Commercial_2%C3%A9tages_Hay_Raja_Casa__54879803.htm",
+        "validated_image_urls": [],
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58509254",
+        "source_url": "https://www.avito.ma/fr/derb_ghallef/appartements/Derb_Ghallef_100_m2_avec_balcon_58509254.htm"
+      },
+      "facts": {
+        "title": "Derb Ghallef 100 m2 avec balcon - 6 500 DH - Appartements à louer à Casablanca",
+        "price_observed": "6 500 DH",
+        "price_mad": 6500,
+        "location_observed": "Casablanca",
+        "city": "Casablanca",
+        "district": null,
+        "property_type": "apartment",
+        "transaction_type": "rent",
+        "surface_observed": "100 m²",
+        "surface_m2": 100,
+        "description": "🏠 Type de bien : Appartement\n📍 Quartier : Derb Ghallef \n📐 Superficie : 100 m2 \n🛏️ Chambres : 2, dont balcon dans la chambre et terasse cuisine \n🛋️ Salon : 1 salon lumineux\n🚿 Salles de bain : 1 ...",
+        "photos_present": true,
+        "photo_count_observed": 2,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": true,
+        "strict_missing_fields": [],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "staged_offline",
+        "action": "create",
+        "identity_key": "avito::external:58509254",
+        "canonical_source_url": "https://avito.ma/fr/derb_ghallef/appartements/Derb_Ghallef_100_m2_avec_balcon_58509254.htm",
+        "validated_image_urls": [],
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58590635",
+        "source_url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/Terrain_zone_immeuble_%C3%A0_Agdal_58590635.htm"
+      },
+      "facts": {
+        "title": "Terrain zone immeuble à Agdal - 38 000 DH - Terrains et fermes à vendre à Rabat",
+        "price_observed": "38 000 DH",
+        "price_mad": 38000,
+        "location_observed": "Rabat",
+        "city": "Rabat",
+        "district": null,
+        "property_type": "land",
+        "transaction_type": "sale",
+        "surface_observed": null,
+        "surface_m2": null,
+        "description": "Terrain zone immeuble quatre étages dans une grande avenue",
+        "photos_present": true,
+        "photo_count_observed": 1,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": false,
+        "strict_missing_fields": [
+          "area"
+        ],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "staged_offline",
+        "action": "create",
+        "identity_key": "avito::external:58590635",
+        "canonical_source_url": "https://avito.ma/fr/agdal/terrains_et_fermes/Terrain_zone_immeuble_%C3%A0_Agdal_58590635.htm",
+        "validated_image_urls": [],
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58599879",
+        "source_url": "https://www.avito.ma/fr/derb_ghallef/appartements/Appartement_meubl%C3%A9_moyen_standing_58599879.htm"
+      },
+      "facts": {
+        "title": "Appartement meublé moyen standing - 6 500 DH - Appartements à louer à Casablanca",
+        "price_observed": "6 500 DH",
+        "price_mad": 6500,
+        "location_observed": "Casablanca",
+        "city": "Casablanca",
+        "district": null,
+        "property_type": "apartment",
+        "transaction_type": "rent",
+        "surface_observed": null,
+        "surface_m2": null,
+        "description": "Je propose à la location un appartement meublé de moyen standing à Derb Ghallef, Casablanca.\n\n- Meublé\n- Balcon\n- Ascenseur\n- Concierge\n- Sécurité\n- Parking\n- Âge du bien : 11-20 ans\n- Caution : 1 mo...",
+        "photos_present": true,
+        "photo_count_observed": 2,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": false,
+        "strict_missing_fields": [
+          "area"
+        ],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "rejected",
+        "reason": "surface_m2 obligatoire pour apartment",
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58600152",
+        "source_url": "https://www.avito.ma/fr/derb_ghallef/appartements/Appartement_de_2_chambres_%C3%A0_louer_par_jour_%C3%A0_Casa_58600152.htm"
+      },
+      "facts": {
+        "title": "Appartement de 2 chambres à louer par jour à Casa | Appartements à Casablanca | Avito.ma",
+        "price_observed": null,
+        "price_mad": null,
+        "location_observed": "Casablanca",
+        "city": "Casablanca",
+        "district": null,
+        "property_type": "apartment",
+        "transaction_type": "rent",
+        "surface_observed": null,
+        "surface_m2": null,
+        "description": "Appartement bien équipé situé au cœur de Casa avec 2 chambres et un salon",
+        "photos_present": true,
+        "photo_count_observed": 2,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": false,
+        "strict_missing_fields": [
+          "price",
+          "area"
+        ],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "rejected",
+        "reason": "surface_m2 obligatoire pour apartment",
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58602326",
+        "source_url": "https://www.avito.ma/fr/derb_ghallef/local/Local_commercial_%C3%A0_louer_58602326.htm"
+      },
+      "facts": {
+        "title": "Local commercial à louer - 6 000 DH - Local à louer à Casablanca",
+        "price_observed": "6 000 DH",
+        "price_mad": 6000,
+        "location_observed": "Casablanca",
+        "city": "Casablanca",
+        "district": null,
+        "property_type": "commercial",
+        "transaction_type": "rent",
+        "surface_observed": null,
+        "surface_m2": null,
+        "description": "Local commercial à louer à Derb Ghallef, superficie 15 mètres carrés",
+        "photos_present": null,
+        "photo_count_observed": null,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": false,
+        "strict_missing_fields": [
+          "area"
+        ],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "staged_offline",
+        "action": "create",
+        "identity_key": "avito::external:58602326",
+        "canonical_source_url": "https://avito.ma/fr/derb_ghallef/local/Local_commercial_%C3%A0_louer_58602326.htm",
+        "validated_image_urls": [],
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58626767",
+        "source_url": "https://www.avito.ma/fr/sidi_othmane/autre_immobilier/Vente_Fond_de_commerce_%C3%A0_Casablanca_58626767.htm"
+      },
+      "facts": {
+        "title": "Vente Fond de commerce à Casablanca - 1 500 000 DH - Autre Immobilier à vendre à Casablanca",
+        "price_observed": "1 500 000 DH",
+        "price_mad": 1500000,
+        "location_observed": "Casablanca",
+        "city": "Casablanca",
+        "district": null,
+        "property_type": "commercial",
+        "transaction_type": "sale",
+        "surface_observed": "114 m²",
+        "surface_m2": 114,
+        "description": "Asmaa BENGALA vous propose à la vente ce fonds de commerce disposant d'une superficie de 114 m², idéalement situé au cœur du quartier très commerçant et animé de Sidi Othmane à Casablanca.\n\nGrâce à s...",
+        "photos_present": true,
+        "photo_count_observed": 2,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": true,
+        "strict_missing_fields": [],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "staged_offline",
+        "action": "create",
+        "identity_key": "avito::external:58626767",
+        "canonical_source_url": "https://avito.ma/fr/sidi_othmane/autre_immobilier/Vente_Fond_de_commerce_%C3%A0_Casablanca_58626767.htm",
+        "validated_image_urls": [],
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58652177",
+        "source_url": "https://www.avito.ma/fr/derb_ghallef/appartements/Appartement_%C3%A0_louer_%C3%A0_Biranzarane_58652177.htm"
+      },
+      "facts": {
+        "title": "Appartement à louer à Biranzarane - 6 000 DH - Appartements à louer à Casablanca",
+        "price_observed": "6 000 DH",
+        "price_mad": 6000,
+        "location_observed": "Casablanca",
+        "city": "Casablanca",
+        "district": null,
+        "property_type": "apartment",
+        "transaction_type": "rent",
+        "surface_observed": null,
+        "surface_m2": null,
+        "description": "Appartement à louer à Biranzarane, à proximité de Derb Ghelaf, situé au centre de Casablanca, en très bon état et sécurisé.",
+        "photos_present": null,
+        "photo_count_observed": null,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": false,
+        "strict_missing_fields": [
+          "area"
+        ],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "rejected",
+        "reason": "surface_m2 obligatoire pour apartment",
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58683280",
+        "source_url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/Terrain_%C3%A0_vendre_Agdal_zone_R5_58683280.htm"
+      },
+      "facts": {
+        "title": "Terrain à vendre Agdal zone R5 - 28 500 000 DH - Terrains et fermes à vendre à Rabat",
+        "price_observed": "28 500 000 DH",
+        "price_mad": 28500000,
+        "location_observed": "Rabat",
+        "city": "Rabat",
+        "district": null,
+        "property_type": "land",
+        "transaction_type": "sale",
+        "surface_observed": "950 m²",
+        "surface_m2": 950,
+        "description": "Terrain à vendre Agdal zone R5\nBon emplacement\nSuperficie 950 m2\nPrix : 28.5mdh\nSi vous êtes intéressé, envoyez un message privé",
+        "photos_present": true,
+        "photo_count_observed": 1,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": true,
+        "strict_missing_fields": [],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "staged_offline",
+        "action": "create",
+        "identity_key": "avito::external:58683280",
+        "canonical_source_url": "https://avito.ma/fr/agdal/terrains_et_fermes/Terrain_%C3%A0_vendre_Agdal_zone_R5_58683280.htm",
+        "validated_image_urls": [],
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58684263",
+        "source_url": "https://www.avito.ma/fr/agdal/maisons/Villa_%C3%A0_vendre___Haut_Agdal_58684263.htm"
+      },
+      "facts": {
+        "title": "Villa à vendre — Haut Agdal - 9 000 000 DH - Maisons à vendre à Rabat",
+        "price_observed": "9 000 000 DH",
+        "price_mad": 9000000,
+        "location_observed": "Rabat",
+        "city": "Rabat",
+        "district": null,
+        "property_type": "villa",
+        "transaction_type": "sale",
+        "surface_observed": "745 m²",
+        "surface_m2": 745,
+        "description": "Cabinet Immobilier & d'Affaires BELMAHI, depuis 1957, vous propose une Villa à vendre — Haut Agdal\n- Terrain : 745 m²\n- Surface construite : 832 m²\n- 33 chambres\n - Usage commercial ou habitation\n - ...",
+        "photos_present": true,
+        "photo_count_observed": 2,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": true,
+        "strict_missing_fields": [],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "staged_offline",
+        "action": "create",
+        "identity_key": "avito::external:58684263",
+        "canonical_source_url": "https://avito.ma/fr/agdal/maisons/Villa_%C3%A0_vendre___Haut_Agdal_58684263.htm",
+        "validated_image_urls": [],
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58685536",
+        "source_url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/VILLA_%C3%80_D%C3%89MOLIR_%C3%80_LA_VENTE___AGDAL__RABAT_58685536.htm"
+      },
+      "facts": {
+        "title": "VILLA À DÉMOLIR À LA VENTE – AGDAL, RABAT - 7 990 000 DH - Terrains et fermes à vendre à Rabat",
+        "price_observed": "7 990 000 DH",
+        "price_mad": 7990000,
+        "location_observed": "Rabat",
+        "city": "Rabat",
+        "district": null,
+        "property_type": "villa",
+        "transaction_type": "sale",
+        "surface_observed": "940 m²",
+        "surface_m2": 940,
+        "description": "KB GROUP REAL ESTATE vous propose en exclusivité une villa à démolir à la vente, idéalement située au cœur du quartier prisé d'Agdal à Rabat.\n\nÉdifiée sur un terrain de 940 m², cette propriété représ...",
+        "photos_present": true,
+        "photo_count_observed": 2,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": true,
+        "strict_missing_fields": [],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": "suspect-1",
+        "auto_merged": false,
+        "assessment": "same normalized city, price, surface, and description; human review required"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "staged_offline",
+        "action": "create",
+        "identity_key": "avito::external:58685536",
+        "canonical_source_url": "https://avito.ma/fr/agdal/terrains_et_fermes/VILLA_%C3%80_D%C3%89MOLIR_%C3%80_LA_VENTE___AGDAL__RABAT_58685536.htm",
+        "validated_image_urls": [],
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58685976",
+        "source_url": "https://www.avito.ma/fr/derb_ghallef/appartements/Appartement_F2_%C3%A0_louer_58685976.htm"
+      },
+      "facts": {
+        "title": "Appartement F2 à louer - 4 500 DH - Appartements à louer à Casablanca",
+        "price_observed": "4 500 DH",
+        "price_mad": 4500,
+        "location_observed": "Casablanca",
+        "city": "Casablanca",
+        "district": null,
+        "property_type": "apartment",
+        "transaction_type": "rent",
+        "surface_observed": null,
+        "surface_m2": null,
+        "description": "Je propose à la location un appartement F2 en face de la clinique hamdani au 6 ème étage avec ascenseur, belle terrasse et place au parking.\nstudio/appart \nidéal jeune couple.\n- Haut standing\n- Âge d...",
+        "photos_present": true,
+        "photo_count_observed": 1,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": false,
+        "strict_missing_fields": [
+          "area"
+        ],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "rejected",
+        "reason": "surface_m2 obligatoire pour apartment",
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58705742",
+        "source_url": "https://www.avito.ma/fr/agdal/appartements/Appartement_%C3%A0_vendre_Agdal_58705742.htm"
+      },
+      "facts": {
+        "title": "Appartement à vendre Agdal - 2 100 000 DH - Appartements à vendre à Rabat",
+        "price_observed": "2 100 000 DH",
+        "price_mad": 2100000,
+        "location_observed": "Rabat",
+        "city": "Rabat",
+        "district": null,
+        "property_type": "apartment",
+        "transaction_type": "sale",
+        "surface_observed": "113 m²",
+        "surface_m2": 113,
+        "description": "Appartement 113 m² à vendre – Rabat, Agdal – À 5 min du tramway\n\nÀ vendre, appartement de 113 m² situé dans le quartier recherché de l’Agdal à Rabat, à moins de 5 minutes à pied de la station de tram...",
+        "photos_present": true,
+        "photo_count_observed": 2,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": true,
+        "strict_missing_fields": [],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "staged_offline",
+        "action": "create",
+        "identity_key": "avito::external:58705742",
+        "canonical_source_url": "https://avito.ma/fr/agdal/appartements/Appartement_%C3%A0_vendre_Agdal_58705742.htm",
+        "validated_image_urls": [],
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58707942",
+        "source_url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/VILLA_%C3%80_D%C3%89MOLIR_%C3%80_LA_VENTE___AGDAL__RABAT_58707942.htm"
+      },
+      "facts": {
+        "title": "VILLA À DÉMOLIR À LA VENTE – AGDAL, RABAT - 7 990 000 DH - Terrains et fermes à vendre à Rabat",
+        "price_observed": "7 990 000 DH",
+        "price_mad": 7990000,
+        "location_observed": "Rabat",
+        "city": "Rabat",
+        "district": null,
+        "property_type": "villa",
+        "transaction_type": "sale",
+        "surface_observed": "940 m²",
+        "surface_m2": 940,
+        "description": "KB GROUP REAL ESTATE vous propose en exclusivité une villa à démolir à la vente, idéalement située au cœur du quartier prisé d'Agdal à Rabat.\n\nÉdifiée sur un terrain de 940 m², cette propriété représ...",
+        "photos_present": true,
+        "photo_count_observed": 2,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": true,
+        "strict_missing_fields": [],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": "suspect-1",
+        "auto_merged": false,
+        "assessment": "same normalized city, price, surface, and description; human review required"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "staged_offline",
+        "action": "create",
+        "identity_key": "avito::external:58707942",
+        "canonical_source_url": "https://avito.ma/fr/agdal/terrains_et_fermes/VILLA_%C3%80_D%C3%89MOLIR_%C3%80_LA_VENTE___AGDAL__RABAT_58707942.htm",
+        "validated_image_urls": [],
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58714484",
+        "source_url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/Terrain_Agdal_%C3%A0_Vendre_58714484.htm"
+      },
+      "facts": {
+        "title": "Terrain Agdal à Vendre - 1 697 500 DH - Terrains et fermes à vendre à Rabat",
+        "price_observed": "1 697 500 DH",
+        "price_mad": 1697500,
+        "location_observed": "Rabat",
+        "city": "Rabat",
+        "district": null,
+        "property_type": "land",
+        "transaction_type": "sale",
+        "surface_observed": "486 m²",
+        "surface_m2": 486,
+        "description": "Terrain à Vendre Agdal\nTitré\nSuperficie 486 m²\nZone Imb\nNiveau R4\nPrix du M² 35 K Négociable\nEmplacement Idéal\nQuartier Agdal Rabat\nPas Loin Mosquée Badr\nPour Plus d’Infos Msg Prv ou...",
+        "photos_present": true,
+        "photo_count_observed": 1,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": true,
+        "strict_missing_fields": [],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "staged_offline",
+        "action": "create",
+        "identity_key": "avito::external:58714484",
+        "canonical_source_url": "https://avito.ma/fr/agdal/terrains_et_fermes/Terrain_Agdal_%C3%A0_Vendre_58714484.htm",
+        "validated_image_urls": [],
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58716556",
+        "source_url": "https://www.avito.ma/fr/sidi_othmane/appartements/Appartement_77_m%C2%B2___Garage_13_m%C2%B2___Ascenseur_58716556.htm"
+      },
+      "facts": {
+        "title": "Appartement 77 m²   Garage 13 m²   Ascenseur - 890 000 DH - Appartements à vendre à Casablanca",
+        "price_observed": "890 000 DH",
+        "price_mad": 890000,
+        "location_observed": "Casablanca",
+        "city": "Casablanca",
+        "district": null,
+        "property_type": "apartment",
+        "transaction_type": "sale",
+        "surface_observed": "77 m²",
+        "surface_m2": 77,
+        "description": "Description \nParticulier vend un bel appartement de 77 m² habitables, très ensoleillé, situé au 5ème étage d’une résidence propre et sécurisée sur le Boulevard Mohamed Bouziane (Sidi Othmane / Salama...",
+        "photos_present": true,
+        "photo_count_observed": 2,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": true,
+        "strict_missing_fields": [],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "staged_offline",
+        "action": "create",
+        "identity_key": "avito::external:58716556",
+        "canonical_source_url": "https://avito.ma/fr/sidi_othmane/appartements/Appartement_77_m%C2%B2___Garage_13_m%C2%B2___Ascenseur_58716556.htm",
+        "validated_image_urls": [],
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58780919",
+        "source_url": "https://www.avito.ma/fr/sidi_othmane/appartements/Appartement_%C3%A0_vendre_Sidi_Othmane_58780919.htm"
+      },
+      "facts": {
+        "title": "Appartement à vendre Sidi Othmane - 560 000 DH - Appartements à vendre à Casablanca",
+        "price_observed": "560 000 DH",
+        "price_mad": 560000,
+        "location_observed": "Casablanca",
+        "city": "Casablanca",
+        "district": null,
+        "property_type": "apartment",
+        "transaction_type": "sale",
+        "surface_observed": "32 m²",
+        "surface_m2": 32,
+        "description": "Appartement à vendre Sidi Othmane et il y a une chambre avec elle sur le toit, elle fait 32 m²",
+        "photos_present": null,
+        "photo_count_observed": null,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": true,
+        "strict_missing_fields": [],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "staged_offline",
+        "action": "create",
+        "identity_key": "avito::external:58780919",
+        "canonical_source_url": "https://avito.ma/fr/sidi_othmane/appartements/Appartement_%C3%A0_vendre_Sidi_Othmane_58780919.htm",
+        "validated_image_urls": [],
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58781357",
+        "source_url": "https://www.avito.ma/fr/agdal/appartements/Location_appartement_meubl%C3%A9_r%C3%A9nov%C3%A9_58781357.htm"
+      },
+      "facts": {
+        "title": "Location appartement meublé rénové - 13 000 DH - Appartements à louer à Rabat",
+        "price_observed": "13 000 DH",
+        "price_mad": 13000,
+        "location_observed": "Rabat",
+        "city": "Rabat",
+        "district": null,
+        "property_type": "apartment",
+        "transaction_type": "rent",
+        "surface_observed": null,
+        "surface_m2": null,
+        "description": "Location Appartement meublé rénové — Agdal - RABAT\n\nChallioui Immobilier vous propose ce bel appartement lumineux et soigneusement aménagé, situé dans un emplacement recherché, à proximité des commer...",
+        "photos_present": true,
+        "photo_count_observed": 2,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": false,
+        "strict_missing_fields": [
+          "area"
+        ],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "rejected",
+        "reason": "surface_m2 obligatoire pour apartment",
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58785491",
+        "source_url": "https://www.avito.ma/fr/sidi_othmane/appartements/appartement_sidi_othmane_58785491.htm"
+      },
+      "facts": {
+        "title": "appartement sidi othmane - 770 000 DH - Appartements à vendre à Casablanca",
+        "price_observed": "770 000 DH",
+        "price_mad": 770000,
+        "location_observed": "Casablanca",
+        "city": "Casablanca",
+        "district": null,
+        "property_type": "apartment",
+        "transaction_type": "sale",
+        "surface_observed": null,
+        "surface_m2": null,
+        "description": "Bonjour, je mets en vente mon appartement à sidi Othmane sur l'avenue principale avec toutes les commodités école privée, restaurants, café, boulangeries, commerces dont un carrefour market, kfc, cli...",
+        "photos_present": true,
+        "photo_count_observed": 2,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": false,
+        "strict_missing_fields": [
+          "area"
+        ],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "rejected",
+        "reason": "surface_m2 obligatoire pour apartment",
+        "authorization_status": null
+      }
+    },
+    {
+      "source": {
+        "source_name": "avito",
+        "external_id": "58791823",
+        "source_url": "https://www.avito.ma/fr/sidi_othmane/local/Caf%C3%A9_%C3%A0_vendre_%C3%A0_Casablanca_sur_le_boulevard_Driss_Harti_58791823.htm"
+      },
+      "facts": {
+        "title": "Café à vendre à Casablanca sur le boulevard Driss... | Local à Casablanca | Avito.ma",
+        "price_observed": null,
+        "price_mad": null,
+        "location_observed": "Casablanca",
+        "city": "Casablanca",
+        "district": null,
+        "property_type": "commercial",
+        "transaction_type": "sale",
+        "surface_observed": null,
+        "surface_m2": null,
+        "description": "Café vue sur rue principale \nRez de chaussée (119) \nTerrasse (40)\nCave(144)\nSoupente (100)\nAppelez pour du sérieux",
+        "photos_present": true,
+        "photo_count_observed": 2,
+        "photo_urls_retained": false,
+        "reported_published_or_updated": null
+      },
+      "qualification": {
+        "http_status": 200,
+        "strict_complete": false,
+        "strict_missing_fields": [
+          "price",
+          "area"
+        ],
+        "freshness_status": "unknown",
+        "availability_status": "unconfirmed"
+      },
+      "duplicate_review": {
+        "suspected_group": null,
+        "auto_merged": false,
+        "assessment": "no matching exact fingerprint in this batch"
+      },
+      "guardrails": {
+        "commercial_reuse": "not_verified",
+        "availability_status": "unconfirmed",
+        "publishable": false,
+        "images_rights_confirmed": false
+      },
+      "staging": {
+        "status": "staged_offline",
+        "action": "create",
+        "identity_key": "avito::external:58791823",
+        "canonical_source_url": "https://avito.ma/fr/sidi_othmane/local/Caf%C3%A9_%C3%A0_vendre_%C3%A0_Casablanca_sur_le_boulevard_Driss_Harti_58791823.htm",
+        "validated_image_urls": [],
+        "authorization_status": null
+      }
+    }
+  ]
+}

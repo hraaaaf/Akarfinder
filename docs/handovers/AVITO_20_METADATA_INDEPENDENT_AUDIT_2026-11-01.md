@@ -20,3 +20,17 @@ Source figée : `docs/handovers/avito-qualification-results.json` (commit Codex 
 **Biens physiques uniques : non certifié.**
 **Admissibilité publication commerciale : 0 certifiée.**
 **Prochaine preuve :** dédoublonnage physique avec données autorisées et preuve de droits/activité ; ne pas publier les 18 sur le seul critère du script.
+
+
+## Shadow staging hors ligne — AKAR-AVITO-SHADOW-STAGING-01
+
+À partir du JSON de qualification figé, sans collecte réseau :
+
+- 20/20 fiches traitées : 14 validées en staging hors ligne par `lib/feeds/schema.ts` et `lib/feeds/staging.ts`, 6 rejetées explicitement (`surface_m2 obligatoire pour apartment`). Cela ne constitue pas une admission ni une publication.
+- 11/20 complètes strictes (titre, prix, localisation, surface). Descriptions : 20/20 ; photos observées : 17/20 ; fraîcheur vérifiée : 0/20, inconnue : 20/20.
+- IDs suspects `58685536` / `58707942` : mêmes ville, prix, surface et description, références photos différentes. Signalement seulement, aucune fusion.
+- Toutes les lignes : `commercial_reuse=not_verified`, `availability_status=unconfirmed`, `publishable=false`, `images_rights_confirmed=false`. Aucun appel au bridge partenaire v2.
+- Artefacts : `avito-shadow-staging.json`, `avito-shadow-staging-report.json`, `avito-shadow-staging-quality.json`, `avito-shadow-staging-validation.md`. Le pipeline offline vérifie la somme SHA-256 du JSON source.
+- CI offline exécute les tests TypeScript/Python et sauvegarde ces artefacts GitHub. Aucune requête Avito, photo, écriture base, publication ou déploiement n’est déclenché.
+
+Prochaine étape : revue humaine du couple suspect et obtention de preuves de droits/activité avant toute décision d’admission commerciale. Les six rejets du schéma exigent des surfaces observées avant d’être requalifiés.

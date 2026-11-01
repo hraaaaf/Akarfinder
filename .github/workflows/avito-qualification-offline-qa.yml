@@ -1,11 +1,29 @@
-name: EXPERIMENT - Avito qualification offline QA
+name: EXPERIMENT - Avito qualification offline QA and shadow staging
 on:
   push:
     branches: [sandbox/akar-chrome-probe-20261101]
     paths:
+      - scripts/avito-shadow-staging.ts
+      - scripts/avito-shadow-staging.test.ts
       - scripts/audit_avito_qualification_offline.py
       - scripts/test_audit_avito_qualification_offline.py
+      - lib/feeds/schema.ts
+      - lib/feeds/staging.ts
+      - lib/openserp-ingestion/utils.ts
+      - lib/index-lifecycle/state-machine.ts
+      - scripts/scrapers/__tests__/direct-feeds-ingestion.test.ts
+      - scripts/scrapers/__tests__/index-lifecycle-state-machine.test.ts
+      - data/imports/fixtures/**
+      - package.json
+      - package-lock.json
+      - docs/handovers/avito-qualification-results.json
+      - docs/handovers/avito-shadow-staging.json
+      - docs/handovers/avito-shadow-staging-report.json
+      - docs/handovers/avito-shadow-staging-quality.json
+      - docs/handovers/avito-shadow-staging-validation.md
+      - docs/handovers/AVITO_20_METADATA_INDEPENDENT_AUDIT_2026-11-01.md
       - .github/workflows/avito-qualification-offline-qa.yml
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -13,14 +31,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Unit tests
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Unit tests — feed staging adapter
+        run: npm run test:avito-shadow-staging
+      - name: Regression tests — shared feed staging and lifecycle
+        run: npm run test:direct-feeds
+      - name: Unit tests — independent qualification audit
         run: PYTHONPATH=scripts python -m unittest scripts/test_audit_avito_qualification_offline.py -v
-      - name: Recalculate real archived JSON
-        run: python scripts/audit_avito_qualification_offline.py docs/handovers/avito-qualification-results.json | tee avito-offline-audit.json
-      - uses: actions/upload-artifact@v4
+      - name: Build deterministic offline staging JSON
+        run: npx tsx scripts/avito-shadow-staging.ts
+      - name: Recalculate quality report from archived inputs
+        run: python scripts/audit_avito_qualification_offline.py docs/handovers/avito-qualification-results.json --staging docs/handovers/avito-shadow-staging.json --out docs/handovers/avito-shadow-staging-quality.json --markdown docs/handovers/avito-shadow-staging-validation.md
+      - name: Save staging and quality evidence
+        uses: actions/upload-artifact@v4
         with:
-          name: avito-offline-audit
-          path: avito-offline-audit.json
+          name: avito-shadow-staging-evidence
+          path: |
+            docs/handovers/avito-shadow-staging.json
+            docs/handovers/avito-shadow-staging-report.json
+            docs/handovers/avito-shadow-staging-quality.json
+            docs/handovers/avito-shadow-staging-validation.md
+          if-no-files-found: error
+          retention-days: 90

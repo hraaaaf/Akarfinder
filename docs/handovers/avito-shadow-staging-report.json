@@ -1,0 +1,66 @@
+{
+  "source_payload_sha256": "5d9981c7e85e8d5ea7978e6f2f821948a748d688a1eeab9e1aec6ca11b35334f",
+  "source_records": 20,
+  "unique_source_ids": 20,
+  "duplicate_source_id_count": 0,
+  "staged_offline_count": 14,
+  "rejected_count": 6,
+  "rejected_rows": [
+    {
+      "id": "58599879",
+      "reason": "surface_m2 obligatoire pour apartment"
+    },
+    {
+      "id": "58600152",
+      "reason": "surface_m2 obligatoire pour apartment"
+    },
+    {
+      "id": "58652177",
+      "reason": "surface_m2 obligatoire pour apartment"
+    },
+    {
+      "id": "58685976",
+      "reason": "surface_m2 obligatoire pour apartment"
+    },
+    {
+      "id": "58781357",
+      "reason": "surface_m2 obligatoire pour apartment"
+    },
+    {
+      "id": "58785491",
+      "reason": "surface_m2 obligatoire pour apartment"
+    }
+  ],
+  "strict_four_fields_count": 11,
+  "strict_four_fields_ids": [
+    "54879803",
+    "58509254",
+    "58626767",
+    "58683280",
+    "58684263",
+    "58685536",
+    "58705742",
+    "58707942",
+    "58714484",
+    "58716556",
+    "58780919"
+  ],
+  "descriptions_present": 20,
+  "photos_present": 17,
+  "freshness_verified_count": 0,
+  "freshness_unknown_count": 20,
+  "suspected_physical_duplicate_groups": [
+    [
+      "58685536",
+      "58707942"
+    ]
+  ],
+  "physical_duplicates_merged": 0,
+  "publishable_count": 0,
+  "commercial_reuse_confirmed_count": 0,
+  "images_rights_confirmed_count": 0,
+  "network_requests": 0,
+  "photo_downloads": 0,
+  "database_writes": 0,
+  "partner_v2_bridge_calls": 0
+}
