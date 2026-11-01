@@ -1,0 +1,52 @@
+# Deterministic archive replay only. No site requests, Supabase, or prod writes.
+name: EXPERIMENT - Akar 200k isolated inventory replay
+on:
+  push:
+    branches:
+      - sandbox/akar-chrome-probe-20261101
+    paths:
+      - scripts/pilots/akar-200k-reservoir/**
+      - .github/workflows/akar-200k-reservoir-replay.yml
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: akar-200k-inventory-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download four immutable GitHub run artifacts (no source fetch)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p inputs scratch/a scratch/m scratch/an scratch/mn
+          gh run download 33672899097 --repo "$GITHUB_REPOSITORY" --name morocco-web-l8-avito-full-manifest --dir scratch/a
+          gh run download 33663293707 --repo "$GITHUB_REPOSITORY" --name morocco-web-l8-mubawab-gate-500 --dir scratch/m
+          gh run download 41318584567 --repo "$GITHUB_REPOSITORY" --name p0-avito-canary --dir scratch/an
+          gh run download 41318441693 --repo "$GITHUB_REPOSITORY" --name p0-mubawab-canary --dir scratch/mn
+          (cd scratch/a && zip -q ../../inputs/avito-sept.zip listing-urls.txt)
+          (cd scratch/m && zip -q ../../inputs/mubawab-sept.zip morocco-web-l8-mubawab-manifest/listing-urls.txt)
+          (cd scratch/an && zip -q ../../inputs/avito-nov.zip source-canary-urls.txt)
+          (cd scratch/mn && zip -q ../../inputs/mubawab-nov.zip source-canary-urls.txt)
+      - name: Parser tests
+        run: python -m unittest discover -s scripts/pilots/akar-200k-reservoir -p 'test_*.py' -v
+      - name: Build SQLite and enforce zero publication
+        run: |
+          python scripts/pilots/akar-200k-reservoir/build_reservoir.py
+          (cd artifacts/akar-200k-reservoir && sha256sum -c SHA256SUMS)
+      - name: Upload evidence, isolated 14-day retention
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: akar-200k-isolated-inventory
+          path: artifacts/akar-200k-reservoir/
+          retention-days: 14
+          if-no-files-found: warn
