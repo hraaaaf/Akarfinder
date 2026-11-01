@@ -163,3 +163,19 @@ Aucun email externe envoyé, aucun accord présumé, aucune publicité ou collec
 - Supabase AqarFinder `kusfiyimwvxblvsrhaes` est `INACTIVE` selon deux lectures directes du connecteur ; aucune restauration ni SQL.
 - Demandes de licences FeenWay et Mubawab **préparées et NON envoyées**, avec matrice sources et contrat minimum : [AKARFINDER_200K_BULK_FEED_OUTREACH_2026-11-01.md](https://github.com/hraaaaf/Akarfinder/blob/sandbox/akar-chrome-probe-20261101/docs/handovers/AKARFINDER_200K_BULK_FEED_OUTREACH_2026-11-01.md). L'intégration XML de Mubawab est ENTRANTE, pas preuve d'API sortante. FeenWay agrège les portails : doublons et droits inconnus.
 - Bilan : 32 460 clés (source, ID) vérifiées, 0 ready-for-use, 200k en 48 h non prouvées. **Human gate** : autorisation d'envoi des demandes de licence, et décision distincte si réactivation Supabase souhaitée. Pas de Vercel ni merge.
+
+## 16. 01/11/2026 — Retour au scraping : V6.4.5 multi-villes pilotée, sans pagination exclue
+
+**Décision utilisateur :** ne pas poursuivre les demandes de partenariats. Reprendre l'extraction directe permise, mesurer des **fiches complètes**, sans toucher à la base Akarfinder. Les messages commerciaux restent NON ENVOYÉS ; ce ne sont plus le chemin critique.
+
+**Défaut identifié V6.4.4 :** `main(pages>1)` générait des URLs `:p:N` non admissibles selon `https://www.mubawab.ma/robots.txt` (`Disallow: /*:` pour `User-agent: *`). Une extension naïve via `--pages 100` aurait suivi des chemins interdits. **Corrigé en V6.4.5** : `--pages` doit rester 1 ; `--urls-file` explicite contenant 1..3 URLs de shards HTTPS de résultat `st|sd|cd`, hôte Mubawab et requête propre sans colon ni `?n=1` ; refus avant réseau/DB sinon.
+
+**3 pages choisies avec preuve de manifestation historique :** Rabat appartement vente (V6.4.4 live #41315575782), Casablanca Maârif appartement vente et Agadir Hay Salam appartement vente (shards observés dans Mubawab Gate 500 #33663293707, chacune historiquement 32–33 liens ; chiffres à revalider dans le run courant).
+
+**Livraison :** commit `497c9fc826a372c607c4d095e195b8dc9672852c` sur `sandbox/akar-chrome-probe-20261101`, sous `scripts/pilots/mubawab-v645/` : script scraper V6.4.4 repris et modifié, navigateur, requirements, manifest, tests de validation, gate multi-shards et workflow `.github/workflows/pilot-mubawab-v645-multishard.yml`. Le blob exact du script Python a été vérifié contre les 53 660 octets testés localement. **102/102 tests locaux OK** : 95 anciens et 7 nouveaux.
+
+**CI réel lancé :** [run #41327076337](https://github.com/hraaaaf/Akarfinder/actions/runs/41327076337) queued au premier contrôle. Restore fail-closed depuis l'artefact SHA256 du run #41315575782 (32 annonces, dont 8441628 `review_low` à 15 000 MAD), exécution auto réelle sur trois pages, qualité contrôlée indépendamment, persistance SQLite sous artefact seulement si trois pages passent. Diagnostics publiés même en cas d'échec. **AUCUNE écriture en base produit, merge, Vercel ou cron.**
+
+**Limites :** ce pilote mesure 3 pages, pas l'extraction d'un catalogue de 200k ; les 32 460 clés précédentes ne sont pas 32 460 fiches complètes. Le robots gate est nécessaire mais ne vaut pas licence de réutilisation commerciale. Aucun nombre courant sur Casablanca/Agadir n'est déclaré avant artefact.
+
+**Next exact :** inspecter run #41327076337, ses métriques par page et la restauration SQLite ; si échec, corriger cause observée et réexécuter un canary borné ; si PASS, élargir graduellement le set de shards accessibles et mesurer les **fiches complètes uniques**, les doublons et la fraîcheur, toujours sans insertion produit.
