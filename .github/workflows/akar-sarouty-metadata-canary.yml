@@ -1,0 +1,54 @@
+# One-off internal URL-index discovery. No detail fetch, no content reuse, no DB writes.
+name: EXPERIMENT - Sarouty public sitemap metadata only
+on:
+  push:
+    branches:
+      - sandbox/akar-chrome-probe-20261101
+    paths:
+      - .github/workflows/akar-sarouty-metadata-canary.yml
+permissions:
+  contents: read
+concurrency:
+  group: akar-sarouty-metadata-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  sarouty:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run existing parser and robots-delay tests
+        run: |
+          node --test scripts/acquisition/__tests__/sarouty-sitemap-enumerator.test.mjs
+          node --test scripts/acquisition/__tests__/sarouty-property-sitemap-enumerator.test.mjs
+      - name: Enumerate public property sitemaps only, max six, respect crawl delay
+        env:
+          SAROUTY_MAX_PROPERTY_SITEMAPS: '6'
+          SAROUTY_MAX_URLS: '12000'
+        run: node scripts/acquisition/sarouty-property-sitemap-enumerator.mjs
+      - name: Fail-closed metadata-only quality gate
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const report=JSON.parse(fs.readFileSync('artifacts/morocco-web-l8-sarouty-property-sitemap/report.json','utf8'));
+          const urls=report.listingUrls||[];
+          if(report.zeroDbWrites!==true||report.stoppedEarly||report.crawlDelayMs<10000||
+            report.selectedPropertySitemapCount>6||report.requestCount>8||urls.length<1||
+            urls.length!==new Set(urls).size||urls.some(u=>{try{return new URL(u).hostname!=='www.sarouty.ma';}catch{return true;}}))
+            throw new Error('Metadata-only safety or quality gate failed');
+          console.log(JSON.stringify({source:'sarouty',requests:report.requestCount,
+            sitemap_count:report.selectedPropertySitemapCount,unique_source_urls:urls.length,
+            crawl_delay_ms:report.crawlDelayMs,production_writes:0,
+            verified_active_offers:0,ready_for_use:0},null,2));
+          NODE
+      - name: Publish internal URL-only proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: akar-sarouty-internal-metadata-urls
+          path: artifacts/morocco-web-l8-sarouty-property-sitemap/
+          retention-days: 14
+          if-no-files-found: warn
