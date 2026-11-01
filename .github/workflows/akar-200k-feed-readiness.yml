@@ -1,0 +1,49 @@
+# Shadow-only feed readiness: existing parsers + existing strict staging.
+name: EXPERIMENT - 200k partner feed shadow readiness
+on:
+  push:
+    branches:
+      - sandbox/akar-chrome-probe-20261101
+    paths:
+      - scripts/pilots/akar-200k-partner-intake/**
+      - .github/workflows/akar-200k-feed-readiness.yml
+permissions:
+  contents: read
+concurrency:
+  group: akar-200k-partner-readiness-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Existing CSV JSON XML contract tests
+        run: npm run test:direct-feeds
+      - name: Rights, active and freshness fail-closed tests
+        run: npx tsx --test scripts/pilots/akar-200k-partner-intake/audit.test.ts
+      - name: Audit local demonstrator feeds, no partner/DB access
+        run: npx tsx scripts/pilots/akar-200k-partner-intake/audit.ts
+      - name: Verify never publish from demo input
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const r=JSON.parse(fs.readFileSync('artifacts/akar-200k-feed-readiness/report.json'));
+          if(r.production_writes!==0||r.live_inventory_obtained!==0||r.verified_ready_for_use!==0||
+             r.feed_reports.length!==3||r.feed_reports.some(x=>x.publication_eligible||x.ready_for_use!==0||
+             x.source_rights_verified!==0||x.active_status_verified!==0))throw Error('fail-closed invariant violated');
+          console.log('READ_ONLY_FEED_GATE_PASS; 0 publishable offers; 0 prod writes');
+          NODE
+      - name: Publish only aggregate readiness evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: akar-200k-feed-shadow-readiness
+          path: artifacts/akar-200k-feed-readiness/
+          retention-days: 14
+          if-no-files-found: warn
