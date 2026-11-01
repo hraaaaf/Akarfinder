@@ -1,0 +1,82 @@
+# Single bounded read-only canary, not a recurring crawler.
+name: EXPERIMENT - P0 source yield canaries read-only
+on:
+  push:
+    branches:
+      - sandbox/akar-chrome-probe-20261101
+    paths:
+      - .github/workflows/akar-p0-parallel-yield-canary.yml
+permissions:
+  contents: read
+concurrency:
+  group: akar-p0-yield-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  source:
+    name: P0-${{ matrix.source }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        source: [avito, mubawab]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify read-only adapter tests
+        run: |
+          if [ '${{ matrix.source }}' = 'avito' ]; then
+            node --test scripts/acquisition/__tests__/avito-supabase-shard-runner.test.mjs
+          else
+            node --test scripts/acquisition/__tests__/mubawab-supabase-shard-runner.test.mjs
+          fi
+      - name: Bounded source discovery (no DB write)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          AVITO_MANIFEST_LIMIT: '25'
+          MUBAWAB_MANIFEST_LIMIT: '25'
+          MUBAWAB_MAX_REQUESTS: '25'
+        run: |
+          set -euo pipefail
+          if [ '${{ matrix.source }}' = 'avito' ]; then
+            node scripts/acquisition/avito-supabase-shard-runner.mjs
+          else
+            node scripts/acquisition/mubawab-supabase-shard-runner.mjs
+          fi
+      - name: Enforce zero-write and positive unique discovery
+        env:
+          SOURCE: ${{ matrix.source }}
+        run: |
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          const source = process.env.SOURCE;
+          const file = source === 'avito'
+            ? 'artifacts/morocco-web-l8-avito-shards/report.json'
+            : 'artifacts/morocco-web-l8-mubawab-manifest/report.json';
+          const r = JSON.parse(fs.readFileSync(file, 'utf8'));
+          const unique = source === 'avito' ? r.uniqueRealEstateListingCount : r.uniqueListingUrlCount;
+          const summary = {source, requests:r.requestCount, selected:r.selectedShardCount,
+                           unique_listing_ids:unique, db_writes:r.zeroDbWrites===true?0:'unknown',
+                           stopped_early:r.stoppedEarly||null, success:r.success===true};
+          console.log(JSON.stringify(summary));
+          if (!r.zeroDbWrites || r.requestCount>25 || r.requestCount<=0 ||
+              r.stoppedEarly==='http_429' || !Number.isInteger(unique) || unique<=0 || !r.success) {
+            throw new Error('Read-only source canary gate failed');
+          }
+          fs.writeFileSync('source-canary-summary.json', JSON.stringify(summary,null,2)+'\n');
+          NODE
+      - name: Evidence artifact even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-${{ matrix.source }}-canary
+          path: |
+            source-canary-summary.json
+            artifacts/morocco-web-l8-avito-shards/
+            artifacts/morocco-web-l8-mubawab-manifest/
+          retention-days: 14
+          if-no-files-found: warn
