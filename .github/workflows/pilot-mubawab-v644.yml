@@ -35,10 +35,10 @@ jobs:
           if [ -z "$previous" ]; then
             echo fresh_initial_run > pilot_state_restore.txt
           else
-            mkdir -p .pilot_state
-            gh run download "$previous" --repo "$GITHUB_REPOSITORY" --name scraper-state --dir .pilot_state
-            (cd .pilot_state && sha256sum -c SHA256SUMS)
-            cp .pilot_state/akarfinder.db akarfinder.db
+            mkdir -p pilot_state
+            gh run download "$previous" --repo "$GITHUB_REPOSITORY" --name scraper-state --dir pilot_state
+            (cd pilot_state && sha256sum -c SHA256SUMS)
+            cp pilot_state/akarfinder.db akarfinder.db
             echo "restored_from_run:$previous" > pilot_state_restore.txt
           fi
       - name: Run actual V6.4.4 --engine auto --pages 1
@@ -52,16 +52,16 @@ jobs:
         if: ${{ steps.quality_gate.outcome == 'success' }}
         run: |
           set -euo pipefail
-          mkdir -p .pilot_state
-          cp akarfinder.db .pilot_state/akarfinder.db
-          (cd .pilot_state && sha256sum akarfinder.db > SHA256SUMS)
-          cp pilot_validation.json .pilot_state/pilot_validation.json
+          mkdir -p pilot_state
+          cp akarfinder.db pilot_state/akarfinder.db
+          (cd pilot_state && sha256sum akarfinder.db > SHA256SUMS)
+          cp pilot_validation.json pilot_state/pilot_validation.json
       - name: Save state across ephemeral runners only after PASS
         if: ${{ steps.quality_gate.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: scraper-state
-          path: .pilot_state/
+          path: pilot_state/
           retention-days: 60
           if-no-files-found: error
       - name: Upload diagnostics even when failing
