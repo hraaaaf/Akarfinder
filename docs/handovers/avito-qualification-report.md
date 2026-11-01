@@ -1,11 +1,12 @@
 # Qualification des 53 nouvelles annonces Avito
 
-Généré le 2026-11-01T21:28:18.920578+00:00 (UTC). Comparaison des artefacts : collecte run `41339185908` / artefact `p0-avito-canary`; archive historique run `33672899097` / artefact `morocco-web-l8-avito-full-manifest`; comparaison run `41349173966`.
+Généré le 2026-11-01T21:29:24.630115+00:00 (UTC). Comparaison des artefacts : collecte run `41339185908` / artefact `p0-avito-canary`; archive historique run `33672899097` / artefact `morocco-web-l8-avito-full-manifest`; comparaison run `41349173966`.
 
 ## Résumé
 
 - Identifiants nouveaux reconstruits : **53** (53 attendu). URLs distinctes testées : **20**; non testées : **33**.
 - Réponses HTTP 200 : **20**; autres statuts/erreurs : **0**.
+- Doublons d’URL source : **0**; doublons d’ID Avito source : **0**; doublons d’ID parmi les 53 nouveaux : **0**. Les doublons de biens physiques ne sont pas vérifiables depuis ces pages.
 - Complétude suffisante selon le seuil du script (titre + prix + localisation + surface, description ou photos) : **18**.
 - Annonces actives explicitement confirmées : **0**. Un HTTP 200 est classé `page_rendered_active_unconfirmed`.
 - Réutilisation commerciale juridiquement vérifiée : **0**. Aucune licence/autorisation explicite vérifiable n’a été établie; les champs commerciaux restent bloqués.
@@ -16,7 +17,7 @@ Les champs avec valeur sont marqués `observed`; un champ vide est `non_verifiab
 
 `robots.txt` a été lu avant les fiches. Les 20 accès effectués ont répondu HTTP 200; aucune authentification, API privée, CAPTCHA, ni contournement de protection n’a été utilisé. L’artefact initial du canary signalait 2 HTTP 403 sur ses 5 requêtes; ces réponses n’ont pas été contournées. La politique commerciale Avito n’a pas pu être vérifiée dans une source officielle accessible pendant cette qualification, donc les contenus ne sont pas autorisés à l’ingestion commerciale.
 
-La première tranche de 10 a retourné des pages HTML publiques. Une reprise avec `--resume` a effectué une seconde tranche de 10 avant que la limite cumulative soit corrigée; aucun autre accès n’a ensuite été lancé. Après correction offline de l’extraction des prix, villes et surfaces déjà présents dans les titres, 18 des 20 fiches satisfont le seuil défini ci-dessus. L’extension aux 33 restantes n’a pas été lancée car la réutilisation commerciale n’est pas autorisée/établie par une preuve disponible; les droits doivent être clarifiés avant toute collecte élargie ou ingestion.
+La première tranche de 10 a retourné des pages HTML publiques, mais les métadonnées observées ne satisfont pas le seuil de complétude et l’autorisation commerciale est indéterminée. Une reprise avec `--resume` a ensuite effectué une seconde tranche de 10 avant la génération du rapport; cette limite de reprise a été corrigée pour traiter `--limit` comme un plafond cumulatif. Aucun nouvel accès n’est effectué pour ce rapport. L’extension aux 33 restantes n’est pas justifiée tant que complétude et droits ne sont pas établis.
 
 ## URLs testées
 

@@ -230,9 +230,24 @@ def main():
                    "results": list(results.values())}
         args.out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     args.out.parent.mkdir(parents=True, exist_ok=True)
+    raw_live = urls(args.live)
+    raw_ids = [avito_id(u) for u in raw_live if avito_id(u)]
+    metrics = {"live_urls_in_source_artifact": len(raw_live),
+               "duplicate_live_url_count": len(raw_live) - len(set(raw_live)),
+               "duplicate_live_id_count": len(raw_ids) - len(set(raw_ids)),
+               "new_candidate_count": len(candidates),
+               "duplicate_new_candidate_id_count": len(candidates) - len({x["id"] for x in candidates}),
+               "tested_count": len(results),
+               "http_200_accessible_count": sum(x.get("http_status") == 200 for x in results.values()),
+               "http_or_network_failure_count": sum(x.get("http_status") != 200 for x in results.values()),
+               "metadata_complete_count": sum(x.get("completeness_sufficient") is True for x in results.values()),
+               "active_confirmed_count": sum(x.get("availability") == "active_confirmed" for x in results.values()),
+               "commercial_reuse_confirmed_count": sum(x.get("commercial_reuse") == "authorized" for x in results.values()),
+               "physical_property_duplicate_status": "not_verifiable_from public listing pages"}
     payload = {"generated_at": datetime.now(timezone.utc).isoformat(),
                "discovered_new_count": len(candidates), "tested_count": len(results),
                "untested_count": len(candidates) - len(results),
+               "summary": metrics,
                "stopped_reason": stopped, "candidates": candidates,
                "results": list(results.values())}
     args.out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -246,6 +261,7 @@ def main():
                  "## Résumé", "",
                  f"- Identifiants nouveaux reconstruits : **{len(candidates)}** (53 attendu). URLs distinctes testées : **{len(results)}**; non testées : **{len(candidates)-len(results)}**.",
                  f"- Réponses HTTP 200 : **{sum(x == 200 for x in statuses)}**; autres statuts/erreurs : **{sum(x != 200 for x in statuses)}**.",
+                 f"- Doublons d’URL source : **{metrics['duplicate_live_url_count']}**; doublons d’ID Avito source : **{metrics['duplicate_live_id_count']}**; doublons d’ID parmi les 53 nouveaux : **{metrics['duplicate_new_candidate_id_count']}**. Les doublons de biens physiques ne sont pas vérifiables depuis ces pages.",
                  f"- Complétude suffisante selon le seuil du script (titre + prix + localisation + surface, description ou photos) : **{complete}**.",
                  f"- Annonces actives explicitement confirmées : **{active}**. Un HTTP 200 est classé `page_rendered_active_unconfirmed`.",
                  "- Réutilisation commerciale juridiquement vérifiée : **0**. Aucune licence/autorisation explicite vérifiable n’a été établie; les champs commerciaux restent bloqués.", "",

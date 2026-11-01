@@ -1,8 +1,22 @@
 {
-  "generated_at": "2026-11-01T21:28:18.920578+00:00",
+  "generated_at": "2026-11-01T21:29:24.630115+00:00",
   "discovered_new_count": 53,
   "tested_count": 20,
   "untested_count": 33,
+  "summary": {
+    "live_urls_in_source_artifact": 97,
+    "duplicate_live_url_count": 0,
+    "duplicate_live_id_count": 0,
+    "new_candidate_count": 53,
+    "duplicate_new_candidate_id_count": 0,
+    "tested_count": 20,
+    "http_200_accessible_count": 20,
+    "http_or_network_failure_count": 0,
+    "metadata_complete_count": 18,
+    "active_confirmed_count": 0,
+    "commercial_reuse_confirmed_count": 0,
+    "physical_property_duplicate_status": "not_verifiable_from public listing pages"
+  },
   "stopped_reason": null,
   "candidates": [
     {
