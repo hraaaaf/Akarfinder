@@ -1,0 +1,53 @@
+name: EXPERIMENT - Avito live versus historical overlap offline
+on:
+  push:
+    branches: [sandbox/akar-chrome-probe-20261101]
+    paths: [.github/workflows/akar-avito-overlap-offline.yml]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download live and historical evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p live historical
+          gh run download 41339185908 --repo "$GITHUB_REPOSITORY" --name p0-avito-canary --dir live
+          gh run download 33672899097 --repo "$GITHUB_REPOSITORY" --name morocco-web-l8-avito-full-manifest --dir historical
+          test -s live/source-canary-urls.txt
+          test -s historical/report.json
+      - name: Compare stable Avito IDs without network or DB
+        run: |
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import {avitoListingId} from './scripts/acquisition/avito-sitemap-enumerator.mjs';
+          const urls=fs.readFileSync('live/source-canary-urls.txt','utf8').split(/\r?\n/).filter(Boolean);
+          const liveIds=new Set(urls.map(avitoListingId).filter(Boolean));
+          const historical=JSON.parse(fs.readFileSync('historical/report.json','utf8'));
+          const values=[];
+          const walk=(node,depth=0)=>{
+            if(depth>12||values.length>1000000||node===null)return;
+            if(typeof node==='string'){if(node.includes('avito.ma/')&&node.includes('.htm'))values.push(node);return;}
+            if(Array.isArray(node)){for(const item of node)walk(item,depth+1);return;}
+            if(typeof node==='object'){for(const [key,value] of Object.entries(node)){if(/url|listing|link|id|candidate|shard/i.test(key))walk(value,depth+1);}}
+          };
+          walk(historical);
+          const historicalIds=new Set(values.map(avitoListingId).filter(Boolean));
+          const overlap=[...liveIds].filter(id=>historicalIds.has(id)).length;
+          const result={live_urls:urls.length,live_valid_ids:liveIds.size,historical_id_count:historicalIds.size,overlap,net_new_vs_artifact:historicalIds.size?liveIds.size-overlap:null,comparison_complete:historicalIds.size>0,source:'GitHub historical artifact 33672899097',db_writes:0};
+          fs.writeFileSync('overlap-result.json',JSON.stringify(result,null,2)+'\n');
+          console.log(JSON.stringify(result));
+          if(!liveIds.size)throw new Error('no valid live ids');
+          if(!historicalIds.size)console.log('INCONCLUSIVE: historical report does not expose URLs; do not claim net-new');
+          NODE
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-overlap-offline
+          path: overlap-result.json
+          if-no-files-found: warn
