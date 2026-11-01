@@ -30,3 +30,13 @@ La branche et le workflow sont **expérimentaux**, uniquement sur push ciblé. N
 
 - Commit `4c759e57faa29aa5cd830ed17341734c62130ca5` ; [run #41266257228](https://github.com/hraaaaf/Akarfinder/actions/runs/41266257228) en cours au dernier contrôle ; documentera les deux blocs sans lien et leurs attributs.
 - Next exact : lire les deux échantillons ciblés, conclure si éléments non-annonces ou erreurs de sélecteur, corriger seulement si preuve de perte de vraie annonce ; mettre à jour ce handover.
+
+## CI #41266257228 GREEN — les 2 blocs non-annonces identifiés
+
+- [Run #41266257228](https://github.com/hraaaaf/Akarfinder/actions/runs/41266257228) : SUCCESS, Chromium HTTP 200.
+- Carte DOM n° 8 : `listingBox adBoostBox`, promotion `IMMOBILIER NEUF`, bâtiment professionnel à Tamesna, sans lien `/fr/a/`, hors catégorie de résultats recherchée.
+- Carte DOM n° 34 : `listingBox emptyBox brightness`, élément vide sans texte, titre, prix ou lien.
+- Conclusion vérifiée : **32 fiches avec lien, titre, prix, surface parmi 34 blocs HTML** ; les deux blocs restants ne sont pas des annonces d'appartements perdues.
+- Limite : le parseur V6.3 a été validé sur 2 vraies cartes HTML mais pas sur l'ensemble brut des 32 cartes d'une page unique. Aucun taux de bypass universel certifié.
+- Statut : sondes terminées, 3 runs SUCCESS ; V6.3 ZIP livrée localement, 36/36 tests hors ligne.
+- Next : test `parse_listings` sur le HTML complet si un artefact de ce type est ultérieurement disponible ; pas d'autre run lourd sans nécessité.
