@@ -58,6 +58,33 @@ def run():
                 (OUT / 'card_samples.html').write_text('<!doctype html><meta charset="utf-8">\n' + '\n'.join(samples), encoding='utf-8')
                 data['sample_count'] = len(samples)
                 data['sample_file'] = 'card_samples.html'
+                # Coverage audit on this one result page; only counters, no descriptions.
+                coverage = page.eval_on_selector_all('.listingBox', '''cards => {
+                    const found = {total: cards.length, with_link: 0, with_title: 0,
+                        with_price: 0, with_area: 0, with_rooms: 0, with_bedrooms: 0,
+                        complete: 0, missing_link_positions: []};
+                    cards.forEach((card, idx) => {
+                        const link = card.getAttribute('linkref') ||
+                            card.querySelector('a[href*="/fr/a/"]')?.getAttribute('href') || '';
+                        const hasLink = /\/fr\/a\/\d{5,}(?:\/|$)/.test(link);
+                        const hasTitle = !!card.querySelector('.listingTit,.listingTitle');
+                        const hasPrice = !!card.querySelector('.priceTag,.hardPrice');
+                        const detail = [...card.querySelectorAll('.adDetails .adDetailFeature,.listingDetails span')]
+                            .map(n => n.textContent).join(' ');
+                        const hasArea = /m²|m2|sqm/i.test(detail);
+                        const hasRooms = /pi[eè]ces?/i.test(detail);
+                        const hasBedrooms = /chambres?/i.test(detail);
+                        if (hasLink) found.with_link++; else found.missing_link_positions.push(idx);
+                        if (hasTitle) found.with_title++;
+                        if (hasPrice) found.with_price++;
+                        if (hasArea) found.with_area++;
+                        if (hasRooms) found.with_rooms++;
+                        if (hasBedrooms) found.with_bedrooms++;
+                        if (hasLink && hasTitle && hasPrice && hasArea) found.complete++;
+                    });
+                    return found;
+                }''')
+                data['card_coverage'] = coverage
                 state = assess(title, body, dom)
                 data.update({'status': state, 'http_status': resp.status if resp else None,
                              'final_url': page.url, 'title': title, 'dom': dom,
