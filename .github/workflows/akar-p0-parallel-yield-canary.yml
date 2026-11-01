@@ -1,4 +1,4 @@
-# Single bounded read-only canary, not a recurring crawler.
+# Read-only replay of archived, certified public source pages. Zero DB access.
 name: EXPERIMENT - P0 source yield canaries read-only
 on:
   push:
@@ -8,6 +8,7 @@ on:
       - .github/workflows/akar-p0-parallel-yield-canary.yml
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: akar-p0-yield-${{ github.ref }}
   cancel-in-progress: false
@@ -26,57 +27,77 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify read-only adapter tests
+      - name: Verify existing adapter tests
         run: |
           if [ '${{ matrix.source }}' = 'avito' ]; then
             node --test scripts/acquisition/__tests__/avito-supabase-shard-runner.test.mjs
           else
             node --test scripts/acquisition/__tests__/mubawab-supabase-shard-runner.test.mjs
           fi
-      - name: Bounded source discovery (no DB write)
+      - name: Restore certified public manifest from GitHub artifact
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          AVITO_MANIFEST_LIMIT: '25'
-          MUBAWAB_MANIFEST_LIMIT: '25'
-          MUBAWAB_MAX_REQUESTS: '25'
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          mkdir -p historical-manifest
           if [ '${{ matrix.source }}' = 'avito' ]; then
-            node scripts/acquisition/avito-supabase-shard-runner.mjs
+            gh run download 33672899097 --repo "$GITHUB_REPOSITORY" --name morocco-web-l8-avito-full-manifest --dir historical-manifest
+            test -s historical-manifest/report.json
           else
-            node scripts/acquisition/mubawab-supabase-shard-runner.mjs
+            gh run download 33663293707 --repo "$GITHUB_REPOSITORY" --name morocco-web-l8-mubawab-gate-500 --dir historical-manifest
+            test -s historical-manifest/morocco-web-l8-mubawab-manifest/report.json
           fi
-      - name: Enforce zero-write and positive unique discovery
+      - name: Replay max 25 public discovery shards without any DB
         env:
           SOURCE: ${{ matrix.source }}
         run: |
           node --input-type=module - <<'NODE'
           import fs from 'node:fs';
-          const source = process.env.SOURCE;
-          const file = source === 'avito'
-            ? 'artifacts/morocco-web-l8-avito-shards/report.json'
-            : 'artifacts/morocco-web-l8-mubawab-manifest/report.json';
-          const r = JSON.parse(fs.readFileSync(file, 'utf8'));
-          const unique = source === 'avito' ? r.uniqueRealEstateListingCount : r.uniqueListingUrlCount;
-          const summary = {source, requests:r.requestCount, selected:r.selectedShardCount,
-                           unique_listing_ids:unique, db_writes:r.zeroDbWrites===true?0:'unknown',
-                           stopped_early:r.stoppedEarly||null, success:r.success===true};
-          console.log(JSON.stringify(summary));
-          if (!r.zeroDbWrites || r.requestCount>25 || r.requestCount<=0 ||
-              r.stoppedEarly==='http_429' || !Number.isInteger(unique) || unique<=0 || !r.success) {
-            throw new Error('Read-only source canary gate failed');
+          import {extractAvitoListingsFromHtml,isAvitoShardUrl} from './scripts/acquisition/avito-supabase-shard-runner.mjs';
+          import {avitoListingId} from './scripts/acquisition/avito-sitemap-enumerator.mjs';
+          import {enumerateMubawab,isRobotsSafeUrl,shardKind} from './scripts/acquisition/mubawab-exhaustive-enumerator.mjs';
+          const source=process.env.SOURCE;
+          const file=source==='avito'?'historical-manifest/report.json':'historical-manifest/morocco-web-l8-mubawab-manifest/report.json';
+          const old=JSON.parse(fs.readFileSync(file,'utf8'));
+          if(old.zeroDbWrites!==true||!Array.isArray(old.shards))throw new Error('uncertified manifest');
+          const byId=new Map();
+          const urls=[...new Set(old.shards.map(x=>x.url).filter(Boolean))].filter(raw=>{try{
+            const u=new URL(raw);
+            if(u.protocol!=='https:'||u.username||u.password)return false;
+            if(source==='avito')return ['avito.ma','www.avito.ma'].includes(u.hostname)&&u.pathname.startsWith('/fr/')&&isAvitoShardUrl(raw);
+            return ['mubawab.ma','www.mubawab.ma'].includes(u.hostname)&&isRobotsSafeUrl(raw)&&Boolean(shardKind(raw));
+          }catch{return false;}}).slice(0,25);
+          if(!urls.length)throw new Error('zero eligible shards');
+          let requests=0,stop=null,errors=0;
+          if(source==='avito'){
+            for(const url of urls){
+              requests++;
+              try{
+                const r=await fetch(url,{redirect:'error',signal:AbortSignal.timeout(15000),headers:{'user-agent':'AkarFinder-public-index/4.0 (+https://akarfinder.ma)',accept:'text/html'}});
+                if(r.status===429){stop='http_429';break;}
+                if(!r.ok){errors++;continue;}
+                for(const link of extractAvitoListingsFromHtml(await r.text(),url)){const id=avitoListingId(link);if(id)byId.set(id,link);}
+              }catch{errors++;}
+            }
+          }else{
+            const r=await enumerateMubawab({roots:urls,maxRequests:25,maxDepth:0});
+            requests=r.requestCount;stop=r.stoppedEarly;
+            errors=(r.shards||[]).filter(x=>x.status!==200).length;
+            for(const link of r.listingUrls||[])byId.set(link,link);
           }
-          fs.writeFileSync('source-canary-summary.json', JSON.stringify(summary,null,2)+'\n');
+          const result={source,selected:urls.length,requests,unique_listing_urls:byId.size,non_200_or_network:errors,stopped_early:stop,db_writes:0,ready_for_use_proven:false};
+          fs.writeFileSync('source-canary-summary.json',JSON.stringify(result,null,2)+'\n');
+          fs.writeFileSync('source-canary-urls.txt',[...byId.values()].join('\n')+'\n');
+          console.log(JSON.stringify(result));
+          if(!requests||requests>25||stop==='http_429'||byId.size===0)throw new Error('P0 source gate failed');
           NODE
-      - name: Evidence artifact even on failure
+      - name: Publish evidence even on failure
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: p0-${{ matrix.source }}-canary
           path: |
             source-canary-summary.json
-            artifacts/morocco-web-l8-avito-shards/
-            artifacts/morocco-web-l8-mubawab-manifest/
+            source-canary-urls.txt
           retention-days: 14
           if-no-files-found: warn
