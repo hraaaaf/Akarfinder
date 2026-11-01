@@ -1,0 +1,36 @@
+name: Avito qualification (offline tests)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - sandbox/akar-chrome-probe-20261101
+    paths:
+      - scripts/qualify_avito_new.py
+      - scripts/test_qualify_avito_new.py
+      - docs/handovers/avito-qualification-*.json
+      - docs/handovers/avito-qualification-*.md
+      - .github/workflows/avito-qualification-tests.yml
+
+permissions:
+  contents: read
+
+jobs:
+  qualification-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run offline qualification tests
+        run: python -m unittest discover -s scripts -p 'test_qualify_avito_new.py' -v
+      - name: Save qualification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-qualification-evidence
+          path: |
+            docs/handovers/avito-qualification-results.json
+            docs/handovers/avito-qualification-report.md
+          if-no-files-found: error
+          retention-days: 90

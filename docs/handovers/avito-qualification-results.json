@@ -1,0 +1,1054 @@
+{
+  "generated_at": "2026-11-01T21:26:14.342880+00:00",
+  "discovered_new_count": 53,
+  "tested_count": 20,
+  "untested_count": 33,
+  "stopped_reason": null,
+  "candidates": [
+    {
+      "id": "54879803",
+      "url": "https://www.avito.ma/fr/sidi_othmane/local/Maison_92m2_RDC_Commercial_2%C3%A9tages_Hay_Raja_Casa__54879803.htm"
+    },
+    {
+      "id": "58509254",
+      "url": "https://www.avito.ma/fr/derb_ghallef/appartements/Derb_Ghallef_100_m2_avec_balcon_58509254.htm"
+    },
+    {
+      "id": "58590635",
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/Terrain_zone_immeuble_%C3%A0_Agdal_58590635.htm"
+    },
+    {
+      "id": "58599879",
+      "url": "https://www.avito.ma/fr/derb_ghallef/appartements/Appartement_meubl%C3%A9_moyen_standing_58599879.htm"
+    },
+    {
+      "id": "58600152",
+      "url": "https://www.avito.ma/fr/derb_ghallef/appartements/Appartement_de_2_chambres_%C3%A0_louer_par_jour_%C3%A0_Casa_58600152.htm"
+    },
+    {
+      "id": "58602326",
+      "url": "https://www.avito.ma/fr/derb_ghallef/local/Local_commercial_%C3%A0_louer_58602326.htm"
+    },
+    {
+      "id": "58626767",
+      "url": "https://www.avito.ma/fr/sidi_othmane/autre_immobilier/Vente_Fond_de_commerce_%C3%A0_Casablanca_58626767.htm"
+    },
+    {
+      "id": "58652177",
+      "url": "https://www.avito.ma/fr/derb_ghallef/appartements/Appartement_%C3%A0_louer_%C3%A0_Biranzarane_58652177.htm"
+    },
+    {
+      "id": "58683280",
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/Terrain_%C3%A0_vendre_Agdal_zone_R5_58683280.htm"
+    },
+    {
+      "id": "58684263",
+      "url": "https://www.avito.ma/fr/agdal/maisons/Villa_%C3%A0_vendre___Haut_Agdal_58684263.htm"
+    },
+    {
+      "id": "58685536",
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/VILLA_%C3%80_D%C3%89MOLIR_%C3%80_LA_VENTE___AGDAL__RABAT_58685536.htm"
+    },
+    {
+      "id": "58685976",
+      "url": "https://www.avito.ma/fr/derb_ghallef/appartements/Appartement_F2_%C3%A0_louer_58685976.htm"
+    },
+    {
+      "id": "58705742",
+      "url": "https://www.avito.ma/fr/agdal/appartements/Appartement_%C3%A0_vendre_Agdal_58705742.htm"
+    },
+    {
+      "id": "58707942",
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/VILLA_%C3%80_D%C3%89MOLIR_%C3%80_LA_VENTE___AGDAL__RABAT_58707942.htm"
+    },
+    {
+      "id": "58714484",
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/Terrain_Agdal_%C3%A0_Vendre_58714484.htm"
+    },
+    {
+      "id": "58716556",
+      "url": "https://www.avito.ma/fr/sidi_othmane/appartements/Appartement_77_m%C2%B2___Garage_13_m%C2%B2___Ascenseur_58716556.htm"
+    },
+    {
+      "id": "58780919",
+      "url": "https://www.avito.ma/fr/sidi_othmane/appartements/Appartement_%C3%A0_vendre_Sidi_Othmane_58780919.htm"
+    },
+    {
+      "id": "58781357",
+      "url": "https://www.avito.ma/fr/agdal/appartements/Location_appartement_meubl%C3%A9_r%C3%A9nov%C3%A9_58781357.htm"
+    },
+    {
+      "id": "58785491",
+      "url": "https://www.avito.ma/fr/sidi_othmane/appartements/appartement_sidi_othmane_58785491.htm"
+    },
+    {
+      "id": "58791823",
+      "url": "https://www.avito.ma/fr/sidi_othmane/local/Caf%C3%A9_%C3%A0_vendre_%C3%A0_Casablanca_sur_le_boulevard_Driss_Harti_58791823.htm"
+    },
+    {
+      "id": "58792873",
+      "url": "https://www.avito.ma/fr/sidi_othmane/local/Magasin_%C3%A0_vendre_58792873.htm"
+    },
+    {
+      "id": "58801273",
+      "url": "https://www.avito.ma/fr/sidi_othmane/terrains_et_fermes/Pour_Casablanca_58801273.htm"
+    },
+    {
+      "id": "58804801",
+      "url": "https://www.avito.ma/fr/sidi_othmane/appartements/Appartement_%C3%A0_vendre_72_m%C2%B2_%C3%A0_Casablanca_58804801.htm"
+    },
+    {
+      "id": "58820496",
+      "url": "https://www.avito.ma/fr/derb_ghallef/appartements/CMN_MA_2900___Appartement_%C3%A0_louer_%C3%A0_Plateau_58820496.htm"
+    },
+    {
+      "id": "58822882",
+      "url": "https://www.avito.ma/fr/sidi_othmane/appartements/Des_appartements_%C3%A0_Sidi_Othmane_58822882.htm"
+    },
+    {
+      "id": "58824170",
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/TERRAIN_A_VENDRE_POUR_HOTEL_AGDAL_RABAT_58824170.htm"
+    },
+    {
+      "id": "58836572",
+      "url": "https://www.avito.ma/fr/sidi_othmane/terrains_et_fermes/25_hectares_pour_immeubles_58836572.htm"
+    },
+    {
+      "id": "58837015",
+      "url": "https://www.avito.ma/fr/derb_ghallef/local/Local_commercial_Local_commercial_%C3%A0_louer_58837015.htm"
+    },
+    {
+      "id": "58838594",
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/Terrain_R_plus_4_58838594.htm"
+    },
+    {
+      "id": "58842989",
+      "url": "https://www.avito.ma/fr/sidi_othmane/maisons/Maison_%C3%A0_vendre_58842989.htm"
+    },
+    {
+      "id": "58848017",
+      "url": "https://www.avito.ma/fr/agdal/appartements/Apparemment_%C3%A0_vendre_58848017.htm"
+    },
+    {
+      "id": "58855780",
+      "url": "https://www.avito.ma/fr/sidi_othmane/local/Magasin_Sarout_%C3%A0_vendre_58855780.htm"
+    },
+    {
+      "id": "58857932",
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/Terrain_Agdal_600_m2_R4_58857932.htm"
+    },
+    {
+      "id": "58859109",
+      "url": "https://www.avito.ma/fr/sidi_othmane/bureaux/Bureaux_%C3%A0_louer_58859109.htm"
+    },
+    {
+      "id": "58859431",
+      "url": "https://www.avito.ma/fr/derb_ghallef/appartements/Location_appartement_meubl%C3%A9_58859431.htm"
+    },
+    {
+      "id": "58859452",
+      "url": "https://www.avito.ma/fr/sidi_othmane/appartements/Appartement_%C3%A0_vendre_68_m%C2%B2_%C3%A0_Casablanca_58859452.htm"
+    },
+    {
+      "id": "58860766",
+      "url": "https://www.avito.ma/fr/derb_ghallef/local/Louer_Magasin_d%C3%A9p%C3%B4t_centre_ville_la_yacout_Prince_58860766.htm"
+    },
+    {
+      "id": "58864924",
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/Beau_terrain_R4_58864924.htm"
+    },
+    {
+      "id": "58869312",
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/Terrain_pour_immeuble_58869312.htm"
+    },
+    {
+      "id": "58886528",
+      "url": "https://www.avito.ma/fr/sidi_othmane/appartements/Appartement_%C3%A0_vendre_rue_Tadart_Californie_96_millions_58886528.htm"
+    },
+    {
+      "id": "58890209",
+      "url": "https://www.avito.ma/fr/derb_ghallef/appartements/Nouveau_studio_meubl%C3%A9_Bd_Abdelmoumen_TRAM_58890209.htm"
+    },
+    {
+      "id": "58911779",
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/Terrain_R4_en_plein_c_ur_de_Rabat_Agdal_58911779.htm"
+    },
+    {
+      "id": "58914026",
+      "url": "https://www.avito.ma/fr/derb_ghallef/bureaux/Bureau_neuf_%C3%A0_louer_Ghandi_58914026.htm"
+    },
+    {
+      "id": "58926320",
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/A_vendre_terrain_320m2_triple_fa%C3%A7ade_Haut_Agdal_58926320.htm"
+    },
+    {
+      "id": "58926614",
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/A_vendre_splendide_terrain_750m2_sur_haut_Agdal_Rplus4_58926614.htm"
+    },
+    {
+      "id": "58951500",
+      "url": "https://www.avito.ma/fr/sidi_othmane/appartements/Appartement_Bureau_%C3%A0_vendre_60_m%C2%B2_58951500.htm"
+    },
+    {
+      "id": "58952261",
+      "url": "https://www.avito.ma/fr/sidi_othmane/terrains_et_fermes/Lotissement_Al_Abrar__Casablanca_58952261.htm"
+    },
+    {
+      "id": "58952404",
+      "url": "https://www.avito.ma/fr/sidi_othmane/local/Magasin_227m%C2%B2_%C3%A0_vendre_Driss_EL_ALLAM_58952404.htm"
+    },
+    {
+      "id": "58960219",
+      "url": "https://www.avito.ma/fr/sidi_othmane/maisons/___Opportunit%C3%A9_d_investissement_%C3%A0_vendre_%C3%A0_Sidi_Othmane___Rue_Nil_58960219.htm"
+    },
+    {
+      "id": "58966964",
+      "url": "https://www.avito.ma/fr/sidi_othmane/appartements/Appartement_%C3%A0_vendre_80_m%C2%B2_%C3%A0_Casablanca_58966964.htm"
+    },
+    {
+      "id": "58980166",
+      "url": "https://www.avito.ma/fr/sidi_othmane/maisons/Maison_%C3%A0_vendre_58980166.htm"
+    },
+    {
+      "id": "58985067",
+      "url": "https://www.avito.ma/fr/sidi_othmane/maisons/%C3%80_VENDRE___MAISON_%C3%80_CASABLANCA_Lahhraouin__Est_ce_vrai___58985067.htm"
+    },
+    {
+      "id": "58985556",
+      "url": "https://www.avito.ma/fr/sidi_othmane/maisons/Maison_%C3%A0_vendre_58985556.htm"
+    }
+  ],
+  "results": [
+    {
+      "url": "https://www.avito.ma/fr/sidi_othmane/local/Maison_92m2_RDC_Commercial_2%C3%A9tages_Hay_Raja_Casa__54879803.htm",
+      "id": "54879803",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Maison 92m2 RDC Commercial 2étages Hay Raja Casa. - 1 850 000 DH - Local à vendre à Casablanca",
+        "price": null,
+        "location": null,
+        "area": null,
+        "description": "Maison 92m2 chouka angle RDC Commercial 2étages Hay Raja Casa.",
+        "photos": [
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-gallery-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fplay-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Flogo%402x.webp&w=256&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Fnew-logo.webp&w=256&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Fnew-logo.webp&w=3840&q=75",
+          "/phoenix-assets/imgs/ad-view/scam-disclaimer/protection-shield.svg",
+          "/phoenix-assets/imgs/layout/placeholderImage.svg",
+          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27100%27%20height=%2730%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27167%27%20height=%2748%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2760%27%20height=%2760%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2773%27%20height=%2730%27/%3e",
+          "https://assets.avito.ma/icons/svg/adparam_bathrooms.svg",
+          "https://assets.avito.ma/icons/svg/adparam_parking.svg",
+          "https://assets.avito.ma/icons/svg/adparam_property_age.svg",
+          "https://assets.avito.ma/icons/svg/adparam_property_availability.svg",
+          "https://assets.avito.ma/icons/svg/adparam_property_condition.svg",
+          "https://assets.avito.ma/icons/svg/adparam_size.svg",
+          "https://assets.avito.ma/icons/svg/category_1060.svg",
+          "https://certify.alexametrics.com/atrk.gif?account=s5qpi1awA+00aW",
+          "https://content.avito.ma/classifieds/images/10124351971?t=images",
+          "https://content.avito.ma/classifieds/images/10136223785?t=images",
+          "https://content.avito.ma/stores/7d/7df2795d-a520-4507-821d-b7a2d2d75ea9.jpg"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "non_verifiable_from_available_metadata",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "non_verifiable_from_available_metadata",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/derb_ghallef/appartements/Derb_Ghallef_100_m2_avec_balcon_58509254.htm",
+      "id": "58509254",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Derb Ghallef 100 m2 avec balcon - 6 500 DH - Appartements à louer à Casablanca",
+        "price": null,
+        "location": null,
+        "area": null,
+        "description": "🏠 Type de bien : Appartement\n📍 Quartier : Derb Ghallef \n📐 Superficie : 100 m2 \n🛏️ Chambres : 2, dont balcon dans la chambre et terasse cuisine \n🛋️ Salon : 1 salon lumineux\n🚿 Salles de bain : 1 ...",
+        "photos": [
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-gallery-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fplay-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Flogo%402x.webp&w=256&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Fnew-logo.webp&w=3840&q=75",
+          "/phoenix-assets/imgs/ad-view/scam-disclaimer/protection-shield.svg",
+          "/phoenix-assets/imgs/layout/placeholderImage.svg",
+          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27100%27%20height=%2730%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27167%27%20height=%2748%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2760%27%20height=%2760%27/%3e",
+          "https://assets.avito.ma/icons/svg/adparam_balcony.svg",
+          "https://assets.avito.ma/icons/svg/adparam_bathrooms.svg",
+          "https://assets.avito.ma/icons/svg/adparam_elevator.svg",
+          "https://assets.avito.ma/icons/svg/adparam_floor.svg",
+          "https://assets.avito.ma/icons/svg/adparam_furnished_kitchen.svg",
+          "https://assets.avito.ma/icons/svg/adparam_habitable_size.svg",
+          "https://assets.avito.ma/icons/svg/adparam_parking.svg",
+          "https://assets.avito.ma/icons/svg/adparam_rooms.svg",
+          "https://assets.avito.ma/icons/svg/adparam_security.svg",
+          "https://assets.avito.ma/icons/svg/adparam_size.svg",
+          "https://assets.avito.ma/icons/svg/adparam_spare_rooms.svg",
+          "https://assets.avito.ma/icons/svg/adparam_terrace.svg",
+          "https://assets.avito.ma/icons/svg/category_1010.svg",
+          "https://certify.alexametrics.com/atrk.gif?account=s5qpi1awA+00aW",
+          "https://content.avito.ma/classifieds/images/10153982892?t=images",
+          "https://content.avito.ma/classifieds/images/10153982896?t=images",
+          "https://content.avito.ma/stores/f9/f9ac94c5-3ede-4bf2-aeff-bbd591931e85.jpg"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "non_verifiable_from_available_metadata",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "non_verifiable_from_available_metadata",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/Terrain_zone_immeuble_%C3%A0_Agdal_58590635.htm",
+      "id": "58590635",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Terrain zone immeuble à Agdal - 38 000 DH - Terrains et fermes à vendre à Rabat",
+        "price": null,
+        "location": null,
+        "area": null,
+        "description": "Terrain zone immeuble quatre étages dans une grande avenue",
+        "photos": [
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-gallery-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fplay-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Flogo%402x.webp&w=256&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Fnew-logo.webp&w=256&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Fnew-logo.webp&w=3840&q=75",
+          "/phoenix-assets/imgs/ad-view/scam-disclaimer/protection-shield.svg",
+          "/phoenix-assets/imgs/layout/placeholderImage.svg",
+          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+          "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2074%2074%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2237%22%20cy%3D%2237%22%20r%3D%2237%22%20fill%3D%22%23D13649%22%2F%3E%0A%20%20%20%20%3Ctext%20x%3D%2237%22%20y%3D%2238%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%0A%20%20%20%20%20%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Rubik%2CRoboto%2CTajawal%2Csans-serif%22%0A%20%20%20%20%20%20font-size%3D%2232%22%20font-weight%3D%22700%22%3E%26%2370%3B%3C%2Ftext%3E%0A%20%20%3C%2Fsvg%3E",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27100%27%20height=%2730%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27167%27%20height=%2748%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2760%27%20height=%2760%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2773%27%20height=%2730%27/%3e",
+          "https://assets.avito.ma/icons/svg/adparam_size.svg",
+          "https://assets.avito.ma/icons/svg/adparam_zoning.svg",
+          "https://assets.avito.ma/icons/svg/category_1080.svg",
+          "https://certify.alexametrics.com/atrk.gif?account=s5qpi1awA+00aW",
+          "https://content.avito.ma/classifieds/images/10154652388?t=images"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "non_verifiable_from_available_metadata",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "non_verifiable_from_available_metadata",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/derb_ghallef/appartements/Appartement_meubl%C3%A9_moyen_standing_58599879.htm",
+      "id": "58599879",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Appartement meublé moyen standing - 6 500 DH - Appartements à louer à Casablanca",
+        "price": null,
+        "location": null,
+        "area": null,
+        "description": "Je propose à la location un appartement meublé de moyen standing à Derb Ghallef, Casablanca.\n\n- Meublé\n- Balcon\n- Ascenseur\n- Concierge\n- Sécurité\n- Parking\n- Âge du bien : 11-20 ans\n- Caution : 1 mo...",
+        "photos": [
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-gallery-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fplay-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Flogo%402x.webp&w=256&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Fnew-logo.webp&w=3840&q=75",
+          "/phoenix-assets/imgs/ad-view/scam-disclaimer/protection-shield.svg",
+          "/phoenix-assets/imgs/layout/placeholderImage.svg",
+          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27100%27%20height=%2730%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27167%27%20height=%2748%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2760%27%20height=%2760%27/%3e",
+          "https://assets.avito.ma/icons/svg/adparam_balcony.svg",
+          "https://assets.avito.ma/icons/svg/adparam_bathrooms.svg",
+          "https://assets.avito.ma/icons/svg/adparam_deposit.svg",
+          "https://assets.avito.ma/icons/svg/adparam_elevator.svg",
+          "https://assets.avito.ma/icons/svg/adparam_floor.svg",
+          "https://assets.avito.ma/icons/svg/adparam_furnished.svg",
+          "https://assets.avito.ma/icons/svg/adparam_habitable_size.svg",
+          "https://assets.avito.ma/icons/svg/adparam_janitor.svg",
+          "https://assets.avito.ma/icons/svg/adparam_parking.svg",
+          "https://assets.avito.ma/icons/svg/adparam_rooms.svg",
+          "https://assets.avito.ma/icons/svg/adparam_security.svg",
+          "https://assets.avito.ma/icons/svg/adparam_spare_rooms.svg",
+          "https://assets.avito.ma/icons/svg/category_1010.svg",
+          "https://certify.alexametrics.com/atrk.gif?account=s5qpi1awA+00aW",
+          "https://content.avito.ma/classifieds/images/10154729907?t=images",
+          "https://content.avito.ma/classifieds/images/10154729909?t=images",
+          "https://content.avito.ma/stores/e6/e670f593-285d-4e5d-8393-6bcbadb6f7ec.jpg"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "non_verifiable_from_available_metadata",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "non_verifiable_from_available_metadata",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/derb_ghallef/appartements/Appartement_de_2_chambres_%C3%A0_louer_par_jour_%C3%A0_Casa_58600152.htm",
+      "id": "58600152",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Appartement de 2 chambres à louer par jour à Casa | Appartements à Casablanca | Avito.ma",
+        "price": null,
+        "location": null,
+        "area": null,
+        "description": "Appartement bien équipé situé au cœur de Casa avec 2 chambres et un salon",
+        "photos": [
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-gallery-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fplay-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Flogo%402x.webp&w=256&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Fnew-logo.webp&w=3840&q=75",
+          "/phoenix-assets/imgs/ad-view/scam-disclaimer/protection-shield.svg",
+          "/phoenix-assets/imgs/layout/placeholderImage.svg",
+          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+          "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2074%2074%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2237%22%20cy%3D%2237%22%20r%3D%2237%22%20fill%3D%22%234A4A4A%22%2F%3E%0A%20%20%20%20%3Ctext%20x%3D%2237%22%20y%3D%2238%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%0A%20%20%20%20%20%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Rubik%2CRoboto%2CTajawal%2Csans-serif%22%0A%20%20%20%20%20%20font-size%3D%2232%22%20font-weight%3D%22700%22%3E%26%2383%3B%3C%2Ftext%3E%0A%20%20%3C%2Fsvg%3E",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27100%27%20height=%2730%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27167%27%20height=%2748%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2760%27%20height=%2760%27/%3e",
+          "https://assets.avito.ma/icons/svg/adparam_airconditioner.svg",
+          "https://assets.avito.ma/icons/svg/adparam_apartment_type.svg",
+          "https://assets.avito.ma/icons/svg/adparam_balcony.svg",
+          "https://assets.avito.ma/icons/svg/adparam_bathrooms.svg",
+          "https://assets.avito.ma/icons/svg/adparam_elevator.svg",
+          "https://assets.avito.ma/icons/svg/adparam_floor.svg",
+          "https://assets.avito.ma/icons/svg/adparam_furnished_kitchen.svg",
+          "https://assets.avito.ma/icons/svg/adparam_habitable_size.svg",
+          "https://assets.avito.ma/icons/svg/adparam_heater.svg",
+          "https://assets.avito.ma/icons/svg/adparam_janitor.svg",
+          "https://assets.avito.ma/icons/svg/adparam_rooms.svg",
+          "https://assets.avito.ma/icons/svg/adparam_spare_rooms.svg",
+          "https://assets.avito.ma/icons/svg/category_1010.svg",
+          "https://certify.alexametrics.com/atrk.gif?account=s5qpi1awA+00aW",
+          "https://content.avito.ma/classifieds/images/10154729604?t=images",
+          "https://content.avito.ma/classifieds/images/10154729616?t=images"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "non_verifiable_from_available_metadata",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "non_verifiable_from_available_metadata",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/derb_ghallef/local/Local_commercial_%C3%A0_louer_58602326.htm",
+      "id": "58602326",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Local commercial à louer - 6 000 DH - Local à louer à Casablanca",
+        "price": null,
+        "location": null,
+        "area": null,
+        "description": "Local commercial à louer à Derb Ghallef, superficie 15 mètres carrés",
+        "photos": [
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-gallery-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fplay-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Flogo%402x.webp&w=256&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Fnew-logo.webp&w=3840&q=75",
+          "/phoenix-assets/imgs/ad-view/image-slider/no-image.svg",
+          "/phoenix-assets/imgs/ad-view/scam-disclaimer/protection-shield.svg",
+          "/phoenix-assets/imgs/layout/placeholderImage.svg",
+          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+          "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2074%2074%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2237%22%20cy%3D%2237%22%20r%3D%2237%22%20fill%3D%22%2389356A%22%2F%3E%0A%20%20%20%20%3Ctext%20x%3D%2237%22%20y%3D%2238%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%0A%20%20%20%20%20%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Rubik%2CRoboto%2CTajawal%2Csans-serif%22%0A%20%20%20%20%20%20font-size%3D%2232%22%20font-weight%3D%22700%22%3E%26%2366%3B%3C%2Ftext%3E%0A%20%20%3C%2Fsvg%3E",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27100%27%20height=%2730%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27167%27%20height=%2748%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27275%27%20height=%27275%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2760%27%20height=%2760%27/%3e",
+          "https://assets.avito.ma/icons/svg/adparam_parking.svg",
+          "https://assets.avito.ma/icons/svg/adparam_security.svg",
+          "https://assets.avito.ma/icons/svg/adparam_size.svg",
+          "https://assets.avito.ma/icons/svg/category_1060.svg",
+          "https://certify.alexametrics.com/atrk.gif?account=s5qpi1awA+00aW"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "non_verifiable_from_available_metadata",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "non_verifiable_from_available_metadata",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/sidi_othmane/autre_immobilier/Vente_Fond_de_commerce_%C3%A0_Casablanca_58626767.htm",
+      "id": "58626767",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Vente Fond de commerce à Casablanca - 1 500 000 DH - Autre Immobilier à vendre à Casablanca",
+        "price": null,
+        "location": null,
+        "area": null,
+        "description": "Asmaa BENGALA vous propose à la vente ce fonds de commerce disposant d'une superficie de 114 m², idéalement situé au cœur du quartier très commerçant et animé de Sidi Othmane à Casablanca.\n\nGrâce à s...",
+        "photos": [
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-gallery-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fplay-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Flogo%402x.webp&w=256&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Fnew-logo.webp&w=256&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Fnew-logo.webp&w=3840&q=75",
+          "/phoenix-assets/imgs/ad-view/scam-disclaimer/protection-shield.svg",
+          "/phoenix-assets/imgs/layout/placeholderImage.svg",
+          "/phoenix-assets/imgs/shop-details/pro-badge.svg",
+          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27100%27%20height=%2730%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27167%27%20height=%2748%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2760%27%20height=%2760%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2773%27%20height=%2730%27/%3e",
+          "https://assets.avito.ma/icons/svg/category_1090.svg",
+          "https://certify.alexametrics.com/atrk.gif?account=s5qpi1awA+00aW",
+          "https://content.avito.ma/classifieds/images/10157100771?t=images",
+          "https://content.avito.ma/classifieds/images/10157100772?t=images",
+          "https://content.avito.ma/stores/74/74805bcc-13d6-4f4d-a60a-c616c7dfccb9.jpg"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "non_verifiable_from_available_metadata",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "non_verifiable_from_available_metadata",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/derb_ghallef/appartements/Appartement_%C3%A0_louer_%C3%A0_Biranzarane_58652177.htm",
+      "id": "58652177",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Appartement à louer à Biranzarane - 6 000 DH - Appartements à louer à Casablanca",
+        "price": null,
+        "location": null,
+        "area": null,
+        "description": "Appartement à louer à Biranzarane, à proximité de Derb Ghelaf, situé au centre de Casablanca, en très bon état et sécurisé.",
+        "photos": [
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-gallery-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fplay-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Flogo%402x.webp&w=256&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Fnew-logo.webp&w=3840&q=75",
+          "/phoenix-assets/imgs/ad-view/scam-disclaimer/protection-shield.svg",
+          "/phoenix-assets/imgs/layout/placeholderImage.svg",
+          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+          "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2074%2074%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2237%22%20cy%3D%2237%22%20r%3D%2237%22%20fill%3D%22%239E000B%22%2F%3E%0A%20%20%20%20%3Ctext%20x%3D%2237%22%20y%3D%2238%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%0A%20%20%20%20%20%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Rubik%2CRoboto%2CTajawal%2Csans-serif%22%0A%20%20%20%20%20%20font-size%3D%2232%22%20font-weight%3D%22700%22%3E%26%2376%3B%3C%2Ftext%3E%0A%20%20%3C%2Fsvg%3E",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27100%27%20height=%2730%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27167%27%20height=%2748%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2760%27%20height=%2760%27/%3e",
+          "https://assets.avito.ma/icons/svg/adparam_balcony.svg",
+          "https://assets.avito.ma/icons/svg/adparam_bathrooms.svg",
+          "https://assets.avito.ma/icons/svg/adparam_deposit.svg",
+          "https://assets.avito.ma/icons/svg/adparam_elevator.svg",
+          "https://assets.avito.ma/icons/svg/adparam_floor.svg",
+          "https://assets.avito.ma/icons/svg/adparam_furnished_kitchen.svg",
+          "https://assets.avito.ma/icons/svg/adparam_janitor.svg",
+          "https://assets.avito.ma/icons/svg/adparam_parking.svg",
+          "https://assets.avito.ma/icons/svg/adparam_rooms.svg",
+          "https://assets.avito.ma/icons/svg/adparam_security.svg",
+          "https://assets.avito.ma/icons/svg/adparam_size.svg",
+          "https://assets.avito.ma/icons/svg/adparam_spare_rooms.svg",
+          "https://assets.avito.ma/icons/svg/category_1010.svg",
+          "https://certify.alexametrics.com/atrk.gif?account=s5qpi1awA+00aW",
+          "https://content.avito.ma/stores-covers/pl/ad_pl_cat_1010_rent.jpg"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "non_verifiable_from_available_metadata",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "non_verifiable_from_available_metadata",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/Terrain_%C3%A0_vendre_Agdal_zone_R5_58683280.htm",
+      "id": "58683280",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Terrain à vendre Agdal zone R5 - 28 500 000 DH - Terrains et fermes à vendre à Rabat",
+        "price": null,
+        "location": null,
+        "area": null,
+        "description": "Terrain à vendre Agdal zone R5\nBon emplacement\nSuperficie 950 m2\nPrix : 28.5mdh\nSi vous êtes intéressé, envoyez un message privé",
+        "photos": [
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-gallery-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fplay-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Flogo%402x.webp&w=256&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Fnew-logo.webp&w=256&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Fnew-logo.webp&w=3840&q=75",
+          "/phoenix-assets/imgs/ad-view/scam-disclaimer/protection-shield.svg",
+          "/phoenix-assets/imgs/layout/placeholderImage.svg",
+          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+          "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2074%2074%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2237%22%20cy%3D%2237%22%20r%3D%2237%22%20fill%3D%22%2320804C%22%2F%3E%0A%20%20%20%20%3Ctext%20x%3D%2237%22%20y%3D%2238%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%0A%20%20%20%20%20%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Rubik%2CRoboto%2CTajawal%2Csans-serif%22%0A%20%20%20%20%20%20font-size%3D%2232%22%20font-weight%3D%22700%22%3E%26%2382%3B%3C%2Ftext%3E%0A%20%20%3C%2Fsvg%3E",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27100%27%20height=%2730%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27167%27%20height=%2748%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2760%27%20height=%2760%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2773%27%20height=%2730%27/%3e",
+          "https://assets.avito.ma/icons/svg/adparam_size.svg",
+          "https://assets.avito.ma/icons/svg/adparam_titled.svg",
+          "https://assets.avito.ma/icons/svg/adparam_zoning.svg",
+          "https://assets.avito.ma/icons/svg/category_1080.svg",
+          "https://certify.alexametrics.com/atrk.gif?account=s5qpi1awA+00aW",
+          "https://content.avito.ma/classifieds/images/10155369948?t=images"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "non_verifiable_from_available_metadata",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "non_verifiable_from_available_metadata",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/agdal/maisons/Villa_%C3%A0_vendre___Haut_Agdal_58684263.htm",
+      "id": "58684263",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Villa à vendre — Haut Agdal - 9 000 000 DH - Maisons à vendre à Rabat",
+        "price": null,
+        "location": null,
+        "area": null,
+        "description": "Cabinet Immobilier & d'Affaires BELMAHI, depuis 1957, vous propose une Villa à vendre — Haut Agdal\n- Terrain : 745 m²\n- Surface construite : 832 m²\n- 33 chambres\n - Usage commercial ou habitation\n - ...",
+        "photos": [
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-gallery-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fapp-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Ffooter%2Fplay-store-badge.webp&w=384&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Flogo%402x.webp&w=256&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Fnew-logo.webp&w=256&q=75",
+          "/_next/image?url=%2Fphoenix-assets%2Fimgs%2Flayout%2Fnew-logo.webp&w=3840&q=75",
+          "/phoenix-assets/imgs/ad-view/scam-disclaimer/protection-shield.svg",
+          "/phoenix-assets/imgs/layout/placeholderImage.svg",
+          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+          "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2074%2074%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2237%22%20cy%3D%2237%22%20r%3D%2237%22%20fill%3D%22%2320804C%22%2F%3E%0A%20%20%20%20%3Ctext%20x%3D%2237%22%20y%3D%2238%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%0A%20%20%20%20%20%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Rubik%2CRoboto%2CTajawal%2Csans-serif%22%0A%20%20%20%20%20%20font-size%3D%2232%22%20font-weight%3D%22700%22%3E%26%2366%3B%3C%2Ftext%3E%0A%20%20%3C%2Fsvg%3E",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27100%27%20height=%2730%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%27167%27%20height=%2748%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2760%27%20height=%2760%27/%3e",
+          "data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2773%27%20height=%2730%27/%3e",
+          "https://assets.avito.ma/icons/svg/adparam_bathrooms.svg",
+          "https://assets.avito.ma/icons/svg/adparam_property_availability.svg",
+          "https://assets.avito.ma/icons/svg/adparam_property_condition.svg",
+          "https://assets.avito.ma/icons/svg/adparam_property_standing.svg",
+          "https://assets.avito.ma/icons/svg/adparam_rooms.svg",
+          "https://assets.avito.ma/icons/svg/adparam_spare_rooms.svg",
+          "https://assets.avito.ma/icons/svg/category_1020.svg",
+          "https://certify.alexametrics.com/atrk.gif?account=s5qpi1awA+00aW",
+          "https://content.avito.ma/classifieds/images/10155377126?t=images",
+          "https://content.avito.ma/classifieds/images/10155377128?t=images"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "non_verifiable_from_available_metadata",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "non_verifiable_from_available_metadata",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/VILLA_%C3%80_D%C3%89MOLIR_%C3%80_LA_VENTE___AGDAL__RABAT_58685536.htm",
+      "id": "58685536",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "VILLA À DÉMOLIR À LA VENTE – AGDAL, RABAT - 7 990 000 DH - Terrains et fermes à vendre à Rabat",
+        "price": "7 990 000 DH",
+        "location": null,
+        "area": "940 m²",
+        "description": "KB GROUP REAL ESTATE vous propose en exclusivité une villa à démolir à la vente, idéalement située au cœur du quartier prisé d'Agdal à Rabat.\n\nÉdifiée sur un terrain de 940 m², cette propriété représ...",
+        "photos": [
+          "https://content.avito.ma/classifieds/images/10155386777?t=images",
+          "https://content.avito.ma/classifieds/images/10155386778?t=images"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "observed",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "observed",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/derb_ghallef/appartements/Appartement_F2_%C3%A0_louer_58685976.htm",
+      "id": "58685976",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Appartement F2 à louer - 4 500 DH - Appartements à louer à Casablanca",
+        "price": "4 500 DH",
+        "location": null,
+        "area": null,
+        "description": "Je propose à la location un appartement F2 en face de la clinique hamdani au 6 ème étage avec ascenseur, belle terrasse et place au parking.\nstudio/appart \nidéal jeune couple.\n- Haut standing\n- Âge d...",
+        "photos": [
+          "https://content.avito.ma/classifieds/images/10155389656?t=images"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "observed",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "non_verifiable_from_available_metadata",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/agdal/appartements/Appartement_%C3%A0_vendre_Agdal_58705742.htm",
+      "id": "58705742",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Appartement à vendre Agdal - 2 100 000 DH - Appartements à vendre à Rabat",
+        "price": "2 100 000 DH",
+        "location": null,
+        "area": "113 m²",
+        "description": "Appartement 113 m² à vendre – Rabat, Agdal – À 5 min du tramway\n\nÀ vendre, appartement de 113 m² situé dans le quartier recherché de l’Agdal à Rabat, à moins de 5 minutes à pied de la station de tram...",
+        "photos": [
+          "https://content.avito.ma/classifieds/images/10155527914?t=images",
+          "https://content.avito.ma/classifieds/images/10155527915?t=images"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "observed",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "observed",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/VILLA_%C3%80_D%C3%89MOLIR_%C3%80_LA_VENTE___AGDAL__RABAT_58707942.htm",
+      "id": "58707942",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "VILLA À DÉMOLIR À LA VENTE – AGDAL, RABAT - 7 990 000 DH - Terrains et fermes à vendre à Rabat",
+        "price": "7 990 000 DH",
+        "location": null,
+        "area": "940 m²",
+        "description": "KB GROUP REAL ESTATE vous propose en exclusivité une villa à démolir à la vente, idéalement située au cœur du quartier prisé d'Agdal à Rabat.\n\nÉdifiée sur un terrain de 940 m², cette propriété représ...",
+        "photos": [
+          "https://content.avito.ma/classifieds/images/10155542965?t=images",
+          "https://content.avito.ma/classifieds/images/10155542966?t=images"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "observed",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "observed",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/agdal/terrains_et_fermes/Terrain_Agdal_%C3%A0_Vendre_58714484.htm",
+      "id": "58714484",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Terrain Agdal à Vendre - 1 697 500 DH - Terrains et fermes à vendre à Rabat",
+        "price": "1 697 500 DH",
+        "location": null,
+        "area": "486 m²",
+        "description": "Terrain à Vendre Agdal\nTitré\nSuperficie 486 m²\nZone Imb\nNiveau R4\nPrix du M² 35 K Négociable\nEmplacement Idéal\nQuartier Agdal Rabat\nPas Loin Mosquée Badr\nPour Plus d’Infos Msg Prv ou...",
+        "photos": [
+          "https://content.avito.ma/classifieds/images/10155590469?t=images"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "observed",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "observed",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/sidi_othmane/appartements/Appartement_77_m%C2%B2___Garage_13_m%C2%B2___Ascenseur_58716556.htm",
+      "id": "58716556",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Appartement 77 m²   Garage 13 m²   Ascenseur - 890 000 DH - Appartements à vendre à Casablanca",
+        "price": "890 000 DH",
+        "location": null,
+        "area": "77 m²",
+        "description": "Description \nParticulier vend un bel appartement de 77 m² habitables, très ensoleillé, situé au 5ème étage d’une résidence propre et sécurisée sur le Boulevard Mohamed Bouziane (Sidi Othmane / Salama...",
+        "photos": [
+          "https://content.avito.ma/classifieds/images/10155603824?t=images",
+          "https://content.avito.ma/classifieds/images/10155603859?t=images"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "observed",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "observed",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/sidi_othmane/appartements/Appartement_%C3%A0_vendre_Sidi_Othmane_58780919.htm",
+      "id": "58780919",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Appartement à vendre Sidi Othmane - 560 000 DH - Appartements à vendre à Casablanca",
+        "price": "560 000 DH",
+        "location": null,
+        "area": "32 m²",
+        "description": "Appartement à vendre Sidi Othmane et il y a une chambre avec elle sur le toit, elle fait 32 m²",
+        "photos": null,
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "observed",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "observed",
+        "description": "observed",
+        "photos": "non_verifiable_from_available_metadata",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/agdal/appartements/Location_appartement_meubl%C3%A9_r%C3%A9nov%C3%A9_58781357.htm",
+      "id": "58781357",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Location appartement meublé rénové - 13 000 DH - Appartements à louer à Rabat",
+        "price": "13 000 DH",
+        "location": null,
+        "area": null,
+        "description": "Location Appartement meublé rénové — Agdal - RABAT\n\nChallioui Immobilier vous propose ce bel appartement lumineux et soigneusement aménagé, situé dans un emplacement recherché, à proximité des commer...",
+        "photos": [
+          "https://content.avito.ma/classifieds/images/10157108496?t=images",
+          "https://content.avito.ma/classifieds/images/10157108502?t=images"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "observed",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "non_verifiable_from_available_metadata",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/sidi_othmane/appartements/appartement_sidi_othmane_58785491.htm",
+      "id": "58785491",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "appartement sidi othmane - 770 000 DH - Appartements à vendre à Casablanca",
+        "price": "770 000 DH",
+        "location": null,
+        "area": null,
+        "description": "Bonjour, je mets en vente mon appartement à sidi Othmane sur l'avenue principale avec toutes les commodités école privée, restaurants, café, boulangeries, commerces dont un carrefour market, kfc, cli...",
+        "photos": [
+          "https://content.avito.ma/classifieds/images/10156112131?t=images",
+          "https://content.avito.ma/classifieds/images/10156112152?t=images"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "observed",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "non_verifiable_from_available_metadata",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    },
+    {
+      "url": "https://www.avito.ma/fr/sidi_othmane/local/Caf%C3%A9_%C3%A0_vendre_%C3%A0_Casablanca_sur_le_boulevard_Driss_Harti_58791823.htm",
+      "id": "58791823",
+      "http_status": 200,
+      "availability": "page_rendered_active_unconfirmed",
+      "fields": {
+        "title": "Café à vendre à Casablanca sur le boulevard Driss... | Local à Casablanca | Avito.ma",
+        "price": null,
+        "location": null,
+        "area": null,
+        "description": "Café vue sur rue principale \nRez de chaussée (119) \nTerrasse (40)\nCave(144)\nSoupente (100)\nAppelez pour du sérieux",
+        "photos": [
+          "https://content.avito.ma/classifieds/images/10156138469?t=images",
+          "https://content.avito.ma/classifieds/images/10156138470?t=images"
+        ],
+        "published_or_updated": null
+      },
+      "error": null,
+      "commercial_reuse": "not_verified_no_explicit_license_or_permission_found",
+      "field_states": {
+        "title": "observed",
+        "price": "non_verifiable_from_available_metadata",
+        "location": "non_verifiable_from_available_metadata",
+        "area": "non_verifiable_from_available_metadata",
+        "description": "observed",
+        "photos": "observed",
+        "published_or_updated": "non_verifiable_from_available_metadata"
+      },
+      "completeness_sufficient": false,
+      "field_observation_scope": "public HTML metadata/JSON-LD and image references only; missing fields are not proven absent"
+    }
+  ]
+}
