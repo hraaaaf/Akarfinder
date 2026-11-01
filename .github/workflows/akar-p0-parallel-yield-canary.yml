@@ -1,4 +1,4 @@
-# Read-only replay of archived, certified public source pages. Zero DB access.
+# Manual user-requested bounded live canary from archived public source URLs. Zero DB access.
 name: EXPERIMENT - P0 source yield canaries read-only
 on:
   push:
