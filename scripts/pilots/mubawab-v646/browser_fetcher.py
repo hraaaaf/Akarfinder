@@ -71,6 +71,10 @@ class BrowserFetcher:
                     timeout=self.config.navigation_timeout_ms,
                 )
                 code = response.status if response else None
+                # Never accept navigation away from the strictly admitted sale shard.
+                if page.url != url:
+                    return FetchResult(url, "blocked", code=code, attempts=1,
+                                       error="redirection or URL change from admitted shard")
                 final_url = urlsplit(page.url)
                 host = final_url.hostname
                 if (final_url.scheme != "https" or not host or

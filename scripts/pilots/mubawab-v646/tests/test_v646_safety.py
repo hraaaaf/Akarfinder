@@ -74,6 +74,17 @@ class V646Safety(unittest.TestCase):
         result = s.review_price_per_m2(rows)
         self.assertEqual(result["0"]["reference_median_price_per_m2_mad"],10000)
         self.assertEqual(result["8"]["reference_median_price_per_m2_mad"],100)
+    def test_http_does_not_follow_redirects(self):
+        class RedirectSession:
+            async def get(self,url,**kwargs):
+                self.kwargs=kwargs
+                return type("Response", (), {"status_code":302,"text":""})()
+        session=RedirectSession()
+        with patch.object(s.asyncio,"sleep",new=__import__("unittest").mock.AsyncMock()):
+            result=asyncio.run(s.fetch_page(session,s.BASE_URL,asyncio.Semaphore(1),max_retries=1))
+        self.assertFalse(session.kwargs["allow_redirects"])
+        self.assertEqual(result.status,"http_error")
+
     def test_explicit_rent_record_rejected(self):
         c=s.init_db(str(Path(self.temp.name)/"test.sqlite"))
         with self.assertRaisesRegex(ValueError, "non-sale"):

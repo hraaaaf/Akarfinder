@@ -449,7 +449,7 @@ async def fetch_page(session: Any, url: str, semaphore: asyncio.Semaphore,
         await asyncio.sleep(random.uniform(0.5, 1.5))
         try:
             async with semaphore:
-                response = await session.get(url, impersonate="chrome120", timeout=25)
+                response = await session.get(url, impersonate="chrome120", timeout=25, allow_redirects=False)
             code = response.status_code
             last_code = code
             if code == 200:
