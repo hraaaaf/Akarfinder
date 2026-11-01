@@ -110,3 +110,17 @@ Après téléchargement des quatre artefacts existants et vérification de leurs
 **Stratégie prioritaire pour augmenter réellement le réservoir :** accords de flux XML/CSV/JSON avec agences, promoteurs ou portails, attestant le droit de réutilisation et la date de mise à jour. FeenWay est un concurrent agrégateur (pas une source de données indépendante) : un éventuel accord de licence serait à négocier et ne démontrerait pas à lui seul 200k biens uniques. Les accès `PERMISSION_REQUIRED`/`HOLD` restent non activables pour acquisition directe.
 
 **Next exact :** obtenir un contrat/flux explicitement autorisé à fort volume, vérifier inventaire (identifiant stable + URL + updated_at + type + ville + statut actif) et droits de redistribution ; préparer le connecteur read-only vers le réservoir local puis calibrer le débit sur un échantillon frais. Les demandes commerciales externes requièrent une décision explicite avant envoi.
+
+## 10. 01/11/2026 — Répétabilité GitHub du réservoir : nouveau CI dédié
+
+- Script reproductible `scripts/pilots/akar-200k-reservoir/build_reservoir.py` : relit les **quatre artefacts GitHub** (archives septembre et canaries 01/11), vérifie strictement host HTTPS et identité de fiche, rejette les dérives de volume, construit SQLite locale indexée par `(source,source_id)`, `UNVERIFIED`/non publiable. Aucune source web n'est requêtée dans ce lot ; aucun accès à Supabase.
+- Test `scripts/pilots/akar-200k-reservoir/test_reservoir.py` ; workflow isolé `.github/workflows/akar-200k-reservoir-replay.yml`. Ce workflow télécharge les archives via GitHub Actions, exécute les tests, mesure les **32 460 ID/source** et vérifie les sommes SHA256 avant de publier un artefact temporaire.
+- Commit GitHub : `c181696a999e40ab34270eb15b886743df9df784`; [run #41322759990](https://github.com/hraaaaf/Akarfinder/actions/runs/41322759990) **queued** au premier pointage, résultat non déclaré avant vérification.
+- L'archive locale de preuve `akar_200k_reservoir_20261101.zip` est déjà disponible et testée : SHA256 `fdb02a43cf26a370034361a20a12634268c2ac683f711ee8e5d22d87e54de6d3` ; SQLite 32 460 lignes, `PRAGMA integrity_check=ok`, 5 tests Python PASS.
+- **Next exact** : examiner le run GitHub ; si échec, corriger seulement la cause démontrée et relancer une fois ; si GREEN, publier les métriques finales puis poursuivre l'obtention d'un flux partenaire autorisé.
+
+### Contrat minimal de flux à négocier
+
+Pour chaque annonce fournie par agence, promoteur, logiciel métier ou portail partenaire : `provider`, `listing_id`, `canonical_url`, `last_updated_at`, `active_status`, `transaction`, `property_type`, `city`, `district`, `price_mad|on_request`, `surface_m2`, droits explicites (`reuse_text`, `reuse_images`, `public_display`, `refresh`), suppression/désactivation, SLA de mise à jour. Exiger un échantillon daté avec comptage des IDs uniques et un accord de licence avant import. XML de **diffusion des agences vers un portail** ne signifie pas que ce portail propose un **flux de son stock vers Akarfinder**.
+
+Aucun email externe envoyé, aucun accord présumé, aucune publicité ou collecte récurrente activée.
