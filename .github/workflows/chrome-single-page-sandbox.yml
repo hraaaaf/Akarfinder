@@ -1,0 +1,38 @@
+# Experimental one-time branch-only runner. Do not merge into main.
+name: EXPERIMENT - Chrome single page diagnostic
+on:
+  push:
+    branches:
+      - sandbox/akar-chrome-probe-20261101
+    paths:
+      - .github/workflows/chrome-single-page-sandbox.yml
+      - scripts/probes/chrome_page_diagnostic.py
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  chrome-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chromium and dependencies
+        run: |
+          python -m pip install --disable-pip-version-check 'playwright==1.56.0'
+          python -m playwright install --with-deps chromium
+          python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print("Chromium installed:",p.chromium.executable_path); p.stop()'
+      - name: Diagnostic using real Chrome engine (single page)
+        run: python scripts/probes/chrome_page_diagnostic.py
+      - name: Publish diagnostic and viewport screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-single-page-proof
+          path: artifacts/chrome-diagnostic/
+          if-no-files-found: warn
+          retention-days: 7
