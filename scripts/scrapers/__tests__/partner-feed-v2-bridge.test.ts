@@ -133,3 +133,36 @@ describe("Direct feed → PartnerListingV2 bridge", () => {
     assert.equal(bridged.listing.photos_authorized, false);
   });
 });
+
+describe("Bridge authorization fail-closed", () => {
+  const csv = [
+    "external_id,source_name,source_url,transaction_type,property_type,title,city,district,price_mad,surface_m2,images_rights_confirmed",
+    "ATLAS-100,agence-atlas,https://atlas.ma/a/100,sale,apartment,Appartement Agdal,Rabat,Agdal,1500000,90,false",
+  ].join("\n");
+
+  it("rejects blank authorization reference", () => {
+    const row = validatedFromCsv(csv);
+    const result = validatedFeedRowToPartnerListingV2(row, { ...CONTEXT, source_authorization_note: "  " }, NOW);
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.match(result.reason, /autorisation/);
+  });
+
+  it("rejects source identity mismatch", () => {
+    const row = validatedFromCsv(csv);
+    const result = validatedFeedRowToPartnerListingV2(row, { ...CONTEXT, partner_id: "another-agency" }, NOW);
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.match(result.reason, /source_name/);
+  });
+
+  it("rejects empty partner identity", () => {
+    const row = validatedFromCsv(csv);
+    const result = validatedFeedRowToPartnerListingV2(row, { ...CONTEXT, partner_id: "" }, NOW);
+    assert.equal(result.ok, false);
+  });
+
+  it("retains valid documented partner path", () => {
+    const row = validatedFromCsv(csv);
+    const result = validatedFeedRowToPartnerListingV2(row, CONTEXT, NOW);
+    assert.equal(result.ok, true);
+  });
+});
