@@ -33,7 +33,16 @@ def _valid_link(row: dict) -> bool:
 def evaluate(rows: list[dict]) -> dict:
     """Count source listing IDs, not deduplicated physical properties."""
     ids = [str(r.get("id")) for r in rows if r.get("id") is not None]
-    unique = {str(r["id"]): r for r in rows if r.get("id") is not None}
+    # Mirror the importer's conservative duplicate merge: a later partial card
+    # must not erase already observed non-empty fields for the same source ID.
+    unique: dict[str, dict] = {}
+    for row in rows:
+        if row.get("id") is None:
+            continue
+        entry = unique.setdefault(str(row["id"]), {})
+        for field, value in row.items():
+            if (field not in entry or entry[field] is None or entry[field] == "") and value is not None and value != "":
+                entry[field] = value
     # Only count explicitly present information. A listing search URL alone is
     # NOT proof of city, active status, reuse permission, or physical uniqueness.
     flags = {}
