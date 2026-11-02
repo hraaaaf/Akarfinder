@@ -52,6 +52,15 @@ export function validatedFeedRowToPartnerListingV2(
   context: PartnerFeedV2Context,
   now = new Date().toISOString(),
 ): PartnerFeedV2BridgeResult {
+  // Fail closed: a feed alone cannot grant commercial publication rights.
+  // The caller must supply an explicit partner authorization reference.
+  if (!context.partner_id?.trim() || !context.source_authorization_note?.trim()) {
+    return { ok: false, reason: "autorisation partenaire documentée obligatoire" };
+  }
+  if (row.source_name.trim() !== context.partner_id.trim()) {
+    return { ok: false, reason: "source_name et partner_id incompatibles" };
+  }
+
   if (!row.external_id?.trim()) {
     return { ok: false, reason: "PartnerListingV2 exige external_id/partner_listing_id stable" };
   }
