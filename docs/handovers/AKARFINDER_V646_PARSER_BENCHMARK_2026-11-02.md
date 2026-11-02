@@ -11,7 +11,7 @@
 
 ## Instrumentation et tests de reprise
 - Branche de travail `sandbox/akar-v646-parser-benchmark-20261102`.
-- `scripts/pilots/mubawab-v646/tests/test_parser_evidence.py` : 13 nouveaux tests de reconnaissance HTML, prix MAD/MDH, surface, localité, rejets, doublons, persistance et idempotence. Les HTML sont expressément **synthétiques**, pas une capture Mubawab.
+- `scripts/pilots/mubawab-v646/tests/test_parser_evidence.py` : 14 nouveaux tests de reconnaissance HTML, prix MAD/MDH, surface, localité, rejets, doublons, persistance et idempotence. Les HTML sont expressément **synthétiques**, pas une capture Mubawab.
 - `scripts/pilots/mubawab-v646/benchmark_evidence.py` : mode replay HTML synthétique et mode audit de SQLite préexistante en lecture seule. Aucun accès réseau ni write dans l'outil.
 - `.github/workflows/mubawab-v646-offline-tests.yml` : tests et relecture de l'artefact `mubawab-v645-multishard-sqlite-state` du run #41327076337 (97 lignes attendues) ; sortie JSON `mubawab-v646-historical-evidence`.
 
@@ -26,7 +26,7 @@
 - Les secondes de traitement du benchmark sont **CPU/offline** et non un débit de crawl.
 
 ## Validation en cours
-- [Run #41548735455](https://github.com/hraaaaf/Akarfinder/actions/runs/41548735455) créé sur commit `b3d0cadc4dd2110fece8d28ced2ff0fd36a188b0`, état **queued** au contrôle initial.
+- [Run #41548735455](https://github.com/hraaaaf/Akarfinder/actions/runs/41548735455) : workflow initial, queued au contrôle ; [run final de code #41549175495](https://github.com/hraaaaf/Akarfinder/actions/runs/41549175495) sur `6ac202be403564610bde8b0b53dd43b59a14460e`, **queued** au contrôle initial. Les métriques ne sont pas publiées avant logs.
 - Aucun chiffre de complétude historique publié avant artefact/logs.
 
 ## Gate réel restant
@@ -37,3 +37,10 @@
 5. **NO-GO** pour extrapoler à 200k tant que rendement et catalogue disponible ne sont pas démontrés.
 
 Aucun Vercel, aucun Supabase/Neon ni merge dans ce chantier.
+
+## Observation complémentaire : 1 page de résultats consultée (non parsée)
+- `robots.txt` obtenu le 02/11 avec politique générique excluant `/*:`, mais ne bloquant pas le shard non paginé de Rabat.
+- Une lecture publique ponctuelle du shard Rabat a montré des prix, surfaces et localisations visibles. Le service d'extraction consulté **nettoie les attributs CSS et les liens** : zéro `.listingBox` dans le HTML nettoyé ne prouve PAS leur absence dans le HTML source. Impossible de valider les sélecteurs V646 sur cette sortie.
+- Le rendu de résultats mélange parfois un contenu de catégorie différente (exemple historique visible : villa en tête de résultats appartements) ; type de bien à qualifier, pas à supposer depuis le shard.
+- Ce contrôle n'est pas un benchmark du parseur V646 : zéro HTML brut fidèle conservé, zéro fiche V646 nouvellement certifiée, zéro débit live mesuré.
+- Correctif compteur ajouté : fusion non destructive des champs d'un même ID source lors du replay, test de régression `partial_duplicate` ; CI final toujours non confirmé.
