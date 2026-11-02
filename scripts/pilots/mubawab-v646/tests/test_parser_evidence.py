@@ -166,5 +166,17 @@ class ParserEvidenceTests(unittest.TestCase):
             conn.close()
 
 
+    def test_duplicate_source_id_partial_card_preserves_complete_evidence(self):
+        complete = s.parse_listings(card(7800001))[0]
+        partial = dict(complete)
+        partial["location"] = None
+        partial["district"] = None
+        partial["surface_m2"] = None
+        partial["price_mad"] = None
+        result = evidence.evaluate([complete, partial])
+        self.assertEqual(result["unique_source_ids"], 1)
+        self.assertEqual(result["duplicate_source_id_occurrences"], 1)
+        self.assertEqual(result["complete_core_with_district"], 1)
+
 if __name__ == "__main__":
     unittest.main()
