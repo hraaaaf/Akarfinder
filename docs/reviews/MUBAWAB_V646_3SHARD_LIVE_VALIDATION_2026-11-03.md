@@ -31,3 +31,10 @@ Chaque invocation de `live_canary.py` ne cible **qu'une page**, sélectionnée e
 - `unique_source_ids` n'est pas une déduplication physique ; `complete_core_with_district` compte des champs parsés, non vérifiés indépendamment.
 - `publication_eligible_proven=0`. Pas de droits d'usage confirmés.
 - Le seuil de détection de pages tronquées, le typage des appartements et le contrôle de dérive des quartiers restent ouverts : le canary peut déclarer qualité pass malgré ces limites.
+
+## Exécution autorisée démarrée (état au premier contrôle)
+- CI de préparation : [run #41730718069](https://github.com/hraaaaf/Akarfinder/actions/runs/41730718069) sur HEAD tests `96b8144b4d13cce500f93886677eac86586a78c1`, **SUCCESS**, **69 tests**, dont 4 skipped et 3 expectedFailure.
+- One-shot live [#41730963403](https://github.com/hraaaaf/Akarfinder/actions/runs/41730963403), commit exact `9ce27756ff19f9d91b586ca93c53d86ce641c40d`, **in_progress au premier contrôle**. Aucun chiffre live publié avant les rapports.
+- Le workflow one-shot commence par exécuter les tests offline, puis installe Chromium normal, puis une navigation par shard avec vérification robots préalable. Chaque step stoppe en cas de code de retour non zéro du canary. Résultats JSON archivés avec `if: always()`.
+- Déclencheur one-shot : la modification d'un seul fichier de workflow et une condition sur le marqueur explicite du commit autorisé. La suppression du workflow après résultat empêchera toute relance future par push.
+- Aucune requête de détail, pas de crawl massif, pas de déploiement, pas de changement DB produit, PR #1149 intacte.
