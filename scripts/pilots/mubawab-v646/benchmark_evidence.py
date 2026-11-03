@@ -53,6 +53,10 @@ def evaluate(rows: list[dict]) -> dict:
         except (ValueError, TypeError):
             numeric_price = False
         on_request = r.get("price_source_status") == "on_request"
+        stale_price = numeric_price and on_request
+        # Current source state wins over the last known price: a row cannot be
+        # counted as both numeric and on_request.
+        numeric_price = numeric_price and not on_request
         try:
             surface = r.get("surface_m2") is not None and float(r["surface_m2"]) > 0
         except (ValueError, TypeError):
@@ -65,6 +69,7 @@ def evaluate(rows: list[dict]) -> dict:
             "city": bool(str(r.get("location") or "").strip()),
             "district": bool(str(r.get("district") or "").strip()),
             "detail_link": _valid_link(r),
+            "stale_price": stale_price,
         }
     field_counts = {name: sum(int(f[name]) for f in flags.values())
                     for name in ("title", "price_numeric", "price_explicit_on_request",
@@ -78,6 +83,7 @@ def evaluate(rows: list[dict]) -> dict:
         "unique_source_ids": len(unique),
         "duplicate_source_id_occurrences": len(ids) - len(set(ids)),
         "fields_present_among_unique_ids": field_counts,
+        "stale_price_rows_with_on_request_source": sum(int(f["stale_price"]) for f in flags.values()),
         "complete_core_without_district": sum(bool(core(f)) for f in flags.values()),
         "complete_core_with_district": sum(bool(strict(f)) for f in flags.values()),
         "complete_core_with_district_numeric_price":

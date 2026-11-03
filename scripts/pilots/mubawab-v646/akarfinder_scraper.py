@@ -79,6 +79,7 @@ class FetchResult:
 
 @dataclass
 class ImportStats:
+    field_changes: dict[str, int] = field(default_factory=dict)
     inserted: int = 0
     updated: int = 0
     unchanged: int = 0
@@ -443,7 +444,7 @@ def parse_listings(html: str | None) -> list[dict[str, Any]]:
 
 async def fetch_page(session: Any, url: str, semaphore: asyncio.Semaphore,
                      max_retries: int = MAX_RETRIES) -> FetchResult:
-    """Retry transient network/5xx/429 errors; don't retry blocked 403/challenges."""
+    """Retry transient network/5xx errors. 403/429/challenges are TERMINAL: no retry."""
     last_code = None
     for attempt in range(1, max_retries + 1):
         await asyncio.sleep(random.uniform(0.5, 1.5))
@@ -458,9 +459,10 @@ async def fetch_page(session: Any, url: str, semaphore: asyncio.Semaphore,
                     return FetchResult(url, "blocked", code=code, attempts=attempt,
                                        error="challenge/block HTML")
                 return FetchResult(url, "ok", html=html, code=code, attempts=attempt)
-            if code == 403:
-                return FetchResult(url, "blocked", code=code, attempts=attempt)
-            if code not in (429, 500, 502, 503, 504):
+            if code in (403, 429):
+                return FetchResult(url, "blocked", code=code, attempts=attempt,
+                                   error="HTTP access denied; no retry, no escalation")
+            if code not in (500, 502, 503, 504):
                 return FetchResult(url, "http_error", code=code, attempts=attempt)
             error = f"HTTP {code}"
         except Exception as exc:
@@ -474,6 +476,12 @@ async def fetch_page(session: Any, url: str, semaphore: asyncio.Semaphore,
 def init_db(path: str = DB_NAME) -> sqlite3.Connection:
     conn = sqlite3.connect(path)
     conn.row_factory = sqlite3.Row
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS field_change_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, listing_id TEXT NOT NULL,
+            field TEXT NOT NULL, old_value TEXT, new_value TEXT, observed_at TEXT NOT NULL
+        )
+    """)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS listings (
             id TEXT PRIMARY KEY, title TEXT, price_mad INTEGER,
@@ -513,6 +521,14 @@ def init_db(path: str = DB_NAME) -> sqlite3.Connection:
             conn.execute(f"ALTER TABLE listings ADD COLUMN {column} {kind}")
     conn.commit()
     return conn
+
+
+def _log_field_change(conn: sqlite3.Connection, stats: "ImportStats", listing_id: str,
+                      column: str, old_value: Any, new_value: Any, observed_at: str) -> None:
+    """Append-only audit of overwritten values (same transaction as the import)."""
+    conn.execute("INSERT INTO field_change_log(listing_id, field, old_value, new_value, observed_at) "
+                 "VALUES (?,?,?,?,?)", (listing_id, column, str(old_value), str(new_value), observed_at))
+    stats.field_changes[column] = stats.field_changes.get(column, 0) + 1
 
 
 def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
@@ -615,6 +631,7 @@ def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
             else:
                 if incoming_price != old["price_mad"]:
                     changes["price_mad"] = incoming_price
+                    _log_field_change(conn, stats, listing_id, "price_mad", old["price_mad"], incoming_price, now)
                 if old["pending_price_mad"] is not None:
                     changes.update(pending_price_mad=None, pending_price_count=0,
                                    pending_price_qualified_at=None, pending_price_fluctuations=0)
@@ -624,6 +641,8 @@ def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
             new = item.get(col)
             if new is not None and new != old[col]:
                 changes[col] = new
+                if old[col] is not None and col not in ("source_search_url", "price_source_status"):
+                    _log_field_change(conn, stats, listing_id, col, old[col], new, now)
         if changes:
             metadata_only = set(changes) <= {"price_status", "pending_price_mad", "pending_price_count",
                                             "pending_price_qualified_at", "pending_price_fluctuations"}
@@ -834,14 +853,13 @@ def export_reports(conn: sqlite3.Connection, cycle_ids: list[str], stats: Import
 
 
 def needs_browser_fallback(result: FetchResult) -> bool:
-    """Use browser for blocked HTTP or a 200 response without usable cards.
+    """Use the browser ONLY for a 200 response whose cards are not rendered yet.
 
-    Never retry a normal 404, an offline network failure, or generic 5xx in
-    a browser. Avoid making a challenge look like successful extraction.
+    A 403/429/challenge is terminal ("blocked"): never re-request the same URL
+    through another client stack. Never retry a 404, an offline network
+    failure, or a generic 5xx in a browser.
     """
-    return result.status == "blocked" or (
-        result.status == "ok" and not parse_listings_audited(result.html).passes_quality
-    )
+    return result.status == "ok" and not parse_listings_audited(result.html).passes_quality
 
 
 def build_page_diagnostics(results: list[FetchResult], urls: list[str],
@@ -944,9 +962,11 @@ async def gather_results(urls: list[str], engine: str = "auto",
 
 
 def export_diagnostics(diagnostics: list[dict[str, Any]],
-                       path: str = "akarfinder_diagnostics.json") -> None:
+                       path: str = "akarfinder_diagnostics.json",
+                       fatal_error: str | None = None) -> None:
     report = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "fatal_error": fatal_error,
         "pages": diagnostics,
         "summary": {
             "requested": len(diagnostics),
@@ -1085,12 +1105,27 @@ async def main(engine: str = "auto", pages: int = MAX_PAGES,
                 headed: bool = False,
                 browser_path: str | None = None,
                 urls_file: str | None = None) -> int:
+    """Exit codes: 0 complete, 1 partial, 2 nothing usable, 3 config/robots, 4 unexpected crash."""
+    diagnostics: list[dict[str, Any]] = []
+    try:
+        return await _main(engine, pages, headed, browser_path, urls_file, diagnostics)
+    except Exception as exc:  # an uncaught traceback would also exit 1 == "partial"
+        message = f"{type(exc).__name__}: {exc}"
+        print(f"[ERREUR INATTENDUE] {message}")
+        try:
+            export_diagnostics(diagnostics, fatal_error=message)
+        except Exception:
+            pass
+        return 4
+
+
+async def _main(engine: str, pages: int, headed: bool, browser_path: str | None,
+                urls_file: str | None, diagnostics: list[dict[str, Any]]) -> int:
     try:
         urls = resolve_source_urls(pages, urls_file)
     except (ValueError, OSError, UnicodeError) as exc:
         print(f"[ERREUR URL/ROBOTS] {exc}")
         return 3
-    diagnostics: list[dict[str, Any]] = []
     try:
         robots_proof = fetch_and_check_robots(urls)
         _write_atomic("robots_policy_evidence.json", json.dumps(robots_proof, ensure_ascii=False, indent=2) + "\n")

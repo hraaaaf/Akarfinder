@@ -12,6 +12,7 @@ import asyncio
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
 from pathlib import Path
 from time import perf_counter
 
@@ -20,11 +21,45 @@ from akarfinder_scraper import (BASE_URL, fetch_and_check_robots,
 from benchmark_evidence import evaluate
 
 
+# Distinct exit codes: a green workflow must mean "parsed_quality_pass", nothing else.
+EXIT_CODES = {
+    "parsed_quality_pass": 0,
+    "parsed_quality_fail": 11,
+    "blocked_or_no_useful_html": 12,
+    "robots_or_admission_blocked": 13,
+    "runtime_error": 14,
+}
+EXIT_UNKNOWN = 15
+
+
+def provenance() -> dict:
+    """Tie every canary JSON to the exact code that produced it."""
+    here = Path(__file__).resolve().parent
+    digest = lambda name: hashlib.sha256((here / name).read_bytes()).hexdigest()
+    return {
+        "github_sha": os.environ.get("GITHUB_SHA"),
+        "github_run_id": os.environ.get("GITHUB_RUN_ID"),
+        "scraper_sha256": digest("akarfinder_scraper.py"),
+        "browser_fetcher_sha256": digest("browser_fetcher.py"),
+        "canary_sha256": digest("live_canary.py"),
+    }
+
+
 def summarise_html(html: str) -> dict:
+    parse_started = perf_counter()
     audit = parse_listings_audited(html)
+    parse_seconds = round(perf_counter() - parse_started, 4)
     counts = evaluate(audit.listings) if audit.passes_quality else None
+    # Public source IDs only (no HTML, no photos): required to compute net-new
+    # against a snapshot and to detect a page identical to the previous one.
+    source_ids = sorted({row["id"] for row in audit.listings})
     return {
         "html_sha256": hashlib.sha256(html.encode("utf-8")).hexdigest(),
+        "parse_seconds": parse_seconds,
+        "observed_source_ids": source_ids,
+        "observed_source_ids_sha256": hashlib.sha256("\n".join(source_ids).encode("utf-8")).hexdigest(),
+        # Always computed, even if the page failed the quality gate.
+        "counts_observed": evaluate(audit.listings) if audit.listings else None,
         "total_cards": audit.total_cards,
         "eligible_cards": audit.eligible_cards,
         "ignored_cards": audit.ignored,
@@ -55,6 +90,8 @@ async def probe() -> dict:
         "physical_unique_properties": None,
         "live_scale_200k_proven": False,
         "canary_status": "not_started",
+        "provenance": provenance(),
+        "timings": {},
     }
     try:
         urls = resolve_source_urls(1, None)
@@ -76,8 +113,12 @@ async def probe() -> dict:
     # Importing or initializing the scraper does not open its SQLite database.
     from browser_fetcher import BrowserConfig, BrowserFetcher
     try:
+        launch_started = perf_counter()
         async with BrowserFetcher(BrowserConfig(max_concurrent_pages=1)) as browser:
+            result["timings"]["browser_launch_seconds"] = round(perf_counter() - launch_started, 3)
+            navigation_started = perf_counter()
             fetched = await browser.fetch(BASE_URL)
+            result["timings"]["navigation_and_render_seconds"] = round(perf_counter() - navigation_started, 3)
         result["listing_page_navigations"] = 1
         result["fetch_status"] = fetched.status
         result["response_code"] = fetched.code
@@ -110,8 +151,10 @@ def main() -> int:
     payload = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
     args.output.write_text(payload, encoding="utf-8")
     print(payload)
-    # A blocked canary is a measured finding, not a reason to re-run/bypass.
-    return 0
+    # A blocked canary is still a measured finding (the JSON is uploaded with
+    # `if: always()`), but the process must NOT exit 0: no re-run, no bypass,
+    # simply a red job that cannot be mistaken for a quality pass.
+    return EXIT_CODES.get(report.get("canary_status"), EXIT_UNKNOWN)
 
 
 if __name__ == "__main__":
