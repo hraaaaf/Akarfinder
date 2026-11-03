@@ -84,7 +84,12 @@ class BrowserFetcher:
                 # In a normal browser a JavaScript interstitial can navigate
                 # again after an initial 403. Give the page time to render;
                 # never assume the initial response alone proves success.
-                if code is not None and code not in (200, 403, 429):
+                # An HTTP 403/429 is a hard stop. A rendered card must never
+                # turn an access denial into a synthetic HTTP 200 success.
+                if code in (403, 429):
+                    return FetchResult(url, "blocked", code=code, attempts=1,
+                                       error="HTTP access denied; browser fallback disabled")
+                if code != 200:
                     return FetchResult(url, "http_error", code=code, attempts=1)
                 # An ordinary browser runs the page JavaScript. Wait for a card
                 # instead of assuming that a 200 response contains the listings.
