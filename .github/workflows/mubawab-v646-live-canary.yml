@@ -1,0 +1,30 @@
+name: Mubawab V646 single-page live canary (no DB)
+on:
+  push:
+    paths:
+      - '.github/workflows/mubawab-v646-live-canary.yml'
+  workflow_dispatch:
+jobs:
+  one-page:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install parser and ordinary Chromium
+        run: |
+          python -m pip install beautifulsoup4 playwright
+          python -m playwright install --with-deps chromium
+      - name: Single non-paginated Rabat page (robots preflight, no bypass)
+        run: python scripts/pilots/mubawab-v646/live_canary.py --output artifacts/mubawab-v646-live-canary.json
+      - name: Archive summary only; no site HTML or photos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-v646-single-page-live-canary
+          path: artifacts/mubawab-v646-live-canary.json
+          if-no-files-found: warn
