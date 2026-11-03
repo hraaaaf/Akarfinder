@@ -17,7 +17,7 @@ from pathlib import Path
 from time import perf_counter
 
 from akarfinder_scraper import (BASE_URL, fetch_and_check_robots,
-                                parse_listings_audited, resolve_source_urls)
+                                parse_listings_audited, resolve_source_urls, approved_shard_baseline)
 from benchmark_evidence import evaluate
 
 
@@ -45,9 +45,11 @@ def provenance() -> dict:
     }
 
 
-def summarise_html(html: str) -> dict:
+def summarise_html(html: str, *, baseline_eligible_cards: int | None = None,
+                   require_locality: bool = False) -> dict:
     parse_started = perf_counter()
-    audit = parse_listings_audited(html)
+    audit = parse_listings_audited(html, baseline_eligible_cards=baseline_eligible_cards,
+                                   require_locality=require_locality)
     parse_seconds = round(perf_counter() - parse_started, 4)
     counts = evaluate(audit.listings) if audit.passes_quality else None
     # Public source IDs only (no HTML, no photos): required to compute net-new
@@ -60,6 +62,13 @@ def summarise_html(html: str) -> dict:
         "observed_source_ids_sha256": hashlib.sha256("\n".join(source_ids).encode("utf-8")).hexdigest(),
         # Always computed, even if the page failed the quality gate.
         "counts_observed": evaluate(audit.listings) if audit.listings else None,
+        "quality_contract": {
+            "require_locality": require_locality,
+            "baseline_eligible_cards": baseline_eligible_cards,
+            "minimum_baseline_ratio": 0.70 if baseline_eligible_cards is not None else None,
+            "coverage_vs_baseline": round(audit.coverage_vs_baseline, 4) if audit.coverage_vs_baseline is not None else None,
+            "baseline_is_provisional": baseline_eligible_cards is not None,
+        },
         "total_cards": audit.total_cards,
         "eligible_cards": audit.eligible_cards,
         "ignored_cards": audit.ignored,
@@ -98,6 +107,7 @@ async def probe(source_url: str = BASE_URL) -> dict:
         approved_urls = resolve_source_urls(1, str(Path(__file__).with_name("pilot-urls.txt")))
         if source_url not in approved_urls:
             raise ValueError("Canary URL is not in the fixed approved pilot manifest")
+        baseline = approved_shard_baseline(source_url)
         robots = fetch_and_check_robots([source_url])
         result["robots"] = {
             "status": robots.get("status"),
@@ -126,7 +136,9 @@ async def probe(source_url: str = BASE_URL) -> dict:
         result["attempts"] = fetched.attempts
         result["fetch_error"] = fetched.error
         if fetched.status == "ok" and fetched.html:
-            result["html_analysis"] = summarise_html(fetched.html)
+            result["html_analysis"] = summarise_html(
+                fetched.html, baseline_eligible_cards=baseline, require_locality=True
+            )
             result["canary_status"] = (
                 "parsed_quality_pass" if result["html_analysis"]["quality_accepted"]
                 else "parsed_quality_fail"
