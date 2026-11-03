@@ -1,9 +1,6 @@
 name: Mubawab V646 single-page live canary (no DB)
 on:
-  push:
-    paths:
-      - '.github/workflows/mubawab-v646-live-canary.yml'
-  workflow_dispatch:
+  workflow_dispatch:   # no `push` trigger: editing this file must not hit the site
 jobs:
   one-page:
     runs-on: ubuntu-latest
@@ -20,7 +17,20 @@ jobs:
           python -m pip install beautifulsoup4 playwright
           python -m playwright install --with-deps chromium
       - name: Single non-paginated Rabat page (robots preflight, no bypass)
+        # Non-zero exit unless canary_status == parsed_quality_pass.
         run: python scripts/pilots/mubawab-v646/live_canary.py --output artifacts/mubawab-v646-live-canary.json
+      - name: Job summary (status is read from the JSON, not from the exit code alone)
+        if: always()
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, pathlib
+          p = pathlib.Path("artifacts/mubawab-v646-live-canary.json")
+          d = json.loads(p.read_text()) if p.exists() else {"canary_status": "no_json_written"}
+          a = d.get("html_analysis") or {}
+          print("canary_status:", d.get("canary_status"))
+          print("observed ids:", len(a.get("observed_source_ids") or []), "| eligible cards:", a.get("eligible_cards"))
+          print("sha:", (d.get("provenance") or {}).get("github_sha"))
+          PY
       - name: Archive summary only; no site HTML or photos
         if: always()
         uses: actions/upload-artifact@v4
