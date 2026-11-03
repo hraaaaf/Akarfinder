@@ -46,6 +46,7 @@ MIN_PRICE_COVERAGE = 0.85  # Conservative policy, not an externally verified thr
 MAX_PRICE_ON_REQUEST_RATIO = 0.40  # Fail closed on an unusually large masked-price share.
 MIN_SURFACE_COVERAGE = 0.85
 MIN_LOCALITY_COVERAGE = 0.85  # Source locality drift gate, not a claim all districts are known.
+MIN_BASELINE_COVERAGE = 0.70  # PROVISIONAL one-snapshot alert threshold; not statistical completeness.
 PRICE_CONFIRMATION_CYCLES = 3  # Qualified observations, NOT arbitrary program runs.
 MIN_PRICE_CONFIRMATION_INTERVAL = timedelta(hours=24)  # UTC elapsed time between credits.
 PRICE_M2_MIN_SAMPLE = 8  # Median reference is not reliable with very few comparables.
@@ -65,6 +66,34 @@ _SURFACE_RE = re.compile(
 _BEDROOMS_RE = re.compile(r"(?<!\d)(\d+)\s*(?:chambres?|ch\.?|br\.?)\b", re.IGNORECASE)
 _ROOMS_RE = re.compile(r"(?<!\d)(\d+)\s*(?:pi[eè]ces?)\b", re.IGNORECASE)
 _ID_RE = re.compile(r"/a/([0-9]{5,})(?=/|$)")
+_APARTMENT_TITLE_RE = re.compile(r"\b(?:appartements?|appart|studios?|duplex|triplex|penthouses?)\b", re.I)
+_APARTMENT_WEAK_RE = re.compile(r"\b(?:pi[eè]ces?|chambres?|[ft][1-6]|rez\s+de\s+jardin)\b", re.I)
+_NON_APARTMENT_TITLE_PATTERNS = (
+    ("villa", re.compile(r"\bvillas?\b", re.I)),
+    ("land", re.compile(r"\bterrains?\b", re.I)),
+    ("office", re.compile(r"\b(?:bureaux?|cabinets?|plateaux?\s+de\s+bureaux?)\b", re.I)),
+    ("shop", re.compile(r"\b(?:magasins?|boutiques?|local\s+commercial)\b", re.I)),
+)
+
+
+def classify_property_type(title: str) -> str:
+    """Title-only indicator; NEVER a verified physical property type."""
+    title = title or ""
+    apartment = bool(_APARTMENT_TITLE_RE.search(title))
+    kinds = [kind for kind, regex in _NON_APARTMENT_TITLE_PATTERNS if regex.search(title)]
+    if apartment:
+        if any(kind in ("villa", "land") for kind in kinds):
+            return "mixed_ambiguous"
+        if any(kind in ("office", "shop") for kind in kinds) and re.match(
+            r"^(?:bureaux?|cabinets?|magasins?|boutiques?|local\s+commercial)\b", title.strip(), re.I
+        ):
+            return "mixed_ambiguous"
+        return "apartment"
+    if len(set(kinds)) > 1:
+        return "mixed_ambiguous"
+    if kinds:
+        return kinds[0]
+    return "apartment_probable" if _APARTMENT_WEAK_RE.search(title) else "unknown"
 
 
 @dataclass(frozen=True)
@@ -96,6 +125,7 @@ class ParseAudit:
     total_cards: int = 0
     modern_locality_expected: int = 0
     modern_locality_valid: int = 0
+    baseline_eligible_cards: int | None = None
     ignored: dict[str, int] = field(default_factory=dict)
     rejected: dict[str, int] = field(default_factory=dict)
 
@@ -135,6 +165,11 @@ class ParseAudit:
                 if self.modern_locality_expected else 1.0)
 
     @property
+    def coverage_vs_baseline(self) -> float | None:
+        base = self.baseline_eligible_cards
+        return self.eligible_cards / base if base else None
+
+    @property
     def surface_coverage(self) -> float:
         return sum(item["surface_m2"] is not None for item in self.listings) / self.eligible_cards if self.eligible_cards else 0.0
 
@@ -145,7 +180,8 @@ class ParseAudit:
             self.price_recognition_coverage >= MIN_PRICE_COVERAGE and
             self.price_on_request_ratio <= MAX_PRICE_ON_REQUEST_RATIO and
             self.surface_coverage >= MIN_SURFACE_COVERAGE and
-            self.locality_coverage >= MIN_LOCALITY_COVERAGE
+            self.locality_coverage >= MIN_LOCALITY_COVERAGE and
+            (self.coverage_vs_baseline is None or self.coverage_vs_baseline >= MIN_BASELINE_COVERAGE)
         )
 
     @property
@@ -163,6 +199,8 @@ class ParseAudit:
             reasons.append("surface_coverage_below_threshold")
         if self.eligible_cards and self.locality_coverage < MIN_LOCALITY_COVERAGE:
             reasons.append("locality_coverage_below_threshold")
+        if self.coverage_vs_baseline is not None and self.coverage_vs_baseline < MIN_BASELINE_COVERAGE:
+            reasons.append("below_shard_baseline_provisional")
         return reasons
 
 
@@ -325,9 +363,14 @@ def looks_like_block_page(html: str) -> bool:
     return any(phrase in body for phrase in strong)
 
 
-def parse_listings_audited(html: str | None) -> ParseAudit:
-    """Classify every listingBox, ignoring non-listing placeholders by evidence."""
-    audit = ParseAudit()
+def parse_listings_audited(html: str | None, *, baseline_eligible_cards: int | None = None,
+                          require_locality: bool = False) -> ParseAudit:
+    """Classify cards. Source-specific quality gates are opt-in for verified shards."""
+    if baseline_eligible_cards is not None and (isinstance(baseline_eligible_cards, bool)
+                                               or not isinstance(baseline_eligible_cards, int)
+                                               or baseline_eligible_cards <= 0):
+        raise ValueError("baseline_eligible_cards must be a positive integer")
+    audit = ParseAudit(baseline_eligible_cards=baseline_eligible_cards)
     if not html:
         return audit
     if looks_like_block_page(html):
@@ -376,7 +419,7 @@ def parse_listings_audited(html: str | None) -> ParseAudit:
         city = locality[-1] if len(locality) >= 2 else None
         if district and district.casefold() == city.casefold():
             district = None
-        if card.select_one(".listingTit"):
+        if require_locality or card.select_one(".listingTit"):
             audit.modern_locality_expected += 1
             if district and city:
                 audit.modern_locality_valid += 1
@@ -385,6 +428,7 @@ def parse_listings_audited(html: str | None) -> ParseAudit:
         audit.listings.append({
             "id": listing_id_from_url(link),
             "title": title,
+            "property_type_observed": classify_property_type(title),
             "price_mad": price,
             "price_source_status": source_status,
             "surface_m2": surface,
@@ -412,7 +456,7 @@ def _quality_signals(title: str, price: int | None, surface: float | None,
     if title_rooms is not None and rooms is not None and int(title_rooms.group(1)) != rooms:
         signals.append("title_rooms_mismatch")
     # "Appartement avec bureau" is a normal residential feature, not an office listing.
-    if re.search(r"\b(?:cabinet\s+m[eé]dical|bureau\s+(?:professionnel|commercial)|"
+    if classify_property_type(title) in ("villa", "land", "office", "shop", "mixed_ambiguous") or re.search(r"\b(?:cabinet\s+m[eé]dical|bureau\s+(?:professionnel|commercial)|"
                  r"bureaux\s+(?:professionnels|commerciaux)|local\s+commercial|"
                  r"usage\s+professionnel)\b", title, re.I):
         signals.append("possible_non_residential")
@@ -484,7 +528,7 @@ def init_db(path: str = DB_NAME) -> sqlite3.Connection:
     """)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS listings (
-            id TEXT PRIMARY KEY, title TEXT, price_mad INTEGER,
+            id TEXT PRIMARY KEY, title TEXT, property_type_observed TEXT, price_mad INTEGER,
             surface_m2 REAL, rooms INTEGER, bedrooms INTEGER,
             bathrooms INTEGER, district TEXT, location TEXT, link TEXT,
             first_seen TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -505,7 +549,13 @@ def init_db(path: str = DB_NAME) -> sqlite3.Connection:
         )
     """)
     existing = {r[1] for r in conn.execute("PRAGMA table_info(listings)")}
-    for column, kind in (("bedrooms", "INTEGER"), ("bathrooms", "INTEGER"), ("district", "TEXT"),
+    # Some legacy tables lack essential INSERT columns, not just recently added fields.
+    for column, kind in (("title", "TEXT"), ("price_mad", "INTEGER"),
+                         ("surface_m2", "REAL"), ("rooms", "INTEGER"),
+                         ("location", "TEXT"), ("link", "TEXT"),
+                         ("first_seen", "TEXT"), ("last_seen", "TEXT"),
+                         ("property_type_observed", "TEXT"),
+                         ("bedrooms", "INTEGER"), ("bathrooms", "INTEGER"), ("district", "TEXT"),
                          ("price_status", "TEXT DEFAULT 'first_observation'"),
                          ("pending_price_mad", "INTEGER"), ("pending_price_count", "INTEGER DEFAULT 0"),
                          ("pending_price_qualified_at", "TEXT"),
@@ -562,9 +612,9 @@ def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
             raise ValueError("conflicting transaction for same listing ID")
         if old is None:
             conn.execute("""INSERT INTO listings
-                (id,title,price_mad,surface_m2,rooms,bedrooms,bathrooms,district,location,link,first_seen,last_seen,price_source_status,source_search_url,transaction_type)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                (listing_id, item["title"], item["price_mad"], item["surface_m2"],
+                (id,title,property_type_observed,price_mad,surface_m2,rooms,bedrooms,bathrooms,district,location,link,first_seen,last_seen,price_source_status,source_search_url,transaction_type)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (listing_id, item["title"], item.get("property_type_observed"), item["price_mad"], item["surface_m2"],
                  item["rooms"], item["bedrooms"], item.get("bathrooms"), item.get("district"), item["location"], item["link"],now,now,item.get("price_source_status"),
                  item.get("source_search_url"),item.get("transaction_type")))
             stats.inserted += 1
@@ -637,7 +687,7 @@ def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
                                    pending_price_qualified_at=None, pending_price_fluctuations=0)
                 if old["price_status"] != "observed":
                     changes["price_status"] = "observed"
-        for col in ("title", "surface_m2", "rooms", "bedrooms", "bathrooms", "district", "location", "link", "price_source_status", "source_search_url", "transaction_type"):
+        for col in ("title", "property_type_observed", "surface_m2", "rooms", "bedrooms", "bathrooms", "district", "location", "link", "price_source_status", "source_search_url", "transaction_type"):
             new = item.get(col)
             if new is not None and new != old[col]:
                 changes[col] = new
@@ -985,6 +1035,23 @@ def export_diagnostics(diagnostics: list[dict[str, Any]],
     _write_atomic(path, json.dumps(report, ensure_ascii=False, indent=2) + "\n")
 
 
+def approved_shard_baseline(source_url: str) -> int:
+    """Mandatory one-snapshot provisional card-count reference for the bounded pilot."""
+    data = json.loads(Path(__file__).with_name("quality_baselines_v646_20261103.json").read_text(encoding="utf-8"))
+    if data.get("schema_version") != 1 or data.get("minimum_coverage_ratio") != MIN_BASELINE_COVERAGE:
+        raise ValueError("Pilot baseline file changed or unversioned; review before fetching")
+    samples = data.get("eligible_cards_by_shard")
+    if not isinstance(samples, dict) or len(samples) != MAX_APPROVED_SHARDS:
+        raise ValueError("Pilot baselines missing, unexpected or invalid")
+    approved = resolve_source_urls(1, str(Path(__file__).with_name("pilot-urls.txt")))
+    if set(samples) != set(approved) or source_url not in samples:
+        raise ValueError("Missing approved one-page baseline for source URL")
+    value = samples[source_url]
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise ValueError("Invalid pilot eligible-card baseline")
+    return value
+
+
 def resolve_source_urls(pages: int, urls_file: str | None = None) -> list[str]:
     """Strictly sale/apartment search shards. Not a licence to scrape or reuse."""
     if pages != 1:
@@ -1127,6 +1194,8 @@ async def _main(engine: str, pages: int, headed: bool, browser_path: str | None,
         print(f"[ERREUR URL/ROBOTS] {exc}")
         return 3
     try:
+        for url in urls:
+            approved_shard_baseline(url)
         robots_proof = fetch_and_check_robots(urls)
         _write_atomic("robots_policy_evidence.json", json.dumps(robots_proof, ensure_ascii=False, indent=2) + "\n")
     except (OSError, ValueError, UnicodeError, urllib.error.URLError) as exc:
@@ -1157,7 +1226,9 @@ async def _main(engine: str, pages: int, headed: bool, browser_path: str | None,
         if result.status != "ok":
             print(f"[!] Page {index}: {result.status} (HTTP {result.code}, {result.error})")
             continue
-        audit = parse_listings_audited(result.html)
+        baseline = approved_shard_baseline(urls[index - 1])
+        audit = parse_listings_audited(result.html, require_locality=True,
+                                      baseline_eligible_cards=baseline)
         listings = audit.listings
         if not audit.passes_quality:
             print(f"[!] Page {index}: qualité insuffisante "

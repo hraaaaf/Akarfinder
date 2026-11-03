@@ -123,6 +123,7 @@ def _run_main(cwd, html):
     previous = os.getcwd(); os.chdir(cwd)
     try:
         with patch.object(s, "fetch_and_check_robots", lambda urls: {"status": "checked"}), \
+                patch.object(s, "approved_shard_baseline", lambda url: 3), \
                 patch.object(s, "gather_results", fake_gather), contextlib.redirect_stdout(io.StringIO()):
             try:
                 return asyncio.run(s.main(engine="http")), None
@@ -222,18 +223,15 @@ class ParserAdversarial(unittest.TestCase):
         self.assertEqual(audit.rejected, {"challenge_page": 1})
         self.assertEqual(audit.listings, [])
 
-    @unittest.expectedFailure
     def test_villa_in_apartment_shard_is_typed_not_assumed(self):           # A8 proposal R6
         row = s.parse_listings(card(7860001, title="Villa à vendre Souissi"))[0]
         self.assertEqual(row["property_type_observed"], "villa")
 
-    @unittest.expectedFailure
     def test_truncated_page_is_flagged_against_a_baseline(self):            # A9 proposal R5
         cut = page(*(card(7870000 + i) for i in range(12)))
         audit = s.parse_listings_audited(cut, baseline_eligible_cards=32)
         self.assertFalse(audit.passes_quality)
 
-    @unittest.expectedFailure
     def test_locality_is_required_even_if_the_modern_marker_disappears(self):  # A10 proposal R5
         legacy = page(*(card(7880000 + i, modern=False) for i in range(10)))
         audit = s.parse_listings_audited(legacy, require_locality=True)
@@ -253,6 +251,7 @@ class ZeroProductionWrite(unittest.TestCase):
         async def fake_probe_wrapper():
             return await lc.probe()
         with patch.object(lc, "fetch_and_check_robots", lambda urls: {"status": "checked", "sha256": "x", "checked_at_utc": "t", "rule_count": 1}), \
+                patch.object(lc, "approved_shard_baseline", lambda url: 3), \
                 patch.object(browser_fetcher, "BrowserFetcher", FakeBrowser), patch.object(sqlite3, "connect", forbidden):
             report = asyncio.run(lc.probe())
         self.assertEqual(report["canary_status"], "parsed_quality_pass")
@@ -282,12 +281,10 @@ class RealDomReplay(unittest.TestCase):
         signals = {r["id"]: r["quality_signals"] for r in rows if r["quality_signals"]}
         self.assertEqual(signals["8397179"], ["possible_non_residential"])
 
-    @unittest.expectedFailure
     def test_real_dom_double_marker_drift_must_fail_the_locality_gate(self):
         drift = self.html.replace('listingTit"', 'listingTitle"').replace("listingTit ", "listingTitle ").replace('class="listingH3"', 'class="x"')
-        self.assertFalse(s.parse_listings_audited(drift).passes_quality)
+        self.assertFalse(s.parse_listings_audited(drift, require_locality=True).passes_quality)
 
-    @unittest.expectedFailure
     def test_real_dom_cut_after_17_cards_must_not_look_complete(self):
         starts = [m.start() for m in re.finditer(r'<div class="listingBox', self.html)]
         audit = s.parse_listings_audited(self.html[:starts[17]], baseline_eligible_cards=32)

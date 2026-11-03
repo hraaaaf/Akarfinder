@@ -51,7 +51,10 @@ class LiveCanaryOfflineTests(unittest.TestCase):
             robots_checked.extend(chosen)
             return {"status": "checked", "sha256": "sha", "checked_at_utc": "now", "rule_count": 1}
 
+        # This is a four-card SYNTHETIC smoke test, not the 32-card Casablanca
+        # reference. Isolate the baseline here; a separate test enforces 32 live.
         with patch.object(live_canary, "fetch_and_check_robots", fake_robots), \
+                patch.object(live_canary, "approved_shard_baseline", lambda url: 3), \
                 patch.object(browser_fetcher, "BrowserFetcher", FakeBrowser):
             result = asyncio.run(live_canary.probe(source_url=source_url))
         self.assertEqual(result["canary_status"], "parsed_quality_pass")

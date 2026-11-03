@@ -71,6 +71,11 @@ def evaluate(rows: list[dict]) -> dict:
             "detail_link": _valid_link(r),
             "stale_price": stale_price,
         }
+    property_types = {key: str(row.get("property_type_observed") or "unknown")
+                      for key, row in unique.items()}
+    recognized_apartments = sum(t == "apartment" for t in property_types.values())
+    explicit_other = sum(t in ("villa", "land", "office", "shop", "mixed_ambiguous")
+                         for t in property_types.values())
     field_counts = {name: sum(int(f[name]) for f in flags.values())
                     for name in ("title", "price_numeric", "price_explicit_on_request",
                                  "surface", "city", "district", "detail_link")}
@@ -84,6 +89,9 @@ def evaluate(rows: list[dict]) -> dict:
         "duplicate_source_id_occurrences": len(ids) - len(set(ids)),
         "fields_present_among_unique_ids": field_counts,
         "stale_price_rows_with_on_request_source": sum(int(f["stale_price"]) for f in flags.values()),
+        "apartment_confirmed_from_title_only": recognized_apartments,
+        "explicit_other_or_mixed_type_from_title_only": explicit_other,
+        "property_type_observed_counts": dict(sorted(Counter(property_types.values()).items())),
         "complete_core_without_district": sum(bool(core(f)) for f in flags.values()),
         "complete_core_with_district": sum(bool(strict(f)) for f in flags.values()),
         "complete_core_with_district_numeric_price":
