@@ -28,3 +28,9 @@ Corriger les défauts P0/P1 démontrés du scraper/canary, sans exploration rés
 
 ## Suite
 Vérifier la CI offline **sur le HEAD de cette branche**, comparer ses résultats exacts aux 66 tests locaux, diagnostiquer si échec. Aucun run live automatique : canary désormais `workflow_dispatch` seulement ; tout nouveau pilote réel doit être explicitement planifié dans le respect du robots et de la borne existante. Comparaison net-nouveau possible uniquement avec 2 JSON contenant les listes d'IDs, et aucun ancien JSON n'a ces listes.
+
+## Validation CI certifiée sur le commit de code 272ec809
+- [GitHub Actions #41728390623](https://github.com/hraaaaf/Akarfinder/actions/runs/41728390623) : **completed / SUCCESS** sur `272ec809fee806ea134b622de5264a10b445793c` ; **66 tests** en 0,267 s, **4 skipped** (fixture réelle absente) et **3 expectedFailure** (améliorations volontairement non codées).
+- Audit historique V645 dans le même run : **SQLite integrity_check=ok**, 97 IDs source, 97 cores complets, 91 prix numériques, 6 sur demande, 0 prix numériques périmés corrélés à `on_request`. Artefact [#13275342798](https://github.com/hraaaaf/Akarfinder/actions/runs/41728390623/artifacts/13275342798) ; **0 requête réseau au site dans cet audit**.
+- Le contrôle CI porte sur le code corrigé, pas sur un canary live exécuté après correction. Le précédent canary du 03/11 (32 ID) reste une preuve **antérieure aux patchs**.
+- **Gate de validation du lot P0/P1 offline = GO**, mais **GO live multi-shards / 200k / publication = NO-GO** sans preuves complémentaires.
