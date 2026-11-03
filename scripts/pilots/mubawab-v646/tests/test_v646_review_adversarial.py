@@ -64,7 +64,7 @@ class AccessPolicy(unittest.TestCase):
 class CanaryEvidence(unittest.TestCase):
     """SYNTHETIC. Mission items 4 and 6: a green job must mean a parsed quality page."""
     def _exit_code(self, status):
-        async def fake_probe(): return {"canary_status": status}
+        async def fake_probe(source_url=s.BASE_URL): return {"canary_status": status}
         with tempfile.TemporaryDirectory() as tmp, patch.object(lc, "probe", fake_probe), \
                 patch.object(sys, "argv", ["canary", "--output", tmp + "/o.json"]), \
                 contextlib.redirect_stdout(io.StringIO()):
