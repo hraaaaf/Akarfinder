@@ -57,3 +57,9 @@ Chaque invocation de `live_canary.py` ne cible **qu'une page**, sélectionnée e
 **GO** : fiabilité du canary actuel pour **ces trois premières pages**, valeurs et comptage de 97 IDs distincts par source avec noyau de champs parsés. **NO-GO** : pagination, exhaustivité des shards, droit de publication, fraîcheur des annonces, unicité physique des biens, classification vérifiée appartement, taux de rotation du site, débit durable, et stock national de 200 000 fiches. Les 3 expectedFailure qualité restent ouverts (localité, troncature, typage).
 
 **Sécurité** : aucun détail ou image téléchargé séparément, aucun accès paginé, aucune écriture dans une base, aucun merge ni déploiement. Résultat d'un seul instant T, non benchmark longitudinal.
+
+## Post-run : garde one-shot refermée, preuve pérennisée
+- Workflow one-shot supprimé du HEAD par commit [`82e3a395`](https://github.com/hraaaaf/Akarfinder/commit/82e3a395d1f0516eb963e8c618eca6cdce4276bd) après la conclusion du run. Les logs et JSON historiques restent disponibles sous #41730963403.
+- Rapport agrégé machine-readable permanent : [`docs/evidence/MUBAWAB_V646_3SHARD_20261103.json`](https://github.com/hraaaaf/Akarfinder/blob/test/akar-v646-3shard-live-20261103/docs/evidence/MUBAWAB_V646_3SHARD_20261103.json), commit `b224b88a39aa1c7ecb035c1d851a0ce52bc5b7d4`.
+- Contrôle des 3 JSON de l'artefact téléchargé : ZIP CRC OK ; historique V645 SQLite `PRAGMA integrity_check=ok`, 97 IDs. Intersection identifiée 69 ; nouveaux **par rapport à la liste historique** 28 ; anciennes entrées **non visibles sur la première page actuelle** 28.
+- **Clôture du test borné = GO** pour les 3 canarys unitaire V646, et **NO-GO** pour un système de collecte national. Le PR de correction #1149 reste Draft ; `main` intact.
