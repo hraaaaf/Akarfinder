@@ -25,14 +25,25 @@
 - `publication_eligible_proven = 0` tant que fraîcheur, activité et droits ne sont pas contrôlés.
 - Les secondes de traitement du benchmark sont **CPU/offline** et non un débit de crawl.
 
-## Validation en cours
-- [Run #41548735455](https://github.com/hraaaaf/Akarfinder/actions/runs/41548735455) : workflow initial, queued au contrôle ; [run final de code #41549175495](https://github.com/hraaaaf/Akarfinder/actions/runs/41549175495) sur `6ac202be403564610bde8b0b53dd43b59a14460e`, **queued** au contrôle initial. Les métriques ne sont pas publiées avant logs.
-- Aucun chiffre de complétude historique publié avant artefact/logs.
+## Validation obtenue le 03/11/2026 — HISTORIQUE V645 seulement
+- [Run #41549175495](https://github.com/hraaaaf/Akarfinder/actions/runs/41549175495) **completed/SUCCESS**, HEAD code `6ac202be403564610bde8b0b53dd43b59a14460e`. **33/33** tests hors ligne PASS ; 19 tests initiaux et 14 tests parser/qualité.
+- Artifact [mubawab-v646-historical-evidence #13190297948](https://github.com/hraaaaf/Akarfinder/actions/runs/41549175495/artifacts/13190297948), SHA256 archive `d1ba2bd3852d0032de9b9a75ce2b5748e1f55f4d93e7005153d8c5851d151271`. Audit du **SQLite V645 historique** intégré, PRAGMA integrity_check=ok.
+- **97** lignes SQLite ; **97** IDs-source distincts ; **0** répétition d'ID dans ce snapshot.
+- Champs présents parmi les IDs : titre **97**, prix numérique **91**, prix explicitement sur demande **6**, surface **97**, ville **97**, quartier **97**, URL de détail **97**.
+- **97/97** complets suivant le core (titre, prix numérique ou sur demande, surface, ville, quartier, lien). **91/97** avec prix numérique. Ces champs proviennent du stockage historique, pas d'un nouveau parse V646 live.
+- Activité, fraîcheur, unicité physique, et droit de publication **non vérifiés** ; `publication_eligible_proven=0`, `live_extraction_rate_per_hour=null`.
+- Aucun appel au site lors de cet audit. `offline_processing_seconds=0.002842` = temps de lecture SQLite et de calcul, PAS débit du crawler.
+
+## Correctif d'accès HTTP et canary V646 en cours
+- Correctif `browser_fetcher.py` : **HTTP 403/429 toujours BLOCKED**, jamais transformé en succès 200 après parsing du HTML. Test offline `tests/test_browser_access_denied.py`.
+- `live_canary.py` : une navigation de shard Rabat sans pagination, robots préflight, Chromium ordinaire, pas de retry, pas de proxy ou bypass, aucune écriture SQLite ou prod ; n'enregistre que hash HTML et métriques agrégées. Trois tests offline supplémentaires.
+- [Canary live #41611908342](https://github.com/hraaaaf/Akarfinder/actions/runs/41611908342) sur `4cbabc47fd0f3d33a5fcf0b647cfbbde82beb873` créé, **queued au contrôle initial**, ne pas annoncer de résultat live avant logs/artefact.
+- La CI hors ligne du nouveau correctif doit être contrôlée séparément ; 33/33 PASS correspondent au commit précédent, pas à ces nouveaux changements.
 
 ## Gate réel restant
-1. Résultat CI + lecture du rapport JSON, correction si échec.
-2. HTML réellement capturé et admissible ; comparaison de sélecteurs/fixtures sans confondre synthèse et source.
-3. Benchmark live V646 borné (requêtes, réponses, blocs, délais, fiches, complet, uniques et doublons), uniquement sur un accès permis, aucun bypass.
+1. Nouvelle CI sur tests navigateur/canary : vérifier, diagnostiquer toute régression et corriger.
+2. Lire le diagnostic du canary live #41611908342 : preuve de refus de blocage, ou comparaison de vrais sélecteurs si HTML accepté.
+3. Si succès sur HTML fidèle, calculer rendement strict/qualité ; si challenge/403/429, clôturer comme blocage sans contournement. Ne pas extrapoler le débit d'une seule page.
 4. Test de reprise sur interruption, intégrité SQLite, qualité, validation CI puis closeout Notion.
 5. **NO-GO** pour extrapoler à 200k tant que rendement et catalogue disponible ne sont pas démontrés.
 
