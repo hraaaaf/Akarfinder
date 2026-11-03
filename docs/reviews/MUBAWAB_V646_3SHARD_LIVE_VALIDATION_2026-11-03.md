@@ -38,3 +38,22 @@ Chaque invocation de `live_canary.py` ne cible **qu'une page**, sélectionnée e
 - Le workflow one-shot commence par exécuter les tests offline, puis installe Chromium normal, puis une navigation par shard avec vérification robots préalable. Chaque step stoppe en cas de code de retour non zéro du canary. Résultats JSON archivés avec `if: always()`.
 - Déclencheur one-shot : la modification d'un seul fichier de workflow et une condition sur le marqueur explicite du commit autorisé. La suppression du workflow après résultat empêchera toute relance future par push.
 - Aucune requête de détail, pas de crawl massif, pas de déploiement, pas de changement DB produit, PR #1149 intacte.
+
+## Résultat réel et preuve — 03/11/2026, run #41730963403
+
+**Statut : SUCCESS**, HEAD de code `9ce27756ff19f9d91b586ca93c53d86ce641c40d`, `GITHUB_SHA` identique dans les trois JSON de canary. [Workflow](https://github.com/hraaaaf/Akarfinder/actions/runs/41730963403) ; [artefact des trois JSON #13277225359](https://github.com/hraaaaf/Akarfinder/actions/runs/41730963403/artifacts/13277225359), SHA256 de l'archive `9a01c57a3f2fd6dd9833daa0ce59f6520409790183d5ec2ab53bb804551a953f` (CRC OK).
+
+| Shard | HTTP / statut | Cartes totales | Ignorées | IDs distincts | Core avec quartier | Prix numériques | Sur demande | IDs déjà dans V645 | IDs absents V645 | Durée sonde |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Rabat | 200 / `parsed_quality_pass` | 34 | 2 | 32 | 32 | 28 | 4 | 16 | 16 | 4,049 s |
+| Casablanca Maârif | 200 / `parsed_quality_pass` | 34 | 2 | 32 | 32 | 32 | 0 | 21 | 11 | 4,544 s |
+| Agadir Hay Salam | 200 / `parsed_quality_pass` | 34 | 1 | 33 | 33 | 30 | 3 | 32 | 1 | 3,782 s |
+| **Total** | **3/3 pass** | **102** | **5** | **97** | **97** | **90** | **7** | **69** | **28** | **12,375 s cumulé** |
+
+**Méthode de comparaison :** extraction du `akarfinder.db` historique (ZIP artifact V645 `13091518100`) en lecture seule ; comparaison ensembliste des `observed_source_ids` du nouvel artefact V646 à l'ensemble de 97 IDs déjà présents dans ce SQLite. **0 doublon d'ID entre les trois shards V646**, et 28 IDs historiques **non visibles dans la première page** des shards actuels. Les 28 absents du snapshot ne prouvent pas de nouvelles publications et les 28 manquants ne prouvent pas de suppressions.
+
+**Contrôles :** chaque shard a fait exactement une navigation de la page de liste, une tentative, HTTP 200, vérification robots `checked`, `quality_accepted=true`, motifs de rejet vides. Les analyses JSON contiennent SHA HTML, SHA de la liste d'IDs et SHA des scripts.
+
+**GO** : fiabilité du canary actuel pour **ces trois premières pages**, valeurs et comptage de 97 IDs distincts par source avec noyau de champs parsés. **NO-GO** : pagination, exhaustivité des shards, droit de publication, fraîcheur des annonces, unicité physique des biens, classification vérifiée appartement, taux de rotation du site, débit durable, et stock national de 200 000 fiches. Les 3 expectedFailure qualité restent ouverts (localité, troncature, typage).
+
+**Sécurité** : aucun détail ou image téléchargé séparément, aucun accès paginé, aucune écriture dans une base, aucun merge ni déploiement. Résultat d'un seul instant T, non benchmark longitudinal.
