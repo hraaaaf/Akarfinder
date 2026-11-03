@@ -43,3 +43,11 @@
 ## Reprise exacte
 
 Lire ce document et `docs/reviews/MUBAWAB_V646_P1_QUALITY_GATES_2026-11-03.md`, vérifier `repo=hraaaaf/Akarfinder`, branche et HEAD, PR #1150 et CI ; dès que le délai est écoulé, un seul run live contrôlé sur le HEAD approuvé, puis comparer les JSON et actualiser Notion Akarfinder (page `40c77c66-3362-81e8-b50f-ddde1076eea5`). Arrêter toute continuation live si un garde échoue.
+
+## Certification offline et planification contrôlée — 03/11/2026
+
+- [CI GitHub #41741667180](https://github.com/hraaaaf/Akarfinder/actions/runs/41741667180) : **completed/SUCCESS** sur commit de code `300b1523328e1e54d805a248da692a8bab2932a1`, **100 tests = 96 PASS + 4 skipped, 0 expectedFailure / fail**. Le job a audité l'ancien SQLite V645 hors ligne ; **0 nouvelle navigation Mubawab dans cette CI**.
+- [PR Draft #1151](https://github.com/hraaaaf/Akarfinder/pull/1151), base `fix/akar-v646-p1-quality-gates-20261103` (elle-même PR #1150 Draft), non mergée. Fichiers de code et tests transférés sur GitHub avec empreintes Git blob vérifiées contre leurs originaux locaux.
+- Le snapshot d'analyse [`docs/evidence/MUBAWAB_V646_CALIBRATION_INPUT_20261103.json`](https://github.com/hraaaaf/Akarfinder/blob/feat/akar-v646-longitudinal-calibration-20261103/docs/evidence/MUBAWAB_V646_CALIBRATION_INPUT_20261103.json) conclut **0 observation strict P1** pour les 3 shards, candidats de baseline `null`, sans rejet d'archive. Pré-P1 = 1 observation/shard. Les données sont insuffisantes.
+- **Automation bornée enregistrée** : ID `6aea728eed648191bcd66dc3914328e6`, début **04/11/2026 22:45 UTC**, jusqu'à **5 déclenchements au maximum espacés de 25 h**. À chaque déclenchement, le worker doit vérifier le **délai effectif ≥ 24 h**, la CI du HEAD et la politique robots puis au plus 3 navigations de page 1 (une par ville, en séquence), et stopper dès un refus. Un arrêt bloquant doit mettre en pause l'automate ; zéro nouvelle URL, aucun retry, aucune pagination, aucun contournement. La création de l'automate est vérifiée ; **les futures visites ne sont PAS encore exécutées ni prouvées**.
+- **Next exact** : première vérification de délai et de CI, puis éventuel run unique borné le 04/11 à partir de 22:45 UTC, lecture des vrais JSON, mise à jour GitHub et Notion. Un échec de garde donne **NO-GO** ; toute nouvelle baseline devra être approuvée par une revue humaine.
