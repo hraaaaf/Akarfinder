@@ -1,0 +1,74 @@
+name: Akarfinder V646 one-time approved 3-shard canary
+on:
+  push:
+    paths:
+      - '.github/workflows/mubawab-v646-3shard-once-20261103.yml'
+permissions:
+  contents: read
+concurrency:
+  group: akar-v646-single-use-20261103
+  cancel-in-progress: false
+jobs:
+  canary:
+    # Only this user's explicitly approved one-time test commit may run the browser.
+    if: contains(github.event.head_commit.message, '[run-once-akar-v646-20261103]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Offline quality and access-policy regression first
+        run: |
+          python -m pip install beautifulsoup4
+          cd scripts/pilots/mubawab-v646
+          python -m unittest discover -s tests
+      - name: Install ordinary Chromium, no stealth/proxy or challenge bypass
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: "1 of 3 — RABAT: robots preflight then ONE results page"
+        run: |
+          python scripts/pilots/mubawab-v646/live_canary.py \
+            --url 'https://www.mubawab.ma/fr/st/rabat/appartements-a-vendre' \
+            --output artifacts/v646-rabat.json
+      - name: "2 of 3 — CASABLANCA MAARIF: only if Rabat passed"
+        run: |
+          python scripts/pilots/mubawab-v646/live_canary.py \
+            --url 'https://www.mubawab.ma/fr/sd/casablanca/ma%C3%A2rif/appartements-a-vendre' \
+            --output artifacts/v646-casablanca-maarif.json
+      - name: "3 of 3 — AGADIR HAY SALAM: only if Casablanca passed"
+        run: |
+          python scripts/pilots/mubawab-v646/live_canary.py \
+            --url 'https://www.mubawab.ma/fr/sd/agadir/hay-salam/appartements-a-vendre' \
+            --output artifacts/v646-agadir-hay-salam.json
+      - name: Measured job summary including blockers
+        if: always()
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          print("## V646 one-time bounded pilot (2026-11-03)")
+          print("Run commit:", Path(".git/HEAD").read_text().strip())
+          print("| Shard | Status | HTTP | Eligible cards | Observed source IDs | Strict core complete |")
+          print("|---|---|---:|---:|---:|---:|")
+          for name in ("rabat", "casablanca-maarif", "agadir-hay-salam"):
+              p=Path("artifacts")/f"v646-{name}.json"
+              if not p.exists():
+                  print(f"| {name} | NOT ATTEMPTED (previous shard did not pass) | — | — | — | — |")
+                  continue
+              d=json.loads(p.read_text())
+              a=d.get("html_analysis") or {}
+              c=a.get("counts_for_accepted_page_only") or {}
+              print(f"| {name} | {d.get('canary_status')} | {d.get('response_code')} | {a.get('eligible_cards')} | {c.get('unique_source_ids')} | {c.get('complete_core_with_district')} |")
+          print("No pagination, no detail pages, no DB write, no inference of physical uniqueness, rights or publication eligibility.")
+          PY
+      - name: Archive metrics only even if a shard is denied or fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: akar-v646-three-shard-20261103-one-shot
+          path: artifacts/v646-*.json
+          if-no-files-found: warn
+          retention-days: 90
