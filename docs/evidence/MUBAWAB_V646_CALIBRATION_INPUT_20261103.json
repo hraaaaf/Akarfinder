@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "mode": "OFFLINE_PAGE1_CALIBRATION_READ_ONLY",
+  "source_paths": [
+    "v646-agadir-hay-salam.json",
+    "v646-casablanca-maarif.json",
+    "v646-rabat.json"
+  ],
+  "rejected_reports": [],
+  "shards": {
+    "https://www.mubawab.ma/fr/st/rabat/appartements-a-vendre": {
+      "reference_initial_eligible_cards": 32,
+      "historical_pass_observations": 1,
+      "strict_p1_pass_observations": 0,
+      "min_strict_p1_required": 5,
+      "reference_to_current_code_comparability": "not_assumed",
+      "strict_p1_eligible_counts": [],
+      "strict_p1_median_eligible_cards": null,
+      "strict_p1_min_eligible_cards": null,
+      "strict_p1_max_eligible_cards": null,
+      "strict_p1_code_versions": 0,
+      "cadence_violations": [],
+      "terminal_access_denial_observed": false,
+      "next_eligible_at_utc": "2026-11-04T22:28:05+00:00",
+      "calibration_ready_for_human_review": false,
+      "candidate_baseline_for_human_review": null,
+      "status": "INSUFFICIENT_EVIDENCE",
+      "note": "Page 1 convenience sample. A median is NOT proof of completeness. Never update gate automatically."
+    },
+    "https://www.mubawab.ma/fr/sd/casablanca/ma%C3%A2rif/appartements-a-vendre": {
+      "reference_initial_eligible_cards": 32,
+      "historical_pass_observations": 1,
+      "strict_p1_pass_observations": 0,
+      "min_strict_p1_required": 5,
+      "reference_to_current_code_comparability": "not_assumed",
+      "strict_p1_eligible_counts": [],
+      "strict_p1_median_eligible_cards": null,
+      "strict_p1_min_eligible_cards": null,
+      "strict_p1_max_eligible_cards": null,
+      "strict_p1_code_versions": 0,
+      "cadence_violations": [],
+      "terminal_access_denial_observed": false,
+      "next_eligible_at_utc": "2026-11-04T22:28:09+00:00",
+      "calibration_ready_for_human_review": false,
+      "candidate_baseline_for_human_review": null,
+      "status": "INSUFFICIENT_EVIDENCE",
+      "note": "Page 1 convenience sample. A median is NOT proof of completeness. Never update gate automatically."
+    },
+    "https://www.mubawab.ma/fr/sd/agadir/hay-salam/appartements-a-vendre": {
+      "reference_initial_eligible_cards": 33,
+      "historical_pass_observations": 1,
+      "strict_p1_pass_observations": 0,
+      "min_strict_p1_required": 5,
+      "reference_to_current_code_comparability": "not_assumed",
+      "strict_p1_eligible_counts": [],
+      "strict_p1_median_eligible_cards": null,
+      "strict_p1_min_eligible_cards": null,
+      "strict_p1_max_eligible_cards": null,
+      "strict_p1_code_versions": 0,
+      "cadence_violations": [],
+      "terminal_access_denial_observed": false,
+      "next_eligible_at_utc": "2026-11-04T22:28:14+00:00",
+      "calibration_ready_for_human_review": false,
+      "candidate_baseline_for_human_review": null,
+      "status": "INSUFFICIENT_EVIDENCE",
+      "note": "Page 1 convenience sample. A median is NOT proof of completeness. Never update gate automatically."
+    }
+  },
+  "all_shards_ready_for_human_review": false,
+  "publication_eligible_proven": 0,
+  "physical_unique_properties": null,
+  "note": "No site request or DB write. Observed source IDs are not unique physical properties."
+}

@@ -3,7 +3,7 @@
 
 Hard limits: one canonical, non-paginated public search page; robots checked
 fresh before any navigation; ordinary Chromium, no proxy/retry/challenge bypass.
-Only aggregates and HTML SHA-256 are kept. Not a bulk crawler or license proof.
+Only summary metadata and public source IDs are kept, no raw HTML/photos. Not a bulk crawler or license proof.
 """
 from __future__ import annotations
 
@@ -42,6 +42,8 @@ def provenance() -> dict:
         "scraper_sha256": digest("akarfinder_scraper.py"),
         "browser_fetcher_sha256": digest("browser_fetcher.py"),
         "canary_sha256": digest("live_canary.py"),
+        "quality_baselines_sha256": digest("quality_baselines_v646_20261103.json"),
+        "approved_urls_sha256": digest("pilot-urls.txt"),
     }
 
 
@@ -103,7 +105,6 @@ async def probe(source_url: str = BASE_URL) -> dict:
         "timings": {},
     }
     try:
-        # Exactly one page from the three audited shards; never arbitrary URLs.
         approved_urls = resolve_source_urls(1, str(Path(__file__).with_name("pilot-urls.txt")))
         if source_url not in approved_urls:
             raise ValueError("Canary URL is not in the fixed approved pilot manifest")
@@ -158,7 +159,7 @@ async def probe(source_url: str = BASE_URL) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=Path("artifacts/mubawab-v646-live-canary.json"))
-    parser.add_argument("--url", default=BASE_URL, help="Exactly one URL from pilot-urls.txt; no arbitrary shards")
+    parser.add_argument("--url", default=BASE_URL, help="Exactly one URL from pilot-urls.txt")
     args = parser.parse_args()
     report = asyncio.run(probe(source_url=args.url))
     args.output.parent.mkdir(parents=True, exist_ok=True)

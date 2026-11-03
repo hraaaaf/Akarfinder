@@ -21,6 +21,33 @@ class BrowserConfig:
     executable_path: str | None = None
 
 
+async def wait_for_listing_card_stability(page, timeout_ms: int, *,
+                                          poll_ms: int = 400,
+                                          min_observe_ms: int = 1600,
+                                          stable_samples: int = 3) -> int:
+    """Observe one navigation until DOM card count settles or the timeout expires.
+
+    A short stable count is a rendering heuristic, NOT proof that page 1 is
+    exhaustive. The independent shard baseline/quality gate still applies.
+    No extra navigation, HTTP retry or challenge bypass is attempted here.
+    """
+    if timeout_ms <= 0 or poll_ms <= 0 or min_observe_ms < 0 or stable_samples < 2:
+        raise ValueError("Invalid browser stability timing")
+    waited, last, consecutive = 0, None, 0
+    locator = page.locator(".listingBox")
+    while waited <= timeout_ms:
+        count = await locator.count()
+        consecutive = consecutive + 1 if count > 0 and count == last else (1 if count > 0 else 0)
+        if count > 0 and waited >= min_observe_ms and consecutive >= stable_samples:
+            return count
+        last = count
+        if waited + poll_ms > timeout_ms:
+            break
+        await page.wait_for_timeout(poll_ms)
+        waited += poll_ms
+    return last or 0
+
+
 class BrowserFetcher:
     def __init__(self, config: BrowserConfig | None = None):
         self.config = config or BrowserConfig()
@@ -91,14 +118,10 @@ class BrowserFetcher:
                                        error="HTTP access denied; browser fallback disabled")
                 if code != 200:
                     return FetchResult(url, "http_error", code=code, attempts=1)
-                # An ordinary browser runs the page JavaScript. Wait for a card
-                # instead of assuming that a 200 response contains the listings.
-                try:
-                    await page.locator(".listingBox").first.wait_for(
-                        state="attached", timeout=self.config.rendering_timeout_ms
-                    )
-                except Exception:
-                    pass  # classify rendered content below, including challenges.
+                # Observe stable DOM card counts rather than reading the HTML
+                # immediately after the first card. This does NOT certify
+                # a full page; the separate per-shard baseline gate remains.
+                await wait_for_listing_card_stability(page, self.config.rendering_timeout_ms)
                 html = await page.content()
                 if parse_listings(html):
                     return FetchResult(url, "ok", html=html, code=200, attempts=1)
