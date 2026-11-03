@@ -75,12 +75,12 @@ def summarise_html(html: str) -> dict:
     }
 
 
-async def probe() -> dict:
+async def probe(source_url: str = BASE_URL) -> dict:
     started = perf_counter()
     result = {
         "mode": "LIVE_SINGLE_PAGE_V646_CANARY",
         "site": "www.mubawab.ma",
-        "source_search_url": BASE_URL,
+        "source_search_url": source_url,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "navigation_limit": 1,
         "browser_engine": "ordinary_playwright_chromium",
@@ -94,10 +94,11 @@ async def probe() -> dict:
         "timings": {},
     }
     try:
-        urls = resolve_source_urls(1, None)
-        if urls != [BASE_URL]:
-            raise ValueError("Canary must inspect the one canonical Rabat shard")
-        robots = fetch_and_check_robots(urls)
+        # Exactly one page from the three audited shards; never arbitrary URLs.
+        approved_urls = resolve_source_urls(1, str(Path(__file__).with_name("pilot-urls.txt")))
+        if source_url not in approved_urls:
+            raise ValueError("Canary URL is not in the fixed approved pilot manifest")
+        robots = fetch_and_check_robots([source_url])
         result["robots"] = {
             "status": robots.get("status"),
             "sha256": robots.get("sha256"),
@@ -117,7 +118,7 @@ async def probe() -> dict:
         async with BrowserFetcher(BrowserConfig(max_concurrent_pages=1)) as browser:
             result["timings"]["browser_launch_seconds"] = round(perf_counter() - launch_started, 3)
             navigation_started = perf_counter()
-            fetched = await browser.fetch(BASE_URL)
+            fetched = await browser.fetch(source_url)
             result["timings"]["navigation_and_render_seconds"] = round(perf_counter() - navigation_started, 3)
         result["listing_page_navigations"] = 1
         result["fetch_status"] = fetched.status
@@ -145,8 +146,9 @@ async def probe() -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=Path("artifacts/mubawab-v646-live-canary.json"))
+    parser.add_argument("--url", default=BASE_URL, help="Exactly one URL from pilot-urls.txt; no arbitrary shards")
     args = parser.parse_args()
-    report = asyncio.run(probe())
+    report = asyncio.run(probe(source_url=args.url))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     payload = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
     args.output.write_text(payload, encoding="utf-8")
