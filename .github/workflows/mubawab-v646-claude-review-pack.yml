@@ -1,0 +1,135 @@
+name: Akarfinder Claude V646 review pack (read-only)
+on:
+  push:
+    paths:
+      - '.github/workflows/mubawab-v646-claude-review-pack.yml'
+  workflow_dispatch:
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test current parser bundle offline
+        run: |
+          python -m pip install beautifulsoup4
+          mkdir -p /tmp/akar-proof
+          (cd scripts/pilots/mubawab-v646 && python -m unittest discover -s tests -v) > /tmp/akar-proof/offline-tests.log 2>&1
+          tail -n 9 /tmp/akar-proof/offline-tests.log
+      - name: Gather verified GitHub evidence (two existing runs)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/akar-proof/live /tmp/akar-proof/historical
+          gh run download 41611908342 -R hraaaaf/Akarfinder -n mubawab-v646-single-page-live-canary -D /tmp/akar-proof/live
+          gh run download 41549175495 -R hraaaaf/Akarfinder -n mubawab-v646-historical-evidence -D /tmp/akar-proof/historical
+          test -s /tmp/akar-proof/live/mubawab-v646-live-canary.json
+          test -s /tmp/akar-proof/historical/mubawab-v645-historical-quality.json
+      - name: Assemble exact-head review pack, manifest and checksum
+        env:
+          PACK_SHA: ${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import hashlib, json, os, pathlib, shutil, zipfile
+          root = pathlib.Path.cwd()
+          pack = pathlib.Path('/tmp/Akarfinder_Claude_Review_V646_20261103')
+          code = [
+            'scripts/pilots/mubawab-v646/akarfinder_scraper.py',
+            'scripts/pilots/mubawab-v646/browser_fetcher.py',
+            'scripts/pilots/mubawab-v646/benchmark_evidence.py',
+            'scripts/pilots/mubawab-v646/live_canary.py',
+            'scripts/pilots/mubawab-v646/pilot-urls.txt',
+            'scripts/pilots/mubawab-v646/tests/test_manifest.py',
+            'scripts/pilots/mubawab-v646/tests/test_v646_safety.py',
+            'scripts/pilots/mubawab-v646/tests/test_parser_evidence.py',
+            'scripts/pilots/mubawab-v646/tests/test_browser_access_denied.py',
+            'scripts/pilots/mubawab-v646/tests/test_live_canary.py',
+            '.github/workflows/mubawab-v646-offline-tests.yml',
+            '.github/workflows/mubawab-v646-live-canary.yml',
+            '.github/workflows/mubawab-v646-claude-review-pack.yml',
+            'docs/handovers/AKARFINDER_V646_PARSER_BENCHMARK_2026-11-02.md',
+            'docs/handovers/AKARFINDER_200K_48H_SOURCE_SCALE_2026-11-01.md',
+            'docs/reviews/CLAUDE_MUBAWAB_V646_CRITICAL_REVIEW_2026-11-03.md',
+          ]
+          for src in code:
+              if not (root/src).is_file():
+                  raise RuntimeError('Missing required source: '+src)
+              target = pack/'sources'/src
+              target.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copy2(root/src, target)
+          for folder, filename in [
+              ('live', 'mubawab-v646-live-canary.json'),
+              ('historical', 'mubawab-v645-historical-quality.json'),
+          ]:
+              target = pack/'evidence'/folder/filename
+              target.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copy2(pathlib.Path('/tmp/akar-proof')/folder/filename, target)
+          (pack/'evidence').mkdir(exist_ok=True, parents=True)
+          shutil.copy2('/tmp/akar-proof/offline-tests.log',pack/'evidence/offline-tests-current-head.log')
+          shutil.copy2(root/code[-1],pack/'MISSION_CLAUDE.md')
+          (pack/'README_FIRST.md').write_text(
+            '# Akarfinder V646 — dossier indépendant pour Claude\n\n'
+            'Lis d abord MISSION_CLAUDE.md, puis MANIFEST.json, puis les sources.\n'
+            'Comparaison obligatoire : 97 ID historiques V645 vs 32 ID réellement analysés '
+            'sur une seule page V646 le 03/11/2026.\n'
+            'Un workflow SUCCESS peut masquer un canary bloqué ; lire le JSON.\n'
+            'Aucun HTML brut du site, aucune photo, aucune base de production dans ce ZIP.\n'
+            'Ne pas lancer un scrape massif, modifier la DB, ou déployer Vercel.\n',
+            encoding='utf-8'
+          )
+          manifest = {
+              'package':'Akarfinder Claude Review V646',
+              'created_utc':'2026-11-03',
+              'repository':'hraaaaf/Akarfinder',
+              'branch':'sandbox/akar-v646-parser-benchmark-20261102',
+              'exact_commit_sha':os.environ['PACK_SHA'],
+              'source_offline_run':41549175495,
+              'source_live_run':41611908342,
+              'historical_artifact_id':13190297948,
+              'live_artifact_id':13218919780,
+              'live_observed_unique_source_ids':32,
+              'live_core_complete':32,
+              'historical_observed_unique_source_ids':97,
+              'historical_core_complete':97,
+              'live_200k_proven':False,
+              'raw_html_included':False,
+              'production_db_write':False,
+              'files':{}
+          }
+          for item in sorted(pack.rglob('*')):
+              if item.is_file():
+                  manifest['files'][str(item.relative_to(pack))] = {
+                      'sha256':hashlib.sha256(item.read_bytes()).hexdigest(),
+                      'bytes':item.stat().st_size
+                  }
+          (pack/'MANIFEST.json').write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+          out = root/'dist'
+          out.mkdir(exist_ok=True)
+          zip_path=out/'Akarfinder_Claude_Review_V646_20261103.zip'
+          with zipfile.ZipFile(zip_path,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for f in sorted(pack.rglob('*')):
+                  if f.is_file(): z.write(f,arcname=str(pathlib.Path(pack.name)/f.relative_to(pack)))
+          with zipfile.ZipFile(zip_path) as z:
+              if z.testzip() is not None: raise RuntimeError('ZIP CRC error')
+              names=z.namelist()
+              if len(names)<20: raise RuntimeError('ZIP incomplete')
+          digest=hashlib.sha256(zip_path.read_bytes()).hexdigest()
+          (out/'SHA256SUMS.txt').write_text(f'{digest}  {zip_path.name}\n')
+          print('PACK_COMMIT_SHA:',os.environ['PACK_SHA'])
+          print('PACK_FILES:',len(names))
+          print('PACK_BYTES:',zip_path.stat().st_size)
+          print('PACK_SHA256:',digest)
+          PY
+      - name: Upload final review pack ZIP and digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: Akarfinder-Claude-Review-V646-20261103
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 90
