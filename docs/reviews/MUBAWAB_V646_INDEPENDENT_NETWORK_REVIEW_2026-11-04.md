@@ -40,7 +40,7 @@ Une réponse simulée `200` et des cartes ne prouvaient pas que le navigateur av
 - Le test Chromium avec navigateur réel peut être SKIPPED en CI légère. Une suite mockée et un `py_compile` ne remplacent pas un vrai navigateur pour vérifier les types de requêtes et le comportement de redirection.
 - Ce chantier ne prouve ni disponibilité des biens, ni droit de republier, ni rendement vers 200K, ni unicité physique.
 
-**Verdict fonctionnel hors ligne :** à compléter avec CI HEAD exact. **Verdict LIVE/LEGAL : NO-GO** sans page distincte autorisée et nouvelle preuve. **PR : Draft**, sans merge ni deploy.
+**Verdict fonctionnel hors ligne : GO sur le code `5733751f9a186dcb01c127ac80b10b4955291e63`.** [CI ciblée #41854891860](https://github.com/hraaaaf/Akarfinder/actions/runs/41854891860) **SUCCESS**, 37/37 tests PASS, 0 skip ; [suite complète #41854883482](https://github.com/hraaaaf/Akarfinder/actions/runs/41854883482) **SUCCESS**, 140 tests dont 135 PASS et 5 SKIPPED ; [efficience CI #41854891868](https://github.com/hraaaaf/Akarfinder/actions/runs/41854891868) **SUCCESS**. La suite complète a également vérifié un artefact V645 historique, pas de visite live. Les anciens échecs de mocks ont été corrigés en simulant le document principal réellement intercepté. **Verdict LIVE/LEGAL : NO-GO** sans page distincte autorisée et nouvelle preuve. **PR : Draft**, sans merge ni deploy.
 
 ## Références
 
