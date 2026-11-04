@@ -122,5 +122,80 @@ class BrowserAccessDenialTests(unittest.TestCase):
                 self.assertEqual(fake_browser.options, {"service_workers": "block"})
 
 
+    def test_reloads_of_same_admitted_document_are_denied(self):
+        async def check():
+            audit = Counter()
+            first = FakeRoute("document")
+            repeat = FakeRoute("document")
+            await _allow_page_without_images(first, {s.BASE_URL}, audit)
+            await _allow_page_without_images(repeat, {s.BASE_URL}, audit)
+            first.continue_.assert_awaited_once()
+            repeat.abort.assert_awaited_once()
+            self.assertEqual(audit["admitted_main_documents"], 1)
+            self.assertEqual(audit["repeat_main_document_denied"], 1)
+            self.assertEqual(audit["blocked_type_document"], 1)
+            # The counter must be scoped to a single fetch, not a process:
+            # another isolated page is allowed its own first navigation.
+            new_context_audit = Counter()
+            isolated = FakeRoute("document")
+            await _allow_page_without_images(isolated, {s.BASE_URL}, new_context_audit)
+            isolated.continue_.assert_awaited_once()
+            self.assertEqual(new_context_audit["repeat_main_document_denied"], 0)
+        asyncio.run(check())
+
+    def test_repeat_navigation_during_render_is_reported_blocked_not_ok(self):
+        import browser_fetcher
+
+        async def exercise():
+            page = FakePage(200)
+            context = FakeContext(page)
+            browser = BrowserFetcher()
+            browser._browser = FakeBrowser(context)
+
+            async def simulated_render(*args, **kwargs):
+                handler = context.route.await_args.args[1]
+                first, repeated = FakeRoute("document"), FakeRoute("document")
+                await handler(first)
+                await handler(repeated)
+                first.continue_.assert_awaited_once()
+                repeated.abort.assert_awaited_once()
+                return 32
+
+            with patch.object(browser_fetcher, "wait_for_listing_card_stability", simulated_render):
+                result = await browser.fetch(s.BASE_URL)
+            self.assertEqual(result.status, "blocked")
+            self.assertIn("repeat main-document", result.error)
+            page.content.assert_not_awaited()
+            self.assertEqual(browser.network_policy_evidence()["admitted_main_documents"], 1)
+            self.assertEqual(browser.network_policy_evidence()["repeat_main_document_denied"], 1)
+            context.close.assert_awaited_once()
+        from unittest.mock import patch
+        asyncio.run(exercise())
+
+    def test_browser_does_not_accept_challenge_overlay_over_leftover_cards(self):
+        import browser_fetcher
+
+        async def exercise():
+            page = FakePage(200)
+            page.content = AsyncMock(return_value=(
+                "<html><head><title>Annonces</title></head><body>"
+                "<div class='listingBox'></div>"
+                "<h1>Checking your browser before accessing</h1>"
+                "</body></html>"
+            ))
+            context = FakeContext(page)
+            browser = BrowserFetcher()
+            browser._browser = FakeBrowser(context)
+            with patch.object(browser_fetcher, "wait_for_listing_card_stability", AsyncMock(return_value=1)):
+                result = await browser.fetch(s.BASE_URL)
+            self.assertEqual(result.status, "blocked")
+            self.assertIn("challenge visible", result.error)
+            self.assertEqual(browser.network_policy_evidence()["repeat_main_document_denied"], 0)
+            context.close.assert_awaited_once()
+        from unittest.mock import patch
+        asyncio.run(exercise())
+
+
+
 if __name__ == "__main__":
     unittest.main()
