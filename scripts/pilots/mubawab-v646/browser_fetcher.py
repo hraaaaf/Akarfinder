@@ -12,6 +12,14 @@ from urllib.parse import urlsplit
 from akarfinder_scraper import FetchResult, looks_like_block_page, parse_listings
 
 
+async def _allow_page_without_images(route) -> None:
+    """Abort image subrequests before they reach the network; allow page code and styles."""
+    if route.request.resource_type == "image":
+        await route.abort()
+    else:
+        await route.continue_()
+
+
 @dataclass(frozen=True)
 class BrowserConfig:
     headed: bool = False
@@ -93,6 +101,8 @@ class BrowserFetcher:
         async with self.semaphore:
             page = await self._context.new_page()
             try:
+                # A page navigation must not implicitly download listing photos.
+                await page.route("**/*", _allow_page_without_images)
                 response = await page.goto(
                     url, wait_until="domcontentloaded",
                     timeout=self.config.navigation_timeout_ms,
