@@ -20,7 +20,7 @@
 - `updated_at_source` doit être une date ISO valide non future ; aucun fallback vers la date d'exécution.
 - `availability_status` est `unknown` sans preuve d'activité positive récente (<=48 h) datée et référencée ; les tombstones `delete/unpublish` restent distinctes.
 - Les URLs de médias du feed ne deviennent pas `photos_authorized` sans référence de droits vérifiée.
-- Tests adversariaux ajoutés dans `scripts/scrapers/__tests__/partner-feed-v2-bridge.test.ts` ; CI ciblée `akar-200k-feed-truth-gate.yml`. **CI en cours au premier contrôle** : [#41846932788](https://github.com/hraaaaf/Akarfinder/actions/runs/41846932788). Pas encore de validation du HEAD.
+- Tests adversariaux ajoutés dans `scripts/scrapers/__tests__/partner-feed-v2-bridge.test.ts` ; CI ciblée `akar-200k-feed-truth-gate.yml`. **CI ciblée vérifiée SUCCESS** : [#41846932788](https://github.com/hraaaaf/Akarfinder/actions/runs/41846932788), HEAD `a4a60b31754705cc4bdb71da442d493edc5fe0fc`, **11/11 tests PASS, 0 FAIL, 0 SKIPPED ; `tsc --noEmit` PASS**. [CI efficiency #41846932126](https://github.com/hraaaaf/Akarfinder/actions/runs/41846932126) SUCCESS. Les tests sont synthétiques, sans flux externe.
 - **Limite capitale :** les `reference` et `verified` sont des assertions structurées de l'appelant ; **aucune preuve externe réelle n'a été vérifiée**. Ce correctif ne remplace pas un registre/document d'autorisation ni un feed partenaire réel, et ne certifie aucune annonce.
 - Next exact : lire la CI, corriger si échec puis obtenir le contrôleur amont et la preuve réelle avant toute activation. R0 stock actuel reste `UNKNOWN` puisque Supabase connecté est `INACTIVE`.
 
