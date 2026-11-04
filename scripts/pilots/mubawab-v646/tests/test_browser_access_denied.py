@@ -102,7 +102,18 @@ class BrowserAccessDenialTests(unittest.TestCase):
     def test_access_denied_never_counts_as_success(self):
         for code in (403, 429):
             with self.subTest(code=code):
-                page = FakePage(code)
+                websocket = type("FakeWebsocket", (), {"close": AsyncMock()})()
+
+                class PageWithSyntheticSocket(FakePage):
+                    async def goto(self, url, **kwargs):
+                        # Fire while the isolated context is open; invoking a
+                        # socket handler AFTER fetch/close would be impossible
+                        # on Chromium and no longer enters the final audit.
+                        handler = context.route_web_socket.await_args.args[1]
+                        await handler(websocket)
+                        return await super().goto(url, **kwargs)
+
+                page = PageWithSyntheticSocket(code)
                 context = FakeContext(page)
                 fake_browser = FakeBrowser(context)
                 browser = BrowserFetcher()
@@ -114,9 +125,6 @@ class BrowserAccessDenialTests(unittest.TestCase):
                 context.close.assert_awaited_once()
                 context.route.assert_awaited_once()
                 context.route_web_socket.assert_awaited_once()
-                websocket_handler = context.route_web_socket.await_args.args[1]
-                websocket = type("FakeWebsocket", (), {"close": AsyncMock()})()
-                asyncio.run(websocket_handler(websocket))
                 websocket.close.assert_awaited_once()
                 self.assertEqual(browser.network_policy_evidence()["blocked_websockets"], 1)
                 self.assertEqual(fake_browser.options, {"service_workers": "block"})
