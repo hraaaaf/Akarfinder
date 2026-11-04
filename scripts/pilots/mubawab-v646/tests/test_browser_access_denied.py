@@ -40,7 +40,7 @@ class FakeContext:
     def __init__(self, page):
         self.page = page
         self.route = AsyncMock()
-        self.route_web_socket = Mock()
+        self.route_web_socket = AsyncMock()
         self.close = AsyncMock()
 
     async def new_page(self):
@@ -113,7 +113,7 @@ class BrowserAccessDenialTests(unittest.TestCase):
                 page.content.assert_not_awaited()
                 context.close.assert_awaited_once()
                 context.route.assert_awaited_once()
-                context.route_web_socket.assert_called_once()
+                context.route_web_socket.assert_awaited_once()
                 self.assertEqual(fake_browser.options, {"service_workers": "block"})
 
 
