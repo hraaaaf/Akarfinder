@@ -27,3 +27,10 @@ Les données de référence *réelles mais historiques, obtenues avant le correc
 2. Mettre à jour Notion avec le SHA exact, les scénarios et le verdict.
 3. Laisser les branches Draft PR #1150 et #1151 intactes ; la suite réelle doit se faire par un moyen autorisé et conforme à robots, avec un seul contrôle borné par shard.
 4. Poursuivre la calibration statistique séparément ; ne jamais substituer les 23 scénarios synthétiques aux observations longitudinales indépendantes.
+
+## Verdict CI vérifié — 04/11/2026
+- [Run #41747650430](https://github.com/hraaaaf/Akarfinder/actions/runs/41747650430), job `126304582738` : **completed/success** sur commit de tests `b8865059ba50d69c9b3386abcdd5589713be88de`.
+- Logs : **Ran 123 tests in 1.046s — OK (skipped=4)**. Les **23 tests nouveaux** du fichier `test_canary_battery_offline.py` sont tous passés ; total suite **119 pass + 4 skipped, 0 fail, 0 expectedFailure**.
+- Les 4 skipped restent les contrôles dépendants d'un DOM historique réel non disponible ; aucune inférence de comportement live.
+- **Verdict** : **GO pour la batterie offline synthétique** et pour la préservation de la sécurité fail-closed ; **NO-GO pour la validation live post-P1 et l'objectif 200 000 annonces**.
+- Prochaine vérification live : uniquement lorsque l'exécution peut se faire par un moyen autorisé ; n'utiliser ni rotation d'IP pour passer outre un refus ni un détournement du blocage de lancement déjà observé.
