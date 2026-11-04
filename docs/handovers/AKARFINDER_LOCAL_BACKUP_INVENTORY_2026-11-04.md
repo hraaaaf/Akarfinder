@@ -43,7 +43,13 @@ Les mêmes annonces peuvent apparaître dans plusieurs tables; ces lignes **ne d
 
 ## Réconciliation avec les références historiques
 
-Les références précédentes — 32 460 clés historiques `(source, source_id)` et 97 IDs-source de canaries — ne sont **pas additionnées** aux lignes du backup. Le dump expose des espaces d’identifiants et des tables différents (par exemple 24 518 seeds Avito, 26 496 seeds Mubawab, 680 lignes Avito dans `listing_sources`, 12 968 lignes Mubawab dans cette table et 37 420 lignes du corpus Mubawab). Sans jointure validée par `(source, source_id)` entre les manifestes, ces valeurs ne prouvent ni recouvrement ni croissance nette. Les 97 IDs de canary ne valent pas 97 biens physiques.
+Le manifeste `akar-200k-isolated-inventory` du run [41322759990](https://github.com/hraaaaf/Akarfinder/actions/runs/41322759990) est intègre (`candidates.sqlite`, `PRAGMA integrity_check=ok`). Il contient 32 460 clés source-scoped : 32 248 IDs historiques (Avito 27 053; Mubawab 5 195) et un échantillon distinct de 410 IDs, dont 212 absents de l’historique (Avito 53; Mubawab 159). Cette tranche `recent_sample` **n’est pas** le canary Mubawab V6.4.6.
+
+Jointure locale `(source, source_id)` : IDs explicites des champs source et dernier token numérique de l’URL quand sa longueur correspond au format de la source. Cette règle d’URL reproduit l’ID sur 27 053/27 053 URLs historiques Avito et 5 194/5 195 Mubawab. Dans l’union des trois tables de jointure sélectionnées (`source_offer_seeds`, `listing_sources`, `mubawab_listing_corpus_v1`), on trouve **185/27 053 IDs historiques Avito** et **4 936/5 195 Mubawab**; 26 868 Avito et 259 Mubawab ne sont pas retrouvés dans ces tables sélectionnées. Ce sont des recouvrements d’identifiants source, jamais de biens actifs ou physiques uniques.
+
+Dans l’échantillon `recent_sample` du même manifeste, le backup recoupe 0/97 IDs Avito et 166/313 Mubawab; parmi ceux absents de l’historique, 0/53 Avito et 13/159 Mubawab apparaissent dans les tables sélectionnées.
+
+**Canary V6.4.6 distinct :** 97 IDs Mubawab agrégés sur trois pages. La [preuve JSON publiée](https://github.com/hraaaaf/Akarfinder/blob/test/akar-v646-direct-canary-cli-20261104/scripts/pilots/mubawab-v646/artifacts/v646-post-p1-first-live/post-p1-verification.json) conserve les comptes et SHA-256 par page, pas les 97 valeurs. Il n’existe donc pas de jointure vérifiable avec le backup : résultat `UNKNOWN`, pas zéro. Ne pas additionner ces 97 au manifeste historique.
 
 ## Mesures exigées
 
@@ -61,9 +67,12 @@ Les références précédentes — 32 460 clés historiques `(source, source_id)
 
 - JSON local complet (incluant métadonnées fichier) : `backup_inventory_safe.json`, gardé hors du dépôt.
 - JSON agrégé : `docs/handovers/backup_inventory_aggregates_2026-11-04.json`.
-- Script hors ligne : `scripts/audits/backup_inventory_safe.py`.
+- Script hors ligne d’inventaire : `scripts/audits/backup_inventory_safe.py`.
+- JSON de jointure agrégée local : `backup_inventory_reconciliation_safe.json`, conservé dans le dossier temporaire.
+- Script de réconciliation hors ligne : `scripts/audits/reconcile_backup_inventory.py`; il lit le SQLite historique en mode read-only et garde IDs/URLs en mémoire uniquement.
+- Script local de réconciliation : `scripts/audits/reconcile_backup_inventory.py` (nouveau livrable PR).
 - Rapport canonique R0 lié : [AKARFINDER 200K R0 read-only audit](https://github.com/hraaaaf/Akarfinder/blob/sandbox/akar-chrome-probe-20261101/docs/handovers/AKARFINDER_200K_R0_READONLY_AUDIT_2026-11-04.md).
 
 ## Next exact
 
-Garder ces compteurs comme baseline d’archive. Pour mesurer le stock réel, obtenir une source autorisée et accessible, définir la jointure validée entre les clés historiques et le backup, puis compter en lecture seule les preuves d’activité sous 48 h, droits, complétude et groupes physiques. Aucun merge, import production ou déploiement n’est justifié par cet inventaire.
+Garder ces intersections comme baseline d’archive, sans les interpréter comme du stock actif. Pour joindre spécifiquement les 97 IDs du canary V6.4.6, il faut le manifeste des IDs bruts déjà émis par la qualification; les preuves actuellement publiées ne contiennent que les empreintes par ville. Pour mesurer le stock live, il faudra une source autorisée et accessible ainsi que des preuves d’activité, droits et dédup physique. Aucun merge, import production ou déploiement n’est justifié par cet inventaire.
