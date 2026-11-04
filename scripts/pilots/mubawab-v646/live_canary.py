@@ -130,6 +130,7 @@ async def probe(source_url: str = BASE_URL) -> dict:
             result["timings"]["browser_launch_seconds"] = round(perf_counter() - launch_started, 3)
             navigation_started = perf_counter()
             fetched = await browser.fetch(source_url)
+            result["network_policy"] = browser.network_policy_evidence()
             result["timings"]["navigation_and_render_seconds"] = round(perf_counter() - navigation_started, 3)
         result["listing_page_navigations"] = 1
         result["fetch_status"] = fetched.status
