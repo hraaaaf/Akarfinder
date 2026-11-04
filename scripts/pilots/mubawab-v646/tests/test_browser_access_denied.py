@@ -114,6 +114,11 @@ class BrowserAccessDenialTests(unittest.TestCase):
                 context.close.assert_awaited_once()
                 context.route.assert_awaited_once()
                 context.route_web_socket.assert_awaited_once()
+                websocket_handler = context.route_web_socket.await_args.args[1]
+                websocket = type("FakeWebsocket", (), {"close": AsyncMock()})()
+                asyncio.run(websocket_handler(websocket))
+                websocket.close.assert_awaited_once()
+                self.assertEqual(browser.network_policy_evidence()["blocked_websockets"], 1)
                 self.assertEqual(fake_browser.options, {"service_workers": "block"})
 
 
