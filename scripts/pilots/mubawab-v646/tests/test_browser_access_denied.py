@@ -226,7 +226,7 @@ class BrowserAccessDenialTests(unittest.TestCase):
                 self.assertEqual(result.status, "blocked", url)
                 self.assertEqual(result.attempts, 0, url)
                 self.assertIn("browser preflight", result.error)
-                self.assertIsNone(browser._browser.options, "no context or network request", url)
+                self.assertIsNone(browser._browser.options, f"no context or network request for {url}")
                 self.assertEqual(browser.network_policy_evidence()["intercepted_requests"], 0)
         asyncio.run(exercise())
 
