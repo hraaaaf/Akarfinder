@@ -211,6 +211,13 @@
       "ID candidates from URLs use the final numeric path token of source-specific historical ID length; exact per-source rule validation is reported above.",
       "Archive membership does not prove current availability, freshness, rights, or physical uniqueness.",
       "No IDs, URLs, listing text, or contact fields are written to output."
-    ]
+    ],
+    "source_artifact": {
+      "run_id": 41322759990,
+      "artifact_name": "akar-200k-isolated-inventory",
+      "downloaded_artifact_sha256_verified_against_github": true,
+      "embedded_member_sha256sums_verified": true,
+      "sqlite_integrity_check": "ok"
+    }
   }
 }
