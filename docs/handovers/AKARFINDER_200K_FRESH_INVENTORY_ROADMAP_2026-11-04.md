@@ -12,6 +12,18 @@
 - **P0 documenté avant R1 :** le `partner-v2-bridge.ts` peut projeter `partner_authorized`, `available` et `last_partner_update_at=now` sans preuve amont positive suffisante. **Ne pas activer ce pont pour les KPI de stock frais tant que les preuves et un gate fail-closed n'existent pas**.
 - **Next exact :** confirmer quel backend sert réellement le site puis accéder en lecture seule à ses tables après décision de restauration si nécessaire. Travail R1 hors production restant possible : tests négatifs sur le bridge et preuve d'activité; aucun déploiement ni merge.
 
+## R1 — Garde-fou des flux partenaires (Draft isolée)
+
+**Code préparé (04/11/2026) :** [PR Draft #1155](https://github.com/hraaaaf/Akarfinder/pull/1155), branche `fix/akar-200k-feed-truth-gate-20261104`, HEAD initial `a4a60b31754705cc4bdb71da442d493edc5fe0fc`. Aucun merge ni déploiement.
+
+- Le bridge exige désormais une référence d'autorisation déclarée vérifiée par **un contrôleur amont de confiance** ; un simple `source_authorization_note` ne suffit plus.
+- `updated_at_source` doit être une date ISO valide non future ; aucun fallback vers la date d'exécution.
+- `availability_status` est `unknown` sans preuve d'activité positive récente (<=48 h) datée et référencée ; les tombstones `delete/unpublish` restent distinctes.
+- Les URLs de médias du feed ne deviennent pas `photos_authorized` sans référence de droits vérifiée.
+- Tests adversariaux ajoutés dans `scripts/scrapers/__tests__/partner-feed-v2-bridge.test.ts` ; CI ciblée `akar-200k-feed-truth-gate.yml`. **CI en cours au premier contrôle** : [#41846932788](https://github.com/hraaaaf/Akarfinder/actions/runs/41846932788). Pas encore de validation du HEAD.
+- **Limite capitale :** les `reference` et `verified` sont des assertions structurées de l'appelant ; **aucune preuve externe réelle n'a été vérifiée**. Ce correctif ne remplace pas un registre/document d'autorisation ni un feed partenaire réel, et ne certifie aucune annonce.
+- Next exact : lire la CI, corriger si échec puis obtenir le contrôleur amont et la preuve réelle avant toute activation. R0 stock actuel reste `UNKNOWN` puisque Supabase connecté est `INACTIVE`.
+
 ## 1. Baseline vérifiée et limites
 
 - Inventaire isolé reconstruit : **32 460 clés (source, source_id)**, Avito 27 106 et Mubawab 5 354 ; **32 460 UNVERIFIED**, **0 ready_for_use / publication_eligible**, sur artefact GitHub [#41322759990](https://github.com/hraaaaf/Akarfinder/actions/runs/41322759990). Un ID/source n'est pas une propriété unique physique.
