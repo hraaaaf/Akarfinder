@@ -357,6 +357,15 @@ def looks_like_block_page(html: str) -> bool:
         return True
     for element in soup.select("script,style,template,noscript"):
         element.decompose()
+    # A residual listing grid may be visible under a challenge overlay.
+    # Treat a prominent human-verification heading/alert as terminal even
+    # when cards are still in the DOM. Ordinary listing descriptions may
+    # contain these words, so generic body text is authoritative only when
+    # there are no listing cards.
+    for node in soup.select("h1, h2, [role='alert']"):
+        prominent = node.get_text(" ", strip=True).lower()
+        if any(phrase in prominent for phrase in strong):
+            return True
     body = (soup.body or soup).get_text(" ", strip=True).lower()
     if soup.select_one(".listingBox"):
         return False
