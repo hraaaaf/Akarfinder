@@ -153,7 +153,10 @@ class MainRobustness(unittest.TestCase):
             code, exc = _run_main(tmp, SYNTHETIC_MODERN)
             self.assertIsNone(exc)
             conn = sqlite3.connect(Path(tmp) / "akarfinder.db")
-            self.assertEqual(conn.execute("SELECT COUNT(*), COUNT(DISTINCT id) FROM listings").fetchone(), (3, 3))
+            try:
+                self.assertEqual(conn.execute("SELECT COUNT(*), COUNT(DISTINCT id) FROM listings").fetchone(), (3, 3))
+            finally:
+                conn.close()
 
 
 class DataIntegrity(unittest.TestCase):
@@ -244,6 +247,7 @@ class ZeroProductionWrite(unittest.TestCase):
         import browser_fetcher
         class FakeBrowser:
             def __init__(self, *a, **k): pass
+            def network_policy_evidence(self): return {"policy": "synthetic_mock", "blocked_requests": 0}
             async def __aenter__(self): return self
             async def __aexit__(self, *a): return False
             async def fetch(self, url): return s.FetchResult(url, "ok", html=SYNTHETIC_MODERN, code=200, attempts=1)

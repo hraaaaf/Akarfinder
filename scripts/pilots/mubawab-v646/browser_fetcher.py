@@ -6,10 +6,58 @@ rotate proxies, solve CAPTCHAs, or manipulate Cloudflare clearance cookies.
 from __future__ import annotations
 
 import asyncio
+from collections import Counter
 from dataclasses import dataclass
-from urllib.parse import urlsplit
+import re
+from urllib.parse import unquote, urlsplit
 
 from akarfinder_scraper import FetchResult, looks_like_block_page, parse_listings
+
+
+# Explicit fail-closed allowlist. Playwright labels fetch("photo.png") as
+# "fetch" (not "image"); therefore all Fetch/XHR, media, fonts and unknown
+# request types are denied, regardless of filename or MIME hints.
+_ALLOWED_SUBRESOURCES = frozenset({"script", "stylesheet"})
+_IMAGE_EXTENSION = re.compile(
+    r"\.(?:png|jpe?g|gif|webp|svg|avif|apng|bmp|ico|tiff?|heic|heif|jxl)$", re.I
+)
+
+
+def _request_allowed(request, admitted_urls: set[str]) -> bool:
+    """Only the exact admitted main document and same-origin JS/CSS may leave."""
+    try:
+        kind = request.resource_type
+        if kind == "document":
+            return (
+                request.url in admitted_urls
+                and request.is_navigation_request()
+                and request.frame.parent_frame is None
+            )
+        if kind not in _ALLOWED_SUBRESOURCES:
+            return False
+        parts = urlsplit(request.url)
+        # Never allow a subresource from a third-party host or an image-looking
+        # URL even if Chromium classifies it as script/stylesheet.
+        return (
+            parts.scheme == "https"
+            and parts.netloc == "www.mubawab.ma"
+            and not _IMAGE_EXTENSION.search(unquote(parts.path))
+        )
+    except (AttributeError, ValueError):
+        return False
+
+
+async def _allow_page_without_images(route, admitted_urls: set[str], audit: Counter) -> None:
+    """Route every browser request through the allowlist before network IO."""
+    kind = route.request.resource_type
+    audit["intercepted"] += 1
+    if _request_allowed(route.request, admitted_urls):
+        audit["continued"] += 1
+        await route.continue_()
+    else:
+        audit["blocked"] += 1
+        audit[f"blocked_type_{kind}"] += 1
+        await route.abort()
 
 
 @dataclass(frozen=True)
@@ -55,6 +103,7 @@ class BrowserFetcher:
         self._playwright = None
         self._browser = None
         self._context = None
+        self._network_audit = Counter()
 
     async def __aenter__(self):
         try:
@@ -69,7 +118,6 @@ class BrowserFetcher:
             if self.config.executable_path:
                 launch_options["executable_path"] = self.config.executable_path
             self._browser = await self._playwright.chromium.launch(**launch_options)
-            self._context = await self._browser.new_context()
         except Exception as exc:
             await self._playwright.stop()
             self._playwright = None
@@ -80,19 +128,47 @@ class BrowserFetcher:
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
-        if self._context:
-            await self._context.close()
         if self._browser:
             await self._browser.close()
         if self._playwright:
             await self._playwright.stop()
 
+    def network_policy_evidence(self) -> dict:
+        """Pre-network routing decisions; not a packet capture or MIME audit."""
+        return {
+            "policy": "exact_main_document_plus_same_origin_js_css",
+            "service_workers": "block",
+            "websockets": "deny",
+            "intercepted_requests": self._network_audit["intercepted"],
+            "continued_requests": self._network_audit["continued"],
+            "blocked_requests": self._network_audit["blocked"],
+            "blocked_by_type": {
+                key.removeprefix("blocked_type_"): value
+                for key, value in sorted(self._network_audit.items())
+                if key.startswith("blocked_type_")
+            },
+            "blocked_websockets": self._network_audit["blocked_websockets"],
+        }
+
     async def fetch(self, url: str) -> FetchResult:
-        if self._context is None:
+        if self._browser is None:
             raise RuntimeError("BrowserFetcher non initialisé")
         async with self.semaphore:
-            page = await self._context.new_page()
+            # Isolate each fetch: the network allowlist must never leak across
+            # concurrent pages or between admitted shards.
+            context = await self._browser.new_context(service_workers="block")
             try:
+                roots = {url}
+                async def guard(route):
+                    await _allow_page_without_images(route, roots, self._network_audit)
+
+                async def deny_websocket(websocket_route):
+                    self._network_audit["blocked_websockets"] += 1
+                    await websocket_route.close()
+
+                await context.route("**/*", guard)
+                await context.route_web_socket("**/*", deny_websocket)
+                page = await context.new_page()
                 response = await page.goto(
                     url, wait_until="domcontentloaded",
                     timeout=self.config.navigation_timeout_ms,
@@ -134,4 +210,4 @@ class BrowserFetcher:
                 return FetchResult(url, "network_error", attempts=1,
                                    error=f"{type(exc).__name__}: {exc}")
             finally:
-                await page.close()
+                await context.close()

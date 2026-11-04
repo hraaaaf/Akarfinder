@@ -41,6 +41,7 @@ class LiveCanaryOfflineTests(unittest.TestCase):
 
         class FakeBrowser:
             def __init__(self, *args, **kwargs): pass
+            def network_policy_evidence(self): return {"policy": "synthetic_mock", "blocked_requests": 0}
             async def __aenter__(self): return self
             async def __aexit__(self, *args): return False
             async def fetch(self, url):

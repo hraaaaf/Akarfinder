@@ -63,6 +63,7 @@ class V646Safety(unittest.TestCase):
         with sqlite3.connect(path) as c:
             c.execute("CREATE TABLE listings(id TEXT PRIMARY KEY,title TEXT,price_mad INTEGER,link TEXT)")
             c.execute("INSERT INTO listings VALUES ('77777','Old',15000,'https://www.mubawab.ma/fr/a/77777/x')")
+        c.close()
         c = s.init_db(str(path))
         self.assertEqual(tuple(c.execute("SELECT price_mad,source_search_url,transaction_type FROM listings WHERE id='77777'").fetchone()), (15000,None,None))
         c.close()

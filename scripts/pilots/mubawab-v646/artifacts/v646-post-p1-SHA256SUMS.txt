@@ -1,0 +1,10 @@
+e6c6181c318205e72c3272f27bdac71855cff12abc091626c8bec91ef294f7e4  artifacts/v646-post-p1-check-only/batch-summary.json
+8736774cd39ad28df46b40aed478ab95ae143c8e2b04c680acc084ef7f0839fd  artifacts/v646-post-p1-first-live/batch-summary.json
+68f73ebb14a1c69e2466a73f77d502c4162a3975a581cd177b54c1d7ce8ee5b6  artifacts/v646-post-p1-first-live/offline-tests.log
+79e5b9b9e4af04b70c0eb63f3c3c35034f3b9808aab1a827c567967fc54243dc  artifacts/v646-post-p1-first-live/post-p1-verification.json
+b835cdfdab5b2b6357b92a5cca16e300289daf4eb9d8590b66556c74d3f8d8cc  artifacts/v646-post-p1-first-live/v646-post-p1-agadir-hay-salam.json
+0b8cb2b40adf84c538ec1ea0e69380cfa70deb078a3827f530704b4e9358f7e6  artifacts/v646-post-p1-first-live/v646-post-p1-agadir-hay-salam.log
+9925348e119b24c191b75fc87d587a6eb00ba2c911cd8865e20cc6dd2fad4774  artifacts/v646-post-p1-first-live/v646-post-p1-casablanca-maarif.json
+5b0cc3119790b59cad6b70ee489e81f363b127d862fda3cef37913f3724faa55  artifacts/v646-post-p1-first-live/v646-post-p1-casablanca-maarif.log
+f11168cb205b6baaf646d94cd3bc82aa7abc8e591247fdcaa7ea03bfe2611a7f  artifacts/v646-post-p1-first-live/v646-post-p1-rabat.json
+41fe1b29301113d2a8ad6aad22a15268441a044427d70b3c41fce6c5146fe4c2  artifacts/v646-post-p1-first-live/v646-post-p1-rabat.log

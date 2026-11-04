@@ -1,0 +1,67 @@
+{
+  "test": "chromium_synthetic_offline_request_classification",
+  "result": "PASS",
+  "http_requests_intercepted": 8,
+  "http_requests_aborted_before_network": 8,
+  "http_requests_sent_to_sites": 0,
+  "types": {
+    "stylesheet": 1,
+    "script": 2,
+    "image": 2,
+    "fetch": 2,
+    "xhr": 1
+  },
+  "websockets_denied": 1,
+  "policy": "main_document_same_origin_scripts_css",
+  "limits": "Synthetic browser classification and policy mirror; not validation of live source behavior",
+  "records": [
+    {
+      "type": "stylesheet",
+      "uri_path": "/fixture-style.css",
+      "allowlisted": true,
+      "performed_action": "abort"
+    },
+    {
+      "type": "script",
+      "uri_path": "/fixture-script.js",
+      "allowlisted": true,
+      "performed_action": "abort"
+    },
+    {
+      "type": "script",
+      "uri_path": "/fixture-thirdparty.js",
+      "allowlisted": false,
+      "performed_action": "abort"
+    },
+    {
+      "type": "image",
+      "uri_path": "/fixture-img.png",
+      "allowlisted": false,
+      "performed_action": "abort"
+    },
+    {
+      "type": "fetch",
+      "uri_path": "/fixture-fetch.png",
+      "allowlisted": false,
+      "performed_action": "abort"
+    },
+    {
+      "type": "fetch",
+      "uri_path": "/fixture-fetch-opaque",
+      "allowlisted": false,
+      "performed_action": "abort"
+    },
+    {
+      "type": "xhr",
+      "uri_path": "/fixture-xhr.png",
+      "allowlisted": false,
+      "performed_action": "abort"
+    },
+    {
+      "type": "image",
+      "uri_path": "/fixture-bg.webp",
+      "allowlisted": false,
+      "performed_action": "abort"
+    }
+  ]
+}

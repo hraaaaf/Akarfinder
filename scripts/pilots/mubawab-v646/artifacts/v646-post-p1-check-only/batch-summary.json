@@ -1,0 +1,11 @@
+{
+  "mode": "V646_THREE_PAGE_LIVE_CANARY",
+  "started_at_utc": "2026-11-04T12:33:02+00:00",
+  "real_network_attempted": false,
+  "calibration_cadence_verified": false,
+  "production_db_writes": 0,
+  "status": "CHECK_ONLY_NO_SITE_REQUESTS",
+  "shards": [],
+  "stop_reason": null,
+  "source_head": "7766b2c851ae741b6184cb0d1db339fcc6e1a5a0"
+}

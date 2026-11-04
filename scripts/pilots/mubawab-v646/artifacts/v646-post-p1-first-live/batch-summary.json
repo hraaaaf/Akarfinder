@@ -1,0 +1,49 @@
+{
+  "mode": "V646_THREE_PAGE_LIVE_CANARY",
+  "started_at_utc": "2026-11-04T12:31:17+00:00",
+  "real_network_attempted": true,
+  "calibration_cadence_verified": false,
+  "production_db_writes": 0,
+  "status": "THREE_SHARDS_PASSED",
+  "shards": [
+    {
+      "name": "rabat",
+      "source_url": "https://www.mubawab.ma/fr/st/rabat/appartements-a-vendre",
+      "status": "parsed_quality_pass",
+      "response_code": 200,
+      "eligible_cards": 32,
+      "unique_source_ids": 32,
+      "quality_accepted": true,
+      "exit_code": 0,
+      "accepted": true,
+      "json_filename": "v646-post-p1-rabat.json"
+    },
+    {
+      "name": "casablanca-maarif",
+      "source_url": "https://www.mubawab.ma/fr/sd/casablanca/ma%C3%A2rif/appartements-a-vendre",
+      "status": "parsed_quality_pass",
+      "response_code": 200,
+      "eligible_cards": 32,
+      "unique_source_ids": 32,
+      "quality_accepted": true,
+      "exit_code": 0,
+      "accepted": true,
+      "json_filename": "v646-post-p1-casablanca-maarif.json"
+    },
+    {
+      "name": "agadir-hay-salam",
+      "source_url": "https://www.mubawab.ma/fr/sd/agadir/hay-salam/appartements-a-vendre",
+      "status": "parsed_quality_pass",
+      "response_code": 200,
+      "eligible_cards": 33,
+      "unique_source_ids": 33,
+      "quality_accepted": true,
+      "exit_code": 0,
+      "accepted": true,
+      "json_filename": "v646-post-p1-agadir-hay-salam.json"
+    }
+  ],
+  "stop_reason": null,
+  "source_head": "7766b2c851ae741b6184cb0d1db339fcc6e1a5a0",
+  "offline_tests_exit_code": 0
+}

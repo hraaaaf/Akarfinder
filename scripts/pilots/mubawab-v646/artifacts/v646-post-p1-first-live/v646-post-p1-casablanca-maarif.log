@@ -1,0 +1,161 @@
+{
+  "mode": "LIVE_SINGLE_PAGE_V646_CANARY",
+  "site": "www.mubawab.ma",
+  "source_search_url": "https://www.mubawab.ma/fr/sd/casablanca/ma%C3%A2rif/appartements-a-vendre",
+  "generated_at_utc": "2026-11-04T12:31:31+00:00",
+  "navigation_limit": 1,
+  "browser_engine": "ordinary_playwright_chromium",
+  "browser_proxies_or_challenge_bypass": false,
+  "production_db_writes": 0,
+  "publication_eligible_proven": 0,
+  "physical_unique_properties": null,
+  "live_scale_200k_proven": false,
+  "canary_status": "parsed_quality_pass",
+  "provenance": {
+    "github_sha": "7766b2c851ae741b6184cb0d1db339fcc6e1a5a0",
+    "github_run_id": null,
+    "scraper_sha256": "df804ba9fed1dbfdfc72ff431b383dfed6d5e34efc526912f2d893f0bdbcc5e4",
+    "browser_fetcher_sha256": "263742fee1fb6402bf2a2e55ecee4619c7194d8271d9d76d7b2008c27b710e5f",
+    "canary_sha256": "3ab0e5db16112346a356ab0adee4fc1c68f40abef223a5da3b740fc83318d24b",
+    "quality_baselines_sha256": "ab6e79d84f48e66a7a74b59325ba8b1a388bb89dbcee33b44861974700b7a493",
+    "approved_urls_sha256": "40e9f55926a1611c8b74a0ac2f74637a5342d6ff7e0ae4dbb69e672ec857ed1f"
+  },
+  "timings": {
+    "browser_launch_seconds": 0.736,
+    "navigation_and_render_seconds": 4.86
+  },
+  "robots": {
+    "status": "checked",
+    "sha256": "bf22e2347ab2ebc0bc48a864aab82dc73ee799d75b244828b12ce4761fe9c434",
+    "checked_at_utc": "2026-11-04T12:31:31+00:00",
+    "rule_count": 14
+  },
+  "listing_page_navigations": 1,
+  "fetch_status": "ok",
+  "response_code": 200,
+  "attempts": 1,
+  "fetch_error": null,
+  "html_analysis": {
+    "html_sha256": "7efcae6da075146800215b8c47ccc46ceb72edabd49e4daa08378746d7ed9705",
+    "parse_seconds": 0.8463,
+    "observed_source_ids": [
+      "8126545",
+      "8260422",
+      "8261304",
+      "8273034",
+      "8276719",
+      "8289411",
+      "8299023",
+      "8308409",
+      "8328743",
+      "8334527",
+      "8340145",
+      "8346808",
+      "8374612",
+      "8377655",
+      "8396207",
+      "8398031",
+      "8400377",
+      "8410140",
+      "8414835",
+      "8415117",
+      "8420334",
+      "8423838",
+      "8424406",
+      "8426164",
+      "8430026",
+      "8430517",
+      "8435242",
+      "8443010",
+      "8444785",
+      "8445390",
+      "8445532",
+      "8446371"
+    ],
+    "observed_source_ids_sha256": "8b4997bcd45d5cad88c62ac9fdc96b305afa9d4be1303b5d3bbb277580ccb832",
+    "counts_observed": {
+      "observed_rows": 32,
+      "unique_source_ids": 32,
+      "duplicate_source_id_occurrences": 0,
+      "fields_present_among_unique_ids": {
+        "title": 32,
+        "price_numeric": 32,
+        "price_explicit_on_request": 0,
+        "surface": 32,
+        "city": 32,
+        "district": 32,
+        "detail_link": 32
+      },
+      "stale_price_rows_with_on_request_source": 0,
+      "apartment_confirmed_from_title_only": 30,
+      "explicit_other_or_mixed_type_from_title_only": 1,
+      "property_type_observed_counts": {
+        "apartment": 30,
+        "office": 1,
+        "unknown": 1
+      },
+      "complete_core_without_district": 32,
+      "complete_core_with_district": 32,
+      "complete_core_with_district_numeric_price": 32,
+      "verified_active": null,
+      "physical_unique_properties": null,
+      "publication_eligible_proven": 0,
+      "note": "Strict core = title, explicit MAD price or on_request, surface, city, district and valid detail link. Activity, rights and physical duplicates unverified."
+    },
+    "quality_contract": {
+      "require_locality": true,
+      "baseline_eligible_cards": 32,
+      "minimum_baseline_ratio": 0.7,
+      "coverage_vs_baseline": 1.0,
+      "baseline_is_provisional": true
+    },
+    "total_cards": 34,
+    "eligible_cards": 32,
+    "ignored_cards": {
+      "promotion_without_detail_link": 1,
+      "empty_placeholder": 1
+    },
+    "rejected_cards": {},
+    "parsed_rows_before_quality_gate": 32,
+    "quality_accepted": true,
+    "quality_reasons": [],
+    "acceptance_rate": 1.0,
+    "surface_coverage": 1.0,
+    "locality_coverage": 1.0,
+    "price_recognition_coverage": 1.0,
+    "counts_for_accepted_page_only": {
+      "observed_rows": 32,
+      "unique_source_ids": 32,
+      "duplicate_source_id_occurrences": 0,
+      "fields_present_among_unique_ids": {
+        "title": 32,
+        "price_numeric": 32,
+        "price_explicit_on_request": 0,
+        "surface": 32,
+        "city": 32,
+        "district": 32,
+        "detail_link": 32
+      },
+      "stale_price_rows_with_on_request_source": 0,
+      "apartment_confirmed_from_title_only": 30,
+      "explicit_other_or_mixed_type_from_title_only": 1,
+      "property_type_observed_counts": {
+        "apartment": 30,
+        "office": 1,
+        "unknown": 1
+      },
+      "complete_core_without_district": 32,
+      "complete_core_with_district": 32,
+      "complete_core_with_district_numeric_price": 32,
+      "verified_active": null,
+      "physical_unique_properties": null,
+      "publication_eligible_proven": 0,
+      "note": "Strict core = title, explicit MAD price or on_request, surface, city, district and valid detail link. Activity, rights and physical duplicates unverified."
+    }
+  },
+  "elapsed_wall_seconds": 6.905,
+  "verified_active": null,
+  "live_extraction_rate_per_hour": null
+}
+
+
