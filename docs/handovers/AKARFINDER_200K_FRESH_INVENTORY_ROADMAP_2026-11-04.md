@@ -4,6 +4,14 @@
 
 **État : FEASIBILITY_NOT_PROVEN / NO_PROD_WRITE / NO_DEPLOY.**
 
+## Exécution R0 — 04/11/2026 (audit ciblé, DB bloquée)
+
+- **Rapport d'audit :** [AKARFINDER_200K_R0_READONLY_AUDIT_2026-11-04.md](AKARFINDER_200K_R0_READONLY_AUDIT_2026-11-04.md) ; code de référence `main@c02d0b73ed18b0e136d478fab39e71df425173a7`.
+- **Statut actuel du projet Supabase connecté : INACTIVE**, confirmé par `list_projects` + `get_project` ; `list_tables` renvoie `Database is possibly not accessible at the moment`. Aucun redémarrage/SQL exécuté. **Stock produit et 200K fresh_unique_eligible = UNKNOWN**.
+- **Canal technique disponible :** `lib/feeds` (CSV/JSON/XML → validation → staging → tombstones), MASS-1 audit GET read-only, Freshness Lifecycle et seed freshness internes. Les 32 460 IDs/source historiques ne sont pas publiables ; il faut un vrai compteur DB une fois la base disponible.
+- **P0 documenté avant R1 :** le `partner-v2-bridge.ts` peut projeter `partner_authorized`, `available` et `last_partner_update_at=now` sans preuve amont positive suffisante. **Ne pas activer ce pont pour les KPI de stock frais tant que les preuves et un gate fail-closed n'existent pas**.
+- **Next exact :** confirmer quel backend sert réellement le site puis accéder en lecture seule à ses tables après décision de restauration si nécessaire. Travail R1 hors production restant possible : tests négatifs sur le bridge et preuve d'activité; aucun déploiement ni merge.
+
 ## 1. Baseline vérifiée et limites
 
 - Inventaire isolé reconstruit : **32 460 clés (source, source_id)**, Avito 27 106 et Mubawab 5 354 ; **32 460 UNVERIFIED**, **0 ready_for_use / publication_eligible**, sur artefact GitHub [#41322759990](https://github.com/hraaaaf/Akarfinder/actions/runs/41322759990). Un ID/source n'est pas une propriété unique physique.
