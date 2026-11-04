@@ -15,7 +15,9 @@
 
 **Limites :** autoriser certains scripts/CSS ne certifie pas, à lui seul, le type MIME effectif des réponses ; les compteurs de décision ne sont pas une capture réseau de paquets. La politique peut perturber le rendu dépendant de Fetch/XHR/CDN. **Le parsing P1 est validé sur l'ancien code pour trois pages uniquement ; la qualité du parsing sous la nouvelle politique reste non mesurée sur Mubawab.**
 
-**Gate : NO-GO pour certification intégrale** jusqu'à (1) CI légère verte sur le HEAD final ; (2) test Chromium synthétique instrumenté ; (3) choix séparé de nouvelles pages explicitement autorisées ; (4) canary borné du code corrigé et analyse de son rapport réseau + qualité. Ne pas revisiter automatiquement Rabat, Casablanca Maârif ni Agadir Hay Salam déjà consommées. Aucun merge, déploiement ou write production.
+**Preuve offline vérifiée :** [CI #41843084418](https://github.com/hraaaaf/Akarfinder/actions/runs/41843084418) = SUCCESS au SHA `286c86c0c2b94ffa958ea96c3a6c95e2e555f49a`, 131 tests, **126 PASS / 5 SKIPPED**, aucun échec. Le test Chromium n'a pas été exécuté dans cette CI légère. [Preuve locale Chromium synthétique](../../scripts/pilots/mubawab-v646/artifacts/v646-network-guard-synthetic-20261104.json) : **8/8** requêtes HTTP de fixture interceptées et abandonnées, `fetch` image classé `fetch`, `xhr` image classé `xhr`, 1 WebSocket fermé, 0 requête envoyée aux sites. Cette preuve exerce un **miroir de la politique**, pas le module de production connecté à Mubawab, et ne vérifie pas les Content-Types des réponses.
+
+**Gate : NO-GO pour certification intégrale** tant que (1) aucune preuve d'instrumentation réseau sur le code corrigé en conditions live autorisées, et (2) aucune nouvelle preuve de qualité du parsing sous la politique restrictive. Next exact = obtenir une nouvelle liste de pages **explicitement autorisées**, distinctes des trois pages historiques, puis faire un seul canary borné avec preuve qualité et compteurs réseau. Ne pas revisiter automatiquement Rabat, Casablanca Maârif ni Agadir Hay Salam déjà consommées. Aucun merge, déploiement ou write production.
 
 ## Exécution live post-P1 — 04/11/2026
 
