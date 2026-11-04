@@ -11,7 +11,7 @@ from dataclasses import dataclass
 import re
 from urllib.parse import unquote, urlsplit
 
-from akarfinder_scraper import FetchResult, looks_like_block_page, parse_listings
+from akarfinder_scraper import FetchResult, approved_shard_baseline, looks_like_block_page, parse_listings
 
 
 # Explicit fail-closed allowlist. Playwright labels fetch("photo.png") as
@@ -51,12 +51,33 @@ async def _allow_page_without_images(route, admitted_urls: set[str], audit: Coun
     """Route every browser request through the allowlist before network IO."""
     kind = route.request.resource_type
     audit["intercepted"] += 1
-    if _request_allowed(route.request, admitted_urls):
+    admitted = _request_allowed(route.request, admitted_urls)
+    # A route allowlist is insufficient by itself: a script could reload the
+    # exact admitted URL repeatedly. Permit only ONE document request within
+    # each isolated fetch context, even if it is the same HTTPS URL.
+    if admitted and kind == "document":
+        if audit["admitted_main_documents"] >= 1:
+            admitted = False
+            audit["repeat_main_document_denied"] += 1
+        else:
+            audit["admitted_main_documents"] += 1
+    if admitted:
         audit["continued"] += 1
         await route.continue_()
     else:
         audit["blocked"] += 1
         audit[f"blocked_type_{kind}"] += 1
+        # An attempt to navigate the TOP-LEVEL frame to an unapproved URL
+        # invalidates this canary, even if Playwright aborts the request and
+        # the previously parsed listing grid remains in the DOM. Iframes are
+        # denied but are not counted as additional top-level navigations.
+        if kind == "document":
+            try:
+                req = route.request
+                if req.is_navigation_request() and req.frame.parent_frame is None:
+                    audit["blocked_top_level_navigations"] += 1
+            except (AttributeError, ValueError):
+                audit["blocked_top_level_navigations"] += 1
         await route.abort()
 
 
@@ -148,22 +169,35 @@ class BrowserFetcher:
                 if key.startswith("blocked_type_")
             },
             "blocked_websockets": self._network_audit["blocked_websockets"],
+            "admitted_main_documents": self._network_audit["admitted_main_documents"],
+            "repeat_main_document_denied": self._network_audit["repeat_main_document_denied"],
+            "blocked_top_level_navigations": self._network_audit["blocked_top_level_navigations"],
         }
 
     async def fetch(self, url: str) -> FetchResult:
         if self._browser is None:
             raise RuntimeError("BrowserFetcher non initialisé")
+        # A caller or future refactor must never turn this into a generic
+        # browser fetcher. Preflight MUST happen before creating a context or
+        # opening a socket, and is independently tied to the fixed approved
+        # pilot URLs and their baselines.
+        try:
+            approved_shard_baseline(url)
+        except (ValueError, TypeError, OSError, UnicodeError) as exc:
+            return FetchResult(url, "blocked", attempts=0,
+                               error=f"browser preflight: unapproved shard: {type(exc).__name__}")
         async with self.semaphore:
             # Isolate each fetch: the network allowlist must never leak across
             # concurrent pages or between admitted shards.
             context = await self._browser.new_context(service_workers="block")
+            fetch_audit = Counter()
             try:
                 roots = {url}
                 async def guard(route):
-                    await _allow_page_without_images(route, roots, self._network_audit)
+                    await _allow_page_without_images(route, roots, fetch_audit)
 
                 async def deny_websocket(websocket_route):
-                    self._network_audit["blocked_websockets"] += 1
+                    fetch_audit["blocked_websockets"] += 1
                     await websocket_route.close()
 
                 await context.route("**/*", guard)
@@ -198,16 +232,33 @@ class BrowserFetcher:
                 # immediately after the first card. This does NOT certify
                 # a full page; the separate per-shard baseline gate remains.
                 await wait_for_listing_card_stability(page, self.config.rendering_timeout_ms)
+                if fetch_audit["admitted_main_documents"] != 1:
+                    return FetchResult(url, "blocked", code=code, attempts=1,
+                                       error="main-document routing evidence missing")
+                if fetch_audit["blocked_top_level_navigations"]:
+                    return FetchResult(url, "blocked", code=code, attempts=1,
+                                       error="unexpected top-level navigation denied")
+                if page.url != url:
+                    return FetchResult(url, "blocked", code=code, attempts=1,
+                                       error="top-level URL changed during rendering")
                 html = await page.content()
+                # A challenge in the visible title/heading is terminal even
+                # when stale listing cards remain in the underlying DOM.
+                if looks_like_block_page(html):
+                    return FetchResult(url, "blocked", code=code, attempts=1,
+                                       error="challenge visible après rendu navigateur")
+                if fetch_audit["blocked_top_level_navigations"] or page.url != url:
+                    return FetchResult(url, "blocked", code=code, attempts=1,
+                                       error="top-level navigation changed after render")
                 if parse_listings(html):
                     return FetchResult(url, "ok", html=html, code=200, attempts=1)
-                if code in (403, 429) or looks_like_block_page(html):
-                    return FetchResult(url, "blocked", code=code, attempts=1,
-                                       error="challenge persistant après rendu navigateur")
                 return FetchResult(url, "empty", code=code, attempts=1,
                                    error="aucune carte exploitable après rendu JavaScript")
             except Exception as exc:
                 return FetchResult(url, "network_error", attempts=1,
                                    error=f"{type(exc).__name__}: {exc}")
             finally:
-                await context.close()
+                try:
+                    await context.close()
+                finally:
+                    self._network_audit.update(fetch_audit)

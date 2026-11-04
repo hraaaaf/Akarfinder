@@ -151,5 +151,38 @@ class P1ObservedTypes(unittest.TestCase):
                 db.close()
 
 
+
+class ChallengeOverlayGate(unittest.TestCase):
+    def test_visible_challenge_heading_blocks_even_with_usable_listing_cards(self):
+        html = (
+            "<html><head><title>Annonces immobilières</title></head><body>"
+            + card(9190001) +
+            "<h1>Checking your browser before accessing</h1></body></html>"
+        )
+        audit = s.parse_listings_audited(html, require_locality=True)
+        self.assertTrue(s.looks_like_block_page(html))
+        self.assertFalse(audit.passes_quality)
+        self.assertEqual(audit.listings, [])
+        self.assertEqual(audit.rejected, {"challenge_page": 1})
+
+    def test_alert_verify_human_blocks_residual_cards(self):
+        html = (
+            "<html><body>" + card(9190002)
+            + "<div role='alert'>Verify you are human</div></body></html>"
+        )
+        self.assertTrue(s.looks_like_block_page(html))
+        self.assertEqual(s.parse_listings(html), [])
+
+    def test_incidental_challenge_words_in_listing_description_are_not_block_page(self):
+        html = (
+            "<html><body>" + card(9190003)
+            + "<p>Le logement inclut un livre intitulé Just a Moment.</p>"
+            + "</body></html>"
+        )
+        self.assertFalse(s.looks_like_block_page(html))
+        self.assertEqual(len(s.parse_listings(html)), 1)
+
+
+
 if __name__=="__main__":
     unittest.main()
