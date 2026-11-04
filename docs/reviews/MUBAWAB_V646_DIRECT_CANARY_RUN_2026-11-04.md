@@ -37,3 +37,10 @@ La commande `--check-only` ne visite pas Mubawab et ne fait pas de tests offline
 
 ## Next exact
 Faire exécuter les deux commandes `run_three_canaries.py` (check-only puis normal) dans un checkout autorisé avec DNS/Chromium fonctionnels. Importer trois JSON et `batch-summary.json`, inspecter les refus, mettre à jour GitHub et Notion, calibrer seulement sur données réellement admissibles. Si le premier robots/HTTP bloque, publier un verdict NO-GO en conservant les preuves et sans retry.
+
+## Validation CI et PR — 04/11/2026
+- **PR Draft #1154** : https://github.com/hraaaaf/Akarfinder/pull/1154 ; base `docs/akar-v646-live-canary-blocker-20261104`, non mergée.
+- **CI sur le commit de code `631406f34a68895da857d85f6eadb8a50f1ccbe5` :** [run #41803832989](https://github.com/hraaaaf/Akarfinder/actions/runs/41803832989), **SUCCESS** ; logs **128 tests, 124 pass, 4 skipped, 0 échec**. Les 5 tests additionnels du nouveau lanceur sont tous passés.
+- **Succès observable acquis** : les règles du lanceur (trois URL exactes, tests préalables, arrêt sur 403, contrôle de provenance, pas de nouvelle navigation après échec) sont testées en mode synthétique.
+- **Succès toujours non acquis** : aucun résultat live du parseur P1. La requête robots directe du 04/11 a échoué à la résolution DNS ; aucun code HTTP, pas de navigation HTML, aucune preuve d'un blocage de Mubawab.
+- **Next exact** : exécuter `run_three_canaries.py` depuis un checkout GitHub de la PR #1154 ayant DNS / Playwright fonctionnels, inspecter `batch-summary.json` et jusqu'à 3 JSON / logs. Si le préflight robots échoue, s'arrêter et conserver les preuves. Ne pas modifier `main` ni Vercel.
