@@ -172,10 +172,11 @@ class BrowserAccessDenialTests(unittest.TestCase):
             with patch.object(browser_fetcher, "wait_for_listing_card_stability", simulated_render):
                 result = await browser.fetch(s.BASE_URL)
             self.assertEqual(result.status, "blocked")
-            self.assertIn("repeat main-document", result.error)
+            self.assertIn("unexpected top-level navigation", result.error)
             page.content.assert_not_awaited()
             self.assertEqual(browser.network_policy_evidence()["admitted_main_documents"], 1)
             self.assertEqual(browser.network_policy_evidence()["repeat_main_document_denied"], 1)
+            self.assertEqual(browser.network_policy_evidence()["blocked_top_level_navigations"], 1)
             context.close.assert_awaited_once()
         from unittest.mock import patch
         asyncio.run(exercise())
@@ -184,7 +185,13 @@ class BrowserAccessDenialTests(unittest.TestCase):
         import browser_fetcher
 
         async def exercise():
-            page = FakePage(200)
+            class PageWithMainRoute(FakePage):
+                async def goto(self, url, **kwargs):
+                    route = context.route.await_args.args[1]
+                    await route(FakeRoute("document"))
+                    return await super().goto(url, **kwargs)
+
+            page = PageWithMainRoute(200)
             page.content = AsyncMock(return_value=(
                 "<html><head><title>Annonces</title></head><body>"
                 "<div class='listingBox'></div>"
@@ -201,6 +208,76 @@ class BrowserAccessDenialTests(unittest.TestCase):
             self.assertEqual(browser.network_policy_evidence()["repeat_main_document_denied"], 0)
             context.close.assert_awaited_once()
         from unittest.mock import patch
+        asyncio.run(exercise())
+
+
+
+    def test_direct_browser_fetch_refuses_unapproved_urls_before_network(self):
+        async def exercise():
+            for url in (
+                "https://untrusted.example.invalid/fr/st/rabat/appartements-a-vendre",
+                "https://www.mubawab.ma/fr/st/tanger/appartements-a-vendre",
+                "https://www.mubawab.ma/fr/st/rabat/appartements-a-vendre:p:2",
+                "http://www.mubawab.ma/fr/st/rabat/appartements-a-vendre",
+            ):
+                browser = BrowserFetcher()
+                browser._browser = FakeBrowser(FakeContext(FakePage(200)))
+                result = await browser.fetch(url)
+                self.assertEqual(result.status, "blocked", url)
+                self.assertEqual(result.attempts, 0, url)
+                self.assertIn("browser preflight", result.error)
+                self.assertIsNone(browser._browser.options, "no context or network request", url)
+                self.assertEqual(browser.network_policy_evidence()["intercepted_requests"], 0)
+        asyncio.run(exercise())
+
+    def test_unapproved_top_level_navigation_invalidates_admitted_render(self):
+        from unittest.mock import patch
+        import browser_fetcher
+
+        async def exercise():
+            class PageWithMainRoute(FakePage):
+                async def goto(self, url, **kwargs):
+                    handler = context.route.await_args.args[1]
+                    await handler(FakeRoute("document", s.BASE_URL))
+                    return await super().goto(url, **kwargs)
+
+            page = PageWithMainRoute(200)
+            page.content = AsyncMock(return_value="<html><body><div class='listingBox'></div></body></html>")
+            context = FakeContext(page)
+            browser = BrowserFetcher()
+            browser._browser = FakeBrowser(context)
+
+            async def simulated_render(*args, **kwargs):
+                handler = context.route.await_args.args[1]
+                await handler(FakeRoute("document", "https://www.mubawab.ma/fr/st/other/appartements-a-vendre"))
+                await handler(FakeRoute("document", "https://www.mubawab.ma/iframe", iframe=True))
+                return 32
+
+            with patch.object(browser_fetcher, "wait_for_listing_card_stability", simulated_render):
+                result = await browser.fetch(s.BASE_URL)
+            self.assertEqual(result.status, "blocked")
+            self.assertIn("unexpected top-level", result.error)
+            self.assertEqual(browser.network_policy_evidence()["admitted_main_documents"], 1)
+            self.assertEqual(browser.network_policy_evidence()["blocked_top_level_navigations"], 1)
+            self.assertEqual(browser.network_policy_evidence()["blocked_by_type"]["document"], 2)
+            page.content.assert_not_awaited()
+            context.close.assert_awaited_once()
+        asyncio.run(exercise())
+
+    def test_routing_evidence_is_required_before_accepting_page_content(self):
+        from unittest.mock import patch
+        import browser_fetcher
+
+        async def exercise():
+            page = FakePage(200)
+            context = FakeContext(page)
+            browser = BrowserFetcher()
+            browser._browser = FakeBrowser(context)
+            with patch.object(browser_fetcher, "wait_for_listing_card_stability", AsyncMock(return_value=32)):
+                result = await browser.fetch(s.BASE_URL)
+            self.assertEqual(result.status, "blocked")
+            self.assertIn("routing evidence missing", result.error)
+            page.content.assert_not_awaited()
         asyncio.run(exercise())
 
 
