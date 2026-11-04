@@ -247,6 +247,7 @@ class ZeroProductionWrite(unittest.TestCase):
         import browser_fetcher
         class FakeBrowser:
             def __init__(self, *a, **k): pass
+            def network_policy_evidence(self): return {"policy": "synthetic_mock", "blocked_requests": 0}
             async def __aenter__(self): return self
             async def __aexit__(self, *a): return False
             async def fetch(self, url): return s.FetchResult(url, "ok", html=SYNTHETIC_MODERN, code=200, attempts=1)
