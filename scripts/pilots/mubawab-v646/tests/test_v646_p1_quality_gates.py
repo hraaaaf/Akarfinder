@@ -134,6 +134,7 @@ class P1ObservedTypes(unittest.TestCase):
             with sqlite3.connect(path) as c:
                 c.execute("CREATE TABLE listings(id TEXT PRIMARY KEY,title TEXT,price_mad INTEGER,link TEXT)")
                 c.execute("INSERT INTO listings VALUES ('77777','Old',100000,'https://www.mubawab.ma/fr/a/77777/x')")
+            c.close()
             db=s.init_db(str(path))
             try:
                 self.assertIsNone(db.execute("SELECT property_type_observed FROM listings WHERE id='77777'").fetchone()[0])

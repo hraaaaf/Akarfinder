@@ -153,7 +153,10 @@ class MainRobustness(unittest.TestCase):
             code, exc = _run_main(tmp, SYNTHETIC_MODERN)
             self.assertIsNone(exc)
             conn = sqlite3.connect(Path(tmp) / "akarfinder.db")
-            self.assertEqual(conn.execute("SELECT COUNT(*), COUNT(DISTINCT id) FROM listings").fetchone(), (3, 3))
+            try:
+                self.assertEqual(conn.execute("SELECT COUNT(*), COUNT(DISTINCT id) FROM listings").fetchone(), (3, 3))
+            finally:
+                conn.close()
 
 
 class DataIntegrity(unittest.TestCase):
