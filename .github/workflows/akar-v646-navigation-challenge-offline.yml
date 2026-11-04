@@ -1,0 +1,38 @@
+name: AKAR V646 Navigation and Challenge Safety (offline)
+on:
+  pull_request:
+    branches:
+      - test/akar-v646-direct-canary-cli-20261104
+    paths:
+      - "scripts/pilots/mubawab-v646/browser_fetcher.py"
+      - "scripts/pilots/mubawab-v646/akarfinder_scraper.py"
+      - "scripts/pilots/mubawab-v646/tests/test_browser_access_denied.py"
+      - "scripts/pilots/mubawab-v646/tests/test_v646_p1_quality_gates.py"
+      - ".github/workflows/akar-v646-navigation-challenge-offline.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  safety-unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Offline HTML parser prerequisite
+        run: python -m pip install beautifulsoup4==4.14.3
+      - name: Compile scraper and changed tests
+        run: |
+          python -m py_compile scripts/pilots/mubawab-v646/akarfinder_scraper.py scripts/pilots/mubawab-v646/browser_fetcher.py
+          python -m py_compile scripts/pilots/mubawab-v646/tests/test_browser_access_denied.py scripts/pilots/mubawab-v646/tests/test_v646_p1_quality_gates.py
+      - name: Challenge, navigation and existing P1 quality regression
+        env:
+          PYTHONPATH: "scripts/pilots/mubawab-v646:scripts/pilots/mubawab-v646/tests"
+        run: python -m unittest -v test_browser_access_denied test_v646_p1_quality_gates test_v646_safety
