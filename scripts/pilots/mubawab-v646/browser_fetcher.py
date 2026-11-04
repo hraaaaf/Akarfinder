@@ -19,7 +19,7 @@ from akarfinder_scraper import FetchResult, looks_like_block_page, parse_listing
 # request types are denied, regardless of filename or MIME hints.
 _ALLOWED_SUBRESOURCES = frozenset({"script", "stylesheet"})
 _IMAGE_EXTENSION = re.compile(
-    r"\\.(?:png|jpe?g|gif|webp|svg|avif|apng|bmp|ico|tiff?|heic|heif|jxl)$", re.I
+    r"\.(?:png|jpe?g|gif|webp|svg|avif|apng|bmp|ico|tiff?|heic|heif|jxl)$", re.I
 )
 
 
