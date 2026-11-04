@@ -1,0 +1,151 @@
+{
+  "as_of_utc": "2026-11-04T14:50:13.602485+00:00",
+  "window_hours": 48,
+  "cutoff_utc": "2026-11-02T14:50:13.602485+00:00",
+  "rows_by_table": {
+    "public.discovery_candidates": 321173,
+    "public.listing_sources": 19621,
+    "public.mubawab_listing_corpus_v1": 37420,
+    "public.property_cluster_members": 7802,
+    "public.property_clusters": 7796,
+    "public.property_listings": 19616,
+    "public.source_offer_observations": 19908,
+    "public.source_offer_seeds": 78110
+  },
+  "unique_non_null_ids_by_table": {
+    "public.listing_sources": 13784,
+    "public.mubawab_listing_corpus_v1": 37420,
+    "public.source_offer_seeds": 78110
+  },
+  "unique_non_null_urls_by_table": {
+    "public.listing_sources": 19621,
+    "public.mubawab_listing_corpus_v1": 17702,
+    "public.source_offer_seeds": 78110
+  },
+  "provider_rows": {
+    "discovery:openserp": 288113,
+    "discovery:serper_mass_harvest": 16098,
+    "discovery:public_sitemap": 11162,
+    "discovery:leaderimmo": 3,
+    "discovery:kaynly": 5797,
+    "listing_source:mubawab": 12968,
+    "listing_source:1immo": 671,
+    "listing_source:marrakechrealty": 87,
+    "listing_source:agenz": 1107,
+    "listing_source:mouldar": 431,
+    "listing_source:soukimmobilier": 499,
+    "listing_source:agence_atlas": 1,
+    "listing_source:immo_sud": 1,
+    "listing_source:rabat_invest": 1,
+    "listing_source:gerant_direct": 1,
+    "listing_source:meilleures_adresses": 1,
+    "listing_source:aykana": 124,
+    "listing_source:sarouty": 353,
+    "listing_source:logic-immo": 76,
+    "listing_source:avito": 680,
+    "listing_source:barnes-marrakech": 118,
+    "listing_source:daragadir": 1478,
+    "listing_source:limmobiliersansfrontieres": 163,
+    "listing_source:kawtarimmobilier": 36,
+    "listing_source:masaken": 678,
+    "listing_source:promoimmomarrakech": 138,
+    "listing_source:atlasimmobilier": 5,
+    "listing_source:marocannonces": 4,
+    "mubawab_corpus:mubawab.ma": 37420,
+    "seed:atlasimmobilier.com": 815,
+    "seed:avito.ma": 24518,
+    "seed:aykana.ma": 689,
+    "seed:mubawab.ma": 26496,
+    "seed:barnes-marrakech.com": 282,
+    "seed:agenz.ma": 5372,
+    "seed:daragadir.com": 6533,
+    "seed:promoimmomarrakech.com": 3195,
+    "seed:mouldar.com": 1539,
+    "seed:limmobiliersansfrontieres.com": 1521,
+    "seed:masaken.ma": 1698,
+    "seed:soukimmobilier.com": 1296,
+    "seed:kawtarimmobilier.com": 212,
+    "seed:sarouty.ma": 834,
+    "seed:1immo.ma": 201,
+    "seed:marocannonces.com": 468,
+    "seed:1000-annonces.com": 66,
+    "seed:expat.com": 83,
+    "seed:milkiya.ma": 131,
+    "seed:domio.ma": 4,
+    "seed:sakane.ma": 191,
+    "seed:housing.place": 22,
+    "seed:marrakechrealty.com": 1944
+  },
+  "seed_freshness_claims": {
+    "mubawab_corpus:fresh_confirmed": 18445,
+    "mubawab_corpus:uncertain": 18975,
+    "seed:seed_only": 71348,
+    "seed:fresh_confirmed": 4302,
+    "seed:aging": 2460
+  },
+  "listing_source_active_claims": {
+    "f": 1189,
+    "t": 18432
+  },
+  "reuse_compliance_claims": {
+    "NULL": 5837,
+    "link_only_index": 13784
+  },
+  "observation_status_claims": {
+    "active": 18713,
+    "inactive": 1195
+  },
+  "strict_completeness_property_listings": {
+    "incomplete": 14950,
+    "complete": 4666
+  },
+  "photo_presence_property_listings": {
+    "present": 134,
+    "absent_or_unknown": 19482
+  },
+  "description_presence_property_listings": {
+    "present": 5832,
+    "absent": 13784
+  },
+  "timestamp_bounds_utc": {
+    "discovery_last_seen_or_discovered": [
+      "2026-07-17T23:21:30.480000+00:00",
+      "2026-09-07T19:39:02.527000+00:00"
+    ],
+    "mubawab_evidence_observed_at": [
+      "2026-09-04T18:38:00+00:00",
+      "2026-09-05T12:40:36+00:00"
+    ],
+    "observation_observed_at": [
+      "2025-04-21T15:32:41+00:00",
+      "2026-09-07T19:39:05.173000+00:00"
+    ],
+    "first_observed_at": [
+      "2025-01-13T15:58:08+00:00",
+      "2026-09-07T14:20:07.331495+00:00"
+    ],
+    "last_observed_at": [
+      "2025-01-13T15:58:08+00:00",
+      "2026-09-07T14:20:07.331495+00:00"
+    ],
+    "fresh_last_seen_at": [
+      "2026-07-17T23:21:07+00:00",
+      "2026-09-07T19:36:33.901000+00:00"
+    ]
+  },
+  "timed_rows_with_timestamp_within_48h": 0,
+  "current_availability_verified": null,
+  "commercial_reuse_rights_verified": null,
+  "fresh_unique_eligible": null,
+  "physical_unique_groups_proven": null,
+  "stored_cluster_rows": 7796,
+  "stored_cluster_membership_rows": 7802,
+  "limitations": [
+    "Archived SQL export only; no live database verification.",
+    "A timestamp, active flag, or freshness label in the snapshot does not prove current availability.",
+    "Identifier and URL namespaces remain separate and their counts are not summed.",
+    "URLs, titles, descriptions, contacts, and raw row values are never emitted.",
+    "Commercial rights and physical-property deduplication are unverified."
+  ],
+  "privacy_note": "Aggregate-only. No local path, backup checksum, URLs, IDs, titles, descriptions, contacts, or raw rows."
+}
