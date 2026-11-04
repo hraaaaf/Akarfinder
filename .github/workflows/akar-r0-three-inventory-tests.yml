@@ -1,0 +1,24 @@
+name: Akar R0 Three-Inventory Tests
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/reconcile_three_inventories.py"
+      - "scripts/audits/tests/test_reconcile_three_inventories.py"
+      - ".github/workflows/akar-r0-three-inventory-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run offline reconciliation unit tests
+        working-directory: scripts/audits
+        run: python -m unittest -v tests/test_reconcile_three_inventories.py
