@@ -162,9 +162,9 @@ class BrowserFetcher:
                 async def guard(route):
                     await _allow_page_without_images(route, roots, self._network_audit)
 
-                def deny_websocket(websocket_route):
+                async def deny_websocket(websocket_route):
                     self._network_audit["blocked_websockets"] += 1
-                    websocket_route.close()
+                    await websocket_route.close()
 
                 await context.route("**/*", guard)
                 await context.route_web_socket("**/*", deny_websocket)
