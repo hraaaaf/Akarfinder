@@ -11,7 +11,9 @@ const CONTEXT = {
   partner_id: "agence-atlas",
   partner_type: "agency" as const,
   partner_tier: "agency_partner" as const,
-  source_authorization_note: "Feed partenaire autorisé.",
+  source_authorization_note: "Feed partenaire autorisé (fixture, sans licence réelle).",
+  authorization_evidence: { verified: true, reference: "synthetic:authorisation-test-only" },
+  media_rights_evidence: { verified: true, reference: "synthetic:media-rights-test-only" },
   acquisition_channel: "partner_feed" as const,
   neighborhood_context_allowed: true,
 };
@@ -37,6 +39,7 @@ describe("Direct feed → PartnerListingV2 bridge", () => {
 
     assert.equal(bridged.listing.partner_listing_id, "ATLAS-42");
     assert.equal(bridged.listing.district, "Maârif");
+    assert.equal(bridged.listing.availability_status, "unknown", "un simple timestamp source ne prouve pas disponible");
     assert.equal(bridged.listing.media?.length, 2);
     assert.equal(validatePartnerListingV2(bridged.listing).valid, true);
 
@@ -121,8 +124,8 @@ describe("Direct feed → PartnerListingV2 bridge", () => {
 
   it("does not resurrect image URLs when feed rights are not confirmed", () => {
     const csv = [
-      "external_id,source_name,source_url,transaction_type,property_type,title,city,district,price_mad,surface_m2,image_urls,images_rights_confirmed",
-      "ATLAS-99,agence-atlas,https://atlas.ma/a/99,sale,apartment,Appartement Racine,Casablanca,Racine,1700000,100,https://cdn.atlas.ma/private.jpg,false",
+      "external_id,source_name,source_url,transaction_type,property_type,title,city,district,price_mad,surface_m2,image_urls,images_rights_confirmed,updated_at_source",
+      "ATLAS-99,agence-atlas,https://atlas.ma/a/99,sale,apartment,Appartement Racine,Casablanca,Racine,1700000,100,https://cdn.atlas.ma/private.jpg,false,2026-08-24T09:45:00.000Z",
     ].join("\n");
     const validated = validatedFromCsv(csv);
     assert.equal(validated.image_urls.length, 0);
@@ -132,4 +135,74 @@ describe("Direct feed → PartnerListingV2 bridge", () => {
     assert.equal(bridged.listing.media?.length, 0);
     assert.equal(bridged.listing.photos_authorized, false);
   });
+  it("rejects an unverified partner grant instead of marking partner_authorized", () => {
+    const validated = validatedFromCsv([
+      "external_id,source_name,source_url,transaction_type,property_type,title,city,district,price_mad,surface_m2,updated_at_source",
+      "ATLAS-201,agence-atlas,https://atlas.ma/a/201,sale,apartment,Appartement Agdal,Rabat,Agdal,1000000,75,2026-08-24T09:40:00.000Z",
+    ].join("\n"));
+    for (const context of [
+      { ...CONTEXT, authorization_evidence: undefined },
+      { ...CONTEXT, authorization_evidence: { verified: false, reference: "synthetic:unverified" } },
+      { ...CONTEXT, source_authorization_note: "" },
+    ]) {
+      const result = validatedFeedRowToPartnerListingV2(validated, context, NOW);
+      assert.equal(result.ok, false);
+      if (!result.ok) assert.match(result.reason, /autorisation/i);
+    }
+  });
+
+  it("does not fabricate source freshness when updated_at_source is missing, invalid or future", () => {
+    const validated = validatedFromCsv([
+      "external_id,source_name,source_url,transaction_type,property_type,title,city,district,price_mad,surface_m2,updated_at_source",
+      "ATLAS-202,agence-atlas,https://atlas.ma/a/202,sale,apartment,Appartement Agdal,Rabat,Agdal,1000000,75,2026-08-24T09:40:00.000Z",
+    ].join("\n"));
+    for (const date of [null, "invalid", "2026-08-25T09:40:00.000Z"]) {
+      const result = validatedFeedRowToPartnerListingV2({ ...validated, updated_at_source: date }, CONTEXT, NOW);
+      assert.equal(result.ok, false);
+      if (!result.ok) assert.match(result.reason, /updated_at_source/);
+    }
+  });
+
+  it("keeps status unknown without positive recent activity evidence, and requires <=48h", () => {
+    const validated = validatedFromCsv([
+      "external_id,source_name,source_url,transaction_type,property_type,title,city,district,price_mad,surface_m2,updated_at_source",
+      "ATLAS-203,agence-atlas,https://atlas.ma/a/203,sale,apartment,Appartement Agdal,Rabat,Agdal,1000000,75,2026-08-24T09:40:00.000Z",
+    ].join("\n"));
+    const cases = [
+      { ctx: CONTEXT, expected: "unknown" },
+      { ctx: { ...CONTEXT, activity_evidence: {status: "available" as const, verified: false, checked_at: NOW, reference: "synthetic:fake" } }, expected: "unknown" },
+      { ctx: { ...CONTEXT, activity_evidence: {status: "available" as const, verified: true, checked_at: "2026-08-21T10:10:00.000Z", reference: "synthetic:stale" } }, expected: "unknown" },
+      { ctx: { ...CONTEXT, activity_evidence: {status: "available" as const, verified: true, checked_at: "2026-08-24T10:00:00.000Z", reference: "synthetic:fresh" } }, expected: "available" },
+    ];
+    for (const { ctx, expected } of cases) {
+      const result = validatedFeedRowToPartnerListingV2(validated, ctx, NOW);
+      assert.equal(result.ok, true);
+      if (result.ok && result.kind === "listing") assert.equal(result.listing.availability_status, expected);
+    }
+  });
+
+  it("does not assert photo rights from feed's boolean alone", () => {
+    const validated = validatedFromCsv([
+      "external_id,source_name,source_url,transaction_type,property_type,title,city,district,price_mad,surface_m2,image_urls,images_rights_confirmed,updated_at_source",
+      "ATLAS-204,agence-atlas,https://atlas.ma/a/204,sale,apartment,Appartement Agdal,Rabat,Agdal,1000000,75,https://cdn.atlas.ma/photo.jpg,true,2026-08-24T09:40:00.000Z",
+    ].join("\n"));
+    assert.equal(validated.image_urls.length, 1, "fixture must contain an image URL");
+    const result = validatedFeedRowToPartnerListingV2(validated, { ...CONTEXT, media_rights_evidence: undefined }, NOW);
+    assert.equal(result.ok, true);
+    if (result.ok && result.kind === "listing") {
+      assert.equal(result.listing.photos_authorized, false);
+      assert.deepEqual(result.listing.media, []);
+    }
+  });
+
+  it("rejects mismatched source identity before creating or withdrawing a listing", () => {
+    const validated = validatedFromCsv([
+      "external_id,source_name,source_url,transaction_type,property_type,title,city,district,price_mad,surface_m2,updated_at_source",
+      "ATLAS-205,agence-atlas,https://atlas.ma/a/205,sale,apartment,Appartement Agdal,Rabat,Agdal,1000000,75,2026-08-24T09:40:00.000Z",
+    ].join("\n"));
+    const result = validatedFeedRowToPartnerListingV2(validated, { ...CONTEXT, partner_id: "other-agency" }, NOW);
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.match(result.reason, /mismatch/);
+  });
+
 });
