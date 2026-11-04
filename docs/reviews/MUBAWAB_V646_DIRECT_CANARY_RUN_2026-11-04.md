@@ -1,6 +1,21 @@
 # Akarfinder V6.4.6 — lanceur direct des trois canaries (04/11/2026)
 
-> **État courant au 04/11/2026 12:35 UTC — les canaries live ont été exécutés.** Les sections plus bas consignent l’historique de pré-exécution et sont remplacées par les mesures ci-dessous.
+> **État du 04/11/2026 : LIVE P1 = 3/3 PASS sur le code historique ; protocole réseau corrigé ensuite, non certifié en live.** Les sections ci-dessous conservent les mesures et l'historique; lire d'abord la reprise réseau.
+
+## Reprise du 04/11/2026 — correction du réseau, sans nouveau canary
+
+**Goal :** combler la faille Playwright constatée par test synthétique : une image demandée via `fetch()` possède `resource_type=fetch`, pas `image`.
+
+**Implémenté sur la branche Draft #1154, après les visites historiques :**
+- `browser_fetcher.py` : allowlist fail-closed (document principal **exactement autorisé**, scripts et feuilles CSS du même hôte uniquement). `image`, `fetch`, `xhr`, `media`, `font`, iframes, sous-requêtes tierces et types inconnus sont rejetés **avant** `route.continue_()`. Refus des URLs JS/CSS ressemblant à des fichiers image.
+- Chaque navigation possède un contexte Chromium isolé, `service_workers="block"`, et ses routes WebSocket sont fermées. Aucun proxy, retry ni contournement.
+- `live_canary.py` ajoute aux **futurs** JSON `network_policy` (intercepted, continued, blocked, blocked_by_type, WebSocket), sans changer ni recalculer les dix preuves historiques.
+- Tests unitaires adversariaux : refus Fetch/XHR, URLs ambiguës, domaines externes, iframes, 403/429. Test Chromium synthétique dédié : chaque URL de fixture est **toujours interrompue** avant réseau, et les classifications réelles sont comparées à l'allowlist.
+- La politique CI du dépôt interdit les jobs Chromium lourds sur cette PR. Le workflow léger historique est conservé ; le test Chromium est exécutable localement sur un Chromium autorisé. Il n'est pas une preuve live Mubawab.
+
+**Limites :** autoriser certains scripts/CSS ne certifie pas, à lui seul, le type MIME effectif des réponses ; les compteurs de décision ne sont pas une capture réseau de paquets. La politique peut perturber le rendu dépendant de Fetch/XHR/CDN. **Le parsing P1 est validé sur l'ancien code pour trois pages uniquement ; la qualité du parsing sous la nouvelle politique reste non mesurée sur Mubawab.**
+
+**Gate : NO-GO pour certification intégrale** jusqu'à (1) CI légère verte sur le HEAD final ; (2) test Chromium synthétique instrumenté ; (3) choix séparé de nouvelles pages explicitement autorisées ; (4) canary borné du code corrigé et analyse de son rapport réseau + qualité. Ne pas revisiter automatiquement Rabat, Casablanca Maârif ni Agadir Hay Salam déjà consommées. Aucun merge, déploiement ou write production.
 
 ## Exécution live post-P1 — 04/11/2026
 
