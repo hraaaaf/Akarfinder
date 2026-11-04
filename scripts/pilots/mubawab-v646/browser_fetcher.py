@@ -167,7 +167,7 @@ class BrowserFetcher:
                     websocket_route.close()
 
                 await context.route("**/*", guard)
-                context.route_web_socket("**/*", deny_websocket)
+                await context.route_web_socket("**/*", deny_websocket)
                 page = await context.new_page()
                 response = await page.goto(
                     url, wait_until="domcontentloaded",
