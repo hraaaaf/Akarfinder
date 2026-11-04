@@ -8,12 +8,12 @@ on:
       - ".github/workflows/akar-r0-three-inventory-tests.yml"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
-
-concurrency:
-  group: akar-r0-three-inventory-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
 
 jobs:
   unit:
