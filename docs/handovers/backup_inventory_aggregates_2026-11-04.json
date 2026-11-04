@@ -147,5 +147,70 @@
     "URLs, titles, descriptions, contacts, and raw row values are never emitted.",
     "Commercial rights and physical-property deduplication are unverified."
   ],
-  "privacy_note": "Aggregate-only. No local path, backup checksum, URLs, IDs, titles, descriptions, contacts, or raw rows."
+  "privacy_note": "Aggregate-only. No local path, backup checksum, URLs, IDs, titles, descriptions, contacts, or raw rows.",
+  "historical_reconciliation": {
+    "manifest_integrity": "ok",
+    "manifest_rows": {
+      "avito": 27106,
+      "mubawab": 5354
+    },
+    "historical_ids": {
+      "avito": 27053,
+      "mubawab": 5195
+    },
+    "sample_ids": {
+      "avito": 97,
+      "mubawab": 313
+    },
+    "sample_absent_from_history": {
+      "avito": 53,
+      "mubawab": 159
+    },
+    "manifest_url_suffix_rule_validation": {
+      "avito": {
+        "historical_rows": 27053,
+        "matching_source_id_suffix": 27053,
+        "ratio": 1.0
+      },
+      "mubawab": {
+        "historical_rows": 5195,
+        "matching_source_id_suffix": 5194,
+        "ratio": 0.999808
+      }
+    },
+    "backup_table_rows": {
+      "public.listing_sources": 19621,
+      "public.mubawab_listing_corpus_v1": 37420,
+      "public.source_offer_seeds": 78110
+    },
+    "backup_candidate_ids_by_source": {
+      "avito": 24209,
+      "mubawab": 45887
+    },
+    "reconciliation_by_source": {
+      "avito": {
+        "historical_ids_in_backup": 185,
+        "historical_ids_not_matched_in_selected_tables": 26868,
+        "sample_ids_in_backup": 0,
+        "inventory_manifest_sample_new_ids_in_selected_tables": 0
+      },
+      "mubawab": {
+        "historical_ids_in_backup": 4936,
+        "historical_ids_not_matched_in_selected_tables": 259,
+        "sample_ids_in_backup": 166,
+        "inventory_manifest_sample_new_ids_in_selected_tables": 13
+      }
+    },
+    "v646_mubawab_canary": {
+      "reported_distinct_ids": 97,
+      "individual_ids_available": false,
+      "matched_to_backup": null,
+      "reason": "Published evidence stores per-city counts and hashes, not the individual source IDs."
+    },
+    "limitations": [
+      "ID candidates from URLs use the final numeric path token of source-specific historical ID length; exact per-source rule validation is reported above.",
+      "Archive membership does not prove current availability, freshness, rights, or physical uniqueness.",
+      "No IDs, URLs, listing text, or contact fields are written to output."
+    ]
+  }
 }
