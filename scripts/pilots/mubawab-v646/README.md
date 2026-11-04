@@ -11,6 +11,8 @@
 
 Run `python -m unittest discover -s tests -v` after installing `requirements.txt`. This GitHub standalone lane runs guard/robot regression tests; **full package with 116 local passing tests and previous run artefacts** is shared in this conversation as `Akarfinder_V646_with_verified_proofs.zip`.
 
+**Additional V6.4.6 safety hardening (stacked Draft #1157, 04/11/2026):** each isolated Chromium fetch now permits **one, and only one, top-level document request**. A script-triggered reload of the same admitted shard is blocked and flagged in `network_policy` (`admitted_main_documents`, `repeat_main_document_denied`), and a canary does not count it as a success. A visible verification `h1`, `h2` or `role=alert` is terminal even if old listing cards remain in the page DOM; incidental description text is not a challenge. Per-page route counts are merged after each isolated context closes. **Synthetic offline tests only:** no new Mubawab navigation has been attempted and live certification of this change remains pending a distinct explicitly permitted page. Draft #1157 is based on Draft #1154; no merge, production writes or deployment.
+
 **Legal boundary:** Respect robots.txt and site terms, which currently restrict mass extraction and competitor database creation. Robots permission alone is not reuse permission. No Supabase/Neon writes, Vercel, scheduling or merge.
 
 **Redirect safety:** HTTP requests have `allow_redirects=False`; Chromium rejects any `page.url != requested_url`. This prevents a redirected rental/category page from being counted as a sale shard. The offline test covers the HTTP behavior.
