@@ -15,6 +15,18 @@ class SourceIdentityTests(unittest.TestCase):
         self.assertEqual(parse_identity('agenz.ma', 'https://agenz.ma/fr/vente/9', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')[0], 'opaque_key')
         self.assertEqual(parse_identity('sarouty.ma', 'https://sarouty.ma/fr/annonce/55/a', '')[0], 'unsupported')
 
+    def test_reject_foreign_and_deceptive_hosts(self):
+        urls = [
+            'https://evil.example/fr/appartement/louer/rabat/123/a',
+            'https://domio.ma.evil.example/fr/appartement/louer/rabat/123/a',
+            '/fr/appartement/louer/rabat/123/a',
+            'https://evil.example@domio.ma.evil.example/fr/appartement/louer/rabat/123/a',
+        ]
+        for url in urls:
+            with self.subTest(url=url):
+                self.assertEqual(parse_identity('domio.ma', url, '123')[0], 'invalid_host')
+        self.assertEqual(parse_identity('domio.ma', 'https://www.domio.ma/fr/appartement/louer/rabat/123/a', '123')[0], 'ok')
+
     def test_intersection_and_locale_dedup(self):
         with tempfile.TemporaryDirectory() as directory:
             paths = [Path(directory) / name for name in ('left.csv', 'right.csv')]
