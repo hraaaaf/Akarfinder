@@ -92,6 +92,7 @@ async function captureVisualKeys(page) {
       visualClass: marker?.getAttribute('data-visual-inventory-class') ?? null,
       contextualId: card.querySelector('[data-contextual-asset-id]')?.getAttribute('data-contextual-asset-id') ?? null,
       neighborhoodId: card.querySelector('[data-neighborhood-photo-id]')?.getAttribute('data-neighborhood-photo-id') ?? null,
+      family: card.querySelector('[data-property-visual-family]')?.getAttribute('data-property-visual-family') ?? null,
     };
   }));
 }
@@ -135,6 +136,8 @@ for (const viewport of viewports) {
     const classes = cards.map((card) => card.querySelector('[data-visual-inventory-class]')?.getAttribute('data-visual-inventory-class') ?? null);
     const contextualIds = cards.map((card) => card.querySelector('[data-contextual-asset-id]')?.getAttribute('data-contextual-asset-id') ?? null).filter(Boolean);
     const neighborhoodIds = cards.map((card) => card.querySelector('[data-neighborhood-photo-id]')?.getAttribute('data-neighborhood-photo-id') ?? null).filter(Boolean);
+    const families = cards.map((card) => card.querySelector('[data-property-visual-family]')?.getAttribute('data-property-visual-family') ?? null);
+    const artworkSources = cards.map((card) => card.querySelector('[data-property-visual-family]')?.getAttribute('src') ?? null);
     const labels = cards.map((card) => ({
       illustration: card.querySelector('[data-contextual-illustration-label]')?.textContent?.trim() ?? null,
       neighborhood: card.querySelector('[data-neighborhood-photo-disclosure]')?.textContent?.trim() ?? null,
@@ -148,6 +151,8 @@ for (const viewport of viewports) {
       classes,
       contextualIds,
       neighborhoodIds,
+      families,
+      artworkSources,
       labels,
       brokenImages,
       maxCardHeight: Math.max(...heights),
@@ -157,27 +162,21 @@ for (const viewport of viewports) {
     };
   });
 
-  const counts = Object.fromEntries(["authorized_or_listing_image", "neighborhood_photo", "contextual_illustration", "generic_illustration", "neutral"].map((key) => [key, metrics.classes.filter((value) => value === key).length]));
+  const counts = Object.fromEntries(["authorized_or_listing_image", "canonical_property_type", "contextual_illustration", "neighborhood_photo", "neutral"].map((key) => [key, metrics.classes.filter((value) => value === key).length]));
   if (metrics.cardCount !== 14) failures.push(`${viewport.name}: expected 14 cards, got ${metrics.cardCount}`);
   if (metrics.columns !== viewport.columns) failures.push(`${viewport.name}: expected ${viewport.columns} columns, got ${metrics.columns}`);
   if (metrics.firstTop == null || metrics.firstTop > viewport.topMax) failures.push(`${viewport.name}: first listing top ${metrics.firstTop}px > ${viewport.topMax}px`);
   if (metrics.maxCardHeight > viewport.cardMax) failures.push(`${viewport.name}: card height ${metrics.maxCardHeight}px > ${viewport.cardMax}px`);
   if (metrics.overflow > 1) failures.push(`${viewport.name}: horizontal overflow ${metrics.overflow}px`);
-  if (metrics.brokenImages !== 0) failures.push(`${viewport.name}: ${metrics.brokenImages} broken visual(s)`);
-  if (counts.neighborhood_photo !== 2) failures.push(`${viewport.name}: expected 2 certified Rabat neighborhood photos, got ${counts.neighborhood_photo}`);
-  if (counts.contextual_illustration !== 10) failures.push(`${viewport.name}: expected 10 contextual illustrations, got ${counts.contextual_illustration}`);
-  if (counts.generic_illustration !== 2) failures.push(`${viewport.name}: expected 2 generic illustrations, got ${counts.generic_illustration}`);
-  if (counts.authorized_or_listing_image !== 0 || counts.neutral !== 0) failures.push(`${viewport.name}: unexpected authorized/neutral visual class`);
-  if (new Set(metrics.contextualIds).size !== 10) failures.push(`${viewport.name}: contextual inventory is not visually distinct across the 10 contextual fixtures`);
-  if (new Set(metrics.neighborhoodIds).size !== 2) failures.push(`${viewport.name}: certified Rabat neighborhood photo precedence missing`);
-  if (JSON.stringify(initialKeys) !== JSON.stringify(replayKeys)) failures.push(`${viewport.name}: deterministic visual assignment drifted after reload`);
-  const contextualDisclosureCount = metrics.labels.filter((item) => item.illustration === "Illustration").length;
-  const neighborhoodDisclosureCount = metrics.labels.filter((item) => item.neighborhood === "Photo d’ambiance").length;
-  const genericDisclosureCount = metrics.labels.filter((item) => item.fullText.includes("Visuel illustratif")).length;
-  if (contextualDisclosureCount !== 10) failures.push(`${viewport.name}: contextual disclosure count ${contextualDisclosureCount}/10`);
-  if (neighborhoodDisclosureCount !== 2) failures.push(`${viewport.name}: neighborhood disclosure count ${neighborhoodDisclosureCount}/2`);
-  if (genericDisclosureCount < 2) failures.push(`${viewport.name}: generic illustration disclosure missing`);
-
+  if (metrics.brokenImages !== 0) failures.push(`${viewport.name}: ${metrics.brokenImages} broken canonical images`);
+  if (counts.canonical_property_type !== 14) failures.push(`${viewport.name}: expected 14 canonical type illustrations, got ${counts.canonical_property_type}`);
+  if (counts.contextual_illustration !== 0 || counts.neighborhood_photo !== 0) failures.push(`${viewport.name}: contextual neighborhood images incorrectly used for property cards`);
+  if (counts.authorized_or_listing_image !== 0 || counts.neutral !== 0) failures.push(`${viewport.name}: unauthorized/neutral visual class in restricted fixture`);
+  const expectedFamilies = Array.from({length: 14}, (_, index) => index === 13 ? "villa" : index === 12 ? "apartment" : index % 2 === 0 ? "apartment" : "villa");
+  if (JSON.stringify(metrics.families) !== JSON.stringify(expectedFamilies)) failures.push(`${viewport.name}: canonical family mapping differs from structured type`);
+  if (metrics.artworkSources.some((src,index) => src !== `/visuals/property-types/target/${expectedFamilies[index]}.svg`)) failures.push(`${viewport.name}: noncanonical artwork source`);
+  if (JSON.stringify(initialKeys) !== JSON.stringify(replayKeys)) failures.push(`${viewport.name}: deterministic visual mapping drifted after reload`);
+  if (metrics.labels.filter((item) => item.fullText.includes("Visuel illustratif")).length !== 14) failures.push(`${viewport.name}: illustrative disclosure absent for some cards`);
   const screenshot = path.join(outDir, `${viewport.name}.png`);
   await page.screenshot({ path: screenshot, fullPage: true });
   results.push({ ...viewport, ...metrics, counts, stableAfterReload: JSON.stringify(initialKeys) === JSON.stringify(replayKeys), screenshot });
@@ -187,8 +186,8 @@ for (const viewport of viewports) {
 await browser.close();
 
 const scoreParts = {
-  truthSafety: failures.filter((x) => x.includes("disclosure") || x.includes("authorized/neutral") || x.includes("precedence")).length === 0 ? 2.5 : 0,
-  contextualCoverage: failures.filter((x) => x.includes("contextual illustrations") || x.includes("visually distinct")).length === 0 ? 2.5 : 0,
+  truthSafety: failures.filter((x) => x.includes("disclosure") || x.includes("unauthorized/neutral") || x.includes("incorrectly used")).length === 0 ? 2.5 : 0,
+  canonicalCoverage: failures.filter((x) => x.includes("canonical type") || x.includes("family mapping") || x.includes("noncanonical")).length === 0 ? 2.5 : 0,
   stability: failures.filter((x) => x.includes("reload")).length === 0 ? 1.5 : 0,
   responsiveDensity: failures.filter((x) => x.includes("columns") || x.includes("first listing") || x.includes("card height")).length === 0 ? 2 : 0,
   visualIntegrity: failures.filter((x) => x.includes("broken") || x.includes("overflow")).length === 0 ? 1.5 : 0,
@@ -196,6 +195,6 @@ const scoreParts = {
 const score = Object.values(scoreParts).reduce((sum, value) => sum + value, 0);
 const report = { variant, baseUrl, fixtureCount: listings.length, score, scoreParts, failures, viewports: results };
 await fs.writeFile(path.join(outDir, "metrics.json"), JSON.stringify(report, null, 2));
-await fs.writeFile(path.join(outDir, "report.md"), `# UX-SEARCH-4 Visual Inventory System — ${variant}\n\nScore contract: **${score.toFixed(1)}/10**\n\n${failures.length ? failures.map((item) => `- FAIL: ${item}`).join("\n") : "- PASS: truth-safe precedence, contextual coverage, reload stability, density and visual integrity all pass."}\n`);
+await fs.writeFile(path.join(outDir, "report.md"), `# UX-SEARCH-4 Visual Inventory System — ${variant}\n\nScore contract: **${score.toFixed(1)}/10**\n\n${failures.length ? failures.map((item) => `- FAIL: ${item}`).join("\n") : "- PASS: image rights, canonical artwork mapping, reload stability, density and visual integrity all pass."}\n`);
 console.log(JSON.stringify(report, null, 2));
 if (failures.length || score < 9) process.exit(1);
