@@ -65,3 +65,17 @@ The three sources have historical `is_active=true` throughout, **even though non
 [CI efficiency run #42042914055](https://github.com/hraaaaf/Akarfinder/actions/runs/42042914055) **SUCCESS**. Separate [Partner Market Intelligence P5 #42042914044](https://github.com/hraaaaf/Akarfinder/actions/runs/42042914044) still **in_progress** at latest checked point; do not infer a final global-CI verdict. No deployment or merge.
 
 **Tech-gate verdict: PASS for PartnerListingV2 fail-closed projection only. R2 real-source freshness: NOT VERIFIED.** No independent trusted activity feed has been evidenced, and other generic adapters/consumers of `offer_status`, `is_active` and `last_observed_at` require consumer-level audit before any fresh stock KPI.
+
+## R2 second fail-closed finding — direct-feed canonical adapter
+**Verified source-code gap:** `lib/property-schema/adapters.ts::adaptValidatedFeedRow` created `availability_status="available"` and `offer_status="active"` for every validated normal feed row, although schema validation alone supplies **no positive availability proof**. This route does not use the PartnerListingV2 bridge and could bypass its evidence gate.
+
+**R2 fix (separate from the PartnerListingV2 adapter):**
+- Ordinary direct-feed rows now map to `availability_status="unknown"`, `offer_status="unknown"` pending independent trusted availability validation.
+- Explicit `update_signal="delete"` retains `availability_status="withdrawn"` and `offer_status="deleted"`.
+- Explicit `update_signal="unpublish"` retains `availability_status="withdrawn"` and `offer_status="unpublished"`.
+- `updated_at_source`, exact price/NULL semantics, source identity and existing parser/staging behavior remain unchanged.
+- Negative assertions added to `scripts/scrapers/__tests__/property-schema-track-b.test.ts`, and dedicated CI now executes **both** adapter test suites plus typecheck.
+
+**New CI trigger code commit:** `7693933d1ee859893c7e6608ed79a39575080544`. **Status at first check:** R2 targeted workflow #42044011775 **pending**; Efficiency #42044011808 **queued**; P5 #42044011803 **pending**. These are NOT yet verified PASS. Prior 15/15 result #42042914187 applies **only to the preceding PartnerListingV2 code revision**.
+
+**Next:** inspect the latest CI result once independent documentation work is done. Remaining `adaptPartnerListing`, scraper/legacy adapters and downstream KPI consumers still require semantic review before a global freshness certification.
