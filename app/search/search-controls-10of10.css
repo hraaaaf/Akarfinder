@@ -28,3 +28,13 @@ main [data-search-results-section] [data-search-results-toolbar]{display:flex!im
     overflow-wrap: anywhere !important;
   }
 }
+
+
+/* Search Akar Sense: preserve the certified mobile two-row results toolbar.
+ * Switcher 156px + sort 124px + 44px launcher + 2 x 2px gaps = 328px,
+ * the available 360px viewport width after the existing 16px side paddings. */
+@media (max-width: 639px) {
+  main [data-search-results-section] [data-search-results-toolbar] > div:last-child {
+    gap: 2px !important;
+  }
+}

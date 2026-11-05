@@ -108,10 +108,14 @@ test("Akar Sense is an inline accessible result-toolbar control, never a floatin
   const searchPage = read("app/search/page.tsx");
   const proof = read("scripts/audits/search-property-type-visuals-1.mjs");
   assert.match(shell, /import \{ FinderLauncher \} from "@\/components\/companion\/FinderLauncher"/);
-  assert.match(shell, /data-search-results-toolbar[\s\S]*<FinderLauncher \/>[\s\S]*<SearchViewSwitcher/);
+  assert.match(shell, /data-search-results-toolbar[\s\S]*<SearchViewSwitcher[\s\S]*<FinderLauncher \/>/);
   assert.doesNotMatch(searchPage, /FinderLauncher/);
   assert.match(launcher, /data-finder-launcher/);
-  assert.match(launcher, /min-h-11/);
+  assert.match(launcher, /h-11 w-11/);
+  assert.match(launcher, /aria-label="Ouvrir Akar Sense"/);
+  assert.match(launcher, /hidden lg:inline/);
+  const css = read("app/search/search-controls-10of10.css");
+  assert.match(css, /gap: 2px !important/);
   assert.doesNotMatch(launcher, /fixed bottom-\[/);
   assert.match(launcher, /aria-haspopup="dialog"/);
   assert.match(launcher, /aria-modal="true"/);
