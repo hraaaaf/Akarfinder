@@ -7,6 +7,7 @@ on:
       - "lib/property-schema/adapters.ts"
       - "scripts/scrapers/__tests__/partner-listing-v2.test.ts"
       - "scripts/scrapers/__tests__/property-schema-track-b.test.ts"
+      - "scripts/scrapers/__tests__/property-schema-adapter-safety.test.ts"
       - ".github/workflows/akar-r2-freshness-evidence-gate.yml"
   workflow_dispatch:
 
@@ -29,6 +30,6 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Test partner V2 status projection (synthetic fixtures)
-        run: npx tsx --test scripts/scrapers/__tests__/partner-listing-v2.test.ts scripts/scrapers/__tests__/property-schema-track-b.test.ts
+        run: npx tsx --test scripts/scrapers/__tests__/partner-listing-v2.test.ts scripts/scrapers/__tests__/property-schema-track-b.test.ts scripts/scrapers/__tests__/property-schema-adapter-safety.test.ts
       - name: Typecheck
         run: npx tsc --noEmit
