@@ -14,13 +14,13 @@ const sellerForm = readFileSync("components/vendre/SellerPropertyDraftForm.tsx",
 const indexedVisual = readFileSync("lib/ux/indexed-property-type-visual.ts", "utf8");
 
 const OPTION_A_TYPES = ["Appartement", "Villa", "Terrain", "Studio", "Riad", "Bureau"];
-const EXACT_PREMIUM_ASSETS = [
-  "/images/property-types-premium/appartement.svg",
-  "/images/property-types-premium/villa.svg",
-  "/images/property-types-premium/terrain.webp",
-  "/images/property-types-premium/studio.webp",
-  "/images/property-types-premium/riad.webp",
-  "/images/property-types-premium/bureau.webp",
+const EXACT_TARGET_ASSETS = [
+  "/visuals/property-types/target/apartment.svg",
+  "/visuals/property-types/target/villa.svg",
+  "/visuals/property-types/target/land.svg",
+  "/visuals/property-types/target/office.svg",
+  "/visuals/property-types/target/commercial.svg",
+  "/visuals/property-types/target/riad.png",
 ];
 
 test("Option A taxonomy exposes the six approved property categories", () => {
@@ -30,14 +30,15 @@ test("Option A taxonomy exposes the six approved property categories", () => {
   assert.match(presentation, /export const OPTION_A_PROPERTY_TYPES/);
 });
 
-test("premium artwork uses the six exact approved local image assets", () => {
-  for (const asset of EXACT_PREMIUM_ASSETS) {
-    assert.ok(artwork.includes(asset), `missing exact approved asset: ${asset}`);
+test("property artwork uses the approved TARGET family exclusively", () => {
+  const resolver = readFileSync("lib/ux/indexed-property-type-visual.ts", "utf8");
+  for (const asset of EXACT_TARGET_ASSETS) {
+    assert.ok(resolver.includes(asset), `missing approved TARGET asset: ${asset}`);
   }
-  assert.match(artwork, /PREMIUM_PROPERTY_TYPE_IMAGES/);
-  assert.match(artwork, /Illustration premium/);
+  assert.match(artwork, /getIndexedPropertyTypeVisual/);
+  assert.match(artwork, /visual\.targetAsset/);
+  assert.doesNotMatch(artwork, /property-types-premium|GenericHouseArtwork/);
   assert.doesNotMatch(artwork, /https?:\/\//);
-  assert.doesNotMatch(artwork, /ApartmentArtwork|VillaArtwork|TerrainArtwork|StudioArtwork|RiadArtwork|OfficeArtwork/);
 });
 
 test("visual selection remains continuous from intent pages into search", () => {

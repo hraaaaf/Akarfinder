@@ -8,10 +8,12 @@ type PropertyTypeArtworkProps = {
 
 export function PropertyTypeArtwork({ kind, className = "", decorative = false }: PropertyTypeArtworkProps) {
   const visual = getIndexedPropertyTypeVisual(kind);
-  const asset = visual.targetAsset ?? "/visuals/property-types/target/apartment.svg";
+  if (!visual.targetAsset) {
+    return <div data-property-visual-family="unknown" className={`h-full w-full bg-slate-100 ${className}`.trim()} aria-hidden="true" />;
+  }
   return (
     <img
-      src={asset}
+      src={visual.targetAsset}
       alt={decorative ? "" : `Illustration ${visual.label}`}
       aria-hidden={decorative ? true : undefined}
       data-property-visual-family={visual.key}
