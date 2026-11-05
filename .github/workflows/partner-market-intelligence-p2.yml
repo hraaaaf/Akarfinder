@@ -22,7 +22,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: partner-market-intelligence-p5-offline-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 # CI/PR deliberately has NO remote DB credentials and NO hosted DB calls.
