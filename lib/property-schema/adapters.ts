@@ -153,9 +153,11 @@ export function adaptValidatedFeedRow(row: ValidatedFeedRow, context: AdapterCon
     description: declared(row.description, context),
     price_amount: declared(row.price_mad, context),
     price_status: row.price_mad == null ? "not_disclosed" : "valid",
-    availability_status: row.update_signal ? "withdrawn" : "available",
+    // A validated row proves schema validity, not current availability.
+    // Only a trusted independent activity verifier may promote to available/active.
+    availability_status: row.update_signal ? "withdrawn" : "unknown",
     updated_at_source: row.updated_at_source,
-    offer_status: row.update_signal === "delete" ? "deleted" : row.update_signal === "unpublish" ? "unpublished" : "active",
+    offer_status: row.update_signal === "delete" ? "deleted" : row.update_signal === "unpublish" ? "unpublished" : "unknown",
   });
   property.offers = [offer];
   property.media = row.image_urls.map((url, index): MediaAssetV1 => ({
