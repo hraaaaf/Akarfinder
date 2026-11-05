@@ -113,7 +113,9 @@ for (const viewport of viewports) {
         key: artwork?.getAttribute("data-indexed-property-artwork") ?? null,
         label: label?.textContent?.trim() ?? null,
         priceColor: price ? getComputedStyle(price).color : null,
-        thirdPartyImgs: artwork?.querySelectorAll("img").length ?? 0,
+        imageCount: artwork?.querySelectorAll("img").length ?? 0,
+        assetPath: artwork?.querySelector("img")?.getAttribute("src") ?? null,
+        assetLoaded: Boolean(artwork?.querySelector("img")?.complete && artwork?.querySelector("img")?.naturalWidth > 0),
         labelInside: Boolean(ir && lr && lr.left >= ir.left && lr.right <= ir.right && lr.top >= ir.top && lr.bottom <= ir.bottom),
         labelFavoriteOverlap: overlap(lr, fr),
         centerDisclosureVisible: Boolean(centerDisclosure),
@@ -143,7 +145,8 @@ for (const viewport of viewports) {
     if (card.key !== key) failures.push(`${viewport.name}: ${index + 1} key ${card.key} != ${key}`);
     if (card.label?.toLowerCase() !== label.toLowerCase()) failures.push(`${viewport.name}: ${key} label drift`);
     if (card.priceColor !== color) failures.push(`${viewport.name}: ${key} color ${card.priceColor} != ${color}`);
-    if (card.thirdPartyImgs !== 0) failures.push(`${viewport.name}: ${key} contains img element`);
+    const expectedAsset = `/visuals/property-types/target/${key}${key === "riad" ? ".png" : ".svg"}`;
+    if (card.imageCount !== 1 || card.assetPath !== expectedAsset || !card.assetLoaded) failures.push(`${viewport.name}: ${key} canonical asset missing or not loaded`);
     if (!card.labelInside || !card.finiteImage) failures.push(`${viewport.name}: ${key} geometry invalid`);
     if (card.labelFavoriteOverlap) failures.push(`${viewport.name}: ${key} label/favorite collision`);
     if (card.centerDisclosureVisible) failures.push(`${viewport.name}: ${key} centered indexed disclosure diverges from TARGET`);
@@ -161,7 +164,7 @@ await browser.close();
 const axes = {
   sixFamilies: !failures.some((x) => x.includes("key") || x.includes("expected 6") || x.includes("label drift")),
   colors: !failures.some((x) => x.includes(" color ")),
-  proprietaryArtwork: !failures.some((x) => x.includes("contains img")),
+  canonicalArtwork: !failures.some((x) => x.includes("canonical asset")),
   targetGeometry: !failures.some((x) => x.includes("geometry") || x.includes("collision") || x.includes("overflow") || x.includes("centered")),
   targetCardHierarchy: !failures.some((x) => x.includes("footer") || x.includes("hierarchy") || x.includes("columns")),
 };

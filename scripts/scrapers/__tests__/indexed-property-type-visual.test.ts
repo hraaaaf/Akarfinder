@@ -91,10 +91,12 @@ describe("SEARCH-PROPERTY-TYPE-VISUALS-1", () => {
 
   it("keeps locked TARGET assets local and prevents the broken nested Riad image regression", () => {
     const css = source("app/search/search-property-type-target-art.css");
+    const artwork = source("components/search/IndexedPropertyTypeArtwork.tsx");
+    const resolver = source("lib/ux/indexed-property-type-visual.ts");
     for (const key of ["apartment", "villa", "land", "office", "commercial"] as const) {
       const asset = `public/visuals/property-types/target/${key}.svg`;
       assert.equal(existsSync(resolve(ROOT, asset)), true, `${key} TARGET asset missing`);
-      assert.match(css, new RegExp(`/visuals/property-types/target/${key}\\.svg`));
+      assert.match(resolver, new RegExp(`/visuals/property-types/target/${key}\\.svg`));
       assert.doesNotMatch(source(asset), /(?:href|src)=["']https?:\/\//i, `${key} TARGET asset must not load an external URL`);
     }
 
@@ -107,7 +109,10 @@ describe("SEARCH-PROPERTY-TYPE-VISUALS-1", () => {
       [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
       "Riad TARGET asset must be a valid PNG payload",
     );
-    assert.match(css, /\/visuals\/property-types\/target\/riad\.png/);
-    assert.doesNotMatch(css, /\/visuals\/property-types\/target\/riad\.svg/);
+    assert.match(resolver, /\/visuals\/property-types\/target\/riad\.png/);
+    assert.doesNotMatch(resolver, /\/visuals\/property-types\/target\/riad\.svg/);
+    assert.match(artwork, /src=\{visual\.targetAsset\}/);
+    assert.match(artwork, /data-indexed-artwork-label/);
+    assert.doesNotMatch(css, /background-image\s*:/);
   });
 });
