@@ -112,8 +112,38 @@ export function IndexedPropertyTypeArtwork({
         @media (max-width: 639px) {
           [data-indexed-artwork-card="true"] [data-card-image] { height: 164px !important; }
           [data-indexed-artwork-card="true"] [data-card-facts] {
+            gap: 0.35rem !important;
+            font-size: 10.5px !important;
+            line-height: 1.3 !important;
+          }
+          /* Preserve the 2-column mobile grid without sacrificing legibility. */
+          [data-indexed-artwork-card="true"] [data-card-title] {
+            font-size: 13px !important;
+            line-height: 1.33 !important;
+            min-height: 2.66em;
+          }
+          [data-indexed-artwork-card="true"] [data-card-location] {
+            font-size: 11px !important;
+            line-height: 1.32 !important;
+          }
+          [data-indexed-artwork-card="true"] [data-card-provenance] {
+            flex-direction: column !important;
+            align-items: flex-start !important;
             gap: 0.25rem !important;
-            font-size: 9px !important;
+            font-size: 10px !important;
+            line-height: 1.35 !important;
+          }
+          [data-indexed-artwork-card="true"] [data-card-provenance] > * {
+            max-width: 100%;
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            overflow-wrap: anywhere;
+          }
+          [data-indexed-artwork-card="true"] [data-card-provenance] [data-public-attribution] {
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
           }
           [data-indexed-artwork-card="true"] [data-card-facts] > span:not(:last-child)::after {
             margin-left: 0.25rem;

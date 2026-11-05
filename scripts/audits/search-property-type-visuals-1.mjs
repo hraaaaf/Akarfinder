@@ -102,6 +102,10 @@ for (const viewport of viewports) {
       const [key, expectedLabel] = expected[index];
       const label = artwork ? Array.from(artwork.querySelectorAll("div")).find((n) => n.textContent?.trim().toLowerCase() === expectedLabel.toLowerCase()) : null;
       const centerDisclosure = artwork ? Array.from(artwork.querySelectorAll("div")).find((n) => n.textContent?.trim().toLowerCase() === "annonce indexée" && getComputedStyle(n).display !== "none") : null;
+      const fontPx = (node) => node ? Number.parseFloat(getComputedStyle(node).fontSize) : 0;
+      const titleNode = card.querySelector("[data-card-title]");
+      const factsNode = card.querySelector("[data-card-facts]");
+      const provenanceNode = card.querySelector("[data-card-provenance]");
       const ir = image?.getBoundingClientRect();
       const lr = label?.getBoundingClientRect();
       const fr = favorite?.getBoundingClientRect();
@@ -123,6 +127,10 @@ for (const viewport of viewports) {
         footerSource: footerText.includes("Voir sur la source") || sourceAfter.includes("Voir sur la source"),
         hierarchy: ["[data-card-price]", "[data-card-title]", "[data-card-location]", "[data-card-facts]", "[data-card-provenance]"].every((selector) => Boolean(card.querySelector(selector))),
         finiteImage: Boolean(ir && ir.width > 0 && ir.height > 0 && Number.isFinite(ir.width) && Number.isFinite(ir.height)),
+        titleFontPx: fontPx(titleNode),
+        factsFontPx: fontPx(factsNode),
+        provenanceFontPx: fontPx(provenanceNode),
+        sourceTextClipped: Boolean(sourceNode && (sourceNode.scrollWidth > sourceNode.clientWidth + 1) && getComputedStyle(sourceNode).textOverflow === "ellipsis"),
         expectedKey: key,
       };
     });
@@ -152,6 +160,14 @@ for (const viewport of viewports) {
     if (card.centerDisclosureVisible) failures.push(`${viewport.name}: ${key} centered indexed disclosure diverges from TARGET`);
     if (!card.footerIndexed || !card.footerSource) failures.push(`${viewport.name}: ${key} TARGET footer missing`);
     if (!card.hierarchy) failures.push(`${viewport.name}: ${key} hierarchy incomplete`);
+    if (viewport.width <= 430 && (
+      card.titleFontPx < 13 ||
+      card.factsFontPx < 10.5 ||
+      card.provenanceFontPx < 10 ||
+      card.sourceTextClipped
+    )) {
+      failures.push(`${viewport.name}: ${key} mobile text legibility below threshold`);
+    }
   });
 
   const screenshot = path.join(outDir, `${viewport.name}.png`);
@@ -166,7 +182,7 @@ const axes = {
   colors: !failures.some((x) => x.includes(" color ")),
   canonicalArtwork: !failures.some((x) => x.includes("canonical asset")),
   targetGeometry: !failures.some((x) => x.includes("geometry") || x.includes("collision") || x.includes("overflow") || x.includes("centered")),
-  targetCardHierarchy: !failures.some((x) => x.includes("footer") || x.includes("hierarchy") || x.includes("columns")),
+  targetCardHierarchy: !failures.some((x) => x.includes("footer") || x.includes("hierarchy") || x.includes("columns")),\n  mobileReadability: !failures.some((x) => x.includes("mobile text legibility")),
 };
 const machineScore = (Object.values(axes).filter(Boolean).length / 5) * 10;
 const report = { target: { sha256: targetSha256, dimensions: "1448x1086" }, machineScore, axes, failures, viewports: results, note: "Machine 10/10 is a contract score only. Final visual fidelity requires inspection against the locked TARGET." };
