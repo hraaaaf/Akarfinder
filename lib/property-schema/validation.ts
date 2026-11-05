@@ -81,6 +81,10 @@ export function validatePropertyPublication(property: CanonicalPropertyV1, offer
   if (!property.facts.location.city.value?.trim()) push(issues, "location.city", "missing_city", "public structured listing needs a city");
   if (offer.compliance_status !== "allowed") push(issues, "compliance_status", "publication_not_allowed", "offer must be explicitly allowed for structured publication");
   if (offer.offer_status !== "active") push(issues, "offer_status", "offer_not_active", "only active offers may be published");
+  // Catalog lifecycle alone is insufficient: reject contradictory active/unknown offers.
+  // This gate is necessary, not sufficient, for independently verified freshness.
+  if (offer.availability_status !== "available") push(issues, "availability_status",
+    "availability_not_confirmed", "structured publication requires explicitly available status");
   return result(issues);
 }
 
