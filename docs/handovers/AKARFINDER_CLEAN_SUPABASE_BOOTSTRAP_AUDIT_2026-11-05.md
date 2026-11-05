@@ -37,7 +37,7 @@ Succès de ce sous-lot : inventorier les migrations, détecter les collisions de
 1. Vérifier le rapport JSON et les tests du HEAD exact en CI.
 2. Identifier les DDL de création manquants et le bootstrap minimal nécessaire ; proposer un **nouveau baseline** de schéma versionné dans un environnement vierge, sans toucher aux fichiers historiques appliqués.
 3. Valider l'ordre et les versions dans une base Supabase locale éphémère ; **rejouer réellement** le schéma et produire logs, résultats RLS/tests, checksum.
-4. Après revue, initialiser le staging neuf sur `mgqsckxsqdqbzqwkgvwo` (écriture à autoriser distinctement). Connexion production/Vercel seulement sur validation explicite.
+4. **Décision propriétaire du 05/11/2026 : AUCUNE DB Supabase hébergée pour dev, CI ou preview.** Même après revue, ne pas initialiser de staging cloud par défaut. Le nouveau projet `mgqsckxsqdqbzqwkgvwo` reste vide jusqu'à sa mise en service *production* explicitement autorisée. Connexion production/Vercel seulement sur validation explicite.
 
 Références : [plan GitHub-first](AKARFINDER_GITHUB_FIRST_CLEAN_SUPABASE_PLAN_2026-11-05.md), [R2 fraîcheur](AKARFINDER_R2_FRESHNESS_EVIDENCE_GATE_2026-11-05.md).
 
@@ -50,3 +50,13 @@ Références : [plan GitHub-first](AKARFINDER_GITHUB_FIRST_CLEAN_SUPABASE_PLAN_2
 **Verdict : DIAGNOSTIC TECHNIQUE PASS ; BOOTSTRAP PROPRE BLOQUÉ, NON REJOUÉ.** Les collisions et la dépendance aux tables de base interdisent de transférer directement le patrimoine SQL sur le Supabase neuf. La source fiable du schéma initial est l'export complet détenu par le propriétaire (non disponible ici en fichier SQL vérifié) ; proposer un baseline schema-only séparé et réexécuter en Supabase éphémère avant toute écriture distante.
 
 **Next exact :** récupérer le DDL de référence du dump sécurisé, établir la chaîne baseline + migrations sans renommer arbitrairement les migrations historiques, puis exécuter `supabase db reset` dans un environnement local éphémère avec tests et sans secrets/prod.
+
+## Arbitrage propriétaire — ZERO DATABASE CLOUD pour développement (05/11/2026)
+
+**Cette section prévaut sur toute mention antérieure de création d'une base de staging hébergée.** L'utilisateur demande : sauvegarde sur ordinateur, recourir à Codex pour la récupérer ; **aucune sollicitation de la base Supabase pour le développement/CI**, ne l'utiliser qu'une fois prêt en production pour annonces réelles, admissibles et autorisées.
+
+**Politique canonique :** [AKARFINDER_ZERO_REMOTE_DB_DEV_POLICY_2026-11-05.md](AKARFINDER_ZERO_REMOTE_DB_DEV_POLICY_2026-11-05.md). **Mission Codex locale :** [Issue #1163](https://github.com/hraaaaf/Akarfinder/issues/1163). Seuls des fichiers DDL sanitizés, tests synthétiques et preuves agrégées sont autorisés dans le dépôt. Le backup intégral reste hors GitHub, hors Notion et hors CI.
+
+**Précision :** l'objectif technique est d'éliminer tout appel à une DB Supabase hébergée en dev/CI/preview. Une instance PostgreSQL/Supabase locale éphémère est permise seulement pour valider migrations et RLS. Aucun basculement de secrets/prod vers la nouvelle DB ne peut être effectué sans un gate humain séparé.
+
+**Next exact mis à jour :** Codex localise l'export sur l'ordinateur et produit schéma-only sanitisé (issue #1163) → tests de replay en DB locale jetable → audit fail-closed des accès cloud en dev/CI → préparation prod limitée par quotas → autorisation explicite de branchement production, pas de staging cloud automatique.
