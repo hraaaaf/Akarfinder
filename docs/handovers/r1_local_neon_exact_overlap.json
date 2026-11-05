@@ -1,0 +1,39 @@
+{
+  "method": "exact_source_scoped_explicit_key_only",
+  "no_production_writes": true,
+  "not_fresh_unique_eligible_or_rights_verified": true,
+  "skipped_rows": {
+    "avito_missing_key": 578,
+    "mubawab_missing_key": 12153,
+    "mubawab_nonnumeric_key": 71,
+    "mubawab_alias_missing_key": 13
+  },
+  "sources": {
+    "avito": {
+      "exact_intersection": 328,
+      "local_not_matched_by_explicit_key": 26778,
+      "local_unique_ids": 27106,
+      "neon_not_matched_by_explicit_key": 13094,
+      "neon_rows": 14000,
+      "neon_unique_numeric_explicit_keys": 13422,
+      "strict_explicit_key_union": 40200
+    },
+    "mubawab": {
+      "exact_intersection": 357,
+      "local_not_matched_by_explicit_key": 4997,
+      "local_unique_ids": 5354,
+      "neon_not_matched_by_explicit_key": 31518,
+      "neon_rows": 44112,
+      "neon_unique_numeric_explicit_keys": 31875,
+      "strict_explicit_key_union": 36872
+    }
+  },
+  "global": {
+    "local_unique_ids": 32460,
+    "neon_unique_numeric_explicit_keys": 45297,
+    "exact_intersection": 685,
+    "local_not_matched_by_explicit_key": 31775,
+    "neon_not_matched_by_explicit_key": 44612,
+    "strict_explicit_key_union": 77072
+  }
+}
