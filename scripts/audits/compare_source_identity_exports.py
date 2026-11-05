@@ -15,7 +15,13 @@ def canonical_source(source):
 
 def parse_identity(source, url, explicit_key):
     source = canonical_source(source)
-    path = urlsplit(url or '').path
+    parsed = urlsplit(url or '')
+    # Never treat a foreign host, a relative path or a deceptive subdomain as a source ID.
+    if parsed.scheme not in ('http', 'https') or parsed.hostname not in (source, 'www.' + source):
+        return 'invalid_host', None
+    if parsed.username or parsed.password or parsed.port not in (None, 80, 443):
+        return 'invalid_host', None
+    path = parsed.path
     patterns = {
         'domio.ma': r'^/(?:fr|en)/[^/]+/[^/]+/[^/]+/(\d+)(?:/|$)',
         'sarout.ma': r'^/(?:fr|ar)/annonce/(\d+)(?:/|$)',
