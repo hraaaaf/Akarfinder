@@ -265,7 +265,8 @@ for (const vp of [viewports[0], viewports[3]]) {
     await page.waitForFunction(() => !document.querySelector("[data-search-active-min-budget]"), null, { timeout: 10_000 });
     legacyEvidence.push({ surface: "P3", viewport: vp.name, filterCount, budgetCleared: true, screenshot: p3shot });
     await page.goto(baseUrl + "/vendre/dossier", { waitUntil: "domcontentloaded", timeout: 60_000 });
-    const group = page.locator('[role="group"][aria-label="Quel type de bien souhaitez-vous vendre ?"]:visible');
+    // /vendre/dossier mounts SellerSecurePublishForm, not the legacy SellerPropertyDraftForm.
+    const group = page.locator('[role="group"][aria-label="Type du bien"]:visible');
     await group.waitFor({ timeout: 20_000 });
     const photos = group.locator("img[data-property-visual-family]");
     if (await photos.count() !== 6) failures.push("history/Seller/" + vp.name + ": not six cards");
