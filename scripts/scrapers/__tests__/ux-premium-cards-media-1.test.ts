@@ -15,11 +15,13 @@ test("UX-PREMIUM-CARDS-MEDIA-1 source contract", () => {
 
   assert.match(card, /getListingImageMode\(listing\)/);
   assert.match(card, /getImageAttribution\(listing\)/);
-  assert.match(card, /resolveRabatRealPhoto/);
-  assert.match(card, /resolveContextualIllustration/);
+  assert.doesNotMatch(card, /resolveRabatRealPhoto/);
+  assert.doesNotMatch(card, /resolveContextualIllustration/);
   assert.match(card, /data-visual-inventory-class=/);
   assert.match(card, /data-card-image/);
   assert.match(card, /data-card-favorite/);
-  assert.match(card, /Photo d’ambiance/);
+  assert.match(card, /data-visual-inventory-class="canonical_property_type"/);
+  assert.match(card, /<PropertyTypeArtwork kind=\{listing\.property_type\}/);
+  assert.doesNotMatch(card, /Photo d’ambiance/);
   assert.match(card, /Visuel illustratif/);
 });

@@ -32,13 +32,14 @@ describe("NEIGHBORHOOD-VISUAL-P0.1 — Template A", () => {
     assert.equal(composition.disclosureLabel, "Photo d’ambiance");
   });
 
-  it("matches the currently certified Search card image envelope", () => {
+  it("preserves neighborhood template metadata without displaying ambience as property photos", () => {
     const card = source("components/search/SearchListingCardDark.tsx");
+    const contextual = source("components/search/ContextualListingArtwork.tsx");
     assert.match(card, /h-\[164px\]/);
     assert.match(card, /sm:h-\[196px\]/);
-    assert.match(card, /object-cover/);
-    assert.match(card, /Photo d’ambiance/);
-    assert.match(card, /data-neighborhood-photo-brand-overlay/);
+    assert.match(card, /data-visual-inventory-class="canonical_property_type"/);
+    assert.doesNotMatch(card, /Photo d’ambiance|data-neighborhood-photo-brand-overlay/);
+    assert.match(contextual, /resolveContextualIllustration/);
     assert.equal(NEIGHBORHOOD_VISUAL_TEMPLATE_A.searchCard.mobileImageHeightPx, 164);
     assert.equal(NEIGHBORHOOD_VISUAL_TEMPLATE_A.searchCard.desktopImageHeightPx, 196);
     assert.equal(NEIGHBORHOOD_VISUAL_TEMPLATE_A.searchCard.mobileColumns, 2);
