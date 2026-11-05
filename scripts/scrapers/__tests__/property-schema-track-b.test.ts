@@ -278,6 +278,8 @@ describe("#10G CANONICAL ADAPTER LAYER", () => {
     assert.equal(adapted.facts.location.city.confidence, "high");
     assert.equal(adapted.facts.features.has_pool?.value, null);
     assert.equal(adapted.offers[0].price_amount.value, null);
+    assert.equal(adapted.offers[0].availability_status, "unknown");
+    assert.equal(adapted.offers[0].offer_status, "unknown", "scrape observation cannot assert live activity");
   });
 
   it("adapts legacy Listing as low-confidence compatibility data and strips false zeros", () => {
@@ -309,5 +311,7 @@ describe("#10G CANONICAL ADAPTER LAYER", () => {
     assert.equal(adapted.facts.classification.market_segment.value, "new_build");
     assert.equal(adapted.offers[0].transaction_type, "sale");
     assert.equal(adapted.display_policies.length, 0);
+    assert.equal(adapted.offers[0].availability_status, "unknown");
+    assert.equal(adapted.offers[0].offer_status, "unknown", "legacy import cannot assert live activity");
   });
 });
