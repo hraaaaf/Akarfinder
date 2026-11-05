@@ -57,4 +57,11 @@ The three sources have historical `is_active=true` throughout, **even though non
 
 **Regression:** 2 targeted cases added to the existing `scripts/scrapers/__tests__/partner-listing-v2.test.ts` and an isolated PR CI workflow `.github/workflows/akar-r2-freshness-evidence-gate.yml` running `tsx --test` and `tsc --noEmit`. No production activation.
 
-**Testing status at authoring:** tests committed but **execution not yet certified**. Do not claim R2 PASS until dedicated CI is green. R2 live availability remains UNKNOWN irrespective of CI.
+**Testing status:** synthetic regression CI has now passed (see verification below). R2 live availability remains UNKNOWN irrespective of CI.
+
+## Targeted CI verification — 2026-11-05
+**PR Draft #1159**: `audit/r2-freshness-evidence-gate-20261105` stacked onto R1 Draft #1158. [GitHub Actions run #42042914187](https://github.com/hraaaaf/Akarfinder/actions/runs/42042914187) **SUCCESS**, job `r2-freshness-projection` **SUCCESS**. Log evidence: **15 tests, 15 pass, 0 fail**; `npx tsc --noEmit` completed successfully. Code-bearing HEAD at CI trigger `c8520ab6f78743dec9bbb717d5b8c08b0faaf56e`. The report update following CI changes documentation only; no code change.
+
+[CI efficiency run #42042914055](https://github.com/hraaaaf/Akarfinder/actions/runs/42042914055) **SUCCESS**. Separate [Partner Market Intelligence P5 #42042914044](https://github.com/hraaaaf/Akarfinder/actions/runs/42042914044) still **in_progress** at latest checked point; do not infer a final global-CI verdict. No deployment or merge.
+
+**Tech-gate verdict: PASS for PartnerListingV2 fail-closed projection only. R2 real-source freshness: NOT VERIFIED.** No independent trusted activity feed has been evidenced, and other generic adapters/consumers of `offer_status`, `is_active` and `last_observed_at` require consumer-level audit before any fresh stock KPI.
