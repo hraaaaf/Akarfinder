@@ -19,7 +19,11 @@ def parse_identity(source, url, explicit_key):
     # Never treat a foreign host, a relative path or a deceptive subdomain as a source ID.
     if parsed.scheme not in ('http', 'https') or parsed.hostname not in (source, 'www.' + source):
         return 'invalid_host', None
-    if parsed.username or parsed.password or parsed.port not in (None, 80, 443):
+    try:
+        invalid_authority = bool(parsed.username or parsed.password or parsed.port not in (None, 80, 443))
+    except ValueError:
+        return 'invalid_host', None
+    if invalid_authority:
         return 'invalid_host', None
     path = parsed.path
     patterns = {
