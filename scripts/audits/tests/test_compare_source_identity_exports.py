@@ -21,6 +21,8 @@ class SourceIdentityTests(unittest.TestCase):
             'https://domio.ma.evil.example/fr/appartement/louer/rabat/123/a',
             '/fr/appartement/louer/rabat/123/a',
             'https://evil.example@domio.ma.evil.example/fr/appartement/louer/rabat/123/a',
+            'https://domio.ma:abc/fr/appartement/louer/rabat/123/a',
+            'https://domio.ma:99999/fr/appartement/louer/rabat/123/a',
         ]
         for url in urls:
             with self.subTest(url=url):
