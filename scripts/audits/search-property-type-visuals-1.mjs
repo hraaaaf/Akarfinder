@@ -259,11 +259,27 @@ for (const vp of [viewports[0], viewports[3]]) {
     await page.locator("[data-search-active-min-budget]:visible").waitFor({ timeout: 20_000 });
     const filterCount = (await page.locator(".premium-filter-count").first().textContent())?.trim();
     if (filterCount !== "4") failures.push("history/P3/" + vp.name + ": expected 4 filters, got " + filterCount);
+    // Listing art is lazy-loaded. Full-page screenshots must not be captured
+    // before each visible card has actually loaded its local illustration.
+    const p3Art = page.locator("[data-search-listing-card] [data-indexed-property-artwork] img");
+    const p3ArtCount = await p3Art.count();
+    if (p3ArtCount === 0) throw new Error("P3 artwork missing: no local images found");
+    for (let i = 0; i < p3ArtCount; i++) {
+      await p3Art.nth(i).scrollIntoViewIfNeeded();
+    }
+    await page.waitForFunction(() => {
+      const images = Array.from(document.querySelectorAll("[data-search-listing-card] [data-indexed-property-artwork] img"));
+      return images.length > 0 && images.every(img => img.complete && img.naturalWidth > 0);
+    }, null, { timeout: 20_000 });
+    await page.evaluate(() => document.fonts?.ready);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const p3ArtLoaded = await p3Art.evaluateAll(nodes => nodes.every(img => img.complete && img.naturalWidth > 0));
+    if (!p3ArtLoaded) throw new Error("P3 screenshot blocked: artwork not loaded");
     const p3shot = "history-p3-" + vp.name + ".png";
     await page.screenshot({ path: path.join(outDir, p3shot), fullPage: true });
     await page.locator("[data-search-active-min-budget] button").click();
     await page.waitForFunction(() => !document.querySelector("[data-search-active-min-budget]"), null, { timeout: 10_000 });
-    legacyEvidence.push({ surface: "P3", viewport: vp.name, filterCount, budgetCleared: true, screenshot: p3shot });
+    legacyEvidence.push({ surface: "P3", viewport: vp.name, filterCount, budgetCleared: true, localArtworkCount: p3ArtCount, localArtworkLoaded: p3ArtLoaded, screenshot: p3shot });
     await page.goto(baseUrl + "/vendre/dossier", { waitUntil: "domcontentloaded", timeout: 60_000 });
     // /vendre/dossier mounts SellerSecurePublishForm, not the legacy SellerPropertyDraftForm.
     const group = page.locator('[role="group"][aria-label="Type du bien"]:visible');
