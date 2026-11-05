@@ -5,6 +5,7 @@ on:
     paths:
       - "lib/partners/partner-listing-v2.ts"
       - "lib/property-schema/adapters.ts"
+      - "lib/property-schema/validation.ts"
       - "scripts/scrapers/__tests__/partner-listing-v2.test.ts"
       - "scripts/scrapers/__tests__/property-schema-track-b.test.ts"
       - "scripts/scrapers/__tests__/property-schema-adapter-safety.test.ts"
