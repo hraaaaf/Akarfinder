@@ -1,0 +1,32 @@
+name: Akar R2 Partner Freshness Projection Gate (offline)
+
+on:
+  pull_request:
+    paths:
+      - "lib/partners/partner-listing-v2.ts"
+      - "scripts/scrapers/__tests__/partner-listing-v2.test.ts"
+      - ".github/workflows/akar-r2-freshness-evidence-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  r2-freshness-projection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Test partner V2 status projection (synthetic fixtures)
+        run: npx tsx --test scripts/scrapers/__tests__/partner-listing-v2.test.ts
+      - name: Typecheck
+        run: npx tsc --noEmit
