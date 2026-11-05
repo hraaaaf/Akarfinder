@@ -89,10 +89,10 @@ export function FinderLauncher() {
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="fixed bottom-[88px] right-4 z-[70] inline-flex min-h-12 items-center gap-2 rounded-full border border-[#CFE0F5] bg-white px-4 text-sm font-extrabold text-[#084FA8] shadow-[0_16px_45px_rgba(7,27,51,0.18)] transition hover:-translate-y-0.5 hover:border-[#0B63CE] sm:bottom-6 sm:right-6"
+        className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-[#CFE0F5] bg-white px-3 text-[11px] font-extrabold text-[#084FA8] shadow-[0_6px_18px_rgba(7,27,51,0.10)] transition hover:border-[#0B63CE] sm:text-xs"
         data-finder-launcher
       >
-        <span className="grid h-8 w-8 place-items-center rounded-full bg-[#0B63CE] text-white"><Sparkles size={16} aria-hidden="true" /></span>
+        <span className="grid h-7 w-7 place-items-center rounded-full bg-[#0B63CE] text-white"><Sparkles size={16} aria-hidden="true" /></span>
         Akar Sense
       </button>
 

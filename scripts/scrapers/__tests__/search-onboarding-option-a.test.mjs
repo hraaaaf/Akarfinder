@@ -100,3 +100,22 @@ test("mobile Search toolbar overrides legacy !important no-wrap for visible resu
   const premiumDensity = read("app/search/search-premium-card-density.css");
   assert.ok(premiumDensity.includes("[data-search-controls-section]>div{padding-top:4px!important;padding-bottom:4px!important}"));
 });
+
+
+test("Akar Sense is an inline accessible result-toolbar control, never a floating listing obstruction", () => {
+  const shell = read("components/search/LightZillowSearchShell.tsx");
+  const launcher = read("components/companion/FinderLauncher.tsx");
+  const searchPage = read("app/search/page.tsx");
+  const proof = read("scripts/audits/search-property-type-visuals-1.mjs");
+  assert.match(shell, /import \{ FinderLauncher \} from "@\/components\/companion\/FinderLauncher"/);
+  assert.match(shell, /data-search-results-toolbar[\s\S]*<FinderLauncher \/>[\s\S]*<SearchViewSwitcher/);
+  assert.doesNotMatch(searchPage, /FinderLauncher/);
+  assert.match(launcher, /data-finder-launcher/);
+  assert.match(launcher, /min-h-11/);
+  assert.doesNotMatch(launcher, /fixed bottom-\[/);
+  assert.match(launcher, /aria-haspopup="dialog"/);
+  assert.match(launcher, /aria-modal="true"/);
+  assert.match(proof, /FINDER_OVERLAP_OR_FLOATING/);
+  assert.match(proof, /metrics\.finder\.position !== "static"/);
+  assert.match(proof, /page\.keyboard\.press\("Escape"\)/);
+});

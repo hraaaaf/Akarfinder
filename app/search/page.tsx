@@ -1,6 +1,5 @@
 import { after } from "next/server";
 import type { Metadata } from "next";
-import { FinderLauncher } from "@/components/companion/FinderLauncher";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LightZillowSearchShell } from "@/components/search/LightZillowSearchShell";
@@ -179,7 +178,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         />
         <SearchPriceExplorerDock />
       </PropertySelectionProvider>
-      <FinderLauncher />
       <div className="l2-secondary-footer">
         <SiteFooter variant="search" />
       </div>

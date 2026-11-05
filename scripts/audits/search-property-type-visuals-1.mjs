@@ -92,6 +92,14 @@ for (const viewport of viewports) {
   const metrics = await page.evaluate(({ expected }) => {
     const cards = Array.from(document.querySelectorAll("[data-search-listing-card]")).slice(0, 6);
     const grid = document.querySelector("[data-search-continuous-flow] > div.grid");
+    const launcher = document.querySelector("[data-finder-launcher]");
+    const toolbar = document.querySelector("[data-search-results-toolbar]");
+    const launcherBox = launcher?.getBoundingClientRect();
+    const launcherIntersectsCard = (card) => {
+      if (!launcherBox || !launcherBox.width || !launcherBox.height) return false;
+      const box = card.getBoundingClientRect();
+      return launcherBox.left < box.right && launcherBox.right > box.left && launcherBox.top < box.bottom && launcherBox.bottom > box.top;
+    };
     const overlap = (a, b) => Boolean(a && b && !(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom));
     const audits = cards.map((card, index) => {
       const artwork = card.querySelector("[data-indexed-property-artwork]");
@@ -136,6 +144,11 @@ for (const viewport of viewports) {
     });
     return {
       cardCount: cards.length,
+      finder: {
+        inToolbar: Boolean(launcher && toolbar && toolbar.contains(launcher)),
+        position: launcher ? getComputedStyle(launcher).position : null,
+        cardCollision: cards.some(launcherIntersectsCard),
+      },
       columns: grid ? getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean).length : 0,
       overflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
       uniqueKeys: new Set(audits.map((item) => item.key)).size,
@@ -144,6 +157,19 @@ for (const viewport of viewports) {
   }, { expected });
 
   if (metrics.cardCount !== 6) failures.push(`${viewport.name}: expected 6 cards, got ${metrics.cardCount}`);
+  if (!metrics.finder.inToolbar || metrics.finder.position !== "static" || metrics.finder.cardCollision) {
+    failures.push(`${viewport.name}: FINDER_OVERLAP_OR_FLOATING`);
+  }
+  const launcherButton = page.locator("[data-finder-launcher]");
+  await launcherButton.click();
+  await page.locator('[data-finder-panel][role="dialog"][aria-modal="true"]').waitFor({ state: "visible" });
+  await page.waitForFunction(() => {
+    const panel = document.querySelector("[data-finder-panel]");
+    return Boolean(panel && document.activeElement && panel.contains(document.activeElement));
+  });
+  await page.keyboard.press("Escape");
+  await page.locator("[data-finder-panel]").waitFor({ state: "hidden" });
+  await page.waitForFunction(() => document.activeElement?.hasAttribute("data-finder-launcher") === true);
   if (metrics.columns !== viewport.columns) failures.push(`${viewport.name}: expected ${viewport.columns} columns, got ${metrics.columns}`);
   if (metrics.overflow > 1) failures.push(`${viewport.name}: horizontal overflow ${metrics.overflow}px`);
   if (metrics.uniqueKeys !== 6) failures.push(`${viewport.name}: expected 6 unique artwork keys, got ${metrics.uniqueKeys}`);
