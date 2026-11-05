@@ -247,6 +247,44 @@ for (const surface of [
     await context.close();
   }
 }
+/* Reconcile historical #1035 P3 and #1102 seller without obsolete premium-art assumptions. */
+const legacyEvidence = [];
+for (const vp of [viewports[0], viewports[3]]) {
+  const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, deviceScaleFactor: 1 });
+  const page = await ctx.newPage();
+  try {
+    await page.route("**/api/search?**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ listings, total: 6, limit: 100, offset: 0 }) }));
+    await page.route("**/api/search/gateway?**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ results: [], total_count: 0 }) }));
+    await page.goto(baseUrl + "/search?transaction_type=buy&city=Casablanca&min_price=1000000&property_type=Appartement", { waitUntil: "domcontentloaded", timeout: 60_000 });
+    await page.locator("[data-search-active-min-budget]:visible").waitFor({ timeout: 20_000 });
+    const filterCount = (await page.locator(".premium-filter-count").first().textContent())?.trim();
+    if (filterCount !== "4") failures.push("history/P3/" + vp.name + ": expected 4 filters, got " + filterCount);
+    const p3shot = "history-p3-" + vp.name + ".png";
+    await page.screenshot({ path: path.join(outDir, p3shot), fullPage: true });
+    await page.locator("[data-search-active-min-budget] button").click();
+    await page.waitForFunction(() => !document.querySelector("[data-search-active-min-budget]"), null, { timeout: 10_000 });
+    legacyEvidence.push({ surface: "P3", viewport: vp.name, filterCount, budgetCleared: true, screenshot: p3shot });
+    await page.goto(baseUrl + "/vendre/dossier", { waitUntil: "domcontentloaded", timeout: 60_000 });
+    const group = page.locator('[role="group"][aria-label="Quel type de bien souhaitez-vous vendre ?"]:visible');
+    await group.waitFor({ timeout: 20_000 });
+    const photos = group.locator("img[data-property-visual-family]");
+    if (await photos.count() !== 6) failures.push("history/Seller/" + vp.name + ": not six cards");
+    for (let i = 0; i < Math.min(await photos.count(), 6); i++) await photos.nth(i).scrollIntoViewIfNeeded();
+    const keys = await photos.evaluateAll(nodes => nodes.map(x => x.getAttribute("data-property-visual-family")));
+    const wanted = ["apartment", "villa", "land", "apartment", "riad", "office"];
+    if (JSON.stringify(keys) !== JSON.stringify(wanted)) failures.push("history/Seller/" + vp.name + ": five-family mapping drift");
+    const assets = await photos.evaluateAll(nodes => nodes.map(x => ({ src: x.getAttribute("src"), loaded: x.complete && x.naturalWidth > 0 })));
+    if (assets.some((x,i) => !x.loaded || x.src !== "/visuals/property-types/target/" + wanted[i] + (wanted[i] === "riad" ? ".png" : ".svg")))
+      failures.push("history/Seller/" + vp.name + ": new shared local artworks missing");
+    const sellerShot = "history-seller-" + vp.name + ".png";
+    await page.screenshot({ path: path.join(outDir, sellerShot), fullPage: true });
+    legacyEvidence.push({ surface: "Seller", viewport: vp.name, keys, assets, screenshot: sellerShot });
+  } catch (error) {
+    failures.push("history/" + vp.name + ": " + (error instanceof Error ? error.message : String(error)));
+  } finally {
+    await ctx.close();
+  }
+}
 await browser.close();
 
 const axes = {
@@ -257,9 +295,10 @@ const axes = {
   targetCardHierarchy: !failures.some((x) => x.includes("footer") || x.includes("hierarchy") || x.includes("columns")),
   mobileReadability: !failures.some((x) => x.includes("mobile text legibility")),
   crossSurface: !failures.some((x) => x.startsWith("home/") || x.startsWith("vendre/")),
+  historicalReconciliation: !failures.some((x) => x.startsWith("history/")),
 };
 const machineScore = (Object.values(axes).filter(Boolean).length / Object.keys(axes).length) * 10;
-const report = { target: { sha256: targetSha256, dimensions: "1448x1086" }, machineScore, axes, failures, viewports: results, surfaces: surfaceResults, note: "Machine 10/10 is a contract score only. Final visual fidelity requires inspection against the locked TARGET." };
+const report = { target: { sha256: targetSha256, dimensions: "1448x1086" }, machineScore, axes, failures, viewports: results, surfaces: surfaceResults, historicalReconciliation: legacyEvidence, note: "Machine 10/10 is a contract score only. Final visual fidelity requires inspection against the locked TARGET." };
 await fs.writeFile(path.join(outDir, "metrics.json"), JSON.stringify(report, null, 2));
 await fs.writeFile(path.join(outDir, "report.md"), `# Search Property Type Visuals\n\nMachine contract: **${machineScore.toFixed(1)}/10**\nTARGET: \`${targetSha256}\`\n\n${failures.length ? failures.map((x) => `- FAIL: ${x}`).join("\n") : "- PASS: locked TARGET machine contract satisfied."}\n`);
 console.log(JSON.stringify(report, null, 2));
