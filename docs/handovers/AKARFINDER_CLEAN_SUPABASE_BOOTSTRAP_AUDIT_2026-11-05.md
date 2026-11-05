@@ -60,3 +60,34 @@ Références : [plan GitHub-first](AKARFINDER_GITHUB_FIRST_CLEAN_SUPABASE_PLAN_2
 **Précision :** l'objectif technique est d'éliminer tout appel à une DB Supabase hébergée en dev/CI/preview. Une instance PostgreSQL/Supabase locale éphémère est permise seulement pour valider migrations et RLS. Aucun basculement de secrets/prod vers la nouvelle DB ne peut être effectué sans un gate humain séparé.
 
 **Next exact mis à jour :** Codex localise l'export sur l'ordinateur et produit schéma-only sanitisé (issue #1163) → tests de replay en DB locale jetable → audit fail-closed des accès cloud en dev/CI → préparation prod limitée par quotas → autorisation explicite de branchement production, pas de staging cloud automatique.
+
+## Checkpoint Codex local — 05/11/2026 : replay PARTIAL, blocage extension `http`
+
+**Source de la preuve : compte rendu d'exécution fourni par le propriétaire/Codex, NON rejoué par l'assistant depuis cet environnement.** Les anciens paragraphes indiquant « schema-only non extrait » et « premier replay non tenté » sont désormais historiques, **remplacés par ce checkpoint**.
+
+### Résultats locaux rapportés
+- Gzip de sauvegarde inspecté **en lecture seule** ; export original préservé hors GitHub.
+- **144 blocs `COPY`** et **1 025 032 lignes de données** exclus du DDL `schema-only` ; aucune donnée d'annonce restaurée.
+- Replay DDL réellement commencé dans la base **locale jetable `akar_schema_replay`**.
+- Rôles historiques nécessaires simulés en local **NOLOGIN**, sans comptes utilisateurs connectables.
+- **Blocage réel** : extension PostgreSQL `http` indisponible dans PostgreSQL **18** standard sur Windows.
+- SCRAM rétabli ; cluster isolé annoncé sain sur **`127.0.0.1:5433`**.
+- Aucune opération touchant les deux Supabase hébergées, la production ou la sauvegarde brute.
+
+**Verdict : `PARTIAL_LOCAL_SCHEMA_REPLAY_BLOCKED_HTTP`**. Le schéma complet **n'est pas encore restauré** et les tests RLS **n'ont pas encore été exécutés**. Une installation PostgreSQL standard n'est pas équivalente à l'environnement Supabase gérant les extensions/objets de plateforme.
+
+### Réponse technique
+Éviter toute réparation du service PostgreSQL Windows global. Préférer **Supabase CLI + Docker local**, dans un **nouveau dossier de test complètement isolé** du dépôt existant (214 migrations historiques et 5 versions dupliquées). Exiger une version Postgres et les extensions compatibles avec la cible Supabase cloud **PG17** sans se connecter à elle.
+
+Priorité de vérification :
+1. Préflight Docker/WSL2 + Supabase CLI locaux (`docker info`, `supabase --version`), sans élévation administrative implicite.
+2. Dossier temporaire neuf + `supabase init` et `supabase start` ; ports locaux distincts de `127.0.0.1:5433`, aucun projet hébergé lié.
+3. Vérifier `pg_available_extensions` pour `http` et, **dans la DB Docker uniquement**, créer l'extension si elle est effectivement disponible. Interdire `http_get` / `http_post` et sorties réseau pendant replay.
+4. Comparer la sauvegarde sanitizée aux schémas Supabase système (`auth`, `storage`), sans écraser les objets gérés par la plateforme ; appliquer le DDL métier dans une DB locale jetable, **sans `COPY`**.
+5. Tests RLS positifs et négatifs avec comptes locaux fictifs, index/contraintes/vues/fonctions et présence des tables sources ; contrôler la version PG17.
+6. Publier des **agrégats sans données** : nombre d'objets rejoués, extensions, erreurs nettoyées, tests RLS, compatibilité, preuve « zéro accès cloud ». Rapporter précisément tout blocage.
+7. Mettre à jour GitHub et Notion ; **aucun** `supabase link`, `db push/pull` distant, `db reset --remote` ou `--db-url`, merge, Supabase hébergé, ni déploiement Vercel.
+
+**Ordre de mission détaillé :** [Issue Codex #1163](https://github.com/hraaaaf/Akarfinder/issues/1163), commentaire de reprise **#6670735902**.
+
+**Next exact :** Codex vérifie Docker/CLI sur le poste, démarre une pile Supabase **locale isolée**, constate la disponibilité de l'extension `http`, puis rejoue le schema-only et valide RLS. **R2 fraîcheur / R3 droits / objectif 200k restent distincts et non certifiés.**
