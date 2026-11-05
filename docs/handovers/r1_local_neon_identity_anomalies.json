@@ -1,0 +1,29 @@
+{
+  "method": "aggregate_only_source_scoped_identity_anomalies",
+  "no_raw_identifiers_or_urls": true,
+  "sources": {
+    "avito": {
+      "neon_rows": 14000,
+      "numeric_explicit_key_rows": 13422,
+      "missing_explicit_key_rows": 578,
+      "nonnumeric_explicit_key_rows": 0,
+      "validated_url_extractions": 0,
+      "url_resolution_status": "UNRESOLVED_NO_VALIDATED_EXTRACTION_RULE"
+    },
+    "mubawab": {
+      "neon_rows_mubawab_ma": 44099,
+      "neon_rows_alias_mubawab": 13,
+      "numeric_explicit_key_rows": 31875,
+      "missing_explicit_key_rows": 12166,
+      "nonnumeric_explicit_key_rows": 71,
+      "validated_url_extractions": 0,
+      "url_resolution_status": "UNRESOLVED_NO_VALIDATED_EXTRACTION_RULE"
+    }
+  },
+  "quarantine": {
+    "rows_without_explicit_numeric_identity": 12815,
+    "rows_with_nonnumeric_explicit_identity": 71,
+    "identity_conflicts_proved": 0,
+    "fresh_unique_eligible": "UNKNOWN"
+  }
+}

@@ -1,0 +1,27 @@
+name: Akar R1 Local-Neon Reconciliation Tests
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/reconcile_local_neon_source_keys.py"
+      - "scripts/audits/tests/test_reconcile_local_neon_source_keys.py"
+      - ".github/workflows/akar-r1-local-neon-reconciliation.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run R1 identity reconciliation tests
+        run: python -m unittest scripts.audits.tests.test_reconcile_local_neon_source_keys -v
