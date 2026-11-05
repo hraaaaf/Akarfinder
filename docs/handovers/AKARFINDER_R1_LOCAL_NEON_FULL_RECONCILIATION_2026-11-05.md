@@ -34,3 +34,21 @@ python scripts/audits/reconcile_local_neon_source_keys.py \
 2. Réconcilier, séparément, les lignes Neon sans clé explicite à l'aide d'identités URL source-scoped vérifiées, sans créer de faux matches.
 3. Contrôler les collisions et le dédoublonnage physique, puis **fraîcheur, statut actif et droits**. R1 ne certifie **pas** l'objectif 200k.
 4. Aucun merge, DB write ni déploiement Vercel sans gates distincts.
+
+## Borne rigoureuse avant la comparaison exhaustive — 2026-11-05
+
+**Nouvelle vérification Neon recovery, SELECT uniquement :**
+
+| Source | ZIP IDs | Neon rows | Neon numeric distinct keys | Neon NULL keys | Neon other keys |
+|---|---:|---:|---:|---:|---:|
+| Avito | 27 106 | 14 000 | 13 422 | 578 | 0 |
+| Mubawab (source_name='mubawab.ma') | 5 354 | 44 099 | 31 875 | 12 153 | 71 |
+| Mubawab alias (source_name='mubawab') | included above locally | 13 | 0 | 13 | 0 |
+
+The two Neon explicit numeric-key sets total **45,297** distinct source-scoped identities, and the ZIP contains **32,460**. By elementary set bounds, **before measuring the full intersection**:
+
+- Avito exact-key union lies between **27,106 and 40,527** (at least one already verified match).
+- Mubawab exact-key union lies between **31,875 and 37,218** (at least eleven already verified matches).
+- Combined strict numeric source-key union lies in **[58,981, 77,745]**. This upper bound uses the **12 independently observed exact matches** from earlier 210-probe sample; without sample confirmation the safe upper bound is 77,757.
+
+**These are mathematical bounds, NOT the actual deduplicated result**; they exclude Neon rows with missing/nonnumeric keys and say nothing about real properties, live availability, freshness or rights. They must NOT be compared directly to the R0 historical 136,716 as though identical universes.
