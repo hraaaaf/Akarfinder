@@ -84,8 +84,13 @@ async function metrics(page) {
     const images = [...document.querySelectorAll('img[data-property-visual-family]')];
     const disclosures = [...document.querySelectorAll('[data-property-artwork-disclosure]')];
     const forbiddenAmbience = document.querySelectorAll('[data-neighborhood-photo-id],[data-neighborhood-photo-credit],[data-neighborhood-photo-title]').length;
-    const grid = cards[0]?.parentElement;
-    const columns = grid ? getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean).length : 0;
+    // The card's immediate parent is a display:contents wrapper, NOT its CSS grid.
+    // Count columns on the actual Search results grid, and ensure all fixture
+    // cards belong to that same grid (do not accept unrelated grid geometry).
+    const grid = document.querySelector('[data-search-continuous-flow] > div.grid');
+    const columns = grid && cards.every((card) => grid.contains(card))
+      ? getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean).length
+      : 0;
     const clipped = disclosures.filter((node) => node.scrollWidth > node.clientWidth + 1).length;
     return {
       cardCount: cards.length,

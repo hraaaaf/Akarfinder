@@ -120,6 +120,25 @@ describe("RABAT-REAL-PHOTO-LIBRARY-1", () => {
     assert.equal(unsupported.sourceName, "Wikimedia Commons");
   });
 
+  it("verifies Commons licensing against the original upload URL, not thumb-host thumbnails", () => {
+    const checker = source("scripts/audits/rabat-real-photo-library-1-sources.ts");
+    assert.match(checker, /const canonicalImageUrl=imageInfo\?\.url\?\?""/);
+    assert.doesNotMatch(checker, /const canonicalImageUrl=imageInfo\?\.thumburl/);
+    assert.match(checker, /canonicalImageUrl\.startsWith\("https:\/\/upload\.wikimedia\.org\/"\)/);
+    assert.match(checker, /isCompatibleCommonsLicense\(license,licenseUrl\)/);
+    assert.match(checker, /mime\.startsWith\("image\/"\)/);
+    assert.match(checker, /if\(results\.length!==40\|\|failures\.length>0\)throw/);
+  });
+
+  it("audits the actual Search results grid, not the display:contents card wrapper", () => {
+    const visual = source("scripts/audits/rabat-real-photo-library-1-visual.mjs");
+    assert.match(visual, /document\.querySelector\('\[data-search-continuous-flow\] > div\.grid'\)/);
+    assert.match(visual, /cards\.every\(\(card\) => grid\.contains\(card\)\)/);
+    assert.doesNotMatch(visual, /const grid = cards\[0\]\?\.parentElement/);
+    assert.match(visual, /viewport\.width <= 390 && measured\.columns !== 2/);
+    assert.match(visual, /measured\.scrollWidth > measured\.clientWidth/);
+  });
+
   it("keeps the legacy contextual illustration catalog untouched", () => {
     const catalog = source("lib/contextual-illustrations/catalog.ts");
     assert.match(catalog, /districtType: \{\}/);

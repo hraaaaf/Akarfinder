@@ -77,3 +77,14 @@ Le seul workflow en échec est [RABAT-REAL-PHOTO-LIBRARY-1 run 42046843329](http
 **#1035 et #1102** : apports vérifiés par 11 contrôles ciblés ; PR historiques toujours ouvertes jusqu'au merge expressément autorisé de #1147 et à preuve de portage complet. Studio reste illustré Appartement, et non Commercial. Aucune DB, source permissions, médias tiers, ni Vercel changés.
 
 **Séquence restante** : vérifier la nouvelle CI ; si Commons reste rouge, diagnostiquer les réponses API sans neutraliser les garde-fous ; capture BEFORE `main`/AFTER sur mêmes fixtures et viewports ; revue UX et autorisation explicite de merge ; uniquement alors merge, tests `main`, closeout, commentaire et fermeture des PR historiques après preuve.
+
+
+---
+
+## 5 novembre 2026 — Diagnostic corrigé après CI rouge sur `984939a`
+
+**Preuve de CI du HEAD précédent `984939a092fac22c36b388247201256eb2141bcf`:** 52 workflows conclus, **50 SUCCESS / 1 SKIPPED / 1 FAILURE**. Seul run en échec : [RABAT-REAL-PHOTO-LIBRARY-1 #42051710907](https://github.com/hraaaaf/Akarfinder/actions/runs/42051710907). Son job source valide seulement **7/40** fichiers Commons (artifact `13427916568`), même après découpage en 5. La raison précise est désormais vérifiée sur **plusieurs réponses MediaWiki API réelles** : `thumburl` des images redimensionnées pointe vers `thumb.wikimedia.org`, tandis que `url` originale pointe vers `upload.wikimedia.org`. L'ancien validateur utilisait `thumburl ?? url` tout en exigeant `upload.wikimedia.org` : faux rejet de 33 miniatures par confusion thumbnail/original. La nouvelle correction choisit **uniquement `imageInfo.url`**, garde la validation stricte domaine original + MIME + licence CC BY/SA/CC0 + présence 40/40, sans publier les images.
+
+Le job visuel de ce même workflow a réussi `npm run build` cette fois, puis échoué sur `mobile-360x800: ... 2 columns, got 1`. **Cause vérifiée dans le script** : la mesure `cards[0]?.parentElement` pointait sur le wrapper `className="contents"` au lieu du parent grid réel `[data-search-continuous-flow] > div.grid`. Changement uniquement dans l'**audit** : mesurer les colonnes sur la véritable grille et exiger que toutes les dix cartes fixtures lui appartiennent. Les seuils **2 colonnes à 360/390**, zéro overflow, 10 illustrations, absence de photos non autorisées, persistance au rechargement **restent stricts**.
+
+Deux corrections de scripts, une suite de tests de non-régression et ce handover sont dans le présent commit. **Nouvelle CI exacte indispensable** avant toute conclusion de vert. Pas de changement de UI/UX, DB, médias de production, Source Policy ou déploiement Vercel. **PR #1147 reste DRAFT et non fusionnée** ; #1035/#1102 restent ouvertes. Une vraie baseline visuelle `main`/AFTER et l'accord de merge explicite restent des gates humains.
