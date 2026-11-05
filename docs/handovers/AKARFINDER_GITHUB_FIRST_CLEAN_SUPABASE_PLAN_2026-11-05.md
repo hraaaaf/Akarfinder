@@ -39,3 +39,15 @@ Checklist préalable :
 **Next :** lancer un contrôle de chaîne de migrations et de schéma sans toucher aux deux projets distants ; relever les conflits de migrations historiques. **Puis :** tests CI hors-ligne → stratégie de staging + compte/roles → revue humaine du nouveau projet → migration contrôlée + tests read-only → feu vert connexion prod distinct → closeout. Suppression ancienne uniquement sous checklist complète et approbation explicite.
 
 **Rapport statut :** décision technique recommandée, pas encore approbation de migration, d'un changement prod ou de suppression.
+
+## Decision du propriétaire — 05/11/2026 (mise à jour)
+
+Le propriétaire confirme que **l'ancien projet est un environnement de construction, sans utilisateurs**, et qu'**il détient une copie exportée de toute la base de données**. Ces points sont des déclarations du propriétaire : pas d'audit indépendant du contenu de cette sauvegarde au moment de cette note.
+
+**Décision de gestion :** décommissionner et supprimer l'ancien projet Supabase `kusfiyimwvxblvsrhaes` plutôt que tenter une réactivation, en conservant le nouveau `mgqsckxsqdqbzqwkgvwo` comme base propre, initialement vide. La conservation indéfinie de l'ancien n'est pas un objectif. Ne pas retarder pour des hypothétiques utilisateurs, puisque le propriétaire confirme qu'il n'y en a pas.
+
+**Prérequis techniques courts avant suppression** : (a) sauvegarde située hors de l'ancien projet ; (b) identifier les références résiduelles dans secrets CI / Vercel / backend, car la CI P5 actuelle cible encore cet ID et échoue déjà ; (c) noter qu'une suppression retire également les configurations, Storage, Edge et Auth éventuels non inclus dans un dump Postgres. Si ces éléments n'existent pas ou ne sont pas utiles, la suppression est rationnelle.
+
+**Exécution :** aucun outil de suppression Supabase n'est exposé par le connecteur disponible, et aucune session de navigateur Supabase authentifiée n'est disponible ; **l'ancien projet n'a PAS été supprimé**. Le propriétaire peut l'effacer directement via le dashboard `Settings > General > Delete project` en vérifiant l'ID précis. Ceci ne doit pas affecter `mgqsckxsqdqbzqwkgvwo`. Aucune écriture en base, merge, changement d'environnement prod ou déploiement Vercel autorisé.
+
+**Next exact après suppression :** conserver l'export sécurisé, éliminer les références vers l'ancien projet en PR distincte, vérifier la rejouabilité des 214 migrations sur DB éphémère, puis initialiser un staging propre sur la nouvelle Supabase après vérification des droits/coûts et sans lier la prod.
