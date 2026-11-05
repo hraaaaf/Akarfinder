@@ -31,6 +31,10 @@ def parse_identity(source, url, explicit_key):
         'sarout.ma': r'^/(?:fr|ar)/annonce/(\d+)(?:/|$)',
         'agenz.ma': r'/(\d+)/?$',
     }
+    # Agenz suffixes collide across routes (city/kind/district) in archived Neon.
+    # Do not count them as cross-inventory identities until a disambiguation gate exists.
+    if source == 'agenz.ma':
+        return 'ambiguous_source_identity', None
     pattern = patterns.get(source)
     if not pattern:
         return 'unsupported', None
