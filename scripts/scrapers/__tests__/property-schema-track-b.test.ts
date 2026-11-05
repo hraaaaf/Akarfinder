@@ -215,6 +215,15 @@ describe("#10G CANONICAL ADAPTER LAYER", () => {
     assert.equal(adapted.offers[0].price_amount.value, null);
     assert.equal(adapted.offers[0].price_status, "not_disclosed");
     assert.equal(adapted.facts.surfaces.surface_total_m2?.value, 90);
+    assert.equal(adapted.offers[0].availability_status, "unknown", "schema-valid feed rows must not assert availability");
+    assert.equal(adapted.offers[0].offer_status, "unknown", "schema-valid feed rows must not assert active");
+
+    for (const signal of ["delete", "unpublish"] as const) {
+      const withdrawn = adaptValidatedFeedRow({ ...row, update_signal: signal },
+        { property_id: "p-feed", offer_id: "o-feed", source_id: "agency", now: NOW });
+      assert.equal(withdrawn.offers[0].availability_status, "withdrawn");
+      assert.equal(withdrawn.offers[0].offer_status, signal === "delete" ? "deleted" : "unpublished");
+    }
   });
 
   it("adapts partner standard with declared provenance", () => {
