@@ -182,9 +182,10 @@ const axes = {
   colors: !failures.some((x) => x.includes(" color ")),
   canonicalArtwork: !failures.some((x) => x.includes("canonical asset")),
   targetGeometry: !failures.some((x) => x.includes("geometry") || x.includes("collision") || x.includes("overflow") || x.includes("centered")),
-  targetCardHierarchy: !failures.some((x) => x.includes("footer") || x.includes("hierarchy") || x.includes("columns")),\n  mobileReadability: !failures.some((x) => x.includes("mobile text legibility")),
+  targetCardHierarchy: !failures.some((x) => x.includes("footer") || x.includes("hierarchy") || x.includes("columns")),
+  mobileReadability: !failures.some((x) => x.includes("mobile text legibility")),
 };
-const machineScore = (Object.values(axes).filter(Boolean).length / 5) * 10;
+const machineScore = (Object.values(axes).filter(Boolean).length / Object.keys(axes).length) * 10;
 const report = { target: { sha256: targetSha256, dimensions: "1448x1086" }, machineScore, axes, failures, viewports: results, note: "Machine 10/10 is a contract score only. Final visual fidelity requires inspection against the locked TARGET." };
 await fs.writeFile(path.join(outDir, "metrics.json"), JSON.stringify(report, null, 2));
 await fs.writeFile(path.join(outDir, "report.md"), `# Search Property Type Visuals\n\nMachine contract: **${machineScore.toFixed(1)}/10**\nTARGET: \`${targetSha256}\`\n\n${failures.length ? failures.map((x) => `- FAIL: ${x}`).join("\n") : "- PASS: locked TARGET machine contract satisfied."}\n`);
