@@ -52,3 +52,13 @@ The two Neon explicit numeric-key sets total **45,297** distinct source-scoped i
 - Combined strict numeric source-key union lies in **[58,981, 77,745]**. This upper bound uses the **12 independently observed exact matches** from earlier 210-probe sample; without sample confirmation the safe upper bound is 77,757.
 
 **These are mathematical bounds, NOT the actual deduplicated result**; they exclude Neon rows with missing/nonnumeric keys and say nothing about real properties, live availability, freshness or rights. They must NOT be compared directly to the R0 historical 136,716 as though identical universes.
+
+## Fraîcheur des observations Neon archivées — preuve SELECT du 2026-11-05
+
+| source_name | rows | max(last_seen_at) UTC | `last_seen_at >= 2026-10-06 UTC` | NULL last_seen_at |
+|---|---:|---|---:|---:|
+| `avito.ma` | 14 000 | 2026-09-08 11:09:09.601 | 0 | 256 |
+| `mubawab.ma` | 44 099 | 2026-09-08 11:14:08.493 | 0 | 16 020 |
+| `mubawab` alias | 13 | 2026-07-13 15:16:27 | 0 | 0 |
+
+Ces champs prouvent uniquement une **absence d'observations récentes enregistrées dans cette archive**. Ils ne prouvent ni suppression ni inactivité actuelle sur les portails. Aucune source ne peut être certifiée fraîche par cette récupération Neon sans validation live autorisée. Le compteur frais/uniques exploitable reste **UNKNOWN**.
