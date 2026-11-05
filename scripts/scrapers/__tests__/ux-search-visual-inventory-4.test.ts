@@ -5,20 +5,16 @@ import { resolveContextualIllustration } from "../../../lib/contextual-illustrat
 
 const cities = ["Agadir", "Marrakech", "Casablanca", "Rabat", "Tanger", "Fès"] as const;
 
-test("UX-SEARCH-4 keeps the truth-safe visual precedence explicit on internal cards", async () => {
+test("UX-SEARCH-4 keeps photo rights and canonical property artwork on listing cards", async () => {
   const source = await readFile("components/search/SearchListingCardDark.tsx", "utf8");
-  assert.match(source, /resolveRabatRealPhoto/);
-  assert.match(source, /resolveContextualIllustration/);
-  assert.match(source, /imageMode === "fallback_visual" && !showNeighborhoodPhoto/);
-  assert.match(source, /stableRepresentationKey: listing\.listing_url \?\? ""/);
-  assert.match(source, /normalizedCity: listing\.city/);
-  assert.match(source, /normalizedDistrict: listing\.neighborhood/);
-  assert.match(source, /normalizedPropertyType: listing\.property_type/);
-  assert.match(source, /data-visual-inventory-class="neighborhood_photo"/);
-  assert.match(source, /data-visual-inventory-class="contextual_illustration"/);
-  assert.match(source, /data-visual-inventory-class="generic_illustration"/);
-  assert.match(source, /Illustration contextuelle/);
-  assert.doesNotMatch(source, /resolveContextualIllustration\([\s\S]{0,400}(listing\.title|listing\.description)/);
+  assert.match(source, /getListingImageMode\(listing\)/);
+  assert.match(source, /imageMode === "db_provider_thumbnail"/);
+  assert.match(source, /imageMode !== "fallback_visual"/);
+  assert.match(source, /data-visual-inventory-class="authorized_or_listing_image"/);
+  assert.match(source, /data-visual-inventory-class="canonical_property_type"/);
+  assert.match(source, /<PropertyTypeArtwork kind=\{listing\.property_type\}/);
+  assert.doesNotMatch(source, /resolveContextualIllustration|resolveRabatRealPhoto|data-neighborhood-photo-id/);
+  assert.match(source, /Visuel illustratif/);
   assert.doesNotMatch(source, /Math\.random/);
 });
 
