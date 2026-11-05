@@ -1,4 +1,11 @@
 import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
+import {
+  CONTEXTUAL_CITY_VISUALS,
+  getContextualCityVisual,
+} from "@/lib/contextual-illustrations/catalog";
+import { resolveContextualIllustration } from "@/lib/contextual-illustrations/resolver";
+
+export { CONTEXTUAL_CITY_VISUALS, getContextualCityVisual };
 
 type ContextualListingArtworkProps = {
   stableRepresentationKey: string;
@@ -9,12 +16,57 @@ type ContextualListingArtworkProps = {
 };
 
 export function ContextualListingArtwork({
+  stableRepresentationKey,
+  city,
+  normalizedDistrict,
   propertyType,
   className = "",
 }: ContextualListingArtworkProps) {
+  const contextualVisual = resolveContextualIllustration({
+    stableRepresentationKey,
+    normalizedCity: city,
+    normalizedDistrict,
+    normalizedPropertyType: propertyType,
+  });
+
+  if (contextualVisual) {
+    return (
+      <img
+        src={contextualVisual.asset}
+        alt=""
+        aria-hidden="true"
+        data-contextual-city={contextualVisual.label}
+        data-contextual-asset-id={contextualVisual.id}
+        data-contextual-tier={contextualVisual.tier}
+        data-visual-inventory-class="contextual_illustration"
+        className={`block h-full w-full object-cover object-center ${className}`.trim()}
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  }
+
+  if (propertyType) {
+    return (
+      <div data-visual-inventory-class="generic_illustration" className="h-full w-full">
+        <PropertyTypeArtwork
+          kind={propertyType}
+          className={className}
+          decorative
+        />
+      </div>
+    );
+  }
+
   return (
-    <div data-visual-inventory-class="canonical_property_type" className={`h-full w-full bg-white ${className}`}>
-      <PropertyTypeArtwork kind={propertyType ?? ""} className="h-full w-full" decorative />
+    <div
+      data-contextual-neutral
+      data-visual-inventory-class="neutral"
+      className={`grid h-full w-full place-items-center bg-gradient-to-br from-slate-100 to-slate-200 px-6 text-center dark:from-deepblue dark:to-slate-900 ${className}`.trim()}
+    >
+      <span className="text-[12px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground dark:text-white/55">
+        Annonce indexée
+      </span>
     </div>
   );
 }
