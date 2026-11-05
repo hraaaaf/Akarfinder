@@ -40,3 +40,13 @@ Succès de ce sous-lot : inventorier les migrations, détecter les collisions de
 4. Après revue, initialiser le staging neuf sur `mgqsckxsqdqbzqwkgvwo` (écriture à autoriser distinctement). Connexion production/Vercel seulement sur validation explicite.
 
 Références : [plan GitHub-first](AKARFINDER_GITHUB_FIRST_CLEAN_SUPABASE_PLAN_2026-11-05.md), [R2 fraîcheur](AKARFINDER_R2_FRESHNESS_EVIDENCE_GATE_2026-11-05.md).
+
+## Audit exécuté — preuves CI au 05/11/2026
+
+**GitHub Actions [#42087569064](https://github.com/hraaaaf/Akarfinder/actions/runs/42087569064)** : **SUCCESS**, quatre tests unitaires **4/4 PASS** ; analyse offline sur le dossier réel. Rapport émis : `migration_file_count=214`, `distinct_named_versions=209`, `duplicate_versions=5`, `clean_bootstrap_status=STATIC_BLOCKERS_FOUND`. Le scanner confirme **aucune création explicite détectée** de `listing_sources` et `property_listings` parmi ces 214 migrations ; références statiques dans respectivement **6** et **5** fichiers. Premières références détectées : `20260716140200_create_property_cluster_members.sql` (listing_sources) et `20260716140100_create_property_clusters.sql` (property_listings). **Un audit statique ne prouve pas l'absence de création dynamique ; la reconstruction réelle n'a pas été tentée.**
+
+**CI ajustée pour les corrections futures :** l'audit reste compatible si le nombre de migrations ou de conflits change volontairement ; le workflow ne fige plus les attendus historiques 214/5. Les contrôles vérifient seulement la cohérence du rapport et son exécution sans SQL distant. [CI corrigée #42087969465](https://github.com/hraaaaf/Akarfinder/actions/runs/42087969465) **SUCCESS** sur code `a65e9afdb6ec81c70cea3d1e40e177fa22d6b0b9` ; [CI Efficiency #42087969384](https://github.com/hraaaaf/Akarfinder/actions/runs/42087969384) **SUCCESS** ; Product Constitution Gate #42087962279 SUCCESS ; Canonical Baseline Compile Validation #42087969404 encore en cours au dernier point de contrôle.
+
+**Verdict : DIAGNOSTIC TECHNIQUE PASS ; BOOTSTRAP PROPRE BLOQUÉ, NON REJOUÉ.** Les collisions et la dépendance aux tables de base interdisent de transférer directement le patrimoine SQL sur le Supabase neuf. La source fiable du schéma initial est l'export complet détenu par le propriétaire (non disponible ici en fichier SQL vérifié) ; proposer un baseline schema-only séparé et réexécuter en Supabase éphémère avant toute écriture distante.
+
+**Next exact :** récupérer le DDL de référence du dump sécurisé, établir la chaîne baseline + migrations sans renommer arbitrairement les migrations historiques, puis exécuter `supabase db reset` dans un environnement local éphémère avec tests et sans secrets/prod.
