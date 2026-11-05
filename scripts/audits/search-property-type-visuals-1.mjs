@@ -175,6 +175,52 @@ for (const viewport of viewports) {
   results.push({ ...viewport, ...metrics, screenshot });
   await context.close();
 }
+
+/* Direction A: evidence from the exact same built revision of Home and Vendre. */
+const surfaceExpectedKeys = ["apartment", "villa", "land", "apartment", "riad", "office"];
+const surfaceResults = [];
+for (const surface of [
+  { name: "home", route: "/", section: "[data-home-property-types]", card: "[data-home-property-type]" },
+  { name: "vendre", route: "/vendre", section: "[data-vendre-type-entry]", card: "a[href^='/vendre/dossier?property_type=']" },
+]) {
+  for (const vp of viewports) {
+    const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, deviceScaleFactor: 1 });
+    const page = await context.newPage();
+    const response = await page.goto(baseUrl + surface.route, { waitUntil: "domcontentloaded", timeout: 60_000 });
+    if (!response || response.status() >= 400) failures.push(surface.name + "/" + vp.name + ": HTTP " + (response?.status() ?? "none"));
+    const selector = surface.section + " " + surface.card;
+    await page.locator(selector).first().waitFor({ timeout: 30_000 });
+    const found = await page.locator(selector).count();
+    if (found !== 6) failures.push(surface.name + "/" + vp.name + ": expected 6 property links, got " + found);
+    for (let i = 0; i < Math.min(found, 6); i++) {
+      await page.locator(selector).nth(i).scrollIntoViewIfNeeded();
+    }
+    await page.waitForFunction((selector) => {
+      const images = Array.from(document.querySelectorAll(selector + " img[data-property-visual-family]"));
+      return images.length === 6 && images.every((img) => img.complete && img.naturalWidth > 0);
+    }, selector, { timeout: 20_000 }).catch(() => failures.push(surface.name + "/" + vp.name + ": six property illustrations not fully loaded"));
+    const metrics = await page.evaluate((selector) => {
+      const cards = Array.from(document.querySelectorAll(selector));
+      const imgs = cards.map((card) => card.querySelector("img[data-property-visual-family]"));
+      return {
+        cardCount: cards.length,
+        keys: imgs.map((img) => img?.getAttribute("data-property-visual-family") ?? null),
+        paths: imgs.map((img) => img?.getAttribute("src") ?? null),
+        loaded: imgs.map((img) => Boolean(img?.complete && img?.naturalWidth > 0)),
+        overflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
+      };
+    }, selector);
+    if (JSON.stringify(metrics.keys) !== JSON.stringify(surfaceExpectedKeys)) failures.push(surface.name + "/" + vp.name + ": property family mapping mismatch");
+    if (metrics.paths.some((asset, index) => asset !== ("/visuals/property-types/target/" + surfaceExpectedKeys[index] + (surfaceExpectedKeys[index] === "riad" ? ".png" : ".svg")))) failures.push(surface.name + "/" + vp.name + ": property asset mismatch");
+    if (metrics.loaded.some((ok) => !ok)) failures.push(surface.name + "/" + vp.name + ": broken local asset");
+    if (metrics.overflow > 1) failures.push(surface.name + "/" + vp.name + ": horizontal overflow " + metrics.overflow + "px");
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const screenshot = path.join(outDir, surface.name + "-" + vp.name + ".png");
+    await page.screenshot({ path: screenshot, fullPage: true });
+    surfaceResults.push({ surface: surface.name, viewport: vp.name, ...metrics, screenshot });
+    await context.close();
+  }
+}
 await browser.close();
 
 const axes = {
@@ -184,9 +230,10 @@ const axes = {
   targetGeometry: !failures.some((x) => x.includes("geometry") || x.includes("collision") || x.includes("overflow") || x.includes("centered")),
   targetCardHierarchy: !failures.some((x) => x.includes("footer") || x.includes("hierarchy") || x.includes("columns")),
   mobileReadability: !failures.some((x) => x.includes("mobile text legibility")),
+  crossSurface: !failures.some((x) => x.startsWith("home/") || x.startsWith("vendre/")),
 };
 const machineScore = (Object.values(axes).filter(Boolean).length / Object.keys(axes).length) * 10;
-const report = { target: { sha256: targetSha256, dimensions: "1448x1086" }, machineScore, axes, failures, viewports: results, note: "Machine 10/10 is a contract score only. Final visual fidelity requires inspection against the locked TARGET." };
+const report = { target: { sha256: targetSha256, dimensions: "1448x1086" }, machineScore, axes, failures, viewports: results, surfaces: surfaceResults, note: "Machine 10/10 is a contract score only. Final visual fidelity requires inspection against the locked TARGET." };
 await fs.writeFile(path.join(outDir, "metrics.json"), JSON.stringify(report, null, 2));
 await fs.writeFile(path.join(outDir, "report.md"), `# Search Property Type Visuals\n\nMachine contract: **${machineScore.toFixed(1)}/10**\nTARGET: \`${targetSha256}\`\n\n${failures.length ? failures.map((x) => `- FAIL: ${x}`).join("\n") : "- PASS: locked TARGET machine contract satisfied."}\n`);
 console.log(JSON.stringify(report, null, 2));
