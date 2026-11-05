@@ -117,7 +117,8 @@ function makeOffer(
     first_observed_at: null,
     last_observed_at: null,
     updated_at_source: null,
-    offer_status: "active",
+    // A missing explicit offer lifecycle decision must not imply current activity.
+    offer_status: "unknown",
     compliance_status: context.compliance_status ?? "review_required",
     media_set_id: null,
     ingestion_run_id: context.ingestion_run_id ?? null,
@@ -153,9 +154,11 @@ export function adaptValidatedFeedRow(row: ValidatedFeedRow, context: AdapterCon
     description: declared(row.description, context),
     price_amount: declared(row.price_mad, context),
     price_status: row.price_mad == null ? "not_disclosed" : "valid",
-    availability_status: row.update_signal ? "withdrawn" : "available",
+    // A validated row proves schema validity, not current availability.
+    // Only a trusted independent activity verifier may promote to available/active.
+    availability_status: row.update_signal ? "withdrawn" : "unknown",
     updated_at_source: row.updated_at_source,
-    offer_status: row.update_signal === "delete" ? "deleted" : row.update_signal === "unpublish" ? "unpublished" : "active",
+    offer_status: row.update_signal === "delete" ? "deleted" : row.update_signal === "unpublish" ? "unpublished" : "unknown",
   });
   property.offers = [offer];
   property.media = row.image_urls.map((url, index): MediaAssetV1 => ({
@@ -221,7 +224,8 @@ export function adaptScrapedListing(row: ScrapedListingP0, context: AdapterConte
     availability_status: "unknown",
     first_observed_at: row.scraped_at,
     last_observed_at: row.scraped_at,
-    offer_status: "active",
+    // A scrape proves observation, not live availability.
+    offer_status: "unknown",
   });
   property.offers = [offer];
   return property;
@@ -277,7 +281,11 @@ export function adaptPartnerListing(row: PartnerListingStandard, context: Adapte
     seller_type: declared(row.partner_type === "promoter" ? "promoter" : "agency", context),
     seller_organization_id: row.partner_id,
     compliance_status: isSellRequest || isProjectRecord ? "restricted" : "allowed",
-    offer_status: isSellRequest || isProjectRecord || ["sold", "rented"].includes(row.availability_status) ? "inactive" : "active",
+    // A declared partner status is not evidence of fresh activity; preserve
+    // non-available states rather than promoting them to active.
+    offer_status: isSellRequest || isProjectRecord || ["sold", "rented"].includes(row.availability_status)
+      ? "inactive"
+      : row.availability_status === "available" ? "active" : "unknown",
   });
   property.offers = [offer];
   return property;
@@ -317,7 +325,8 @@ export function adaptLegacyListing(row: Listing, context: AdapterContextV1): Can
     price_amount: legacy(price && price > 0 ? price : null, context),
     price_status: price && price > 0 ? "valid" : "not_disclosed",
     availability_status: "unknown",
-    offer_status: "active",
+    // Legacy fields contain no trusted positive availability verification.
+    offer_status: "unknown",
   });
   property.offers = [offer];
   return property;

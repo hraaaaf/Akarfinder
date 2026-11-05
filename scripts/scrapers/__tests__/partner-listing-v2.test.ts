@@ -193,6 +193,24 @@ describe("PartnerListingV2 canonical adapter", () => {
     assert.equal(canonical.media[0].rights_status, "allowed");
   });
 
+
+  it("keeps unknown, reserved and upcoming canonical offers out of active stock", () => {
+    for (const status of ["unknown", "reserved", "upcoming"] as const) {
+      const canonical = adaptPartnerListingV2(listing({ availability_status: status }), NOW);
+      const offer = canonical.offers[0];
+      assert.equal(offer.availability_status, status);
+      assert.equal(offer.offer_status, "unknown", status);
+      assert.equal(offer.external_offer_id, "AG-2026-00042");
+      assert.equal(offer.updated_at_source, UPDATED_AT);
+    }
+  });
+
+  it("promotes only available status to the active canonical offer flag", () => {
+    const canonical = adaptPartnerListingV2(listing({ availability_status: "available" }), NOW);
+    assert.equal(canonical.offers[0].offer_status, "active");
+    assert.equal(canonical.offers[0].availability_status, "available");
+  });
+
   it("marks sold/rented/withdrawn offers inactive without changing stable identity", () => {
     for (const state of ["sold", "rented", "withdrawn"] as const) {
       const canonical = adaptPartnerListingV2(listing({ availability_status: state }), NOW);

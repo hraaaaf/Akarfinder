@@ -33,6 +33,30 @@ describe("#10G partner adapter safety", () => {
     assert.equal(offer.price_status, "ambiguous");
   });
 
+  it("does not equate non-available partner statuses with active offers", () => {
+    const context = {
+      property_id: "p-candidate", offer_id: "o-candidate", source_id: "agency-1",
+      external_offer_id: "AG-EXT-77", now: NOW,
+    };
+    for (const state of ["unknown", "reserved", "upcoming"] as const) {
+      const adapted = adaptPartnerListing({
+        ...FICTIONAL_AGENCY_DEMO_RABAT_APARTMENT, availability_status: state,
+      }, context);
+      assert.equal(adapted.offers[0].availability_status, state);
+      assert.equal(adapted.offers[0].offer_status, "unknown", state);
+      assert.equal(validatePropertyPublication(adapted, adapted.offers[0]).valid, false);
+    }
+    for (const state of ["sold", "rented"] as const) {
+      const adapted = adaptPartnerListing({
+        ...FICTIONAL_AGENCY_DEMO_RABAT_APARTMENT, availability_status: state,
+      }, context);
+      assert.equal(adapted.offers[0].offer_status, "inactive", state);
+    }
+    const available = adaptPartnerListing(FICTIONAL_AGENCY_DEMO_RABAT_APARTMENT, context);
+    assert.equal(available.offers[0].offer_status, "active");
+    // Partner-declared available is not independently verified live freshness.
+  });
+
   it("never turns a sell_request lead record into a publishable property offer", () => {
     const input: PartnerListingStandard = {
       ...FICTIONAL_AGENCY_DEMO_RABAT_APARTMENT,

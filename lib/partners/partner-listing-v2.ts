@@ -294,7 +294,14 @@ export function adaptPartnerListingV2(listing: PartnerListingV2, now = new Date(
   offer.first_observed_at = listing.published_at_source ?? observedAt;
   offer.last_observed_at = now;
   offer.updated_at_source = observedAt;
-  offer.offer_status = ["sold", "rented", "withdrawn"].includes(listing.availability_status) ? "inactive" : "active";
+  // R2 fail-closed: not-confirmed-available must never be projected as active.
+  // "unknown"/"reserved"/"upcoming" are not positive availability evidence.
+  // This is a catalog-state gate, NOT a certification of partner evidence or rights.
+  offer.offer_status = listing.availability_status === "available"
+    ? "active"
+    : ["sold", "rented", "withdrawn"].includes(listing.availability_status)
+      ? "inactive"
+      : "unknown";
 
   property.media = (listing.media ?? []).map((item, index): MediaAssetV1 => ({
     media_id: `${identity.offer_id}:media:${index + 1}`,
