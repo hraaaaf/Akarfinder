@@ -46,3 +46,19 @@ Ce choix autorise la **préparation en DRAFT**, **PAS** le merge ni un déploiem
 - **Gates restants :** comparer les captures avec une baseline `main` réelle aux mêmes dimensions, traiter si requis la lisibilité mobile, obtenir la validation visuelle produit, puis demander **autorisation explicite de merge**. Ne pas fermer #1035/#1102 avant vérification de leurs apports remplacés. **Aucun déploiement Vercel autorisé ou effectué.**
 
 Cette actualisation documentaire ne constitue pas elle-même une nouvelle certification du commit de documentation : le HEAD de code certifié reste `8a989d97b57005303bacf18184769fc0953b4d95`.
+
+
+---
+
+## Closeout technique — 2026-11-05 — Lisibilité mobile et preuve actualisée
+
+**Résultat observé (HEAD de code `0cc3a617e60aea49a7b39787d4c5fc19b8b0ebf3`)**
+- Le correctif mobile conserve **deux colonnes** à 390/430 px et la famille unique des **six assets TARGET**. Les titres indexés ont une police calculée de **13 px**, les caractéristiques de **10,5 px** et les mentions de provenance de **10 px**. La source ne subit plus de troncature par ellipsis dans les six fixtures du test.
+- Le test Playwright `scripts/audits/search-property-type-visuals-1.mjs` contrôle désormais explicitement la lisibilité et les liens sources (sixième axe), sans diminuer les exigences d'origine, de géométrie ni de couleur.
+- **Run `SEARCH-PROPERTY-TYPE-VISUALS-1 Gate` #42022136776 = SUCCESS**, artefact `search-property-type-visuals-1-proof` **#13412920670**. Captures AFTER réelles dans l'artefact aux dimensions **390×844, 430×932, 768×900, 1280×900**. `metrics.json` : 6/6 axes, zéro failure, zéro overflow, six cartes par viewport, deux colonnes mobile et quatre desktop, six sources locales chargées. **10/10 = score de contrat machine seulement**, aucune certification esthétique ou production par ce nombre.
+- **36/36 workflows GitHub SUCCESS sur le HEAD de code** après relances ciblées, sans échec ni job actif au dernier contrôle. Les échecs transitoires précédents provenaient du **loader `next/font/google` pendant `npm run build`**, `TypeError: Cannot read properties of null (reading '1')` dans `app/layout.tsx`. Rejouer les seuls jobs échoués a réussi ; cette réussite ne supprime **pas** le risque d'instabilité CI dû au téléchargement Google Fonts. Une mitigation ciblée du fetch font / self-hosting constitue un **lot CI distinct**, à vérifier avant adoption.
+- Une **comparaison visuelle historique** a été produite entre une capture de la PR du 31 octobre et l'AFTER du 5 novembre, à **390 et 1280 px**. Les données d'annonces diffèrent, et le snapshot historique n'est **pas un BEFORE certifié de `main`**. Ne pas s'en servir pour déclarer une convergence visuelle exacte.
+- **Réserve UX** : les cartes restent denses en affichage mobile deux colonnes ; l'audit de lisibilité prouve seulement les seuils définis, pas une note esthétique maximale ni les scénarios réels en production.
+- **Gates restants** : (1) baseline `main` à fixtures et viewports identiques si disponible sans déploiement ; (2) revue UX finale de la Search et autorisation explicite de **merge** de #1147 ; (3) une fois fusion autorisée, vérifier les apports de #1035 et #1102 avant de les liquider, puis tester le HEAD `main` et actualiser le closeout post-merge. **Pas de déploiement Vercel sans autorisation explicite**.
+
+**Limite documentaire** : la publication de cette section crée un nouveau commit, distinct du HEAD de code `0cc3a617e60aea49a7b39787d4c5fc19b8b0ebf3` sur lequel les 36 workflows ont effectivement conclu ; la CI du commit documentaire doit être contrôlée séparément.
