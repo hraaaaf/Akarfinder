@@ -1,4 +1,4 @@
-name: Partner Market Intelligence P5
+name: Partner Market Intelligence P5 (offline regression)
 
 on:
   pull_request:
@@ -15,7 +15,6 @@ on:
       - "scripts/scrapers/__tests__/partner-market-aggregator-v2.test.ts"
       - "scripts/scrapers/__tests__/partner-market-downstream-v2.test.ts"
       - "scripts/scrapers/__tests__/partner-csv-write-boundary-p5.test.ts"
-      - "scripts/audits/partner-market-p5-after-audit.mjs"
       - ".github/workflows/partner-market-intelligence-p2.yml"
   workflow_dispatch:
 
@@ -23,32 +22,37 @@ permissions:
   contents: read
 
 concurrency:
-  group: partner-market-intelligence-p5-${{ github.ref }}
+  group: partner-market-intelligence-p5-offline-${{ github.ref }}
   cancel-in-progress: true
 
+# CI/PR deliberately has NO remote DB credentials and NO hosted DB calls.
+# This verifies synthetic partner logic ONLY, not the P5 render AFTER certification.
 jobs:
-  certify-p5-final:
+  partner-pipeline-offline:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 15
     env:
-      BASE_URL: http://127.0.0.1:3211
-      AUDIT_OUTPUT_DIR: data/audits/partner-market-p5-after
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      CI: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
-
-      - name: Install
-        run: npm ci
-
-      - name: Partner pipeline P2-P5 regression + legacy write boundary
+      - name: Assert hosted DB credentials not injected
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY SUPABASE_DATABASE_URL_DIRECT DATABASE_URL NEXT_PUBLIC_SUPABASE_URL; do
+            if [ -n "${!key:-}" ]; then
+              echo "::error::Unexpected hosted DB configuration: $key"
+              exit 1
+            fi
+          done
+          echo "No hosted database environment configured"
+      - name: Partner pipeline P2-P5 synthetic regression + legacy write boundary
         run: >-
           npx tsx --test
           scripts/scrapers/__tests__/partner-listing-v2.test.ts
@@ -57,35 +61,5 @@ jobs:
           scripts/scrapers/__tests__/partner-market-aggregator-v2.test.ts
           scripts/scrapers/__tests__/partner-market-downstream-v2.test.ts
           scripts/scrapers/__tests__/partner-csv-write-boundary-p5.test.ts
-
       - name: TypeScript
         run: npx tsc --noEmit
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Production build
-        run: npm run build
-
-      - name: Start production server
-        shell: bash
-        run: |
-          npm run start -- -p 3211 > /tmp/partner-market-p5.log 2>&1 &
-          for attempt in {1..60}; do
-            if curl -fsS 'http://127.0.0.1:3211/map?city=casablanca&district=maarif&layer=explore' >/dev/null; then exit 0; fi
-            sleep 1
-          done
-          cat /tmp/partner-market-p5.log
-          exit 1
-
-      - name: National desktop/mobile AFTER certification
-        run: node scripts/audits/partner-market-p5-after-audit.mjs
-
-      - name: Upload P5 AFTER evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: partner-market-p5-after-${{ github.run_id }}
-          path: data/audits/partner-market-p5-after
-          if-no-files-found: error
-          retention-days: 30
