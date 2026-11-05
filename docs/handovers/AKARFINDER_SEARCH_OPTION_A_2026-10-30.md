@@ -62,3 +62,18 @@ Cette actualisation documentaire ne constitue pas elle-même une nouvelle certif
 - **Gates restants** : (1) baseline `main` à fixtures et viewports identiques si disponible sans déploiement ; (2) revue UX finale de la Search et autorisation explicite de **merge** de #1147 ; (3) une fois fusion autorisée, vérifier les apports de #1035 et #1102 avant de les liquider, puis tester le HEAD `main` et actualiser le closeout post-merge. **Pas de déploiement Vercel sans autorisation explicite**.
 
 **Limite documentaire** : la publication de cette section crée un nouveau commit, distinct du HEAD de code `0cc3a617e60aea49a7b39787d4c5fc19b8b0ebf3` sur lequel les 36 workflows ont effectivement conclu ; la CI du commit documentaire doit être contrôlée séparément.
+
+
+---
+
+## 5 novembre 2026 — CI : 50/52, mitigation Commons (en cours, non certifiée)
+
+**HEAD de référence avant mitigation :** `971781cdbee29d24657d63aefbcf87e9fb0385bb` ; PR #1147 DRAFT, non fusionnée, 47 ahead/0 behind. Sur 52 workflows exact-head : **50 SUCCESS, 1 SKIPPED, 1 FAILURE**. ANN-L11 run 42046843768, Option A Contract run 42046843143, UX-CARDS run 42046843644, SEARCH-PROPERTY-TYPE-VISUALS run 42046843638 : **SUCCESS**. Ce dernier produit 12 captures réelles Home/Search/Vendre 390/430/768/1280 (artifact 13425297255), score machine 10/10, zéro overflow ; réserve visuelle : navigation flottante/Akar Sense peuvent recouvrir des cartes dans la capture mobile full-page. Absence de baseline `main` identique ; pas de score UX esthétique certifié.
+
+Le seul workflow en échec est [RABAT-REAL-PHOTO-LIBRARY-1 run 42046843329](https://github.com/hraaaaf/Akarfinder/actions/runs/42046843329) : job visuel échoue au build intermittent `next/font/google` `Plus_Jakarta_Sans` (suivi dans [issue #1160](https://github.com/hraaaaf/Akarfinder/issues/1160)), job source Commons a **7/40 preuves complètes** et 33 images dont l'API n'a pas rendu une URL canonique (artifact 13425568201). Ce n'est pas la preuve de 33 licences invalides : `File:Rabat Agdal.jpg` existe en CC BY-SA 4.0 sur Commons. Fichier source, bibliothèque de photos, workflow photo et layout sont **strictement identiques sur main et la PR** (SHA de blob vérifiés).
+
+**Mitigation apportée dans le présent commit :** `scripts/audits/rabat-real-photo-library-1-sources.ts` découpe les 40 demandes de métadonnées Commons en **lots de 5**, avec seulement les champs LicenseShortName, LicenseUrl, Artist et Credit (documentation MediaWiki recommande peu de résultats pour `extmetadata`). Les contrôles de sûreté demeurent **stricts et identiques** : 40/40 requis, licence CC BY/CC BY-SA/CC0 compatible, URL canonique sous `upload.wikimedia.org`, MIME image, échec sur réponse API incomplète. Aucune photo n'est promue automatiquement. **Hypothèse de résolution non prouvée jusqu'à nouvelle CI exacte**.
+
+**#1035 et #1102** : apports vérifiés par 11 contrôles ciblés ; PR historiques toujours ouvertes jusqu'au merge expressément autorisé de #1147 et à preuve de portage complet. Studio reste illustré Appartement, et non Commercial. Aucune DB, source permissions, médias tiers, ni Vercel changés.
+
+**Séquence restante** : vérifier la nouvelle CI ; si Commons reste rouge, diagnostiquer les réponses API sans neutraliser les garde-fous ; capture BEFORE `main`/AFTER sur mêmes fixtures et viewports ; revue UX et autorisation explicite de merge ; uniquement alors merge, tests `main`, closeout, commentaire et fermeture des PR historiques après preuve.
