@@ -79,3 +79,23 @@ The three sources have historical `is_active=true` throughout, **even though non
 **New CI trigger code commit:** `7693933d1ee859893c7e6608ed79a39575080544`. **Status at first check:** R2 targeted workflow #42044011775 **pending**; Efficiency #42044011808 **queued**; P5 #42044011803 **pending**. These are NOT yet verified PASS. Prior 15/15 result #42042914187 applies **only to the preceding PartnerListingV2 code revision**.
 
 **Next:** inspect the latest CI result once independent documentation work is done. Remaining `adaptPartnerListing`, scraper/legacy adapters and downstream KPI consumers still require semantic review before a global freshness certification.
+
+## R2 third audit — generic adapters and structured publication
+
+**Verified source-code findings (R2 branch):**
+1. The canonical offer constructor `makeOffer` previously defaulted to `offer_status="active"` when caller omitted status.
+2. `adaptScrapedListing` and `adaptLegacyListing` explicitly assigned `availability_status="unknown"` while simultaneously assigning `offer_status="active"`, despite no trusted positive activity proof.
+3. Generic `adaptPartnerListing` marked `unknown`, `reserved` and `upcoming` active solely because they were neither `sold` nor `rented`. This is distinct from PartnerListingV2.
+4. `validatePropertyPublication` checked only `offer_status="active"` and `compliance_status="allowed"`, not the availability status; a contradictory manually provided active/unknown offer could reach structured publication.
+
+**Fail-closed fixes in R2 draft (code & regressions):**
+- Default canonical lifecycle now **unknown**, scraped offers **unknown**, legacy imports **unknown**, unless later verified by a distinct approved stage.
+- Generic partner offers: `available` maps to active (partner-declared state ONLY, **not fresh certification**); `sold/rented` maps to inactive; `unknown/reserved/upcoming` maps to unknown; sell requests/projects stay inactive and restricted.
+- Structured publication validation rejects any `availability_status != "available"` even if caller claims `offer_status="active"`, with distinct issue code `availability_not_confirmed`. **Necessary but not sufficient**: authorization and trusted evidence freshness are distinct gates.
+- Tests expanded in `property-schema-track-b.test.ts` and `property-schema-adapter-safety.test.ts`; target CI includes both plus `partner-listing-v2.test.ts` and `tsc --noEmit`.
+
+**Data interpretation and risk:** this changes only unmerged Draft branch code, not the live site. If subsequently merged, this could change which source-imported listings are eligible for structured publication. Any merge needs a business/UX impact check and proof of licensed real source availability; **not approved here**. Current availability remains UNKNOWN. There is no verified positive activity feed in these archives.
+
+**CI:** earlier [run #42044110933](https://github.com/hraaaaf/Akarfinder/actions/runs/42044110933) was SUCCESS (28/28 PASS), but applies to prior two-adapter revision. New generic-adapter/publication-gate code and tests are committed; **latest revision CI not yet certified at authoring**. Do not reuse the old result as proof for the new HEAD.
+
+**Next exact:** validate all expanded targeted suites on the exact new HEAD; inspect failures, apply safe fixes, then audit downstream KPI consumers. Separate partner feed evidence contract in Draft PR #1155 remains unmerged; rights R3 has not been proven.
