@@ -52,9 +52,11 @@ jobs:
             fi
           done
           echo "No hosted database environment configured"
+      - name: Install locked dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Partner pipeline P2-P5 synthetic regression + legacy write boundary
         run: >-
-          npx tsx --test
+          ./node_modules/.bin/tsx --test
           scripts/scrapers/__tests__/partner-listing-v2.test.ts
           scripts/scrapers/__tests__/partner-feed-v2-bridge.test.ts
           scripts/scrapers/__tests__/national-partner-geo-resolver.test.ts
@@ -62,4 +64,4 @@ jobs:
           scripts/scrapers/__tests__/partner-market-downstream-v2.test.ts
           scripts/scrapers/__tests__/partner-csv-write-boundary-p5.test.ts
       - name: TypeScript
-        run: npx tsc --noEmit
+        run: ./node_modules/.bin/tsc --noEmit
