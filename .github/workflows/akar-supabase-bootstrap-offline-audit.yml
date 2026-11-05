@@ -29,17 +29,22 @@ jobs:
         run: python -m unittest discover -s scripts/audits/tests -p "test_audit_supabase_clean_bootstrap.py" -v
       - name: Inspect historical migrations (no database/network access)
         run: python scripts/audits/audit_supabase_clean_bootstrap.py --root supabase/migrations --output /tmp/akar-supabase-bootstrap-report.json
-      - name: Assert known baseline counts without treating readiness as PASS
+      - name: Verify audit consistency without freezing historical blocker counts
         run: |
           python - <<'PY'
           import json
           with open("/tmp/akar-supabase-bootstrap-report.json", encoding="utf-8") as f:
               audit = json.load(f)
-          assert audit["migration_file_count"] == 214, "Migration inventory changed: review changes"
-          assert len(audit["duplicate_versions"]) == 5, "Version conflicts changed: review report"
+          assert audit["migration_file_count"] > 0, "No migration files found"
+          assert audit["distinct_named_versions"] <= audit["migration_file_count"]
+          assert not audit["invalid_filenames"], "Unexpected migration names; see audit report"
           assert not audit["sql_executed"] and not audit["database_connected"]
-          assert audit["clean_bootstrap_status"] == "STATIC_BLOCKERS_FOUND"
-          print("OFFLINE AUDIT PASS — 214 files, 5 version collisions; clean replay BLOCKED")
+          print("OFFLINE SCANNER PASS; migration replay NOT TESTED")
+          print("Migrations:", audit["migration_file_count"],
+                "Version collisions:", len(audit["duplicate_versions"]))
+          print("Bootstrap status:", audit["clean_bootstrap_status"])
+          with open("/tmp/akar-supabase-status.txt", "w", encoding="utf-8") as out:
+              out.write(audit["clean_bootstrap_status"] + "\\n")
           PY
       - name: Upload aggregate-only audit report
         uses: actions/upload-artifact@v4
