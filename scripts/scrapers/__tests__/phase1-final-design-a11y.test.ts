@@ -25,7 +25,7 @@ describe("Phase 1 final UI — structural accessibility contracts", () => {
     assert.ok(filters.includes("const selected = filters.transactionType === tab.value"));
     assert.ok(filters.includes("aria-pressed={selected}"));
     assert.ok(filters.includes('aria-pressed={filters.transactionType === "all"}'));
-    assert.ok(header.includes('aria-current={isActive ? "page" : undefined}'));
+    assert.ok(header.includes('aria-current={active ? "page" : undefined}'));
     assert.ok(header.includes('aria-label="Navigation mobile principale"'));
     assert.ok(viewSwitcher.includes('role="group"'));
     assert.ok(viewSwitcher.includes('aria-label="Mode d’affichage des résultats"'));
@@ -34,11 +34,14 @@ describe("Phase 1 final UI — structural accessibility contracts", () => {
 
   it("reduces mobile header density while preserving the canonical product entries", () => {
     const header = source("components/layout/SiteHeader.tsx");
-    for (const label of ["Recherche", "Acheter", "Louer", "Vendre", "Pro"]) {
-      assert.ok(header.includes(`label: "${label}"`), `Missing mobile nav ${label}`);
+    const navigation = source("lib/product-navigation.ts");
+    assert.ok(header.includes("PRODUCT_PRIMARY_NAV.map"));
+    assert.ok(header.includes('aria-label="Navigation mobile principale"'));
+    for (const label of ["Acheter", "Louer", "Neuf", "Vivre ici", "Vendre", "Pro"]) {
+      assert.ok(navigation.includes(`label: "${label}"`), `Missing canonical mobile nav ${label}`);
     }
-    assert.equal(header.includes('{ href: "/neuf", label: "Neuf"'), false);
-    assert.ok(header.includes("min-h-10"));
+    assert.ok(navigation.includes('label: "Explorer"'), "Search remains available in mobile bottom nav");
+    assert.ok(header.includes("min-h-11"));
   });
 
   it("enforces global reduced-motion behavior and raises legacy dark microcopy contrast", () => {

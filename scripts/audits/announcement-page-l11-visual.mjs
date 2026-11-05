@@ -70,7 +70,8 @@ try {
         }
 
         if (scenario.width >= 1024) {
-          const proCard = page.locator('[data-pro-conversion="ann-l11"]');
+          // Mobile and desktop conversion cards both exist in the DOM; only the visible desktop rail is unique.
+          const proCard = page.locator('[data-pro-conversion="ann-l11"]:visible');
           if (await proCard.count() !== 1) localFindings.push("DESKTOP_PRO_CARD_MISSING");
           if (!bodyText.includes("Signaler cette annonce")) localFindings.push("REPORT_ACTION_MISSING");
         } else {

@@ -8,10 +8,12 @@ const styles = readFileSync("components/search/SearchViewSwitcher.module.css", "
 
 test("results toolbar keeps the canonical result count, sort and three search views", () => {
   assert.match(shell, /data-search-results-toolbar/);
-  assert.match(shell, /const loadedResultCount = filteredListings\.length \+ gatewayResults\.length/);
-  assert.match(shell, /const totalResultCount = indexedTotalCount == null/);
-  assert.match(shell, /Math\.max\(indexedTotalCount, loadedResultCount\)/);
-  assert.match(shell, /\$\{totalResultCount\.toLocaleString\("fr-FR"\)\} résultat/);
+  assert.match(shell, /const loadedResultCount = filteredListings\.length \+ \(currentPage === 1 \? gatewayResults\.length : 0\)/);
+  assert.match(shell, /const totalResultCount = Math\.max\(/);
+  assert.match(shell, /searchTotalCount,\s*indexedTotalCount \?\? 0,\s*loadedResultCount,/);
+  assert.match(shell, /const displayedResultCount = !isSearching && !hasAnyResults \? 0 : totalResultCount/);
+  assert.match(shell, /data-search-results-toolbar className="flex flex-wrap/);
+  assert.match(shell, /\$\{displayedResultCount\.toLocaleString\("fr-FR"\)\} résultat/);
   assert.match(shell, /data-search-sort-select/);
   assert.match(shell, /<option value="recommended">Recommandé<\/option>/);
   assert.match(shell, /<option value="price-asc">Prix croissant<\/option>/);
@@ -29,12 +31,13 @@ test("mobile exposes the segmented view control and keeps the toolbar maximally 
   assert.match(styles, /@media \(max-width: 639px\)/);
   assert.match(styles, /display: flex !important/);
   assert.match(styles, /justify-content: space-between !important/);
-  assert.match(styles, /gap: 10px !important/);
+  assert.match(styles, /gap: 8px !important/);
   assert.match(styles, /padding-top: 0 !important/);
   assert.match(styles, /padding-bottom: 0 !important/);
   assert.match(styles, /\.segmented\s*\{[\s\S]*min-height: 40px/);
   assert.match(styles, /\.option\s*\{[\s\S]*min-height: 40px !important/);
-  assert.match(styles, /width: 124px !important/);
+  assert.match(styles, /\.mobileSegmented \.option\s*\{\s*min-height: 48px !important/);
+  assert.match(styles, /width: 116px !important/);
   assert.match(styles, /height: 44px !important/);
   assert.match(styles, /\.mobileSelect\s*\{[\s\S]*display: none !important/);
 });
