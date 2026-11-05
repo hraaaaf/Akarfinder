@@ -24,7 +24,9 @@ test("UX-SEARCH-3 internal Search card follows the canonical scan hierarchy", ()
     ["facts", "data-card-facts"],
     ["provenance", "data-card-provenance"],
   ]);
-  assert.ok(source.indexOf("data-neighborhood-photo-credit") > source.indexOf("data-card-provenance"));
+  assert.ok(!source.includes("data-neighborhood-photo-credit"), "property cards must not imply neighborhood images are listing photos");
+  assert.ok(source.includes('data-visual-inventory-class="canonical_property_type"'));
+  assert.ok(source.includes("Visuel illustratif"));
   assert.ok(source.includes("data-mobile-compact-card"));
   assert.ok(source.includes("line-clamp-2"));
 });
