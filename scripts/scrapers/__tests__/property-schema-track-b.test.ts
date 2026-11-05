@@ -181,6 +181,18 @@ describe("#10F LISTING VALIDATION ENGINE", () => {
     assert.equal(validatePropertyPublication(p, o).valid, false);
   });
 
+  it("blocks publication if offer is active but availability is not confirmed", () => {
+    const p = property();
+    for (const availability_status of ["unknown", "reserved", "upcoming", "withdrawn"] as const) {
+      const candidate = offer({ offer_status: "active", availability_status });
+      const result = validatePropertyPublication(p, candidate);
+      assert.equal(result.valid, false, availability_status);
+      assert.ok(result.issues.some((issue) => issue.code === "availability_not_confirmed"));
+    }
+    assert.equal(validatePropertyPublication(p, offer()).valid, true,
+      "available + active is structurally publishable, not necessarily fresh or licensed");
+  });
+
   it("rejects false zero prices and title-only offer identity", () => {
     const o = offer({ external_offer_id: null, source_url: null, canonical_source_url: null, price_amount: fact(0), price_status: "not_disclosed" });
     const validation = validateOfferIngestion(o);
