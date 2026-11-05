@@ -49,3 +49,12 @@ The three sources have historical `is_active=true` throughout, **even though non
 5. No production DB write, external mass crawl, merge, or Vercel deploy without distinct approval.
 
 **Canonical relationship:** [R1 audited source identity](AKARFINDER_R1_LOCAL_NEON_FULL_RECONCILIATION_2026-11-05.md); [200k roadmap](AKARFINDER_200K_FRESH_INVENTORY_ROADMAP_2026-11-04.md). The roadmap's older "R2 = first 10k eligible" milestone is **not met** by this R2 freshness subgate; maintain that distinction.
+
+## Canonical adapter finding and safe code gate (R2 implementation)
+**Observed code defect:** `lib/partners/partner-listing-v2.ts::adaptPartnerListingV2` previously mapped `availability_status="unknown"` (also `reserved`, `upcoming`) into canonical `offer_status="active"`. The canonical schema supports `offer_status="unknown"`; treating missing positive proof as active is unsafe for freshness KPIs.
+
+**R2 branch fix:** only `availability_status="available"` maps to `offer_status="active"`; `sold/rented/withdrawn` map to `inactive`; `unknown/reserved/upcoming` map to `unknown`. This preserves the distinct availability status, identity and source timestamp. **It does not independently prove positive activity** — that still requires a trusted upstream evidence source and the unmerged bridge gate in draft PR #1155.
+
+**Regression:** 2 targeted cases added to the existing `scripts/scrapers/__tests__/partner-listing-v2.test.ts` and an isolated PR CI workflow `.github/workflows/akar-r2-freshness-evidence-gate.yml` running `tsx --test` and `tsc --noEmit`. No production activation.
+
+**Testing status at authoring:** tests committed but **execution not yet certified**. Do not claim R2 PASS until dedicated CI is green. R2 live availability remains UNKNOWN irrespective of CI.
