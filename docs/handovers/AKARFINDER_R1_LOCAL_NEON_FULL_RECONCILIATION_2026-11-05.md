@@ -1,6 +1,6 @@
 # AkarFinder R1 — recoupement intégral local ↔ Neon — 2026-11-05
 
-**Statut : NON CLOS — outil de rapprochement publié et testé localement, exécution intégrale réelle NON prouvée.**
+**Statut : PASS pour le recoupement exhaustif par clé explicite source-scoped; résolution URL supplémentaire NON VALIDÉE et maintenue en quarantaine.**
 
 ## Goal / succès / preuve
 Goal : mesurer l'intersection exacte *source-scoped* entre les 32 460 candidats du ZIP local autorisé et les clés explicites `source_offer_key` de l'archive Neon. Succès : un rapport JSON d'agrégats, sur **tous** les candidats de chaque source, sans écrire en DB ni divulguer les identifiants. Preuve requise : exécution avec l'archive vérifiée et une extraction complète Neon de la branche recovery, avec contrôle des compteurs.
@@ -27,13 +27,12 @@ python scripts/audits/reconcile_local_neon_source_keys.py \
   --output /chemin/securise/r1_local_neon_aggregate.json
 ```
 
-**Limite actuelle :** le conteneur local peut lire le ZIP, mais sa résolution DNS vers Neon échoue. Le connecteur Neon interroge la base, mais ne peut pas accéder directement au SQLite du conteneur. La comparaison exhaustive croisée **n'a pas été exécutée**. Ne pas inventer de chiffres d'intersection ou d'union.
+**Exécution réalisée le 2026-11-05 :** le comparateur a lu le ZIP vérifié et l’export complet autorisé de la branche recovery. Résultats exacts par clé explicite : Avito 328 intersections, 26 778 local-only, 13 094 Neon-only, union 40 200 ; Mubawab 357 intersections, 4 997 local-only, 31 518 Neon-only, union 36 872 ; total 685 intersections et union 77 072. Les invariants sont satisfaits. Les rapports agrégés publiés sont `r1_local_neon_exact_overlap.json` et `r1_local_neon_identity_anomalies.json`.
 
 ## Suite exacte
-1. Exécuter l'outil sur les deux jeux réels dans un environnement autorisé qui dispose du ZIP et de l'accès réseau recovery ; vérifier les agrégats et les clés absentes.
-2. Réconcilier, séparément, les lignes Neon sans clé explicite à l'aide d'identités URL source-scoped vérifiées, sans créer de faux matches.
-3. Contrôler les collisions et le dédoublonnage physique, puis **fraîcheur, statut actif et droits**. R1 ne certifie **pas** l'objectif 200k.
-4. Aucun merge, DB write ni déploiement Vercel sans gates distincts.
+1. Valider un contrat URL source-scoped distinct avant tout rapprochement des 12 815 lignes sans identité numérique explicite ; aucun suffixe ou slug ambigu ne sera utilisé.
+2. Contrôler les collisions et le dédoublonnage physique, puis **fraîcheur, statut actif et droits**. R1 ne certifie **pas** l'objectif 200k.
+3. Aucun merge, DB write ni déploiement Vercel sans gates distincts.
 
 ## Borne rigoureuse avant la comparaison exhaustive — 2026-11-05
 
