@@ -132,3 +132,8 @@ test("owner-approved Home composition remains separate from Search/Seller artwor
   assert.match(surfaces, /name: "vendre", route: "\/vendre"/);
   assert.doesNotMatch(surfaces, /name: "home", route: "\/"/);
 });
+
+test("PRODUCTION_DEPLOYMENT_GATE: Vercel Git auto-deploy stays disabled until explicit release authorization", () => {
+  const config = JSON.parse(read("vercel.json"));
+  assert.equal(config.git.deploymentEnabled, false, "Do not auto-deploy a Git merge without a separate Vercel release authorization");
+});

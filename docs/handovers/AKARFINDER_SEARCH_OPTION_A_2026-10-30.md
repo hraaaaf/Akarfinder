@@ -132,3 +132,11 @@ Deux corrections de scripts, une suite de tests de non-régression et ce handove
 
 **Proof still required before claiming done:** exact-head 2 successful full builds, tests Typescript/security, compare actual BEFORE `688f89f` and AFTER images on identical fixtures/viewports 390/430/768/1280 (Home, Search and Seller), inspect layout metrics/overflow and score independently, then human gate for merge. No Vercel deployment authorized; no merge performed.
 
+
+
+### 06/11/2026 — Release separation: owner chose option B (Git merge WITHOUT auto Vercel deployment)
+**Owner gates received:** visual approval delegated and accepted for Search mobile; explicit merge authorization #1147 YES; **Vercel deployment NOT authorized**, option **B** approved to disable Git automatic deployment before merge.
+**Implementation:** root `vercel.json`, `git.deploymentEnabled: false` for ALL branches per [Vercel's documented Git configuration](https://vercel.com/docs/project-configuration/git-configuration#gitdeploymentenabled). Vercel still can be manually deployed later only after explicit owner permission. Production deployment / aliases are not changed by editing this file.
+**Enforced test:** `PRODUCTION_DEPLOYMENT_GATE` in the Search Option A node test. It fails if the flag is absent/true, preventing silent re-enablement by normal PR changes.
+**Required BEFORE merge:** new exact-HEAD 61 workflows green (except documented skipped), verify config HEAD true false via GitHub, verify no Vercel production deployment created for config commit. No Vercel tool deployment or promote actions.
+**Required AFTER merge:** verify main contains `vercel.json` with disabled Git deploys, verify no deployment for merged SHA, compare current production deployment ID/aliases to before baseline, complete main CI/closeout. If Vercel creates a deployment despite flag, stop immediately and do not claim success; do not cancel/rollback without investigation.
