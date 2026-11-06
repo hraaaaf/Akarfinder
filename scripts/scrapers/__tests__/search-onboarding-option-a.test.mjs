@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 
 const read = path => readFileSync(path, "utf8");
 const quick = read("components/search/QuickFilters.tsx");
@@ -133,7 +133,8 @@ test("owner-approved Home composition remains separate from Search/Seller artwor
   assert.doesNotMatch(surfaces, /name: "home", route: "\/"/);
 });
 
-test("PRODUCTION_DEPLOYMENT_GATE: Vercel Git auto-deploy stays disabled until explicit release authorization", () => {
-  const config = JSON.parse(read("vercel.json"));
-  assert.equal(config.git.deploymentEnabled, false, "Do not auto-deploy a Git merge without a separate Vercel release authorization");
+test("PRODUCTION_DEPLOYMENT_GATE: Vercel Git auto-deploy stays disabled until explicit release authorization", async () => {
+  const { config } = await import("../../../vercel.mjs");
+  assert.equal(config.git.deploymentEnabled, false, "Do not auto-deploy a Git merge without separate Vercel release authorization");
+  assert.equal(existsSync("vercel.json"), false, "Do not add a duplicate Vercel config; vercel.mjs already owns the gate");
 });

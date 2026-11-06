@@ -140,3 +140,14 @@ Deux corrections de scripts, une suite de tests de non-régression et ce handove
 **Enforced test:** `PRODUCTION_DEPLOYMENT_GATE` in the Search Option A node test. It fails if the flag is absent/true, preventing silent re-enablement by normal PR changes.
 **Required BEFORE merge:** new exact-HEAD 61 workflows green (except documented skipped), verify config HEAD true false via GitHub, verify no Vercel production deployment created for config commit. No Vercel tool deployment or promote actions.
 **Required AFTER merge:** verify main contains `vercel.json` with disabled Git deploys, verify no deployment for merged SHA, compare current production deployment ID/aliases to before baseline, complete main CI/closeout. If Vercel creates a deployment despite flag, stop immediately and do not claim success; do not cancel/rollback without investigation.
+
+
+### 06/11/2026 — CORRECTION Release option B : doublon Vercel découvert avant merge
+
+**Incident détecté immédiatement par vérification read-only Vercel** : le nouveau commit `c66653619943ab57f89bdd7e98cffcc5f968e254` a créé une tentative de déploiement de **Preview** de source Git, [Vercel dpl_2LuqpdbW25HhXptGcYwFRSn6duDc](https://vercel.com/achraf-benmoussa-s-projects/akarfinder/2LuqpdbW25HhXptGcYwFRSn6duDc), état `ERROR`, **target=null, pas de production**, avec erreur explicite : `Multiple configuration files found: vercel.mjs, vercel.json. Please use only one.`. Aucune commande de déploiement manuel Vercel n'a été déclenchée.
+
+**Cause racine vérifiée** : `vercel.mjs` existait **déjà** dans la PR et sur `main`, blob SHA `626e77d4631f079e50851638e054dbe1ebd84afd` identique des deux côtés. Il contient le verrou `config.git.deploymentEnabled: false` pour toutes les branches. L'ajout `vercel.json` était redondant et invalidait la configuration. Il est donc supprimé de la PR ; l'unique configuration Vercel `vercel.mjs` est conservée **sans modification**.
+
+**Test ajusté** : `PRODUCTION_DEPLOYMENT_GATE` importe l'export `config` de `vercel.mjs`, vérifie `config.git.deploymentEnabled === false` **et** l'absence de `vercel.json`. Cela prévient la réintroduction du même doublon et la réactivation non autorisée de Git deploy.
+
+**Gate avant merge** : contrôler le nouveau HEAD, tests/CI, Vercel source Git sans nouvelle production ; la protection effective est **déjà** présente sur `main`, ce qui permet d'éviter un risque de configuration introduite seulement à la fusion. Seul un merge GitHub est autorisé par l'utilisateur ; aucun déploiement Vercel, aucune manipulation de la configuration runtime de la production.
