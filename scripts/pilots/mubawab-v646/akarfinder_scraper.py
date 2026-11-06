@@ -590,8 +590,20 @@ def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
         raise ValueError("observed_at must be timezone-aware")
     utc_now = utc_now.astimezone(timezone.utc)
     now = utc_now.isoformat(timespec="seconds")
-    # Merge duplicate cards before import: later non-empty fields may complete
-    # earlier, partial cards of the same listing.
+    # A source ID may appear in several cards. Choose the best single observed
+    # card; never synthesize a "complete" record from mutually incomplete cards.
+    # This is separate from field-change history across distinct import cycles.
+    def _observation_score(item: dict[str, Any]) -> tuple[int, int, int]:
+        has_price = (item.get("price_mad") is not None or
+                     item.get("price_source_status") == "on_request")
+        core_fields = (bool(item.get("title")), has_price,
+                       item.get("surface_m2") is not None,
+                       bool(item.get("location")), bool(item.get("link")))
+        strict_fields = (*core_fields, bool(item.get("district")))
+        extra_count = sum(item.get(k) is not None for k in
+                          ("rooms", "bedrooms", "bathrooms", "property_type_observed"))
+        return int(all(strict_fields)), sum(strict_fields), extra_count
+
     merged: dict[str, dict[str, Any]] = {}
     for item in listings:
         listing_id = item["id"]
@@ -599,9 +611,8 @@ def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
             raise ValueError("non-sale listing rejected; do not mix rents and sales")
         if listing_id in merged:
             stats.duplicates += 1
-            for key, value in item.items():
-                if merged[listing_id].get(key) is None and value is not None:
-                    merged[listing_id][key] = value
+            if _observation_score(item) > _observation_score(merged[listing_id]):
+                merged[listing_id] = item.copy()
         else:
             merged[listing_id] = item.copy()
     for item in merged.values():
