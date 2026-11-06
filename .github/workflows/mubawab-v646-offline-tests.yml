@@ -36,3 +36,78 @@ jobs:
           name: mubawab-v646-historical-evidence
           path: artifacts/mubawab-v645-historical-quality.json
           if-no-files-found: error
+      - name: Assemble exact-HEAD offline Claude code pack
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          import subprocess
+          import zipfile
+
+          sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          raw = subprocess.check_output(["git", "ls-files", "-z", "--",
+              "scripts/pilots/mubawab-v646/",
+              "docs/reviews/MUBAWAB_V646_CLAUDE_HEAD_HARDENING_2026-11-06.md",
+              ".github/workflows/mubawab-v646-offline-tests.yml"])
+          allowed_suffixes = {".py", ".md", ".txt", ".json", ".yml", ".yaml", ".toml"}
+          files = sorted(
+              Path(item.decode()) for item in raw.split(b"\0") if item
+              if Path(item.decode()).suffix in allowed_suffixes
+          )
+          needed = {
+              "scripts/pilots/mubawab-v646/akarfinder_scraper.py",
+              "scripts/pilots/mubawab-v646/benchmark_evidence.py",
+              "scripts/pilots/mubawab-v646/browser_fetcher.py",
+              "scripts/pilots/mubawab-v646/live_canary.py",
+              "scripts/pilots/mubawab-v646/tests/test_v646_partial_batch_atomicity.py",
+              "scripts/pilots/mubawab-v646/tests/test_v646_observation_shard_gates.py",
+          }
+          if not needed.issubset({p.as_posix() for p in files}):
+              raise RuntimeError("The exact-HEAD review pack would omit core sources/tests")
+          mission = f"""# Mission Claude — V6.4.6 — HEAD {sha}
+
+          Code et tests ci-dessous : contenu Git exact de ce commit. Vous n'avez pas
+          besoin d'accès GitHub. Vérifier les sommes du MANIFEST_SHA256.json.
+
+          GOAL : audit contradictoire de la V6.4.6, PAS du snapshot du 03/11.
+          1. Exécuter les tests hors ligne depuis scripts/pilots/mubawab-v646 :
+             python -m pip install beautifulsoup4
+             python -m unittest discover -s tests -v
+          2. Vérifier que tout shard refusé/interrompu empêche init_db.
+          3. Prouver qu'aucun core complet ne résulte de deux lignes partielles
+             complémentaires d'un même ID.
+          4. Prouver que Rabat/Casablanca/Agadir et le type apartment sont
+             contrôlés par observation et que le moindre écart bloque le shard.
+          5. Examiner refus HTTP 403/429, fallback, navigation, sous-requêtes
+             et preuves MIME réseau : séparer ce qui est testé offline des
+             preuves live absentes.
+          6. Classer P0/P1/P2 avec reproductions, correctifs proposés,
+             tests adversariaux et score/10 ; déclarer explicitement toute
+             limite non vérifiable.
+          Ne lancer AUCUN crawl live, aucune ingestion cloud, aucun deploy.
+          Ne pas qualifier 97 IDs historiques de biens actifs ou exploitables.
+          """
+          manifest = {"head_sha": sha, "files": {
+              p.as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+              for p in files
+          }, "no_live_network_or_cloud_db_in_pack_builder": True}
+          out = Path("artifacts") / f"Akarfinder_V646_CLAUDE_EXACT_HEAD_{sha[:12]}.zip"
+          out.parent.mkdir(parents=True, exist_ok=True)
+          with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED) as z:
+              z.writestr("00_MISSION_CLAUDE.md", mission)
+              z.writestr("00_MANIFEST_SHA256.json", json.dumps(manifest, indent=2))
+              for p in files:
+                  z.write(p, p.as_posix())
+          with zipfile.ZipFile(out) as z:
+              if z.testzip() is not None:
+                  raise RuntimeError("ZIP CRC failed")
+          print(f"Exact HEAD: {sha}; tracked files: {len(files)}; ZIP: {out}")
+          print(f"ZIP SHA256: {hashlib.sha256(out.read_bytes()).hexdigest()}")
+          PY
+      - name: Upload exact-HEAD Claude review pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: Akarfinder-V646-Claude-Exact-Head
+          path: artifacts/Akarfinder_V646_CLAUDE_EXACT_HEAD_*.zip
+          if-no-files-found: error
