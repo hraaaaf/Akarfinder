@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import patch
 
 import live_canary
-from test_parser_evidence import SYNTHETIC_MODERN
+from test_parser_evidence import SYNTHETIC_MODERN, card
 
 
 class LiveCanaryOfflineTests(unittest.TestCase):
@@ -46,13 +46,17 @@ class LiveCanaryOfflineTests(unittest.TestCase):
             async def __aexit__(self, *args): return False
             async def fetch(self, url):
                 visited.append(url)
-                return scraper.FetchResult(url, "ok", html=SYNTHETIC_MODERN, code=200, attempts=1)
+                # A Casablanca shard must contain Casablanca apartment cards only.
+                html = "<html><body>" + "".join(
+                    card(7801000 + i, district="Maârif, Casablanca") for i in range(3)
+                ) + "</body></html>"
+                return scraper.FetchResult(url, "ok", html=html, code=200, attempts=1)
 
         def fake_robots(chosen):
             robots_checked.extend(chosen)
             return {"status": "checked", "sha256": "sha", "checked_at_utc": "now", "rule_count": 1}
 
-        # This is a four-card SYNTHETIC smoke test, not the 32-card Casablanca
+        # This is a three-card SYNTHETIC smoke test, not the 32-card Casablanca
         # reference. Isolate the baseline here; a separate test enforces 32 live.
         with patch.object(live_canary, "fetch_and_check_robots", fake_robots), \
                 patch.object(live_canary, "approved_shard_baseline", lambda url: 3), \
