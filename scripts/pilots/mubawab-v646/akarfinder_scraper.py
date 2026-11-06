@@ -26,6 +26,7 @@ from pathlib import Path
 import random
 import re
 import sqlite3
+import tempfile
 from statistics import median
 from typing import Any
 from urllib.parse import urljoin, urlsplit, urlunsplit, unquote
@@ -588,7 +589,8 @@ def init_db(path: str = DB_NAME) -> sqlite3.Connection:
             quality_signals_json TEXT,
             quality_signals_reviewed_at TEXT,
             source_search_url TEXT,
-            transaction_type TEXT
+            transaction_type TEXT,
+            last_source_observation_json TEXT
         )
     """)
     existing = {r[1] for r in conn.execute("PRAGMA table_info(listings)")}
@@ -609,7 +611,8 @@ def init_db(path: str = DB_NAME) -> sqlite3.Connection:
                          ("quality_signals_json", "TEXT"),
                          ("quality_signals_reviewed_at", "TEXT"),
                          ("source_search_url", "TEXT"),
-                         ("transaction_type", "TEXT")):
+                         ("transaction_type", "TEXT"),
+                         ("last_source_observation_json", "TEXT")):
         if column not in existing:
             conn.execute(f"ALTER TABLE listings ADD COLUMN {column} {kind}")
     conn.commit()
@@ -625,7 +628,7 @@ def _log_field_change(conn: sqlite3.Connection, stats: "ImportStats", listing_id
 
 
 def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
-                    observed_at: datetime | None = None) -> tuple[ImportStats, list[str]]:
+                    observed_at: datetime | None = None, commit: bool = True) -> tuple[ImportStats, list[str]]:
     stats = ImportStats()
     ordered_ids: list[str] = []
     utc_now = observed_at if observed_at is not None else datetime.now(timezone.utc)
@@ -659,6 +662,12 @@ def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
         else:
             merged[listing_id] = item.copy()
     for item in merged.values():
+        # Preserve the exact source observation independently of the enriched
+        # historical row. Never certify a core assembled across cycles.
+        snapshot = json.dumps({k: item.get(k) for k in (
+            "id", "title", "price_mad", "price_source_status", "surface_m2",
+            "location", "district", "link", "property_type_observed")},
+            ensure_ascii=False, sort_keys=True)
         listing_id = item["id"]
         ordered_ids.append(listing_id)
         old = conn.execute("SELECT * FROM listings WHERE id = ?", (listing_id,)).fetchone()
@@ -666,14 +675,14 @@ def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
             raise ValueError("conflicting transaction for same listing ID")
         if old is None:
             conn.execute("""INSERT INTO listings
-                (id,title,property_type_observed,price_mad,surface_m2,rooms,bedrooms,bathrooms,district,location,link,first_seen,last_seen,price_source_status,source_search_url,transaction_type)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (id,title,property_type_observed,price_mad,surface_m2,rooms,bedrooms,bathrooms,district,location,link,first_seen,last_seen,price_source_status,source_search_url,transaction_type,last_source_observation_json)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (listing_id, item["title"], item.get("property_type_observed"), item["price_mad"], item["surface_m2"],
                  item["rooms"], item["bedrooms"], item.get("bathrooms"), item.get("district"), item["location"], item["link"],now,now,item.get("price_source_status"),
-                 item.get("source_search_url"),item.get("transaction_type")))
+                 item.get("source_search_url"),item.get("transaction_type"),snapshot))
             stats.inserted += 1
             continue
-        changes: dict[str, Any] = {}
+        changes: dict[str, Any] = {"last_source_observation_json": snapshot}
         incoming_price = item.get("price_mad")
         # Suspicious prices remain quarantined until THREE qualified observations,
         # spaced by >= 24 elapsed hours each. Immediate reruns earn no credit.
@@ -749,7 +758,8 @@ def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
                     _log_field_change(conn, stats, listing_id, col, old[col], new, now)
         if changes:
             metadata_only = set(changes) <= {"price_status", "pending_price_mad", "pending_price_count",
-                                            "pending_price_qualified_at", "pending_price_fluctuations"}
+                                            "pending_price_qualified_at", "pending_price_fluctuations",
+                                            "last_source_observation_json"}
             assignments = ", ".join(f"{col} = ?" for col in changes)
             conn.execute(f"UPDATE listings SET {assignments}, last_seen = ? WHERE id = ?",
                          (*changes.values(), now, listing_id))
@@ -760,7 +770,8 @@ def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
         else:
             conn.execute("UPDATE listings SET last_seen = ? WHERE id = ?", (now, listing_id))
             stats.unchanged += 1
-    conn.commit()
+    if commit:
+        conn.commit()
     return stats, ordered_ids
 
 
@@ -818,7 +829,7 @@ def review_price_per_m2(listings: list[dict[str, Any]]) -> dict[str, dict[str, A
 
 
 def persist_price_reviews(conn: sqlite3.Connection, reviews: dict[str, dict[str, Any]],
-                          *, reviewed_at: datetime | None = None) -> None:
+                          *, reviewed_at: datetime | None = None, commit: bool = True) -> None:
     """Keep human-review flags between cycles; clear only after new evidence.
 
     The status is statistical, not a verification of the price or a human signoff.
@@ -848,12 +859,13 @@ def persist_price_reviews(conn: sqlite3.Connection, reviews: dict[str, dict[str,
             continue
         conn.execute("UPDATE listings SET price_review_status=?, price_reviewed_at=?, price_review_payload=? WHERE id=?",
                      (effective,when,json.dumps(review,ensure_ascii=False),ident))
-    conn.commit()
+    if commit:
+        conn.commit()
 
 
 def persist_quality_signals(conn: sqlite3.Connection, listings: list[dict[str, Any]],
                             duplicate_candidates: dict[str, list[str]], *,
-                            observed_at: datetime | None = None) -> None:
+                            observed_at: datetime | None = None, commit: bool = True) -> None:
     """Persist review-only findings; absence of an item from the next page does not clear it.
 
     Signals are snapshots for manual review, not a claim of confirmed duplication.
@@ -873,7 +885,8 @@ def persist_quality_signals(conn: sqlite3.Connection, listings: list[dict[str, A
         conn.execute("""UPDATE listings SET quality_signals_json=?,
                        quality_signals_reviewed_at=? WHERE id=?""",
                      (json.dumps(record, ensure_ascii=False), timestamp, item["id"]))
-    conn.commit()
+    if commit:
+        conn.commit()
 
 
 def persistent_quality_signals(conn: sqlite3.Connection) -> dict[str, dict[str, Any]]:
