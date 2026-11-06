@@ -15,6 +15,7 @@ import hashlib
 import urllib.request
 import urllib.error
 import asyncio
+import unicodedata
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
@@ -126,6 +127,7 @@ class ParseAudit:
     modern_locality_expected: int = 0
     modern_locality_valid: int = 0
     baseline_eligible_cards: int | None = None
+    shard_context_violations: int = 0
     ignored: dict[str, int] = field(default_factory=dict)
     rejected: dict[str, int] = field(default_factory=dict)
 
@@ -181,7 +183,8 @@ class ParseAudit:
             self.price_on_request_ratio <= MAX_PRICE_ON_REQUEST_RATIO and
             self.surface_coverage >= MIN_SURFACE_COVERAGE and
             self.locality_coverage >= MIN_LOCALITY_COVERAGE and
-            (self.coverage_vs_baseline is None or self.coverage_vs_baseline >= MIN_BASELINE_COVERAGE)
+            (self.coverage_vs_baseline is None or self.coverage_vs_baseline >= MIN_BASELINE_COVERAGE) and
+            self.shard_context_violations == 0
         )
 
     @property
@@ -201,6 +204,8 @@ class ParseAudit:
             reasons.append("locality_coverage_below_threshold")
         if self.coverage_vs_baseline is not None and self.coverage_vs_baseline < MIN_BASELINE_COVERAGE:
             reasons.append("below_shard_baseline_provisional")
+        if self.shard_context_violations:
+            reasons.append("shard_context_violation")
         return reasons
 
 
@@ -363,8 +368,24 @@ def looks_like_block_page(html: str) -> bool:
     return any(phrase in body for phrase in strong)
 
 
+def _normalise_city(value: str | None) -> str:
+    """Conservative city normalization (case, spaces, accents); never infer city."""
+    folded = unicodedata.normalize("NFKD", value or "").casefold()
+    return "".join(ch for ch in folded if ch.isalnum() and not unicodedata.combining(ch))
+
+
+def expected_city_for_shard(source_url: str) -> str:
+    """Only the three explicitly piloted apartment-sale cities."""
+    parts = urlsplit(source_url).path.strip("/").split("/")
+    cities = {"rabat": "Rabat", "casablanca": "Casablanca", "agadir": "Agadir"}
+    if len(parts) not in (4, 5) or len(parts) < 3 or parts[2] not in cities:
+        raise ValueError("City not supported by the bounded V646 shard pilot")
+    return cities[parts[2]]
+
+
 def parse_listings_audited(html: str | None, *, baseline_eligible_cards: int | None = None,
-                          require_locality: bool = False) -> ParseAudit:
+                          require_locality: bool = False, expected_city: str | None = None,
+                          require_apartment: bool = False) -> ParseAudit:
     """Classify cards. Source-specific quality gates are opt-in for verified shards."""
     if baseline_eligible_cards is not None and (isinstance(baseline_eligible_cards, bool)
                                                or not isinstance(baseline_eligible_cards, int)
@@ -423,12 +444,24 @@ def parse_listings_audited(html: str | None, *, baseline_eligible_cards: int | N
             audit.modern_locality_expected += 1
             if district and city:
                 audit.modern_locality_valid += 1
+        observed_type = classify_property_type(title)
+        # Strict canaries/imports require an observed matching city and an
+        # explicitly identified apartment; no type/city inferred from the URL.
+        # One violating card fails the whole pilot shard, not just that card.
+        if expected_city is not None and _normalise_city(city) != _normalise_city(expected_city):
+            audit.mark("shard_city_mismatch")
+            audit.shard_context_violations += 1
+            continue
+        if require_apartment and observed_type != "apartment":
+            audit.mark("shard_non_apartment_or_unconfirmed_type")
+            audit.shard_context_violations += 1
+            continue
         bath_match = re.search(r"(?<!\d)(\d+)\s*salles?\s+de\s+bains?\b", details_text, re.I)
         bathrooms = int(bath_match.group(1)) if bath_match else None
         audit.listings.append({
             "id": listing_id_from_url(link),
             "title": title,
-            "property_type_observed": classify_property_type(title),
+            "property_type_observed": observed_type,
             "price_mad": price,
             "price_source_status": source_status,
             "surface_m2": surface,
@@ -1239,7 +1272,9 @@ async def _main(engine: str, pages: int, headed: bool, browser_path: str | None,
             continue
         baseline = approved_shard_baseline(urls[index - 1])
         audit = parse_listings_audited(result.html, require_locality=True,
-                                      baseline_eligible_cards=baseline)
+                                      baseline_eligible_cards=baseline,
+                                      expected_city=expected_city_for_shard(urls[index - 1]),
+                                      require_apartment=True)
         listings = audit.listings
         if not audit.passes_quality:
             print(f"[!] Page {index}: qualité insuffisante "
@@ -1247,6 +1282,9 @@ async def _main(engine: str, pages: int, headed: bool, browser_path: str | None,
                   f"surface={audit.surface_coverage:.1%}, motifs={audit.quality_reasons}). Page exclue.")
             diagnostics[index - 1]["final_status"] = "excluded_quality" if listings else "empty"
             diagnostics[index - 1]["quality_accepted"] = False
+            diagnostics[index - 1]["quality_reasons"] = audit.quality_reasons
+            diagnostics[index - 1]["rejected_cards"] = audit.rejected
+            diagnostics[index - 1]["shard_context_violations"] = audit.shard_context_violations
             continue
         if not listings:
             print(f"[!] Page {index}: HTTP 200 mais aucune annonce valide.")
