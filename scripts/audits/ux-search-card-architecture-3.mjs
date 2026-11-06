@@ -127,14 +127,25 @@ for (const viewport of viewports) {
       const title = card.querySelector("[data-card-title]");
       const price = card.querySelector("[data-card-price]");
       const provenance = card.querySelector("[data-card-provenance]");
+      const location = card.querySelector("[data-card-location]");
+      const facts = card.querySelector("[data-card-facts]");
+      const source = card.querySelector("[data-public-attribution]");
+      const computedFont = (node) => node ? Number.parseFloat(getComputedStyle(node).fontSize) : 0;
+      const sourceClipped = source ? source.scrollWidth > source.clientWidth + 1 : false;
       const credit = card.querySelector("[data-neighborhood-photo-credit]");
       const creditAfterProvenance = !credit || !provenance || Boolean(provenance.compareDocumentPosition(credit) & Node.DOCUMENT_POSITION_FOLLOWING);
       return {
         hierarchy,
         positions,
         height: Math.round(card.getBoundingClientRect().height * 10) / 10,
-        titleFont: title ? Number.parseFloat(getComputedStyle(title).fontSize) : 0,
-        priceFont: price ? Number.parseFloat(getComputedStyle(price).fontSize) : 0,
+        titleFont: computedFont(title),
+        priceFont: computedFont(price),
+        locationFont: computedFont(location),
+        factsFont: computedFont(facts),
+        provenanceFont: computedFont(provenance),
+        titleLineClamp: title ? getComputedStyle(title).webkitLineClamp : "",
+        provenanceFlow: provenance ? getComputedStyle(provenance).flexDirection : "",
+        sourceClipped,
         provenanceVisible: provenance ? getComputedStyle(provenance).display !== "none" : false,
         creditAfterProvenance,
       };
@@ -164,6 +175,15 @@ for (const viewport of viewports) {
     if (card.height > viewport.cardMax) failures.push(`${viewport.name}: card ${index + 1} height ${card.height}px > ${viewport.cardMax}px`);
     if (card.titleFont < 12) failures.push(`${viewport.name}: card ${index + 1} title font ${card.titleFont}px < 12px`);
     if (viewport.width <= 390 && card.priceFont < 16) failures.push(`${viewport.name}: card ${index + 1} price font ${card.priceFont}px < 16px`);
+    if (viewport.width <= 390) {
+      if (card.titleFont < 13.5) failures.push(`${viewport.name}: card ${index + 1} mobile title font ${card.titleFont}px < 13.5px`);
+      if (card.priceFont < 17.5) failures.push(`${viewport.name}: card ${index + 1} mobile price font ${card.priceFont}px < 17.5px`);
+      if (card.locationFont < 11) failures.push(`${viewport.name}: card ${index + 1} mobile location font ${card.locationFont}px < 11px`);
+      if (card.factsFont < 10.5) failures.push(`${viewport.name}: card ${index + 1} mobile facts font ${card.factsFont}px < 10.5px`);
+      if (card.provenanceFont < 10.5) failures.push(`${viewport.name}: card ${index + 1} mobile provenance font ${card.provenanceFont}px < 10.5px`);
+      if (card.titleLineClamp !== "2") failures.push(`${viewport.name}: card ${index + 1} mobile title must allow two lines`);
+      if (card.provenanceFlow !== "column" || card.sourceClipped) failures.push(`${viewport.name}: card ${index + 1} source not readable`);
+    }
   }
 
   const screenshot = path.join(outDir, `${viewport.name}.png`);

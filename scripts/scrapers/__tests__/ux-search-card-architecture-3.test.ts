@@ -72,3 +72,20 @@ test("SERP AkarInfo presentation is intentionally compact without weakening full
   assert.ok(source.includes("Informations AkarFinder"));
   assert.ok(source.includes("À vérifier · {points[0]}"));
 });
+
+test("SEARCH-MOBILE-READABILITY-V1 restores legible content in two-column phone cards", () => {
+  const css = read("app/search/search-mobile-card-readability.css");
+  const page = read("app/search/page.tsx");
+  const audit = read("scripts/audits/ux-search-card-architecture-3.mjs");
+  assert.match(css, /@media \(max-width: 639px\)/);
+  assert.match(css, /-webkit-line-clamp: 2 !important/);
+  assert.match(css, /font-size: 13\.75px !important/);
+  assert.match(css, /font-size: 10\.5px !important/);
+  assert.match(css, /min-height: 44px !important/);
+  assert.match(css, /\[data-card-provenance\]/);
+  assert.match(css, /overflow-wrap: anywhere/);
+  assert.ok(page.indexOf('import "./search-mobile-card-readability.css";') > page.indexOf('import "./search-property-type-target-art.css";'), "readability overrides must load last");
+  assert.ok(audit.includes('card.titleLineClamp !== "2"'));
+  assert.ok(audit.includes('card.provenanceFlow !== "column" || card.sourceClipped'));
+  assert.ok(audit.includes('card.titleFont < 13.5'));
+});
