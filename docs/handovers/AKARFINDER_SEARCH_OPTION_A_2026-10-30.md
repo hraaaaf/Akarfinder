@@ -120,3 +120,15 @@ Deux corrections de scripts, une suite de tests de non-régression et ce handove
 **Implémentation du commit courant (EN ATTENTE DE PREUVE CI)** : `MobileBottomNav` ne se monte pas sur `/vendre/dossier` et routes enfants, mais reste visible sur `/vendre` et les autres surfaces. L'audit Playwright existant vérifie sur **390/430/768/1280 px** : `Continuer` dans viewport à 390/430, pas de nav bas sur le vendeur mobile, images locales chargées, carrousel réinitialisé à gauche avant capture, sans supprimer les contrôles P3. Contrat statique UX-BOTTOM-NAV maintenu + exception vendeur. Aucune mutation métier, aucune DB, aucun Vercel.
 
 **Preuve requise avant validation :** nouvelle CI HEAD, JSON sans échec, captures AFTER vendeur 390/430/768/1280 montrées au propriétaire, comparaison avec BEFORE 390/1280, inspection visuelle indépendante et test de tap sur CTA si possible. Ne pas déclarer corrigé ou mergeable visuellement sur la seule base d'un changement source. Pas de fusion ni de Vercel sans accord distinct.
+
+
+### 06/11/2026 — CI font flakiness #1160: local OFL variable font, evidence pending
+
+**BEFORE proof:** #1147 HEAD `688f89fed2783fed59ac03eff77bb262d42ae3b0` passed Home/Search/Seller gates, but 3 independent PR workflows failed at `next/font/google` / `Plus_Jakarta_Sans` loader, `TypeError: Cannot read properties of null (reading '1')`. Existing issue #1160 documents this recurring failure. Successful targeted rerun does not repair the underlying dependency.
+
+**Goal:** make all CI production builds independent from Google Fonts CSS at build time, without changing the brand typeface, weights, CSS variable, or approved Home composition.
+
+**Change:** replace Google loader with `next/font/local` using original Google Fonts variable upright `PlusJakartaSans-Variable.ttf` (wght 200–800) and include the full OFL 1.1 license. Source binary pinned to Google Fonts blob SHA `0cb13a998ed525ba226d911b10d6c4c4f923a961` (original authors Tokotype); see `app/fonts/README.md`. Same `--font-jakarta` and `display:swap`. Add regression test and path trigger for design system CI. This is not a licence for third-party real estate content.
+
+**Proof still required before claiming done:** exact-head 2 successful full builds, tests Typescript/security, compare actual BEFORE `688f89f` and AFTER images on identical fixtures/viewports 390/430/768/1280 (Home, Search and Seller), inspect layout metrics/overflow and score independently, then human gate for merge. No Vercel deployment authorized; no merge performed.
+

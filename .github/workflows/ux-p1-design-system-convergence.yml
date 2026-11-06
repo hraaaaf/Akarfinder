@@ -3,6 +3,8 @@ name: UX P1 Design System Convergence
 on:
   pull_request:
     paths:
+      - "app/layout.tsx"
+      - "app/fonts/**"
       - "components/ui/design-system.ts"
       - "components/search/QuickFilters.tsx"
       - "components/listings/PropertyDecisionHeader.tsx"
