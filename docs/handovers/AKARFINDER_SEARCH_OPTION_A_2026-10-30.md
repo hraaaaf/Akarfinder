@@ -136,10 +136,7 @@ Deux corrections de scripts, une suite de tests de non-régression et ce handove
 
 ### 06/11/2026 — Release separation: owner chose option B (Git merge WITHOUT auto Vercel deployment)
 **Owner gates received:** visual approval delegated and accepted for Search mobile; explicit merge authorization #1147 YES; **Vercel deployment NOT authorized**, option **B** approved to disable Git automatic deployment before merge.
-**Implementation:** root `vercel.json`, `git.deploymentEnabled: false` for ALL branches per [Vercel's documented Git configuration](https://vercel.com/docs/project-configuration/git-configuration#gitdeploymentenabled). Vercel still can be manually deployed later only after explicit owner permission. Production deployment / aliases are not changed by editing this file.
-**Enforced test:** `PRODUCTION_DEPLOYMENT_GATE` in the Search Option A node test. It fails if the flag is absent/true, preventing silent re-enablement by normal PR changes.
-**Required BEFORE merge:** new exact-HEAD 61 workflows green (except documented skipped), verify config HEAD true false via GitHub, verify no Vercel production deployment created for config commit. No Vercel tool deployment or promote actions.
-**Required AFTER merge:** verify main contains `vercel.json` with disabled Git deploys, verify no deployment for merged SHA, compare current production deployment ID/aliases to before baseline, complete main CI/closeout. If Vercel creates a deployment despite flag, stop immediately and do not claim success; do not cancel/rollback without investigation.
+**Rectification faisant foi (06/11/2026) :** le `vercel.json` décrit dans cette note ancienne a été retiré avant fusion car `vercel.mjs` était déjà présent sur `main`. Une tentative Preview du commit transitoire `c666536` a échoué en raison de cette double configuration. Le `main` fusionné garde uniquement `vercel.mjs` avec `git.deploymentEnabled:false`. Le test `PRODUCTION_DEPLOYMENT_GATE` vérifie ce verrou et l'absence de doublon. Aucun déploiement Vercel n'est autorisé.
 
 
 ### 06/11/2026 — CORRECTION Release option B : doublon Vercel découvert avant merge
@@ -160,3 +157,22 @@ Deux corrections de scripts, une suite de tests de non-régression et ce handove
 **Remediation**: introduce `.github/workflows/required-pr-gate.yml` with an authentic job whose displayed check-run name is exactly `gate`. It runs on **every PR to main**, not path-filtered (needed because `gate` is required globally); read-only `contents`, per-PR cancellation, Node 24/npm ci, real Node source/policy/governance tests, constitution invariant check, and TypeScript `tsc --noEmit`. No Chromium, production build, remote DB reads, deployment, or secrets. A self-test `scripts/ci/required-pr-gate.test.mjs` checks honest workflows and the existing `vercel.mjs` `deploymentEnabled:false` lock. The existing workflow efficiency validator gets a **single-file, guarded exception**, with tests proving unrelated broad PR workflows remain banned and heavy PR builds remain banned.
 
 **SUCCESS gate**: check-run `gate` produced by GitHub Actions **SUCCESS** on the exact new head SHA, existing CI policy green, all applicable CI jobs green; then squash merge with `expected_head_sha`. Verify `main`, and Vercel production/aliases unchanged after merge (no Vercel deploy authorization). If GitHub still reports `gate expected`, inspect its app binding and do not bypass.
+
+### 06/11/2026 — CLOSEOUT CANONIQUE : FUSION VÉRIFIÉE
+
+**Statut autoritatif :** les paragraphes DRAFT/attente de merge plus haut sont des notes historiques. [PR #1147](https://github.com/hraaaaf/Akarfinder/pull/1147) **fusionnée (squash)** dans `main` au SHA [`bc385e8a7244ba671cb1218bdce7985138db9dec`](https://github.com/hraaaaf/Akarfinder/commit/bc385e8a7244ba671cb1218bdce7985138db9dec). Vérification GitHub `compare_commits(mergeSHA,main)` : `identical`, 0 ahead / 0 behind.
+
+**Goal :** Search Option A, Home et vendeur harmonisés ; cartes mobiles lisibles, aucune modification des droits médias, aucune mise en production Vercel sans autorisation.
+
+**Success et preuves :**
+- Le ruleset `main` exige le contrôle exact `gate` de **GitHub Actions** (capture utilisateur). Workflow réel `.github/workflows/required-pr-gate.yml` créé ; job `gate` [#42305126032](https://github.com/hraaaaf/Akarfinder/actions/runs/42305126032) **SUCCESS** sur le HEAD candidat `9e1bb3906cc4b60c4c67c6a42ad6256776fe8402`, avec tests Node, invariants constitution produit et TypeScript. Checks Search Option A, CI Efficiency et Product Constitution SUCCESS.
+- Avant ajout du workflow de protection, version applicative `a0ee307` : 60 SUCCESS / 1 SKIPPED ; candidate `682a75b` (app inchangée) : 60 SUCCESS / 1 SKIPPED. Ne pas transposer ces 61 verdicts au SHA du squash sans preuve indépendante.
+- Search mobile : revue comparative réelle BEFORE `f97d90e` / AFTER `a0ee307` sur mêmes fixtures aux 360/390px, score **9/10 pour les cartes uniquement**. Certifs UX-SEARCH-3 #42286385299, UX-CARDS #42286385314, UX-SEARCH-4 #42286384872, Search Property Type #42286385131 : score contractuel 10/10, aucun finding. Deux colonnes conservées, titre 13,75 px / 2 lignes, prix 18 px, localisation 11 px, sources et faits 10,5 px, image standard 128 px.
+- Anciennes PR : **#1145** close/superseded après preuve **13/13 blob SHA identiques sur main** ; **#1102 et #1035** close/superseded fonctionnellement, sans prétendre que leurs anciens scripts de vérification ont été portés intégralement.
+- `vercel.mjs` était déjà présent avant cette fusion et conserve `git.deploymentEnabled:false`. Vercel production après fusion : déploiement READY **`dpl_DfKCASA5VYcbKErJNfsJDNJxxo2w`**, ancien SHA de production `32a0a076b0b48fa123ec0636bde427905589782c`, mêmes alias. Aucun déploiement recensé pour le SHA fusionné. **Aucun déploiement Vercel n'a été autorisé/lancé**.
+
+**CI post-fusion :** propriétaire : **« Green »**. La connexion GitHub utilisée ne remonte pas les runs `push main` via `fetch_commit_workflow_runs` (PR-only) : confirmation **utilisateur**, non contre-vérifiée indépendamment ici. Éviter de citer des IDs de runs `push` non consultés.
+
+**Points de vigilance non bloquants :** certains titres sont tronqués après deux lignes ; navigation flottante à contrôler en scroll réel lors d'une revue UX globale.
+
+**Next exact :** revue puis intégration du présent *closeout documentaire* via PR séparée protégée par `gate` ; déploiement Vercel toujours soumis à accord séparé. Poursuivre ensuite l'acquisition d'annonces sur un chantier dédié respectant les droits de réutilisation (Mubawab sous gate juridique).
