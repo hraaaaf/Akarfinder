@@ -17,7 +17,8 @@ from pathlib import Path
 from time import perf_counter
 
 from akarfinder_scraper import (BASE_URL, fetch_and_check_robots,
-                                parse_listings_audited, resolve_source_urls, approved_shard_baseline)
+                                parse_listings_audited, resolve_source_urls, approved_shard_baseline,
+                                expected_city_for_shard)
 from benchmark_evidence import evaluate
 
 
@@ -48,10 +49,12 @@ def provenance() -> dict:
 
 
 def summarise_html(html: str, *, baseline_eligible_cards: int | None = None,
-                   require_locality: bool = False) -> dict:
+                   require_locality: bool = False, expected_city: str | None = None,
+                   require_apartment: bool = False) -> dict:
     parse_started = perf_counter()
     audit = parse_listings_audited(html, baseline_eligible_cards=baseline_eligible_cards,
-                                   require_locality=require_locality)
+                                   require_locality=require_locality, expected_city=expected_city,
+                                   require_apartment=require_apartment)
     parse_seconds = round(perf_counter() - parse_started, 4)
     counts = evaluate(audit.listings) if audit.passes_quality else None
     # Public source IDs only (no HTML, no photos): required to compute net-new
@@ -66,6 +69,8 @@ def summarise_html(html: str, *, baseline_eligible_cards: int | None = None,
         "counts_observed": evaluate(audit.listings) if audit.listings else None,
         "quality_contract": {
             "require_locality": require_locality,
+            "expected_city": expected_city,
+            "require_apartment": require_apartment,
             "baseline_eligible_cards": baseline_eligible_cards,
             "minimum_baseline_ratio": 0.70 if baseline_eligible_cards is not None else None,
             "coverage_vs_baseline": round(audit.coverage_vs_baseline, 4) if audit.coverage_vs_baseline is not None else None,
@@ -78,6 +83,7 @@ def summarise_html(html: str, *, baseline_eligible_cards: int | None = None,
         "parsed_rows_before_quality_gate": len(audit.listings),
         "quality_accepted": audit.passes_quality,
         "quality_reasons": audit.quality_reasons,
+        "shard_context_violations": audit.shard_context_violations,
         "acceptance_rate": round(audit.acceptance_rate, 4),
         "surface_coverage": round(audit.surface_coverage, 4),
         "locality_coverage": round(audit.locality_coverage, 4),
@@ -139,7 +145,8 @@ async def probe(source_url: str = BASE_URL) -> dict:
         result["fetch_error"] = fetched.error
         if fetched.status == "ok" and fetched.html:
             result["html_analysis"] = summarise_html(
-                fetched.html, baseline_eligible_cards=baseline, require_locality=True
+                fetched.html, baseline_eligible_cards=baseline, require_locality=True,
+                expected_city=expected_city_for_shard(source_url), require_apartment=True
             )
             result["canary_status"] = (
                 "parsed_quality_pass" if result["html_analysis"]["quality_accepted"]
