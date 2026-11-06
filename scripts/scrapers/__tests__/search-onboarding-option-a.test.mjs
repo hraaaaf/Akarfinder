@@ -123,3 +123,12 @@ test("Akar Sense is an inline accessible result-toolbar control, never a floatin
   assert.match(proof, /metrics\.finder\.position !== "static"/);
   assert.match(proof, /page\.keyboard\.press\("Escape"\)/);
 });
+
+test("owner-approved Home composition remains separate from Search/Seller artwork", () => {
+  const home = read("app/page.tsx");
+  const surfaces = read("scripts/audits/search-property-type-visuals-1.mjs");
+  assert.doesNotMatch(home, /HomeVivreIciSection|HomePropertyTypesSection/);
+  assert.match(home, /<CityIntentGrid \/>/);
+  assert.match(surfaces, /name: "vendre", route: "\/vendre"/);
+  assert.doesNotMatch(surfaces, /name: "home", route: "\/"/);
+});

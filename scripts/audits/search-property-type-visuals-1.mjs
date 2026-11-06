@@ -202,11 +202,10 @@ for (const viewport of viewports) {
   await context.close();
 }
 
-/* Direction A: evidence from the exact same built revision of Home and Vendre. */
+/* Evidence for Search and Vendre only. Home respects the owner-approved #1145 composition. */
 const surfaceExpectedKeys = ["apartment", "villa", "land", "apartment", "riad", "office"];
 const surfaceResults = [];
 for (const surface of [
-  { name: "home", route: "/", section: "[data-home-property-types]", card: "[data-home-property-type]" },
   { name: "vendre", route: "/vendre", section: "[data-vendre-type-entry]", card: "a[href^='/vendre/dossier?property_type=']" },
 ]) {
   for (const vp of viewports) {
@@ -336,11 +335,11 @@ const axes = {
   targetGeometry: !failures.some((x) => x.includes("geometry") || x.includes("collision") || x.includes("overflow") || x.includes("centered")),
   targetCardHierarchy: !failures.some((x) => x.includes("footer") || x.includes("hierarchy") || x.includes("columns")),
   mobileReadability: !failures.some((x) => x.includes("mobile text legibility")),
-  crossSurface: !failures.some((x) => x.startsWith("home/") || x.startsWith("vendre/")),
+  crossSurface: !failures.some((x) => x.startsWith("vendre/")),
   historicalReconciliation: !failures.some((x) => x.startsWith("history/")),
 };
 const machineScore = (Object.values(axes).filter(Boolean).length / Object.keys(axes).length) * 10;
-const report = { target: { sha256: targetSha256, dimensions: "1448x1086" }, machineScore, axes, failures, viewports: results, surfaces: surfaceResults, historicalReconciliation: legacyEvidence, note: "Machine 10/10 is a contract score only. Final visual fidelity requires inspection against the locked TARGET." };
+const report = { target: { sha256: targetSha256, dimensions: "1448x1086" }, machineScore, axes, failures, viewports: results, surfaces: surfaceResults, historicalReconciliation: legacyEvidence, note: "Machine 10/10 is a contract score only. Final visual fidelity requires inspection against the locked TARGET. Home remains outside this Search/Seller visual gate under the owner-approved #1145 composition." };
 await fs.writeFile(path.join(outDir, "metrics.json"), JSON.stringify(report, null, 2));
 await fs.writeFile(path.join(outDir, "report.md"), `# Search Property Type Visuals\n\nMachine contract: **${machineScore.toFixed(1)}/10**\nTARGET: \`${targetSha256}\`\n\n${failures.length ? failures.map((x) => `- FAIL: ${x}`).join("\n") : "- PASS: locked TARGET machine contract satisfied."}\n`);
 console.log(JSON.stringify(report, null, 2));

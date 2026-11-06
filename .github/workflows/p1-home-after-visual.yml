@@ -1,7 +1,7 @@
 name: P1 Home AFTER Visual Certification
 
 on:
-  pull_request:
+  push:
     branches: [main]
     paths:
       - ".github/workflows/p1-home-after-visual.yml"
@@ -16,14 +16,15 @@ on:
   workflow_dispatch: {}
 
 concurrency:
-  group: p1-home-after-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: p1-home-after-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
 
 jobs:
   certify:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
@@ -31,9 +32,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 2
-      - name: Latest-commit scope check
+      - name: Scoped post-merge main changes only
         id: scope
         shell: bash
         run: |
@@ -44,7 +45,7 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
-            echo "Latest commit does not affect P1 HOME AFTER; skipping heavy work."
+            echo "Main commit does not affect P1 HOME AFTER; skipping heavy work."
           fi
       - uses: actions/setup-node@v4
         if: steps.scope.outputs.run == 'true'

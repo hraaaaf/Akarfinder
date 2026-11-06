@@ -14,7 +14,9 @@ describe("HVR-3 — qualified listings boundary", () => {
   it("keeps the generic listings module off HOME V1", () => {
     assert.ok(!page.includes("HomeListingsSection"));
     assert.ok(page.includes('data-home-standard="home-v1"'));
-    assert.ok(page.includes("<HomeVivreIciSection />"));
+    assert.ok(!page.includes("HomeVivreIciSection"), "The rejected home promo must not return");
+    assert.ok(source("lib/product-navigation.ts").includes('{ href: "/map", label: "Vivre ici" }'));
+    assert.ok(source("app/map/page.tsx").includes("function MapPage"));
   });
 
   it("preserves the dormant canonical Data Mass read-model for a future qualified module", () => {

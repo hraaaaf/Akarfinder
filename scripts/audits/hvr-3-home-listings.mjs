@@ -31,18 +31,20 @@ try {
       const cardCount = await page.locator("[data-home-listing-card]").count();
       const illustrationCount = await page.getByText("Illustration", { exact: true }).count();
       const vivreIciCount = await page.locator('[data-home-standard-slot="vivre-ici"]').count();
+      const mapNavCount = await page.locator('a[href="/map"]').count();
 
       if ((response?.status() ?? 0) !== 200) localFindings.push(`HTTP_${response?.status() ?? 0}`);
       if (metrics.scrollWidth > metrics.clientWidth + 1) localFindings.push(`OVERFLOW_${metrics.scrollWidth}_${metrics.clientWidth}`);
       if (sectionCount !== 0) localFindings.push(`HOME_LISTINGS_SECTION_${sectionCount}`);
       if (cardCount !== 0) localFindings.push(`HOME_LISTING_CARDS_${cardCount}`);
       if (illustrationCount !== 0) localFindings.push(`GENERIC_ILLUSTRATIONS_${illustrationCount}`);
-      if (vivreIciCount !== 1) localFindings.push(`VIVRE_ICI_SLOT_${vivreIciCount}`);
+      if (vivreIciCount !== 0) localFindings.push(`REJECTED_HOME_MAP_PROMO_${vivreIciCount}`);
+      if (mapNavCount < 1) localFindings.push("STANDALONE_VIVRE_ICI_NAV_MISSING");
       if (consoleErrors.length > 0) localFindings.push(`CONSOLE_ERRORS_${consoleErrors.length}`);
 
       const screenshot = `${scenario.name}.png`;
       await page.screenshot({ path: path.join(outputDir, screenshot), fullPage: true });
-      results.push({ ...scenario, screenshot, sectionCount, cardCount, illustrationCount, vivreIciCount, findings: localFindings, consoleErrors, ...metrics });
+      results.push({ ...scenario, screenshot, sectionCount, cardCount, illustrationCount, vivreIciCount, mapNavCount, findings: localFindings, consoleErrors, ...metrics });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       localFindings.push(`AUDIT_ERROR_${message}`);

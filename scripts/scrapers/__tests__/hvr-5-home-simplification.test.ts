@@ -17,12 +17,25 @@ describe("HVR-5 — HOME V1 simplification", () => {
     assert.ok(!page.includes("<HomeFinalCTA />"));
   });
 
-  it("keeps actions after Vivre ici and compact cities", () => {
-    const neighborhood = page.indexOf("<HomeVivreIciSection />");
+  it("removes the rejected homepage map promo while preserving the search-first sequence", () => {
+    const hero = page.indexOf("<GoogleLikeHero />");
+    const trust = page.indexOf("<HomeTrustStrip />");
     const cities = page.indexOf("<CityIntentGrid />");
     const actions = page.indexOf("<HomeActionGrid />");
     const footer = page.indexOf("<SiteFooter />");
-    assert.ok(neighborhood >= 0 && cities > neighborhood && actions > cities && footer > actions);
+    const order = [hero, trust, cities, actions, footer];
+    assert.ok(order.every((index) => index >= 0));
+    assert.deepEqual([...order].sort((a, b) => a - b), order);
+    assert.ok(!page.includes("HomeVivreIciSection"));
+    assert.ok(!page.includes("SignatureMapSection"));
+  });
+
+  it("preserves the standalone Vivre ici page and its desktop/mobile navigation", () => {
+    const mapPage = source("app/map/page.tsx");
+    const navigation = source("lib/product-navigation.ts");
+    assert.ok(mapPage.includes("export default async function MapPage"));
+    assert.ok(mapPage.includes("PremiumInteractiveMapBridge"));
+    assert.ok(navigation.includes('{ href: "/map", label: "Vivre ici" }'));
   });
 
   it("provides exactly three approved direct destinations", () => {
