@@ -151,3 +151,12 @@ Deux corrections de scripts, une suite de tests de non-régression et ce handove
 **Test ajusté** : `PRODUCTION_DEPLOYMENT_GATE` importe l'export `config` de `vercel.mjs`, vérifie `config.git.deploymentEnabled === false` **et** l'absence de `vercel.json`. Cela prévient la réintroduction du même doublon et la réactivation non autorisée de Git deploy.
 
 **Gate avant merge** : contrôler le nouveau HEAD, tests/CI, Vercel source Git sans nouvelle production ; la protection effective est **déjà** présente sur `main`, ce qui permet d'éviter un risque de configuration introduite seulement à la fusion. Seul un merge GitHub est autorisé par l'utilisateur ; aucun déploiement Vercel, aucune manipulation de la configuration runtime de la production.
+
+
+### 06/11/2026 — Required GitHub Actions `gate` restored legitimately
+
+**Evidence**: owner's actual screenshot of `Settings → Rules → Require status checks` showed **`gate`** provided by **GitHub Actions**, with `Require status checks to pass` enabled, targeting `main`. Current #1147 SHA `682a75be5c90798e696764fc2d9ae6cd6598f73e` had 60 SUCCESS/1 SKIPPED but no **exact** check run `gate`; squash merge blocked twice with HTTP 405. The owner requested we preserve main protection, and granted merge approval separately. Deleting the rule or fabricating a success status is forbidden.
+
+**Remediation**: introduce `.github/workflows/required-pr-gate.yml` with an authentic job whose displayed check-run name is exactly `gate`. It runs on **every PR to main**, not path-filtered (needed because `gate` is required globally); read-only `contents`, per-PR cancellation, Node 24/npm ci, real Node source/policy/governance tests, constitution invariant check, and TypeScript `tsc --noEmit`. No Chromium, production build, remote DB reads, deployment, or secrets. A self-test `scripts/ci/required-pr-gate.test.mjs` checks honest workflows and the existing `vercel.mjs` `deploymentEnabled:false` lock. The existing workflow efficiency validator gets a **single-file, guarded exception**, with tests proving unrelated broad PR workflows remain banned and heavy PR builds remain banned.
+
+**SUCCESS gate**: check-run `gate` produced by GitHub Actions **SUCCESS** on the exact new head SHA, existing CI policy green, all applicable CI jobs green; then squash merge with `expected_head_sha`. Verify `main`, and Vercel production/aliases unchanged after merge (no Vercel deploy authorization). If GitHub still reports `gate expected`, inspect its app binding and do not bypass.

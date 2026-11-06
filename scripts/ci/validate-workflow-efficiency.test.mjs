@@ -39,3 +39,20 @@ test('one guarded job does not allow an unguarded heavy job', () => bad([
   'jobs:', '  first:', "    if: github.ref == 'refs/heads/main'", '    steps:', '      - run: npm run build',
   '  second:', '    steps:', '      - run: npx playwright install chromium', ''
 ].join('\n'), 'every heavy'));
+
+const alwaysOnGate = [
+  'name: Required PR Gate', 'on:', '  pull_request:', '    branches: [main]',
+  'permissions:', '  contents: read', 'concurrency:',
+  '  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}',
+  '  cancel-in-progress: true', 'jobs:', '  gate:', '    name: gate',
+  '    steps:', '      - run: node --test scripts/ci/required-pr-gate.test.mjs',
+  '      - run: npx tsc --noEmit', ''
+].join('\n');
+
+test('permanent status check exception is restricted to the real required gate', () => {
+  assert.deepEqual(validateWorkflow('.github/workflows/required-pr-gate.yml', alwaysOnGate), []);
+  bad(alwaysOnGate, 'targeted paths');
+  bad(alwaysOnGate.replace('    name: gate', '    name: fake-gate'), 'targeted paths');
+  assert.ok(validateWorkflow('.github/workflows/required-pr-gate.yml', alwaysOnGate.replace('    branches: [main]', '    branches: [other]')).some(x => x.includes('targeted paths')));
+  assert.ok(validateWorkflow('.github/workflows/required-pr-gate.yml', alwaysOnGate + '      - run: npm run build\n').some(x => x.includes('heavy suite')));
+});

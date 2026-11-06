@@ -11,13 +11,24 @@ export function validateWorkflow(file, source) {
   const errors = [];
   const text = source.replace(/^\s*#.*$/gm, '');
   const pr = /^  (?:pull_request|pull_request_target):/m.test(text) || /^on:\s*\[[^\]]*pull_request(?:_target)?/m.test(text);
+  // The single always-on REQUIRED GitHub branch-protection check must never use
+  // paths filters: otherwise unrelated PRs could never supply the required check.
+  // This exception is limited to the real test-running, unprivileged gate.
+  const requiredMainGate = file === '.github/workflows/required-pr-gate.yml'
+    && /^name: Required PR Gate$/m.test(text)
+    && /^  pull_request:\s*\n    branches: \[main\]$/m.test(text)
+    && /^  gate:\s*\n    name: gate$/m.test(text)
+    && /node --test scripts\/ci\/required-pr-gate\.test\.mjs/.test(text)
+    && /npx tsc --noEmit/.test(text)
+    && !/pull_request_target/.test(text);
+
   const dispatch = /^  workflow_dispatch:/m.test(text);
   const push = /^  push:/m.test(text);
   const heavy = /\b(?:playwright\s+install|playwright\s+test|chromium|npm\s+run\s+build|next\s+build|npm\s+(?:run\s+)?test:scrapers|npm\s+test|visual.certification|full.page.certification|full.matrix|full.*benchmark|load.test|k6\s+run)\b/i.test(text);
   const topConcurrency = /^concurrency:\s*$/m.test(text);
   const cancellation = /^  cancel-in-progress:\s*(?:true|\$\{\{)/m.test(text);
   if (pr) {
-    if (!/^    paths:\s*$/m.test(text)) errors.push('PR trigger must have targeted paths');
+    if (!/^    paths:\s*$/m.test(text) && !requiredMainGate) errors.push('PR trigger must have targeted paths');
     const group = text.match(/^  group:\s*(.*)$/m)?.[1] || '';
     if (!topConcurrency || !cancellation || !group.includes('github.workflow') ||
         !/(?:github\.event\.pull_request\.number|github\.head_ref)/.test(group)) {
