@@ -30,8 +30,12 @@ def _valid_link(row: dict) -> bool:
         return False
 
 
-def evaluate(rows: list[dict]) -> dict:
-    """Count source listing IDs, not deduplicated physical properties."""
+def evaluate(rows: list[dict], *, source_rows: bool = True) -> dict:
+    """Count source IDs; certify cores only from actual observations.
+
+    source_rows=True is for direct parser rows only. SQLite audits MUST pass
+    source_rows=False, including old databases with no provenance column.
+    """
     ids = [str(r.get("id")) for r in rows if r.get("id") is not None]
     # Mirror the importer's conservative duplicate merge: a later partial card
     # must not erase already observed non-empty fields for the same source ID.
@@ -76,9 +80,12 @@ def evaluate(rows: list[dict]) -> dict:
     for row in rows:
         if row.get("id") is None:
             continue
-        if "last_source_observation_json" in row:
-            # SQL state may be an enrichment of many cycles. Use ONLY the last
-            # stored raw source observation, never the enriched SQL fields.
+        # SQL snapshots may have no provenance column at all (V645). In that
+        # case NO complete source observation can be certified. Detect common
+        # SQL metadata defensively even if the caller omitted source_rows=False.
+        is_sql_row = (not source_rows or "last_source_observation_json" in row
+                      or "first_seen" in row or "last_seen" in row)
+        if is_sql_row:
             raw = row.get("last_source_observation_json")
             try:
                 current = json.loads(raw) if raw else None
@@ -180,7 +187,7 @@ def inspect_sqlite(path: Path, expected_rows: int | None = None) -> dict:
         "source_artifact": "mubawab-v645-multishard-sqlite-state",
         "source_commit": "497c9fc826a372c607c4d095e195b8dc9672852c",
         "sqlite_integrity": integrity,
-        "counts": evaluate(rows),
+        "counts": evaluate(rows, source_rows=False),
         "offline_processing_seconds": round(perf_counter() - started, 6),
         "live_network_requests": 0,
         "live_extraction_rate_per_hour": None,
