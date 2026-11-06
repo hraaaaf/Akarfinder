@@ -1,0 +1,36 @@
+name: AKAR Freshness Future Clock Offline Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/intelligence/freshness-provenance-v2.ts"
+      - "scripts/scrapers/__tests__/freshness-provenance-v2.test.ts"
+      - ".github/workflows/akar-freshness-future-clock-offline-gate.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Assert no hosted database connection variables
+        shell: bash
+        run: |
+          test -z "${SUPABASE_URL:-}${SUPABASE_SERVICE_ROLE_KEY:-}${DATABASE_URL:-}${NEON_DATABASE_URL:-}"
+      - name: Freshness provenance fail-closed regression tests
+        run: npx tsx --test scripts/scrapers/__tests__/freshness-provenance-v2.test.ts
+      - name: TypeScript static validation
+        run: npx tsc --noEmit
