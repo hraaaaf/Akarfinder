@@ -1239,7 +1239,8 @@ async def main(engine: str = "auto", pages: int = MAX_PAGES,
                 headed: bool = False,
                 browser_path: str | None = None,
                 urls_file: str | None = None) -> int:
-    """Exit codes: 0 complete, 1 partial, 2 nothing usable, 3 config/robots, 4 unexpected crash."""
+    """Exit: 0 complete, 1 partial, 2 empty, 3 admission, 4 pre-commit crash,
+    5 DB committed but artifact publication failed (requires reconciliation)."""
     diagnostics: list[dict[str, Any]] = []
     try:
         return await _main(engine, pages, headed, browser_path, urls_file, diagnostics)
@@ -1330,31 +1331,66 @@ async def _main(engine: str, pages: int, headed: bool, browser_path: str | None,
         print("[ERREUR] Lot incomplet : import SQLite annulé ; corriger les shards en échec.")
         return 1
 
-    conn = init_db()
-    try:
-        price_m2_reviews = review_price_per_m2(collected)
-        stats, cycle_ids = import_listings(conn, collected)
-        persist_price_reviews(conn, price_m2_reviews)
-        duplicate_candidates = flag_possible_duplicates(collected)
-        persist_quality_signals(conn, collected, duplicate_candidates)
-        stored_flags = persistent_review_flags(conn)
-        stored_quality = persistent_quality_signals(conn)
-        export_reports(conn, cycle_ids, stats, page_stats, price_m2_reviews=price_m2_reviews)
-    finally:
-        conn.close()
-    _write_atomic("akarfinder_price_anomalies.json",
-                  json.dumps(stats.anomalies, indent=2, ensure_ascii=False) + "\n")
-    _write_atomic("akarfinder_price_m2_flags.json", json.dumps(
-        {"generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-         "page_scope": "current_cycle_plus_persisted_history", "observations": len(price_m2_reviews),
-         "heuristic_ratio_limits": [PRICE_M2_LOW_RATIO, PRICE_M2_HIGH_RATIO],
-         "flags": stored_flags,
-         "current_cycle_flags": [x for x in price_m2_reviews.values() if x["status"].startswith("review_")]},
-        ensure_ascii=False, indent=2) + "\n")
-    _write_atomic("akarfinder_quality_signals.json", json.dumps({
-        "flags_by_listing": stored_quality,
-        "page_scope": "current_cycle_plus_persisted_history",
-        "signals_are_review_only": True}, ensure_ascii=False, indent=2) + "\n")
+    # Reports are staged (not published) until every SQL write and report
+    # serializer has succeeded. Only then is the SQLite transaction committed.
+    # No cross-resource (SQLite + filesystem) ACID guarantee is claimed.
+    with tempfile.TemporaryDirectory(prefix=".akar-v646-stage-", dir=".") as staging:
+        files = (
+            "akarfinder_data.json", "akarfinder_report.md",
+            "akarfinder_price_anomalies.json", "akarfinder_price_m2_flags.json",
+            "akarfinder_quality_signals.json", "akarfinder_diagnostics.json",
+        )
+        path = lambda name: str(Path(staging) / name)
+        conn = init_db()
+        try:
+            # SQLite changes are atomic across importer, field-change journal,
+            # price and quality reviews, and all serializers. A pre-commit crash
+            # must leave no new listing rows committed.
+            conn.execute("BEGIN")
+            try:
+                price_m2_reviews = review_price_per_m2(collected)
+                stats, cycle_ids = import_listings(conn, collected, commit=False)
+                persist_price_reviews(conn, price_m2_reviews, commit=False)
+                duplicate_candidates = flag_possible_duplicates(collected)
+                persist_quality_signals(conn, collected, duplicate_candidates, commit=False)
+                stored_flags = persistent_review_flags(conn)
+                stored_quality = persistent_quality_signals(conn)
+                export_reports(conn, cycle_ids, stats, page_stats,
+                               json_path=path("akarfinder_data.json"),
+                               md_path=path("akarfinder_report.md"),
+                               price_m2_reviews=price_m2_reviews)
+                _write_atomic(path("akarfinder_price_anomalies.json"),
+                              json.dumps(stats.anomalies, indent=2, ensure_ascii=False) + "\n")
+                _write_atomic(path("akarfinder_price_m2_flags.json"), json.dumps(
+                    {"generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                     "page_scope": "current_cycle_plus_persisted_history",
+                     "observations": len(price_m2_reviews),
+                     "heuristic_ratio_limits": [PRICE_M2_LOW_RATIO, PRICE_M2_HIGH_RATIO],
+                     "flags": stored_flags,
+                     "current_cycle_flags": [x for x in price_m2_reviews.values()
+                                             if x["status"].startswith("review_")]},
+                    ensure_ascii=False, indent=2) + "\n")
+                _write_atomic(path("akarfinder_quality_signals.json"), json.dumps({
+                    "flags_by_listing": stored_quality,
+                    "page_scope": "current_cycle_plus_persisted_history",
+                    "signals_are_review_only": True},
+                    ensure_ascii=False, indent=2) + "\n")
+                export_diagnostics(diagnostics, path=path("akarfinder_diagnostics.json"))
+                conn.commit()
+            except BaseException:
+                conn.rollback()
+                raise
+        finally:
+            conn.close()
+        # SQLite is now committed. If an OS failure prevents publishing staged
+        # reports, report a DISTINCT exit code 5 (committed / reports failed),
+        # never the pre-commit crash code 4.
+        try:
+            for name in files:
+                os.replace(path(name), name)
+        except OSError as exc:
+            print(f"[ERREUR PUBLICATION] SQLite commitée, export incomplet: {exc}")
+            return 5
     incomplete = page_stats["with_listings"] < page_stats["requested"]
     print(f"Pages avec annonces: {page_stats['with_listings']}/{page_stats['requested']}; "
           f"annonces uniques: {len(cycle_ids)}; nouvelles: {stats.inserted}; "
