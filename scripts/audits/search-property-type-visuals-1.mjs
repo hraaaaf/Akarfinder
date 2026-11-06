@@ -249,7 +249,7 @@ for (const surface of [
 }
 /* Reconcile historical #1035 P3 and #1102 seller without obsolete premium-art assumptions. */
 const legacyEvidence = [];
-for (const vp of [viewports[0], viewports[3]]) {
+for (const vp of viewports) {
   const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, deviceScaleFactor: 1 });
   const page = await ctx.newPage();
   try {
@@ -298,9 +298,29 @@ for (const vp of [viewports[0], viewports[3]]) {
     const assets = await photos.evaluateAll(nodes => nodes.map(x => ({ src: x.getAttribute("src"), loaded: x.complete && x.naturalWidth > 0 })));
     if (assets.some((x,i) => !x.loaded || x.src !== "/visuals/property-types/target/" + wanted[i] + (wanted[i] === "riad" ? ".png" : ".svg")))
       failures.push("history/Seller/" + vp.name + ": new shared local artworks missing");
+    // Previous audit ended at the last horizontal tile; show the actual entry state.
+    await group.evaluate(el => { el.scrollLeft = 0; });
+    await page.evaluate(() => window.scrollTo({ top: 0, left: 0, behavior: "instant" }));
+    const sellerUi = await page.evaluate(() => {
+      const selector = document.querySelector('[role="group"][aria-label="Type du bien"]');
+      const nav = document.querySelector("[data-mobile-bottom-nav]");
+      const continueButton = [...document.querySelectorAll("button")].find(button => button.textContent?.includes("Continuer"));
+      const rect = continueButton?.getBoundingClientRect();
+      return {
+        bottomNavMounted: Boolean(nav),
+        carouselScrollLeft: selector?.scrollLeft ?? -1,
+        continueInViewport: Boolean(rect && rect.width >= 44 && rect.height >= 44 && rect.top >= 0 && rect.bottom <= window.innerHeight - 8),
+      };
+    });
+    if (sellerUi.carouselScrollLeft > 2 || sellerUi.carouselScrollLeft < 0)
+      failures.push("history/Seller/" + vp.name + ": carousel not reset to entry state");
+    if (vp.width < 768 && sellerUi.bottomNavMounted)
+      failures.push("history/Seller/" + vp.name + ": mobile navigation obscures focused publication");
+    if (vp.width <= 430 && !sellerUi.continueInViewport)
+      failures.push("history/Seller/" + vp.name + ": Continue CTA not entirely visible at entry");
     const sellerShot = "history-seller-" + vp.name + ".png";
     await page.screenshot({ path: path.join(outDir, sellerShot), fullPage: true });
-    legacyEvidence.push({ surface: "Seller", viewport: vp.name, keys, assets, screenshot: sellerShot });
+    legacyEvidence.push({ surface: "Seller", viewport: vp.name, keys, assets, ...sellerUi, screenshot: sellerShot });
   } catch (error) {
     failures.push("history/" + vp.name + ": " + (error instanceof Error ? error.message : String(error)));
   } finally {
