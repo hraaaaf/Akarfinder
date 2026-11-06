@@ -3,8 +3,10 @@ Fixtures are synthetic. Zero network and production database access.
 """
 from __future__ import annotations
 
+import asyncio
 import sqlite3
 import unittest
+from unittest.mock import patch
 
 import akarfinder_scraper as scraper
 import benchmark_evidence as evidence
@@ -111,6 +113,29 @@ class StrictShardContext(unittest.TestCase):
         self.assertFalse(x["quality_accepted"])
         self.assertEqual(x["shard_context_violations"], 10)
         self.assertIsNone(x["counts_for_accepted_page_only"])
+
+    def test_main_wrong_city_fails_before_any_sqlite_connection(self):
+        source = scraper.BASE_URL
+        html = page(10, location="Maârif, Casablanca")
+
+        async def fake_gather(urls, *, engine, headed, browser_path, diagnostics):
+            self.assertEqual(urls, [source])
+            diagnostics.append({"http_code": 200, "final_status": "ok"})
+            return [scraper.FetchResult(source, "ok", html=html, code=200)]
+
+        with (
+            patch.object(scraper, "approved_shard_baseline", return_value=10),
+            patch.object(scraper, "fetch_and_check_robots", return_value={"status": "PASS"}),
+            patch.object(scraper, "_write_atomic"),
+            patch.object(scraper, "gather_results", side_effect=fake_gather),
+            patch.object(scraper, "init_db") as db,
+            patch.object(scraper, "export_diagnostics") as export,
+        ):
+            self.assertEqual(asyncio.run(scraper.main(engine="http")), 2)
+            db.assert_not_called()
+            export.assert_called_once()
+            self.assertIn("shard_context_violation",
+                          export.call_args.args[0][0]["quality_reasons"])
 
     def test_city_derivation_restricted_to_bounded_pilot(self):
         self.assertEqual(
