@@ -22,7 +22,7 @@ const evidence = {
 };
 
 test("write plan promotes only freshness and embeds exact rollback snapshot", () => {
-  const plan = buildWriteCanaryPlan(before, evidence);
+  const plan = buildWriteCanaryPlan(before, evidence, evidence.observedAt);
   assert.equal(plan.proposed.freshnessStatus, "fresh_confirmed");
   assert.equal(plan.proposed.freshLastSeenAt, evidence.observedAt);
   assert.ok(plan.proposed.freshChannels.includes("public_sitemap_presence"));
@@ -50,4 +50,18 @@ test("write canary is deterministic and fixed to ten rows", () => {
   const selected = selectWriteCanary(rows);
   assert.equal(selected.length, WRITE_CANARY_SIZE);
   assert.deepEqual(selected.map((row) => row.canonicalUrl), [...selected].map((row) => row.canonicalUrl).sort());
+});
+
+test("write canary rejects expired evidence even when seed_only", () => {
+  assert.throws(
+    () => buildWriteCanaryPlan(before, evidence, "2026-09-01T00:00:00.000Z"),
+    /outside validity window/,
+  );
+});
+
+test("write canary rejects future sitemap observations", () => {
+  assert.throws(
+    () => buildWriteCanaryPlan(before, evidence, "2026-08-07T19:29:59.000Z"),
+    /outside validity window/,
+  );
 });
