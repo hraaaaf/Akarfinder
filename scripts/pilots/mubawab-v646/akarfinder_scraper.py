@@ -1396,7 +1396,6 @@ async def _main(engine: str, pages: int, headed: bool, browser_path: str | None,
           f"annonces uniques: {len(cycle_ids)}; nouvelles: {stats.inserted}; "
           f"modifiées: {stats.updated}; doublons: {stats.duplicates}; "
           f"statut: {'PARTIEL' if incomplete else 'COMPLET (sur pages demandées)'}")
-    export_diagnostics(diagnostics)
     print("Exports générés: akarfinder_data.json, akarfinder_report.md, akarfinder_diagnostics.json")
     return 0 if not incomplete else 1
 
