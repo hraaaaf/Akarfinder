@@ -74,8 +74,22 @@ def evaluate(rows: list[dict]) -> dict:
     flags = {key: flags_for_row(r) for key, r in unique.items()}
     observed_flags: dict[str, list[dict]] = {}
     for row in rows:
-        if row.get("id") is not None:
-            observed_flags.setdefault(str(row["id"]), []).append(flags_for_row(row))
+        if row.get("id") is None:
+            continue
+        if "last_source_observation_json" in row:
+            # SQL state may be an enrichment of many cycles. Use ONLY the last
+            # stored raw source observation, never the enriched SQL fields.
+            raw = row.get("last_source_observation_json")
+            try:
+                current = json.loads(raw) if raw else None
+            except (ValueError, TypeError):
+                current = None
+            if not isinstance(current, dict) or str(current.get("id")) != str(row["id"]):
+                continue  # legacy/invalid provenance: UNKNOWN, never certified
+            observation = current
+        else:
+            observation = row  # parser source rows, rather than SQL snapshots
+        observed_flags.setdefault(str(row["id"]), []).append(flags_for_row(observation))
     property_types = {key: str(row.get("property_type_observed") or "unknown")
                       for key, row in unique.items()}
     recognized_apartments = sum(t == "apartment" for t in property_types.values())
@@ -105,8 +119,10 @@ def evaluate(rows: list[dict]) -> dict:
             sum(any(strict(f) and f["price_numeric"] for f in observations)
                 for observations in observed_flags.values()),
         "historically_enriched_core_with_district_not_a_source_observation":
-            sum(bool(strict(f)) and not any(strict(v) for v in observed_flags[key])
+            sum(bool(strict(f)) and not any(strict(v) for v in observed_flags.get(key, []))
                 for key, f in flags.items()),
+        "source_core_ids_without_observation_proof":
+            len(set(unique) - set(observed_flags)),
         "verified_active": None,
         "physical_unique_properties": None,
         "publication_eligible_proven": 0,
