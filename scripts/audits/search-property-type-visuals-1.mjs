@@ -262,6 +262,7 @@ for (const vp of [viewports[0], viewports[3]]) {
     // Listing art is lazy-loaded. Full-page screenshots must not be captured
     // before each visible card has actually loaded its local illustration.
     const p3Art = page.locator("[data-search-listing-card] [data-indexed-property-artwork] img");
+    await p3Art.first().waitFor({ state: "attached", timeout: 30_000 });
     const p3ArtCount = await p3Art.count();
     if (p3ArtCount === 0) throw new Error("P3 artwork missing: no local images found");
     for (let i = 0; i < p3ArtCount; i++) {
@@ -287,6 +288,10 @@ for (const vp of [viewports[0], viewports[3]]) {
     const photos = group.locator("img[data-property-visual-family]");
     if (await photos.count() !== 6) failures.push("history/Seller/" + vp.name + ": not six cards");
     for (let i = 0; i < Math.min(await photos.count(), 6); i++) await photos.nth(i).scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => {
+      const imgs = Array.from(document.querySelectorAll('[role="group"][aria-label="Type du bien"] img[data-property-visual-family]'));
+      return imgs.length === 6 && imgs.every(x => x.complete && x.naturalWidth > 0);
+    }, null, { timeout: 20_000 });
     const keys = await photos.evaluateAll(nodes => nodes.map(x => x.getAttribute("data-property-visual-family")));
     const wanted = ["apartment", "villa", "land", "apartment", "riad", "office"];
     if (JSON.stringify(keys) !== JSON.stringify(wanted)) failures.push("history/Seller/" + vp.name + ": five-family mapping drift");
