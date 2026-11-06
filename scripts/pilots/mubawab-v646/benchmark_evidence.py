@@ -43,10 +43,10 @@ def evaluate(rows: list[dict]) -> dict:
         for field, value in row.items():
             if (field not in entry or entry[field] is None or entry[field] == "") and value is not None and value != "":
                 entry[field] = value
-    # Only count explicitly present information. A listing search URL alone is
-    # NOT proof of city, active status, reuse permission, or physical uniqueness.
-    flags = {}
-    for key, r in unique.items():
+    # A source-core must exist in ONE actual observation. The historical union
+    # below remains useful for field availability, but must never certify an
+    # artificially completed listing.
+    def flags_for_row(r: dict) -> dict:
         price = r.get("price_mad")
         try:
             numeric_price = price is not None and float(price) > 0
@@ -61,7 +61,7 @@ def evaluate(rows: list[dict]) -> dict:
             surface = r.get("surface_m2") is not None and float(r["surface_m2"]) > 0
         except (ValueError, TypeError):
             surface = False
-        flags[key] = {
+        return {
             "title": bool(str(r.get("title") or "").strip()),
             "price_numeric": numeric_price,
             "price_explicit_on_request": on_request,
@@ -71,6 +71,11 @@ def evaluate(rows: list[dict]) -> dict:
             "detail_link": _valid_link(r),
             "stale_price": stale_price,
         }
+    flags = {key: flags_for_row(r) for key, r in unique.items()}
+    observed_flags: dict[str, list[dict]] = {}
+    for row in rows:
+        if row.get("id") is not None:
+            observed_flags.setdefault(str(row["id"]), []).append(flags_for_row(row))
     property_types = {key: str(row.get("property_type_observed") or "unknown")
                       for key, row in unique.items()}
     recognized_apartments = sum(t == "apartment" for t in property_types.values())
@@ -92,14 +97,19 @@ def evaluate(rows: list[dict]) -> dict:
         "apartment_confirmed_from_title_only": recognized_apartments,
         "explicit_other_or_mixed_type_from_title_only": explicit_other,
         "property_type_observed_counts": dict(sorted(Counter(property_types.values()).items())),
-        "complete_core_without_district": sum(bool(core(f)) for f in flags.values()),
-        "complete_core_with_district": sum(bool(strict(f)) for f in flags.values()),
+        "complete_core_without_district":
+            sum(any(core(f) for f in observations) for observations in observed_flags.values()),
+        "complete_core_with_district":
+            sum(any(strict(f) for f in observations) for observations in observed_flags.values()),
         "complete_core_with_district_numeric_price":
-            sum(bool(strict(f) and f["price_numeric"]) for f in flags.values()),
+            sum(any(strict(f) and f["price_numeric"] for f in observations)
+                for observations in observed_flags.values()),
+        "historically_enriched_core_with_district_not_a_source_observation":
+            sum(bool(strict(f)) for f in flags.values()),
         "verified_active": None,
         "physical_unique_properties": None,
         "publication_eligible_proven": 0,
-        "note": "Strict core = title, explicit MAD price or on_request, surface, city, district and valid detail link. Activity, rights and physical duplicates unverified."
+        "note": "Source-core completeness requires one single observation with title, explicit MAD price or on_request, surface, city, district and link. Historical union fields are descriptive ONLY. Activity, rights and physical duplicates unverified."
     }
 
 
