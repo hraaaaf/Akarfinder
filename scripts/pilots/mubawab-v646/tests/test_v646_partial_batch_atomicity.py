@@ -25,6 +25,7 @@ def audit(accepted: bool):
         price_coverage=1.0 if accepted else 0.0,
         surface_coverage=1.0 if accepted else 0.0,
         quality_reasons=[] if accepted else ["price_coverage_below_threshold"],
+        shard_context_violations=0,
     )
 
 
