@@ -14,3 +14,26 @@ Run `python -m unittest discover -s tests -v` after installing `requirements.txt
 **Legal boundary:** Respect robots.txt and site terms, which currently restrict mass extraction and competitor database creation. Robots permission alone is not reuse permission. No Supabase/Neon writes, Vercel, scheduling or merge.
 
 **Redirect safety:** HTTP requests have `allow_redirects=False`; Chromium rejects any `page.url != requested_url`. This prevents a redirected rental/category page from being counted as a sale shard. The offline test covers the HTTP behavior.
+
+### Publication locale vérifiable (contre-audit du 6 novembre)
+
+**Ne jamais traiter les anciens fichiers `akarfinder_data.json`, `akarfinder_report.md`,
+`akarfinder_price_*.json` ou `akarfinder_quality_signals.json` comme un lot actuel
+sans contrôler le marqueur `akarfinder_publication.json`.** Chaque tentative
+change ce marqueur atomiquement : `running` au départ, `failed` à tout échec,
+`complete` uniquement après publication des six exports. Le statut `complete`
+inclut les SHA-256 des six exports et de `akarfinder.db` ; il ne vaut que si tous
+les fichiers sont encore inchangés. Vérifier juste avant de lire :
+
+```bash
+python verify_v646_publication.py --root .
+```
+
+Sortie `valid: true` et exit `0` requis. Toute absence de marqueur, ancien lot,
+publication interrompue, fichier modifié ou échec de collecte donne `valid: false`
+et exit `1` ; **ne pas consommer les exports**. En cas d'exit `5` du scraper,
+SQLite peut être commitée alors que certains fichiers sont incomplets :
+réconcilier/rejouer explicitement, jamais réutiliser les fichiers sans validation.
+Ce protocole fournit une cohérence *vérifiable pour les consommateurs qui utilisent
+le garde* ; il ne constitue pas une transaction ACID entre SQLite et le système
+de fichiers et ne bloque pas un lecteur tiers qui ignore la vérification.
