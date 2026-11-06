@@ -7,6 +7,38 @@ export function changedWorkflowFiles(base = process.env.CI_DIFF_BASE || 'HEAD^',
     .split('\n').map(x => x.trim()).filter(x => /^\.github\/workflows\/.+\.ya?ml$/.test(x));
 }
 
+
+// GitHub Actions is for deterministic tests and synthetic fixtures until fresh,
+// source-authorized production inventory exists. Never introduce cloud DB access
+// in new workflow diff lines; historical references remain visible for separate
+// cleanup rather than breaking unrelated PRs.
+export function validateNewHostedDbReferences(patch) {
+  const errors = [];
+  let path = '';
+  for (const line of patch.split('\n')) {
+    const header = /^diff --git a\/(.+?) b\/(.+)$/.exec(line);
+    if (header) {
+      path = header[2];
+      continue;
+    }
+    if (!/^\.github\/workflows\/.+\.ya?ml$/.test(path)) continue;
+    if (!line.startsWith('+') || line.startsWith('+++')) continue;
+    const addedLine = line.slice(1);
+    if (/^\s*#/.test(addedLine)) continue;
+    const remoteSecret = /\bsecrets\s*(?:\.\s*|\[\s*['"])(?:SUPABASE_[\w]+|DATABASE_URL|DIRECT_URL|POSTGRES_URL|NEON_[\w]+)\b/i.test(addedLine);
+    const remoteEndpoint = /(?:[a-z0-9-]+\.)?supabase\.co\b|(?:postgres(?:ql)?:\/\/)[^\s]*@/i.test(addedLine);
+    const remoteCli = /\bsupabase\s+(?:link|db\s+(?:push|pull))\b/i.test(addedLine);
+    if (remoteSecret || remoteEndpoint || remoteCli) {
+      errors.push(path + ': newly added hosted DB credential/endpoint/CLI operation is forbidden in GitHub Actions');
+    }
+  }
+  return errors;
+}
+
+export function changedWorkflowPatch(base = process.env.CI_DIFF_BASE || 'HEAD^', head = process.env.CI_DIFF_HEAD || 'HEAD') {
+  return execFileSync('git', ['diff', '--no-ext-diff', '--unified=0', base + '...' + head, '--', '.github/workflows/'], { encoding: 'utf8' });
+}
+
 export function validateWorkflow(file, source) {
   const errors = [];
   const text = source.replace(/^\s*#.*$/gm, '');
@@ -42,7 +74,7 @@ export function validateWorkflow(file, source) {
 
 if (process.argv[1]?.endsWith('validate-workflow-efficiency.mjs')) {
   const paths = changedWorkflowFiles();
-  const failures = paths.flatMap(path => validateWorkflow(path, readFileSync(path, 'utf8')));
+  const failures = [...paths.flatMap(path => validateWorkflow(path, readFileSync(path, 'utf8'))), ...validateNewHostedDbReferences(changedWorkflowPatch())];
   if (failures.length) {
     console.error('CI efficiency policy failed:\n' + failures.map(x => '- ' + x).join('\n'));
     process.exitCode = 1;
