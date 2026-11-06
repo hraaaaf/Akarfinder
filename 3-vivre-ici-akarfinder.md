@@ -325,3 +325,7 @@ Lire d’abord `docs/handovers/2026-09-18-vivre-ici-territory-dictionary-handove
 Le handover historique `docs/handovers/2026-09-17-vivre-ici-pr1025-main-integration-handover.md` reste utile uniquement pour l’historique d’intégration #1037.
 
 `3-vivre-ici-akarfinder.md — Vivre Ici AkarFinder — Territory Dictionary 53/53 pts`
+
+## 12. ACTUALISATION 06/11/2026 — Vivre ici sur main c0f172b : AUDIT NON CLOS
+
+La fusion Home/Search (#1147) et le closeout documentaire (#1173) ne certifient **pas** `/map`. Contrôle du code actuel : `PremiumInteractiveMap.tsx` publie des statistiques mock `priceRepere`/`landmarksVerified` avec « repère vérifié », alors que la spec Maârif 3 vues n'est pas réalisée par des commandes interactives sur `MapLibreNeighborhood3D` et que la géométrie administrative n'est pas passée dans `NationalMapRouter`. N3 CI au SHA d'avant fusion avait 2 cas (390/1280) SUCCESS, mais aucune capture dans l'artefact et pas les vues Maârif 2D/administratif/rue. **Aucune nouvelle note UX /map attribuée.** Voir `docs/reviews/VIVRE_ICI_CURRENT_MAIN_AUDIT_2026-11-06.md` pour preuves détaillées, Goal/Success/Proof et suite. Aucun déploiement Vercel.
