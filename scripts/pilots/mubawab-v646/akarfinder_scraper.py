@@ -408,14 +408,36 @@ def parse_listings_audited(html: str | None, *, baseline_eligible_cards: int | N
         link_el = card.select_one("a[href*='/a/']") or card.select_one("a[href]")
         raw_link = card.get("linkref") or (link_el.get("href") if link_el else None)
         link = canonical_url(raw_link)
-        if not link or not _ID_RE.search(urlsplit(link).path):
-            if "adBoostBox" in classes:
-                audit.mark("promotion_without_detail_link", ignored=True)
-            else:
-                audit.mark("missing_detail_link")
+        # Explicit empty/promotional slots are not listing evidence.
+        if "adBoostBox" in classes and (not link or not _ID_RE.search(urlsplit(link).path)):
+            audit.mark("promotion_without_detail_link", ignored=True)
             continue
         title_el = card.select_one(".listingTit, .listingTitle")
-        if not title_el or not title_el.get_text(" ", strip=True):
+        title = title_el.get_text(" ", strip=True) if title_el else ""
+        district_el = card.select_one(".listingH3")
+        location_text = district_el.get_text(" ", strip=True) if district_el else ""
+        locality = [part.strip() for part in location_text.split(",") if part.strip()]
+        district = locality[0] if len(locality) >= 2 else None
+        city = locality[-1] if len(locality) >= 2 else None
+        if district and district.casefold() == city.casefold():
+            district = None
+        observed_type = classify_property_type(title) if title else "unknown"
+        # Check observed contradictory context BEFORE missing link/features.
+        # Otherwise a villa from another city can disappear from the denominator
+        # and let a wrong shard pass the coverage ratio.
+        context_error = None
+        if expected_city is not None and city is not None and _normalise_city(city) != _normalise_city(expected_city):
+            context_error = "shard_city_mismatch"
+        elif require_apartment and title and observed_type != "apartment":
+            context_error = "shard_non_apartment_or_unconfirmed_type"
+        if context_error:
+            audit.mark(context_error)
+            audit.shard_context_violations += 1
+            continue
+        if not link or not _ID_RE.search(urlsplit(link).path):
+            audit.mark("missing_detail_link")
+            continue
+        if not title:
             audit.mark("missing_title")
             continue
         price_el = card.select_one(".priceTag, .hardPrice")
@@ -423,7 +445,6 @@ def parse_listings_audited(html: str | None, *, baseline_eligible_cards: int | N
         detail_features = [node.get_text(" ", strip=True) for node in details_nodes]
         details_text = " ".join(detail_features)
         rooms, bedrooms = parse_counts(details_text)
-        title = title_el.get_text(" ", strip=True)
         price_raw = price_el.get_text(" ", strip=True) if price_el else None
         price = parse_price(price_raw)
         source_status = price_source_status(price_raw, price)
@@ -433,23 +454,12 @@ def parse_listings_audited(html: str | None, *, baseline_eligible_cards: int | N
         if all(v is None for v in (price, surface, rooms, bedrooms)):
             audit.mark("missing_numeric_features")
             continue
-        district_el = card.select_one(".listingH3")
-        location_text = district_el.get_text(" ", strip=True) if district_el else ""
-        locality = [part.strip() for part in location_text.split(",") if part.strip()]
-        district = locality[0] if len(locality) >= 2 else None
-        city = locality[-1] if len(locality) >= 2 else None
-        if district and district.casefold() == city.casefold():
-            district = None
         if require_locality or card.select_one(".listingTit"):
             audit.modern_locality_expected += 1
             if district and city:
                 audit.modern_locality_valid += 1
-        observed_type = classify_property_type(title)
-        # Strict canaries/imports require an observed matching city and an
-        # explicitly identified apartment; no type/city inferred from the URL.
-        # One violating card fails the whole pilot shard, not just that card.
-        if expected_city is not None and _normalise_city(city) != _normalise_city(expected_city):
-            audit.mark("shard_city_mismatch")
+        if expected_city is not None and city is None:
+            audit.mark("shard_city_missing")
             audit.shard_context_violations += 1
             continue
         if require_apartment and observed_type != "apartment":
