@@ -1251,6 +1251,13 @@ async def _main(engine: str, pages: int, headed: bool, browser_path: str | None,
         print("Diagnostic généré : akarfinder_diagnostics.json")
         return 2
 
+    # Fail closed at the batch boundary: no partial SQLite ingestion when any
+    # requested shard failed fetch/quality. Diagnostics remain available.
+    if page_stats["with_listings"] != page_stats["requested"]:
+        export_diagnostics(diagnostics)
+        print("[ERREUR] Lot incomplet : import SQLite annulé ; corriger les shards en échec.")
+        return 1
+
     conn = init_db()
     try:
         price_m2_reviews = review_price_per_m2(collected)
