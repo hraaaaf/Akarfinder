@@ -41,6 +41,7 @@ def provenance() -> dict:
         "github_sha": os.environ.get("GITHUB_SHA"),
         "github_run_id": os.environ.get("GITHUB_RUN_ID"),
         "scraper_sha256": digest("akarfinder_scraper.py"),
+        "evidence_evaluator_sha256": digest("benchmark_evidence.py"),
         "browser_fetcher_sha256": digest("browser_fetcher.py"),
         "canary_sha256": digest("live_canary.py"),
         "quality_baselines_sha256": digest("quality_baselines_v646_20261103.json"),
