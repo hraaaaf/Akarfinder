@@ -23,7 +23,7 @@ const evidence = {
 };
 
 test("proposed update preserves original state in rollback and adds typed sitemap evidence", () => {
-  const update = buildProposedSitemapFreshnessUpdate(before, evidence);
+  const update = buildProposedSitemapFreshnessUpdate(before, evidence, evidence.observedAt);
   assert.equal(update.proposed.freshnessStatus, "fresh_confirmed");
   assert.equal(update.proposed.freshLastSeenAt, evidence.observedAt);
   assert.deepEqual(update.proposed.freshChannels, [SITEMAP_FRESHNESS_CHANNEL]);
@@ -46,12 +46,13 @@ test("existing channels are preserved and deduplicated", () => {
   const update = buildProposedSitemapFreshnessUpdate(
     { ...before, freshChannels: ["openserp_yandex_discovery", SITEMAP_FRESHNESS_CHANNEL] },
     evidence,
+    evidence.observedAt,
   );
   assert.deepEqual(update.proposed.freshChannels, ["openserp_yandex_discovery", SITEMAP_FRESHNESS_CHANNEL].sort());
 });
 
 test("canonical mismatch fails closed", () => {
-  assert.throws(() => buildProposedSitemapFreshnessUpdate(before, { ...evidence, canonicalUrl: "https://daragadir.com/other" }));
+  assert.throws(() => buildProposedSitemapFreshnessUpdate(before, { ...evidence, canonicalUrl: "https://daragadir.com/other" }, evidence.observedAt));
 });
 
 test("canary selection is deterministic and bounded", () => {
@@ -65,4 +66,36 @@ test("canary selection is deterministic and bounded", () => {
 
 test("TTL is exactly 14 days", () => {
   assert.equal(canaryExpiresAt(evidence.observedAt), "2026-08-21T18:45:00.000Z");
+});
+
+test("TTL acceptance is bounded to 14 days with a reproducible evaluation clock", () => {
+  assert.equal(
+    buildProposedSitemapFreshnessUpdate(before, evidence, "2026-08-21T18:45:00.000Z").proposed.freshnessStatus,
+    "fresh_confirmed",
+  );
+  assert.throws(
+    () => buildProposedSitemapFreshnessUpdate(before, evidence, "2026-08-21T18:45:00.001Z"),
+    /outside validity window/,
+  );
+});
+
+test("future sitemap observation is never promoted", () => {
+  assert.throws(
+    () => buildProposedSitemapFreshnessUpdate(before, evidence, "2026-08-07T18:44:59.999Z"),
+    /outside validity window/,
+  );
+});
+
+test("invalid evaluation clock fails closed", () => {
+  assert.throws(
+    () => buildProposedSitemapFreshnessUpdate(before, evidence, "invalid-clock"),
+    /Invalid freshness evaluation clock/,
+  );
+});
+
+test("expired archived sitemap evidence cannot be replayed as fresh", () => {
+  assert.throws(
+    () => buildProposedSitemapFreshnessUpdate(before, evidence, "2026-11-06T10:00:00.000Z"),
+    /outside validity window/,
+  );
 });
