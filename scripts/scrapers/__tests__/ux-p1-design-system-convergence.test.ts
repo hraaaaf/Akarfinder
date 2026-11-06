@@ -46,12 +46,12 @@ test("Plus Jakarta Sans is vendored with OFL license and no build-time Google do
   const layout = source("app/layout.tsx");
   const license = source("app/fonts/OFL.txt");
   const font = readFileSync("app/fonts/PlusJakartaSans-Variable.ttf");
-  assert.match(layout, /import localFont from "next\\/font\\/local"/);
-  assert.doesNotMatch(layout, /next\\/font\\/google/);
-  assert.match(layout, /src:\\s*"\\.\\/fonts\\/PlusJakartaSans-Variable\\.ttf"/);
-  assert.match(layout, /weight:\\s*"200 800"/);
-  assert.match(layout, /variable:\\s*"--font-jakarta"/);
-  assert.match(license, /SIL OPEN FONT LICENSE Version 1\\.1/);
+  assert.match(layout, /import localFont from "next\/font\/local"/);
+  assert.doesNotMatch(layout, /next\/font\/google/);
+  assert.match(layout, /src:\s*"\.\/fonts\/PlusJakartaSans-Variable\.ttf"/);
+  assert.match(layout, /weight:\s*"200 800"/);
+  assert.match(layout, /variable:\s*"--font-jakarta"/);
+  assert.match(license, /SIL OPEN FONT LICENSE Version 1\.1/);
   assert.equal(font.subarray(0, 4).toString("hex"), "00010000");
   assert.ok(font.length > 100_000, "unexpected truncated font");
 });
