@@ -115,6 +115,9 @@ class CanaryEvidence(unittest.TestCase):
 
 
 def _run_main(cwd, html):
+    # The strict shard gate must receive a synthetic Rabat-only sale page.
+    # Historical mixed-city parser fixtures remain unchanged elsewhere.
+    html = page(*(card(7800001 + i, district="Agdal, Rabat") for i in range(3))) if html == SYNTHETIC_MODERN else html
     async def fake_gather(urls, engine="auto", headed=False, browser_path=None, diagnostics=None):
         res = [s.FetchResult(u, "ok", html=html, code=200, attempts=1) for u in urls]
         if diagnostics is not None:
@@ -250,7 +253,7 @@ class ZeroProductionWrite(unittest.TestCase):
             def network_policy_evidence(self): return {"policy": "synthetic_mock", "blocked_requests": 0}
             async def __aenter__(self): return self
             async def __aexit__(self, *a): return False
-            async def fetch(self, url): return s.FetchResult(url, "ok", html=SYNTHETIC_MODERN, code=200, attempts=1)
+            async def fetch(self, url): return s.FetchResult(url, "ok", html=page(*(card(7800001 + i, district="Agdal, Rabat") for i in range(3))), code=200, attempts=1)
         def forbidden(*a, **k): raise AssertionError("sqlite3.connect called by the canary")
         async def fake_probe_wrapper():
             return await lc.probe()
