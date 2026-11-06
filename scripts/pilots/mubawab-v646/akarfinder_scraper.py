@@ -27,6 +27,7 @@ import random
 import re
 import sqlite3
 import tempfile
+import uuid
 from statistics import median
 from typing import Any
 from urllib.parse import urljoin, urlsplit, urlunsplit, unquote
@@ -41,6 +42,12 @@ ROBOTS_URL = "https://www.mubawab.ma/robots.txt"
 ROBOTS_UA = "AkarFinder-public-index"
 MAX_ROBOTS_BYTES = 128 * 1024
 DB_NAME = "akarfinder.db"
+PUBLICATION_STATUS = "akarfinder_publication.json"
+PUBLICATION_FILES = (
+    "akarfinder_data.json", "akarfinder_report.md",
+    "akarfinder_price_anomalies.json", "akarfinder_price_m2_flags.json",
+    "akarfinder_quality_signals.json", "akarfinder_diagnostics.json",
+)
 CONCURRENCY_LIMIT = 2
 MAX_RETRIES = 3
 MIN_ACCEPTANCE_RATE = 0.90  # Reject weak cards, ignoring proven promo/empty slots.
@@ -409,12 +416,15 @@ def parse_listings_audited(html: str | None, *, baseline_eligible_cards: int | N
         link_el = card.select_one("a[href*='/a/']") or card.select_one("a[href]")
         raw_link = card.get("linkref") or (link_el.get("href") if link_el else None)
         link = canonical_url(raw_link)
-        # Explicit empty/promotional slots are not listing evidence.
-        if "adBoostBox" in classes and (not link or not _ID_RE.search(urlsplit(link).path)):
-            audit.mark("promotion_without_detail_link", ignored=True)
-            continue
         title_el = card.select_one(".listingTit, .listingTitle")
         title = title_el.get_text(" ", strip=True) if title_el else ""
+        if "adBoostBox" in classes and not title:
+            # Some promoted cards place an explicit property label in h2/h3.
+            # Ignore generic ad labels, but do not hide a named villa/office.
+            promo_title = card.select_one("h2, h3")
+            candidate = promo_title.get_text(" ", strip=True) if promo_title else ""
+            if classify_property_type(candidate) in ("apartment", "villa", "land", "office", "shop", "mixed_ambiguous"):
+                title = candidate
         district_el = card.select_one(".listingH3")
         location_text = district_el.get_text(" ", strip=True) if district_el else ""
         locality = [part.strip() for part in location_text.split(",") if part.strip()]
@@ -434,6 +444,12 @@ def parse_listings_audited(html: str | None, *, baseline_eligible_cards: int | N
         if context_error:
             audit.mark(context_error)
             audit.shard_context_violations += 1
+            continue
+        # A promotion is ignorable only AFTER explicit type/city conflicts
+        # have been examined. In strict shards, contradictory promotional cards
+        # must fail the entire page, even without an ID, link or numeric data.
+        if "adBoostBox" in classes and (not link or not _ID_RE.search(urlsplit(link).path)):
+            audit.mark("promotion_without_detail_link", ignored=True)
             continue
         if not link or not _ID_RE.search(urlsplit(link).path):
             audit.mark("missing_detail_link")
@@ -916,6 +932,60 @@ def _write_atomic(path: str, contents: str) -> None:
             tmp.unlink()
 
 
+def _write_publication_status(run_id: str, status: str, *,
+                              failure_code: int | None = None) -> None:
+    """One atomic, fail-closed publication marker for consumers.
+
+    Legacy top-level outputs are NEVER a coherent snapshot by themselves.
+    Readers must verify both this marker's state and the listed file hashes.
+    """
+    marker: dict[str, Any] = {
+        "schema_version": 1,
+        "run_id": run_id,
+        "status": status,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "consumer_contract": "verify_all_hashes_before_reading_any_export",
+    }
+    if failure_code is not None:
+        marker["failure_exit_code"] = failure_code
+        marker["previous_exports_may_be_stale_or_mixed"] = True
+        marker["db_committed_before_failure"] = failure_code == 5
+    if status == "complete":
+        # Inspect every file after the last replacement, never from staging.
+        marker["sha256"] = {
+            name: hashlib.sha256(Path(name).read_bytes()).hexdigest()
+            for name in (*PUBLICATION_FILES, DB_NAME)
+        }
+    _write_atomic(PUBLICATION_STATUS, json.dumps(marker, ensure_ascii=False,
+                                                 sort_keys=True, indent=2) + "\n")
+
+
+def verify_publication(root: Path | str = ".") -> dict[str, Any]:
+    """Return fail-closed proof that all exports match one completed run.
+
+    A legacy SQLite export or a previous run left on disk is not trustworthy
+    without a current matching publication marker.
+    """
+    root = Path(root)
+    try:
+        proof = json.loads((root / PUBLICATION_STATUS).read_text(encoding="utf-8"))
+        if proof.get("schema_version") != 1 or proof.get("status") != "complete":
+            return {"valid": False, "reason": "run_not_complete",
+                    "run_id": proof.get("run_id"), "status": proof.get("status")}
+        digest_map = proof.get("sha256")
+        if not isinstance(digest_map, dict) or set(digest_map) != set((*PUBLICATION_FILES, DB_NAME)):
+            return {"valid": False, "reason": "manifest_incomplete"}
+        for name, expected in digest_map.items():
+            if not isinstance(expected, str) or len(expected) != 64:
+                return {"valid": False, "reason": "invalid_digest", "file": name}
+            if hashlib.sha256((root / name).read_bytes()).hexdigest() != expected:
+                return {"valid": False, "reason": "digest_mismatch", "file": name}
+        return {"valid": True, "status": "complete", "run_id": proof.get("run_id"),
+                "files_checked": len(digest_map)}
+    except (OSError, ValueError, TypeError, AttributeError) as exc:
+        return {"valid": False, "reason": "proof_unavailable", "detail": type(exc).__name__}
+
+
 def export_reports(conn: sqlite3.Connection, cycle_ids: list[str], stats: ImportStats,
                    page_stats: dict[str, int], json_path: str = "akarfinder_data.json",
                    md_path: str = "akarfinder_report.md",
@@ -1240,10 +1310,20 @@ async def main(engine: str = "auto", pages: int = MAX_PAGES,
                 browser_path: str | None = None,
                 urls_file: str | None = None) -> int:
     """Exit: 0 complete, 1 partial, 2 empty, 3 admission, 4 pre-commit crash,
-    5 DB committed but artifact publication failed (requires reconciliation)."""
+    5 DB committed but artifact publication failed (requires reconciliation).
+
+    A new run invalidates all previous exported files via an atomic state
+    marker, even when it terminates before writing a single current row.
+    """
     diagnostics: list[dict[str, Any]] = []
+    run_id = uuid.uuid4().hex
     try:
-        return await _main(engine, pages, headed, browser_path, urls_file, diagnostics)
+        _write_publication_status(run_id, "running")
+    except OSError as exc:
+        print(f"[ERREUR PUBLICATION] Impossible d'invalider exports existants: {exc}")
+        return 3  # refuse to start without invalidating old publication proof
+    try:
+        code = await _main(engine, pages, headed, browser_path, urls_file, diagnostics)
     except Exception as exc:  # an uncaught traceback would also exit 1 == "partial"
         message = f"{type(exc).__name__}: {exc}"
         print(f"[ERREUR INATTENDUE] {message}")
@@ -1251,8 +1331,15 @@ async def main(engine: str = "auto", pages: int = MAX_PAGES,
             export_diagnostics(diagnostics, fatal_error=message)
         except Exception:
             pass
-        return 4
-
+        code = 4
+    try:
+        _write_publication_status(run_id, "complete" if code == 0 else "failed",
+                                  failure_code=code if code else None)
+    except (OSError, ValueError, TypeError) as exc:
+        # Never report success without a published and hash-verifiable marker.
+        print(f"[ERREUR PUBLICATION] Marqueur non vérifiable: {exc}")
+        return 5 if code == 0 else code
+    return code
 
 async def _main(engine: str, pages: int, headed: bool, browser_path: str | None,
                 urls_file: str | None, diagnostics: list[dict[str, Any]]) -> int:
@@ -1335,11 +1422,7 @@ async def _main(engine: str, pages: int, headed: bool, browser_path: str | None,
     # serializer has succeeded. Only then is the SQLite transaction committed.
     # No cross-resource (SQLite + filesystem) ACID guarantee is claimed.
     with tempfile.TemporaryDirectory(prefix=".akar-v646-stage-", dir=".") as staging:
-        files = (
-            "akarfinder_data.json", "akarfinder_report.md",
-            "akarfinder_price_anomalies.json", "akarfinder_price_m2_flags.json",
-            "akarfinder_quality_signals.json", "akarfinder_diagnostics.json",
-        )
+        files = PUBLICATION_FILES
         path = lambda name: str(Path(staging) / name)
         conn = init_db()
         try:
