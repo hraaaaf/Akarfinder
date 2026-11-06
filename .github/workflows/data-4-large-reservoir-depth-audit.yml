@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: data-4-0-large-reservoir-depth-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
