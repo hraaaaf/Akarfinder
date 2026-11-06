@@ -105,7 +105,8 @@ def evaluate(rows: list[dict]) -> dict:
             sum(any(strict(f) and f["price_numeric"] for f in observations)
                 for observations in observed_flags.values()),
         "historically_enriched_core_with_district_not_a_source_observation":
-            sum(bool(strict(f)) for f in flags.values()),
+            sum(bool(strict(f)) and not any(strict(v) for v in observed_flags[key])
+                for key, f in flags.items()),
         "verified_active": None,
         "physical_unique_properties": None,
         "publication_eligible_proven": 0,
