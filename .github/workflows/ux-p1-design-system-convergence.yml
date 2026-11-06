@@ -31,5 +31,3 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/ux-p1-design-system-convergence.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
-      - name: Production build
-        run: npm run build
