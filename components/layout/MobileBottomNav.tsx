@@ -21,7 +21,8 @@ function matchesPath(pathname: string, prefix: string): boolean {
 export function MobileBottomNav() {
   const pathname = usePathname();
 
-  if (pathname.startsWith("/visual-qa/")) return null;
+  // Publication is a focused multi-step flow: avoid covering the Continue/Back controls.
+  if (pathname.startsWith("/visual-qa/") || pathname === "/vendre/dossier" || pathname.startsWith("/vendre/dossier/")) return null;
 
   return (
     <nav

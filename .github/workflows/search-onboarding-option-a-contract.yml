@@ -1,0 +1,43 @@
+name: Search Onboarding Option A Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/search-onboarding-option-a-contract.yml"
+      - "components/search/QuickFilters.tsx"
+      - "components/search/SearchViewSwitcher.tsx"
+      - "components/search/SearchViewSwitcher.module.css"
+      - "components/search/SearchPriceExplorerDock.tsx"
+      - "components/property-types/PropertyTypeVisualSelector.tsx"
+      - "lib/ux/indexed-property-type-visual.ts"
+      - "app/search/search-premium-card-density.css"
+      - "scripts/audits/search-onboarding-option-a-visual.mjs"
+      - "scripts/scrapers/__tests__/search-onboarding-option-a.test.mjs"
+      - "scripts/scrapers/__tests__/p3-search-standard-v1.test.ts"
+      - "scripts/scrapers/__tests__/property-type-visual-option-a.test.ts"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Search Option A static and behavioral contracts
+        run: node --test scripts/scrapers/__tests__/search-onboarding-option-a.test.mjs
+      - name: Search P3 and visuals regression
+        run: npx tsx --test scripts/scrapers/__tests__/p3-search-standard-v1.test.ts scripts/scrapers/__tests__/property-type-visual-option-a.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit

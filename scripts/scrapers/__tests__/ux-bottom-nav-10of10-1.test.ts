@@ -70,3 +70,10 @@ test("UX-BOTTOM-NAV keeps touch and floating geometry explicit", () => {
   assert.match(nav, /min-h-11/);
   assert.match(layout, /pb-\[calc\(64px\+env\(safe-area-inset-bottom\)\)\] md:pb-0/);
 });
+
+test("UX-BOTTOM-NAV leaves the focused seller publication wizard unobstructed", () => {
+  assert.match(nav, /pathname === "\/vendre\/dossier"/);
+  assert.match(nav, /pathname\.startsWith\("\/vendre\/dossier\/"\)/);
+  assert.match(nav, /pathname\.startsWith\("\/visual-qa\/"\)/);
+  assert.match(nav, /href=\{href\}/);
+});

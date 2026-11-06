@@ -28,12 +28,10 @@ describe("UX-LISTING-NAV-FEEDBACK-1", () => {
   it("keeps explicit secondary provenance and credit links external", () => {
     const card = source("components/search/SearchListingCardDark.tsx");
     const secondarySource = card.indexOf("data-secondary-source-link");
-    const neighborhoodCredit = card.indexOf("data-neighborhood-photo-credit");
-
     assert.notEqual(secondarySource, -1);
-    assert.notEqual(neighborhoodCredit, -1);
     assert.ok(card.slice(Math.max(0, secondarySource - 220), secondarySource + 120).includes('target="_blank"'));
-    assert.ok(card.slice(Math.max(0, neighborhoodCredit - 220), neighborhoodCredit + 120).includes('target="_blank"'));
+    assert.doesNotMatch(card, /data-neighborhood-photo-credit/);
+    assert.match(card, /Visuel illustratif/);
   });
 
   it("mounts delayed branded navigation feedback with browser-history resets", () => {

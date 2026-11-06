@@ -71,7 +71,7 @@ async function hydrate(page) {
     await page.waitForTimeout(80);
   }
   await page.waitForFunction(() => {
-    const images = [...document.querySelectorAll('img[data-neighborhood-photo-id]')];
+    const images = [...document.querySelectorAll('img[data-property-visual-family]')];
     return images.length === 10 && images.every((image) => image.complete && image.naturalWidth > 0);
   }, { timeout: 35_000 });
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
@@ -81,21 +81,25 @@ async function hydrate(page) {
 async function metrics(page) {
   return page.evaluate(() => {
     const cards = [...document.querySelectorAll('[data-mobile-compact-card]')];
-    const photos = [...document.querySelectorAll('img[data-neighborhood-photo-id]')];
-    const titles = [...document.querySelectorAll('[data-neighborhood-photo-title]')];
-    const disclosures = [...document.querySelectorAll('[data-neighborhood-photo-disclosure]')];
-    const credits = [...document.querySelectorAll('[data-neighborhood-photo-credit]')];
-    const grid = cards[0]?.parentElement;
-    const columns = grid ? getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean).length : 0;
-    const clipped = [...titles, ...disclosures].filter((node) => node.scrollWidth > node.clientWidth + 1).length;
+    const images = [...document.querySelectorAll('img[data-property-visual-family]')];
+    const disclosures = [...document.querySelectorAll('[data-property-artwork-disclosure]')];
+    const forbiddenAmbience = document.querySelectorAll('[data-neighborhood-photo-id],[data-neighborhood-photo-credit],[data-neighborhood-photo-title]').length;
+    // The card's immediate parent is a display:contents wrapper, NOT its CSS grid.
+    // Count columns on the actual Search results grid, and ensure all fixture
+    // cards belong to that same grid (do not accept unrelated grid geometry).
+    const grid = document.querySelector('[data-search-continuous-flow] > div.grid');
+    const columns = grid && cards.every((card) => grid.contains(card))
+      ? getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean).length
+      : 0;
+    const clipped = disclosures.filter((node) => node.scrollWidth > node.clientWidth + 1).length;
     return {
       cardCount: cards.length,
-      photoCount: photos.length,
-      titles: titles.map((node) => (node.textContent ?? "").replace(/\s+/g, " ").trim()),
-      disclosures: disclosures.map((node) => (node.textContent ?? "").replace(/\s+/g, " ").trim()),
-      districts: photos.map((node) => node.getAttribute('data-neighborhood-photo-district')),
-      ids: photos.map((node) => node.getAttribute('data-neighborhood-photo-id')),
-      credits: credits.length,
+      imageCount: images.length,
+      imageSources: images.map((node) => node.getAttribute('src')),
+      imageLoaded: images.every((node) => node.complete && node.naturalWidth > 0),
+      families: images.map((node) => node.getAttribute('data-property-visual-family')),
+      disclosures: disclosures.map((node) => (node.textContent ?? '').replace(/\s+/g, ' ').trim()),
+      forbiddenAmbience,
       columns,
       clipped,
       clientWidth: document.documentElement.clientWidth,
@@ -124,27 +128,27 @@ try {
       await hydrate(page);
       const measured = await metrics(page);
 
-      if (measured.cardCount !== 10 || measured.photoCount !== 10 || measured.credits !== 10) throw new Error(`${viewport.name}: expected 10 photo cards with credits`);
-      if (measured.disclosures.some((value) => value !== "Photo d’ambiance")) throw new Error(`${viewport.name}: disclosure drift`);
-      if (measured.titles.some((value) => !value.startsWith("Rabat • "))) throw new Error(`${viewport.name}: district title drift`);
-      for (const district of districts) {
-        if (measured.districts.filter((value) => value === district).length !== 2) throw new Error(`${viewport.name}: ${district} district mapping drift`);
-      }
+      if (measured.cardCount !== 10 || measured.imageCount !== 10 || !measured.imageLoaded) throw new Error(`${viewport.name}: expected ten canonical property illustrations loaded`);
+      if (measured.forbiddenAmbience !== 0) throw new Error(`${viewport.name}: neighborhood photos leaked into property cards`);
+      if (measured.disclosures.length !== 10 || measured.disclosures.some((value) => value !== "Visuel illustratif")) throw new Error(`${viewport.name}: property artwork disclosure drift`);
+      const expectedFamilies = Array.from({length: 10}, (_, index) => index % 2 === 0 ? "apartment" : "villa");
+      if (JSON.stringify(measured.families) !== JSON.stringify(expectedFamilies)) throw new Error(`${viewport.name}: structured property family mapping drift`);
+      if (measured.imageSources.some((src, index) => src !== `/visuals/property-types/target/${expectedFamilies[index]}.svg`)) throw new Error(`${viewport.name}: noncanonical property artwork URL`);
       if (viewport.width <= 390 && measured.columns !== 2) throw new Error(`${viewport.name}: mobile grid must have 2 columns, got ${measured.columns}`);
-      if (measured.scrollWidth > measured.clientWidth || measured.clipped > 0) throw new Error(`${viewport.name}: overflow or neighborhood-photo text clipping`);
+      if (measured.scrollWidth > measured.clientWidth || measured.clipped > 0) throw new Error(`${viewport.name}: overflow or canonical disclosure clipping`);
 
-      const stableIds = measured.ids;
+      const stableIds = measured.imageSources;
       await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 });
       await hydrate(page);
       const reloaded = await metrics(page);
-      if (JSON.stringify(reloaded.ids) !== JSON.stringify(stableIds)) throw new Error(`${viewport.name}: photo assignment changed after reload`);
+      if (JSON.stringify(reloaded.imageSources) !== JSON.stringify(stableIds)) throw new Error(`${viewport.name}: canonical property artwork changed after reload`);
       if (viewport.width <= 390 && reloaded.columns !== 2) throw new Error(`${viewport.name}: mobile 2-column layout drift after reload`);
 
       await page.screenshot({ path: `${outputDir}/${viewport.name}.png`, fullPage: true });
       results.push({
         name: viewport.name,
         cards: measured.cardCount,
-        photos_loaded: measured.photoCount,
+        canonical_artworks_loaded: measured.imageCount,
         mobile_columns: viewport.width <= 390 ? measured.columns : null,
         stable_after_reload: true,
         clipped_labels: 0,

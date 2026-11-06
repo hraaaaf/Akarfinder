@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import { Suspense } from "react";
 import "./globals.css";
 import "./a11y.css";
@@ -14,11 +14,14 @@ export const viewport: Viewport = {
   themeColor: "#071B33",
 };
 
-const jakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
+// Original Plus Jakarta Sans variable font, pinned under SIL OFL 1.1.
+// One local face covers the existing 400-800 weights without Google calls at build time.
+const jakartaSans = localFont({
+  src: "./fonts/PlusJakartaSans-Variable.ttf",
+  weight: "200 800",
+  style: "normal",
   display: "swap",
   variable: "--font-jakarta",
-  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {

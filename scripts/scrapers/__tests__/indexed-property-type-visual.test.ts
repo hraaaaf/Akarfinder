@@ -71,22 +71,32 @@ describe("SEARCH-PROPERTY-TYPE-VISUALS-1", () => {
     assert.match(card, /href=\{listing\.listing_url!\}/);
   });
 
-  it("ships all six TARGET illustration branches and property-colored card selectors", () => {
+  it("renders the canonical TARGET asset for every known indexed property type", () => {
     const artwork = source("components/search/IndexedPropertyTypeArtwork.tsx");
-    for (const key of ["apartment", "villa", "land", "office", "commercial", "riad"] as const) {
-      assert.match(artwork, new RegExp(`visual\\.key === \\"${key}\\"|data-indexed-property-artwork=\\{visual\\.key\\}`));
-      assert.match(artwork, new RegExp(`data-indexed-property-artwork=\\"${key}\\"`));
-    }
-    assert.match(artwork, /Annonce indexée/);
-    assert.match(artwork, /data-indexed-artwork-card/);
+    assert.match(artwork, /getIndexedPropertyTypeVisual\(propertyType, title\)/);
+    assert.match(artwork, /data-indexed-property-artwork=\{visual\.key\}/);
+    assert.match(artwork, /visual\.targetAsset \?/);
+    assert.match(artwork, /src=\{visual\.targetAsset\}/);
+    assert.doesNotMatch(artwork, /IndexedTransactionArtwork|property-types-premium/);
+  });
+
+  it("uses a neutral fallback for unknown types rather than mislabeling as apartment", () => {
+    const artwork = source("components/search/IndexedPropertyTypeArtwork.tsx");
+    const shared = source("components/property-types/PropertyTypeArtwork.tsx");
+    assert.match(artwork, /data-property-visual-family="unknown"/);
+    assert.match(shared, /if \(!visual\.targetAsset\)/);
+    assert.doesNotMatch(artwork, /target\/apartment\.svg/);
+    assert.doesNotMatch(shared, /target\/apartment\.svg/);
   });
 
   it("keeps locked TARGET assets local and prevents the broken nested Riad image regression", () => {
     const css = source("app/search/search-property-type-target-art.css");
+    const artwork = source("components/search/IndexedPropertyTypeArtwork.tsx");
+    const resolver = source("lib/ux/indexed-property-type-visual.ts");
     for (const key of ["apartment", "villa", "land", "office", "commercial"] as const) {
       const asset = `public/visuals/property-types/target/${key}.svg`;
       assert.equal(existsSync(resolve(ROOT, asset)), true, `${key} TARGET asset missing`);
-      assert.match(css, new RegExp(`/visuals/property-types/target/${key}\\.svg`));
+      assert.match(resolver, new RegExp(`/visuals/property-types/target/${key}\\.svg`));
       assert.doesNotMatch(source(asset), /(?:href|src)=["']https?:\/\//i, `${key} TARGET asset must not load an external URL`);
     }
 
@@ -99,7 +109,10 @@ describe("SEARCH-PROPERTY-TYPE-VISUALS-1", () => {
       [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
       "Riad TARGET asset must be a valid PNG payload",
     );
-    assert.match(css, /\/visuals\/property-types\/target\/riad\.png/);
-    assert.doesNotMatch(css, /\/visuals\/property-types\/target\/riad\.svg/);
+    assert.match(resolver, /\/visuals\/property-types\/target\/riad\.png/);
+    assert.doesNotMatch(resolver, /\/visuals\/property-types\/target\/riad\.svg/);
+    assert.match(artwork, /src=\{visual\.targetAsset\}/);
+    assert.match(artwork, /data-indexed-artwork-label/);
+    assert.doesNotMatch(css, /background-image\s*:/);
   });
 });

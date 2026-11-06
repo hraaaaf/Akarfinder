@@ -31,6 +31,8 @@ try {
       await grid.waitFor({ state: "visible", timeout: 20_000 });
       const cards = grid.locator("[data-home-action]");
       const cardCount = await cards.count();
+      const homeMapPromoCount = await page.locator('[data-home-standard-slot="vivre-ici"], [data-home-neighborhood-intelligence], [data-home-neighborhood-card]').count();
+      const vivreIciNavCount = await page.locator('a[href="/map"]').count();
       const hrefs = await cards.evaluateAll((nodes) => nodes.map((node) => node instanceof HTMLAnchorElement ? node.getAttribute("href") ?? "" : ""));
       const bodyText = await page.locator("body").innerText();
       const heading = (await grid.locator("h2").innerText()).trim();
@@ -39,6 +41,8 @@ try {
       if ((response?.status() ?? 0) !== 200) localFindings.push(`HTTP_${response?.status() ?? 0}`);
       if (heading !== "La suite de votre projet") localFindings.push(`HEADING_${heading}`);
       if (cardCount !== 3) localFindings.push(`CARD_COUNT_${cardCount}`);
+      if (homeMapPromoCount !== 0) localFindings.push(`REJECTED_HOME_MAP_PROMO_${homeMapPromoCount}`);
+      if (vivreIciNavCount < 1) localFindings.push("STANDALONE_VIVRE_ICI_LINK_MISSING");
       if (JSON.stringify(hrefs) !== JSON.stringify(expectedHrefs)) localFindings.push(`HREFS_${hrefs.join("|")}`);
       if (metrics.scrollWidth > metrics.clientWidth + 1) localFindings.push(`OVERFLOW_${metrics.scrollWidth}_${metrics.clientWidth}`);
       for (const token of forbiddenCopy) if (bodyText.includes(token)) localFindings.push(`FORBIDDEN_COPY_${token.replace(/\s+/g, "_")}`);
@@ -46,7 +50,7 @@ try {
 
       const screenshot = `${scenario.name}.png`;
       await page.screenshot({ path: path.join(outputDir, screenshot), fullPage: true });
-      results.push({ ...scenario, screenshot, heading, cardCount, hrefs, consoleErrors, findings: localFindings, ...metrics });
+      results.push({ ...scenario, screenshot, heading, cardCount, homeMapPromoCount, vivreIciNavCount, hrefs, consoleErrors, findings: localFindings, ...metrics });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       localFindings.push(`AUDIT_ERROR_${message}`);

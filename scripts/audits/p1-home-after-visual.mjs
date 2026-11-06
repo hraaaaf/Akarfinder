@@ -52,6 +52,7 @@ try {
       const standardCount = await page.locator('[data-home-standard="home-v1"]').count();
       const trustCount = await page.locator('[data-home-trust-strip="v1"]').count();
       const vivreIciCount = await page.locator('[data-home-standard-slot="vivre-ici"]').count();
+      const mapNavCount = await page.locator('a[href="/map"]').count();
       const compactCitiesCount = await page.locator('[data-home-city-layout="compact-v1"]').count();
       const homeListingsCount = await page.locator('[data-home-listings]').count();
       const homeActionCount = await page.locator('[data-home-action]').count();
@@ -65,7 +66,8 @@ try {
       if (h1 !== expectedH1) localFindings.push(`H1_MISMATCH_${h1}`);
       if (standardCount !== 1) localFindings.push(`HOME_STANDARD_COUNT_${standardCount}`);
       if (trustCount !== 1) localFindings.push(`TRUST_STRIP_COUNT_${trustCount}`);
-      if (vivreIciCount !== 1) localFindings.push(`VIVRE_ICI_SLOT_COUNT_${vivreIciCount}`);
+      if (vivreIciCount !== 0) localFindings.push(`REJECTED_HOME_MAP_PROMO_${vivreIciCount}`);
+      if (mapNavCount < 1) localFindings.push("STANDALONE_VIVRE_ICI_NAV_MISSING");
       if (compactCitiesCount !== 1) localFindings.push(`COMPACT_CITIES_COUNT_${compactCitiesCount}`);
       if (homeListingsCount !== 0) localFindings.push(`HOME_LISTINGS_PRESENT_${homeListingsCount}`);
       if (homeActionCount !== 3) localFindings.push(`HOME_ACTION_COUNT_${homeActionCount}`);
@@ -87,6 +89,7 @@ try {
         standardCount,
         trustCount,
         vivreIciCount,
+        mapNavCount,
         compactCitiesCount,
         homeListingsCount,
         homeActionCount,

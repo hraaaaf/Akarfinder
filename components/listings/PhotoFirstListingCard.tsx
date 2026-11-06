@@ -5,7 +5,7 @@ import Link from "next/link";
 import { MapPin, ArrowRight } from "lucide-react";
 import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
-import { ListingVisual } from "@/components/listings/ListingVisual";
+import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
 import { MreBadge } from "@/components/ui/MreBadge";
 import { ReliabilityBadge } from "@/components/ui/ReliabilityBadge";
 import { SourceBadge, deriveBadge } from "@/components/badges/SourceBadge";
@@ -110,7 +110,7 @@ export function PhotoFirstListingCard({ listing }: PhotoFirstListingCardProps) {
                 sizes="(max-width: 640px) 100vw, 400px"
               />
             ) : (
-              <ListingVisual listing={listing} className="h-full w-full" />
+              <PropertyTypeArtwork kind={listing.property_type} className="h-full w-full" decorative />
             )}
           </div>
 

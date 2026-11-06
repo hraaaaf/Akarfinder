@@ -37,6 +37,8 @@ try {
       const listingSectionCount = await page.locator("[data-home-listings]").count();
       const listingCount = await page.locator("[data-home-listing-card]").count();
       const neighborhoodCount = await page.locator("[data-home-neighborhood-card]").count();
+      const homeMapPromoCount = await page.locator('[data-home-standard-slot="vivre-ici"], [data-home-neighborhood-intelligence]').count();
+      const vivreIciNavCount = await page.locator('a[href="/map"]').count();
       const actionCards = page.locator("[data-home-action]");
       const actionCount = await actionCards.count();
       const actionHrefs = await actionCards.evaluateAll((nodes) => nodes.map((node) => node instanceof HTMLAnchorElement ? node.getAttribute("href") ?? "" : ""));
@@ -47,7 +49,8 @@ try {
       if (trustCount !== 1) localFindings.push(`TRUST_COUNT_${trustCount}`);
       if (cityCount !== 6) localFindings.push(`CITY_COUNT_${cityCount}`);
       if (listingSectionCount !== 0 || listingCount !== 0) localFindings.push(`LISTINGS_${listingSectionCount}_${listingCount}`);
-      if (neighborhoodCount !== 3) localFindings.push(`NEIGHBORHOOD_COUNT_${neighborhoodCount}`);
+      if (neighborhoodCount !== 0 || homeMapPromoCount !== 0) localFindings.push(`REJECTED_HOME_MAP_PROMO_${neighborhoodCount}_${homeMapPromoCount}`);
+      if (vivreIciNavCount < 1) localFindings.push("STANDALONE_VIVRE_ICI_LINK_MISSING");
       if (actionCount !== 3) localFindings.push(`ACTION_COUNT_${actionCount}`);
       if (JSON.stringify(actionHrefs) !== JSON.stringify(expectedActionHrefs)) localFindings.push(`ACTION_HREFS_${actionHrefs.join("|")}`);
       if (legacyCompagnonCount !== 0) localFindings.push(`LEGACY_COMPAGNON_${legacyCompagnonCount}`);
@@ -58,7 +61,7 @@ try {
 
       const screenshot = `${scenario.name}.png`;
       await page.screenshot({ path: path.join(outputDir, screenshot), fullPage: true });
-      results.push({ ...scenario, screenshot, trustCount, cityCount, listingSectionCount, listingCount, neighborhoodCount, actionCount, actionHrefs, legacyCompagnonCount, intelligenceCount, consoleErrors, findings: localFindings, ...metrics });
+      results.push({ ...scenario, screenshot, trustCount, cityCount, listingSectionCount, listingCount, neighborhoodCount, homeMapPromoCount, vivreIciNavCount, actionCount, actionHrefs, legacyCompagnonCount, intelligenceCount, consoleErrors, findings: localFindings, ...metrics });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       localFindings.push(`AUDIT_ERROR_${message}`);

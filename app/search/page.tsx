@@ -1,6 +1,5 @@
 import { after } from "next/server";
 import type { Metadata } from "next";
-import { FinderLauncher } from "@/components/companion/FinderLauncher";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LightZillowSearchShell } from "@/components/search/LightZillowSearchShell";
@@ -34,6 +33,7 @@ import "./mockup-convergence-l2.css";
 import "./p4-map-shell.css";
 import "./search-property-type-visuals.css";
 import "./search-property-type-target-art.css";
+import "./search-mobile-card-readability.css";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -179,7 +179,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         />
         <SearchPriceExplorerDock />
       </PropertySelectionProvider>
-      <FinderLauncher />
       <div className="l2-secondary-footer">
         <SiteFooter variant="search" />
       </div>

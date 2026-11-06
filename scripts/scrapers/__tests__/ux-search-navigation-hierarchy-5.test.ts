@@ -13,11 +13,14 @@ test("UX-SEARCH-5 keeps the global header complete while reducing its Search vis
   assert.match(source, /data-search-global-header=\{compact \? "compact" : undefined\}/);
   assert.match(source, /compact \? "py-1\.5 sm:py-2"/);
   assert.match(source, /h-\[23px\].*sm:h-\[28px\]/s);
-  assert.match(source, /compact \? "gap-2\.5 xl:gap-3\.5" : "gap-4"/);
+  assert.match(source, /compact \? "gap-1\.5 xl:gap-2\.5" : "gap-2\.5 xl:gap-4"/);
   assert.match(source, /bg-white\/\[0\.08\]/);
-  for (const label of ["Acheter", "Louer", "Neuf", "Recherche", "Plus", "Publier", "Mon Projet"]) {
-    assert.ok(source.includes(label), `navigation item ${label} must remain available`);
+  const navigation = await readFile("lib/product-navigation.ts", "utf8");
+  assert.match(source, /PRODUCT_PRIMARY_NAV\.map/);
+  for (const label of ["Acheter", "Louer", "Neuf", "Vivre ici", "Vendre", "Pro"]) {
+    assert.ok(navigation.includes(`label: "${label}"`), `navigation item ${label} must remain available`);
   }
+  assert.ok(source.includes("Mon Projet"));
   assert.match(source, /href="\/favorites"/);
   assert.match(source, /"Mes favoris"/);
   assert.match(source, /"Ouvrir le menu"/);

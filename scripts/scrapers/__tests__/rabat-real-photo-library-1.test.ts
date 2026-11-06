@@ -120,6 +120,25 @@ describe("RABAT-REAL-PHOTO-LIBRARY-1", () => {
     assert.equal(unsupported.sourceName, "Wikimedia Commons");
   });
 
+  it("verifies Commons licensing against the original upload URL, not thumb-host thumbnails", () => {
+    const checker = source("scripts/audits/rabat-real-photo-library-1-sources.ts");
+    assert.match(checker, /const canonicalImageUrl=imageInfo\?\.url\?\?""/);
+    assert.doesNotMatch(checker, /const canonicalImageUrl=imageInfo\?\.thumburl/);
+    assert.match(checker, /canonicalImageUrl\.startsWith\("https:\/\/upload\.wikimedia\.org\/"\)/);
+    assert.match(checker, /isCompatibleCommonsLicense\(license,licenseUrl\)/);
+    assert.match(checker, /mime\.startsWith\("image\/"\)/);
+    assert.match(checker, /if\(results\.length!==40\|\|failures\.length>0\)throw/);
+  });
+
+  it("audits the actual Search results grid, not the display:contents card wrapper", () => {
+    const visual = source("scripts/audits/rabat-real-photo-library-1-visual.mjs");
+    assert.match(visual, /document\.querySelector\('\[data-search-continuous-flow\] > div\.grid'\)/);
+    assert.match(visual, /cards\.every\(\(card\) => grid\.contains\(card\)\)/);
+    assert.doesNotMatch(visual, /const grid = cards\[0\]\?\.parentElement/);
+    assert.match(visual, /viewport\.width <= 390 && measured\.columns !== 2/);
+    assert.match(visual, /measured\.scrollWidth > measured\.clientWidth/);
+  });
+
   it("keeps the legacy contextual illustration catalog untouched", () => {
     const catalog = source("lib/contextual-illustrations/catalog.ts");
     assert.match(catalog, /districtType: \{\}/);
@@ -127,17 +146,18 @@ describe("RABAT-REAL-PHOTO-LIBRARY-1", () => {
     assert.doesNotMatch(catalog, /rabat-real-photo-library|commons\.wikimedia/i);
   });
 
-  it("keeps property photos authoritative and renders the exact ambience source credit", () => {
+  it("keeps authorized property photos authoritative while reserving Rabat ambience for neighborhood content", () => {
     const card = source("components/search/SearchListingCardDark.tsx");
+    const contextual = source("components/search/ContextualListingArtwork.tsx");
     const providerThumbnail = card.indexOf('imageMode === "db_provider_thumbnail"');
     const ownedImage = card.indexOf('imageMode !== "fallback_visual"');
-    const neighborhoodPhoto = card.indexOf("showNeighborhoodPhoto ?");
-    assert.ok(providerThumbnail >= 0 && ownedImage > providerThumbnail && neighborhoodPhoto > ownedImage);
-    assert.match(card, /resolveRabatRealPhoto/);
-    assert.match(card, /district: listing\.neighborhood/);
-    assert.match(card, /Photo d’ambiance/);
-    assert.match(card, /Crédit & licence · \{neighborhoodPhoto\.sourceName\}/);
-    assert.match(card, /data-neighborhood-photo-brand-overlay/);
+    const canonicalArtwork = card.indexOf('data-visual-inventory-class="canonical_property_type"');
+    assert.ok(providerThumbnail >= 0 && ownedImage > providerThumbnail && canonicalArtwork > ownedImage);
+    assert.match(card, /Visuel illustratif/);
+    assert.doesNotMatch(card, /resolveRabatRealPhoto|Photo d’ambiance|data-neighborhood-photo-credit/);
+    assert.match(contextual, /resolveContextualIllustration/);
+    assert.ok(RABAT_REAL_PHOTO_ASSETS.every((asset) => Boolean(asset.sourcePage) && Boolean(asset.sourceName)));
     assert.match(card, /repeat\(2, minmax\(0, 1fr\)\)/);
   });
+
 });
