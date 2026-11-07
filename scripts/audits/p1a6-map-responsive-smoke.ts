@@ -130,6 +130,18 @@ async function main() {
           try {
             await page.locator('[data-region-list-slug="casablanca-settat"]').click({ timeout: 12_000 });
             await page.locator('[data-city-list-slug="casablanca"]').click({ timeout: 12_000 });
+            await page.locator('[data-premium-map][data-map-level="city"]').waitFor({ state: "visible", timeout: 12_000 });
+            const cityDisclosure = page.locator('[data-city-location-notice]');
+            await cityDisclosure.waitFor({ state: "visible", timeout: 12_000 });
+            if (!(await cityDisclosure.innerText()).includes("Contours de quartiers indisponibles") ||
+                await page.locator('[data-neighborhood-schematic], [data-premium-map] polygon').count() > 0) {
+              findings.push({ route: route.path, viewport: viewport.label, check: "l2a-no-fake-geometries", detail: "City view still contains synthetic district polygons or hides its coverage disclaimer" });
+            }
+            // The initial /map stage remains visible: capture city-mode map BEFORE scrolling
+            // down to Maârif in the side panel. This is a distinct 4-viewport L2-A AFTER proof.
+            await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+            await page.screenshot({ path: join(outputDir, `map-casablanca-city-${viewport.label}.png`), fullPage: false });
+            screenshotsCaptured += 1;
             const maarifButton = page.locator("[data-map-side-panel] button").filter({ hasText: "Maârif" }).first();
             await maarifButton.click({ timeout: 12_000 });
             const selected = page.locator('[data-selected-quartier="maarif"]');
