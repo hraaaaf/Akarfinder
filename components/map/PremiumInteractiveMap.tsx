@@ -287,17 +287,6 @@ function featureSlug(feature: RegionFeature, regions: Region[]) {
   return REGION_ALIASES[normalizeName(rawName)] ?? null;
 }
 
-function neighborhoodPolygon(index: number) {
-  const column = index % 3;
-  const row = Math.floor(index / 3);
-  const x = 84 + column * 275 + (row % 2) * 18;
-  const y = 130 + row * 126;
-  const width = 246;
-  const height = 103;
-  const notch = 18 + ((index * 7) % 24);
-  return `${x},${y + 10} ${x + width - notch},${y} ${x + width},${y + height - 20} ${x + width - 20},${y + height} ${x + 14},${y + height - 7} ${x},${y + 28}`;
-}
-
 export function PremiumInteractiveMap() {
   const regions = useMapData();
   const [level, setLevel] = useState<Level>("national");
@@ -758,40 +747,21 @@ export function PremiumInteractiveMap() {
               {level === "city" && selectedCity ? (
                 <motion.div
                   key={selectedCity.slug}
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.97 }}
-                  transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-x-3 bottom-3 top-[66px] z-10 overflow-hidden rounded-[22px] border backdrop-blur-md sm:inset-x-5 sm:bottom-5"
-                  style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 72%, transparent)" }}
-                  data-neighborhood-schematic
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                  className="pointer-events-none absolute left-3 top-[72px] z-10 w-[min(320px,calc(100%-24px))] rounded-2xl border px-4 py-3 shadow-md backdrop-blur-md sm:left-5"
+                  style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 94%, transparent)" }}
+                  role="status"
+                  aria-live="polite"
+                  data-city-location-notice
                 >
-                  <svg viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} className="h-full w-full" aria-label={`Quartiers schématiques de ${selectedCity.name}`}>
-                    <text x="64" y="74" fill="var(--text-primary)" fontSize="25" fontWeight="900">{selectedCity.name}</text>
-                    <text x="64" y="101" fill="var(--text-secondary)" fontSize="12" fontWeight="700">Schéma illustratif · formes et positions sans valeur géographique</text>
-                    {selectedCity.quartiers.map((quartier, index) => {
-                      const active = quartier.slug === selectedQuartierSlug;
-                      const column = index % 3;
-                      const row = Math.floor(index / 3);
-                      const labelX = 84 + column * 275 + (row % 2) * 18 + 18;
-                      const labelY = 130 + row * 126 + 55;
-                      return (
-                        <g key={quartier.slug} role="button" tabIndex={0} className="cursor-pointer outline-none" aria-label={`Sélectionner ${quartier.name}`} onClick={() => setSelectedQuartierSlug(quartier.slug)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedQuartierSlug(quartier.slug); } }}>
-                          <motion.polygon
-                            points={neighborhoodPolygon(index)}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: Math.min(index * 0.035, 0.25), duration: 0.32 }}
-                            fill={active ? NAVY : "color-mix(in srgb, #6E8DA4 35%, var(--surface))"}
-                            stroke={active ? NAVY : "var(--border-dark)"}
-                            strokeWidth={active ? 3 : 1.5}
-                            style={{ transformOrigin: `${labelX}px ${labelY}px` }}
-                          />
-                          <text x={labelX} y={labelY} fill={active ? "white" : "var(--text-primary)"} fontSize="13" fontWeight="850" pointerEvents="none">{quartier.name}</text>
-                        </g>
-                      );
-                    })}
-                  </svg>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.1em]" style={{ color: NAVY }}>Ville sélectionnée</p>
+                  <p className="mt-1 text-[18px] font-black">{selectedCity.name}</p>
+                  <p className="mt-1.5 text-[11px] font-medium leading-5" style={{ color: "var(--text-secondary)" }}>
+                    Contours de quartiers indisponibles. Aucun périmètre n’est dessiné sans source vérifiée. Choisissez un quartier dans la liste.
+                  </p>
                 </motion.div>
               ) : null}
             </AnimatePresence>
