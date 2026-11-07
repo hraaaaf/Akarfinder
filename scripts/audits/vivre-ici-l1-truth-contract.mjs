@@ -13,7 +13,11 @@ test("no fake prices, verified POI counts, or synthetic availability published b
   }
   assert.match(national, /data-local-evidence="unavailable"/);
   assert.match(national, /Informations locales à documenter/);
-  assert.match(national, /formes et positions sans valeur géographique/);
+  assert.match(national, /Contours de quartiers indisponibles/);
+  assert.match(national, /data-city-location-notice/);
+  for (const inventedShape of ["neighborhoodPolygon", "<motion.polygon", "data-neighborhood-schematic"]) {
+    assert.equal(national.includes(inventedShape), false, `L2-A must not restore fabricated geometry: ${inventedShape}`);
+  }
 });
 
 test("zero recent POIs have an explicit honest fallback, not a false sourcing claim", () => {
