@@ -236,3 +236,6 @@ try {
   await browser.close();
   await writeFile(`${outDir}/report.json`, JSON.stringify(report, null, 2));
 }
+
+// L4-B Mohammedia: read-only visual certification on the existing authorized N2 job.
+await import("./vivre-ici-l4b-mohammedia-smoke.mjs");

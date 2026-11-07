@@ -46,7 +46,11 @@ export function NationalNeighborhoodOverlayBridge({ citySlug, districtSlug, onSe
         return response.json() as Promise<CityNeighborhoodPayload>;
       })
       .then((next) => {
-        if (next.view === "city" && next.place.slug === citySlug) setPayload(next);
+        // The V5 source uses "mohammadia" while the public URL uses
+        // "mohammedia". Accept the exact pre-existing canonical record only:
+        // no alternative geography, synthetic center or fallback neighborhood.
+        const expectedSourceSlug = citySlug === "mohammedia" ? "mohammadia" : citySlug;
+        if (next.view === "city" && next.place.slug === expectedSourceSlug) setPayload(next);
       })
       .catch((error) => {
         if (error?.name !== "AbortError") setPayload(null);
