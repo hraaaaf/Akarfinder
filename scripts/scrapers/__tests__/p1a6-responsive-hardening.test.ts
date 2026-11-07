@@ -2,6 +2,15 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
+import {
+  CASABLANCA_NEIGHBORHOOD_GEOMETRY_CANDIDATES,
+  CASABLANCA_NEIGHBORHOOD_GEOMETRY_SHADOW,
+} from "@/lib/geo/casablanca-neighborhood-geometry-shadow";
+import {
+  ANN_L5_CERTIFIED_SEED_OBSERVED_AT,
+  getAnnL5CertifiedSeedPois,
+} from "@/lib/neighborhood-context/certified-seed";
+import { getNeighborhoodContextReadModelBySlugs } from "@/lib/neighborhood-context/read-model";
 
 function source(path: string) {
   return readFileSync(join(process.cwd(), path), "utf8");
@@ -140,5 +149,47 @@ describe("P1A.6 — Responsive hardening", () => {
     assert.match(router, /MapNeighborhoodClient/);
     assert.match(router, /useMapLibreNeighborhood/);
     assert.match(router, /MapLibreNeighborhood3D/);
+  });
+});
+
+
+describe("Vivre Ici L3-B — source gates for Maârif", () => {
+  const snapshotAt = new Date("2026-11-07T00:00:00.000Z");
+
+  it("keeps OSM arrondissement relation 2801474 shadow-only, never a published quartier outline", () => {
+    const candidate = CASABLANCA_NEIGHBORHOOD_GEOMETRY_CANDIDATES.find(
+      (entry) => entry.neighborhoodCanonicalId === "maarif",
+    );
+    const geometry = CASABLANCA_NEIGHBORHOOD_GEOMETRY_SHADOW.find(
+      (entry) => entry.neighborhoodCanonicalId === "maarif",
+    );
+    assert.ok(candidate, "Maârif administrative relation must have source metadata");
+    assert.equal(candidate.sourceEntityId, 2801474);
+    assert.equal(candidate.sourceAdminLevel, "10");
+    assert.equal(candidate.sourceEntityType, "osm_relation");
+    assert.equal(candidate.publicationStatus, "shadow");
+    assert.equal(candidate.reviewed, false);
+    assert.ok(candidate.source.sourceUrl.endsWith("/relation/2801474"));
+    assert.ok(geometry, "materialized arrondissement shadow must remain traceable");
+    assert.equal(geometry.publicationStatus, "shadow");
+    assert.equal(geometry.reviewed, false);
+    assert.ok(geometry.source.licenseUrl && geometry.source.attribution);
+    const router = source("components/map/NationalMapRouter.tsx");
+    const map = source("components/map/MapLibreNeighborhood3D.tsx");
+    assert.equal(router.includes("boundaryGeometry="), false, "no unreviewed polygon passed to public map");
+    assert.ok(map.includes('data-l3-admin-boundary="unavailable"'));
+  });
+
+  it("rejects the expired August 2026 ANN-L5 seed without extending TTL or inventing POIs", () => {
+    assert.equal(ANN_L5_CERTIFIED_SEED_OBSERVED_AT, "2026-08-16T11:08:32.249Z");
+    const pois = getAnnL5CertifiedSeedPois("district_casablanca_maarif", snapshotAt);
+    assert.ok(pois.length > 0, "test must exercise real historical Maârif candidate rows");
+    assert.ok(pois.every((poi) => poi.status === "stale" && poi.freshness_status === "stale"));
+    const model = getNeighborhoodContextReadModelBySlugs("casablanca", "maarif", snapshotAt);
+    assert.ok(model, "Maârif context model exists even when observations are unavailable");
+    assert.equal(model.anchor_count, 0);
+    assert.deepEqual(model.anchors, []);
+    assert.equal(model.coverage_status, "unavailable");
+    assert.equal(model.source.production_provider_claim, false);
   });
 });
