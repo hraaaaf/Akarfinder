@@ -72,6 +72,19 @@ describe("P1A.6 — Responsive hardening", () => {
     }
   });
 
+  it("L2-B rail follows quotidien > cadre de vie > biens without unsupported market claims", () => {
+    const rail = source("components/map/P4MapDecisionRail.tsx");
+    const quotidien = rail.indexOf("data-l2b-daily-context");
+    const cadre = rail.indexOf("data-l2b-living-context");
+    const biens = rail.indexOf("data-l2b-listings");
+    assert.ok(quotidien >= 0 && cadre > quotidien && biens > cadre, "truthful context section order");
+    assert.equal(rail.includes("Indicateurs disponibles"), false, "provider must not imply live prices without source evidence");
+    assert.equal(rail.includes('className="p4-premium-tabs"'), false, "decorative inactive navigation must be removed");
+    assert.ok(rail.includes("p4-premium-empty-evidence"), "explicit stale POI disclosure preserved");
+    assert.ok(rail.includes('className="p4-premium-primary-action"'), "Search CTA must remain");
+    assert.ok(rail.includes("href={searchHref}"), "Search handoff remains geo-filtered");
+  });
+
   it("preserves Rabat intelligence for city-only while canonical district routing uses MapLibre", () => {
     const router = source("components/map/NationalMapRouter.tsx");
     assert.match(router, /rabat-market-intelligence/);
