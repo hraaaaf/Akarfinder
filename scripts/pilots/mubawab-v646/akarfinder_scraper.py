@@ -1162,7 +1162,9 @@ def _write_publication_status(run_id: str, status: str, *,
         }
         with closing(_sqlite_snapshot(Path(DB_NAME))) as snapshot:
             marker["db_logical_sha256"] = _db_logical_sha256(snapshot)
-            _assert_export_matches_snapshot(snapshot, Path("akarfinder_data.json").read_bytes())
+            data_bytes = Path("akarfinder_data.json").read_bytes()
+            _assert_export_matches_snapshot(snapshot, data_bytes)
+            _assert_markdown_matches_export(Path("akarfinder_report.md").read_bytes(), data_bytes)
         key = _publication_key()
         marker["authentication"] = "hmac_sha256" if key else "unsigned_untrusted"
         if key:
@@ -1272,6 +1274,7 @@ def read_verified_publication(root: Path | str = ".") -> VerifiedPublication:
         if _db_logical_sha256(db_snapshot) != proof.get("db_logical_sha256"):
             raise PublicationVerificationError("db_logical_digest_mismatch")
         _assert_export_matches_snapshot(db_snapshot, exports["akarfinder_data.json"])
+        _assert_markdown_matches_export(exports["akarfinder_report.md"], exports["akarfinder_data.json"])
         if (root / PUBLICATION_STATUS).read_bytes() != raw_marker:
             raise PublicationVerificationError("publication_changed_during_read")
         current_head = _read_trusted_head(root)
@@ -1300,6 +1303,77 @@ def verify_publication(root: Path | str = ".") -> dict[str, Any]:
         return {"valid": False, "reason": exc.reason}
     except (OSError, ValueError, TypeError, AttributeError, sqlite3.Error) as exc:
         return {"valid": False, "reason": "proof_unavailable", "detail": type(exc).__name__}
+
+
+def _render_markdown_listing(item: dict[str, Any], index: int) -> list[str]:
+    """One canonical renderer used by both writer and semantic verifier."""
+    title = (item.get("title") or "Sans titre").replace("\n", " ")
+    price = f"{item['price_mad']:,} MAD".replace(",", " ") if item["price_mad"] is not None else "Non communiqué"
+    surface = f"{item['surface_m2']:g} m²" if item["surface_m2"] is not None else "Non communiquée"
+    rooms = str(item["rooms"]) if item["rooms"] is not None else "N/D"
+    bedrooms = str(item["bedrooms"]) if item["bedrooms"] is not None else "N/D"
+    return [f"### {index}. {title}", f"- Prix : {price}",
+            f"- Secteur : {item.get('district') or 'N/D'} | Salles de bains : {item.get('bathrooms') if item.get('bathrooms') is not None else 'N/D'}",
+            f"- Surface : {surface} | Pièces : {rooms} | Chambres : {bedrooms}",
+            f"- Prix : statut={item.get('price_status')} | candidat={item.get('pending_price_mad')} | observations={item.get('pending_price_count')}",
+            f"- Revue prix/m² : {(item.get('price_m2_review') or {}).get('status', 'non évalué ce cycle')} "
+            f"| taux source={(item.get('price_m2_review') or {}).get('source_price_per_m2_mad')}",
+            f"- Dernière vue : {item['last_seen']}",
+            f"- Lien : {item['link']}"]
+
+
+def _assert_markdown_matches_export(markdown: bytes, data_json: bytes) -> None:
+    """Match ALL advertised listings to authenticated JSON/SQLite data.
+
+    Header counters without independent business evidence remain descriptive;
+    this detects contradictory prices, surfaces, titles, and details on every
+    advertised Markdown listing, even in a freshly re-signed publication.
+    """
+    try:
+        body = markdown.decode("utf-8")
+        data = json.loads(data_json)
+    except (UnicodeError, ValueError, TypeError) as exc:
+        raise PublicationVerificationError("markdown_unreadable") from exc
+    if not isinstance(data, list) or any(not isinstance(row, dict) for row in data):
+        raise PublicationVerificationError("markdown_source_invalid")
+    marker = "## Annonces observées durant cette session (maximum 50)"
+    if body.count(marker) != 1 or not body.startswith("# Rapport d'extraction Akarfinder V6.4.6\n"):
+        raise PublicationVerificationError("markdown_structure_invalid")
+    head, listings = body.split(marker, 1)
+    totals = re.findall(r"(?m)^- Total cumulé : (\d+)\s*$", head)
+    cycles = re.findall(r"(?m)^- Annonces uniques observées ce cycle : (\d+)\s*$", head)
+    if len(totals) != 1 or len(cycles) != 1 or int(totals[0]) != len(data):
+        raise PublicationVerificationError("markdown_header_mismatch")
+    advertised = int(cycles[0])
+    if advertised > len(data) or advertised < 0:
+        raise PublicationVerificationError("markdown_header_mismatch")
+    sections = re.split(r"(?m)^### (?=\d+\. )", listings)
+    if sections[0].strip():
+        raise PublicationVerificationError("markdown_structure_invalid")
+    entries = [section for section in sections[1:]]
+    if len(entries) != min(advertised, 50):
+        raise PublicationVerificationError("markdown_listing_count_mismatch")
+    by_link = {}
+    for row in data:
+        link = row.get("link")
+        if not isinstance(link, str) or link in by_link:
+            raise PublicationVerificationError("markdown_ambiguous_listing_link")
+        by_link[link] = row
+    used = set()
+    for index, section in enumerate(entries, 1):
+        content = section.strip("\n").split("\n")
+        if not content or not re.fullmatch(r"\d+\. .+", content[0]):
+            raise PublicationVerificationError("markdown_structure_invalid")
+        content[0] = "### " + content[0]
+        last = content[-1]
+        if not last.startswith("- Lien : "):
+            raise PublicationVerificationError("markdown_structure_invalid")
+        link = last[len("- Lien : "):]
+        if link in used or link not in by_link:
+            raise PublicationVerificationError("markdown_unknown_or_duplicate_listing")
+        used.add(link)
+        if content != _render_markdown_listing(by_link[link], index):
+            raise PublicationVerificationError("markdown_database_mismatch")
 
 
 def export_reports(conn: sqlite3.Connection, cycle_ids: list[str], stats: ImportStats,
@@ -1339,19 +1413,7 @@ def export_reports(conn: sqlite3.Connection, cycle_ids: list[str], stats: Import
         "## Annonces observées durant cette session (maximum 50)", "",
     ]
     for idx, item in enumerate(observed[:50], 1):
-        title = (item.get("title") or "Sans titre").replace("\n", " ")
-        price = f"{item['price_mad']:,} MAD".replace(",", " ") if item["price_mad"] is not None else "Non communiqué"
-        surface = f"{item['surface_m2']:g} m²" if item["surface_m2"] is not None else "Non communiquée"
-        rooms = str(item["rooms"]) if item["rooms"] is not None else "N/D"
-        bedrooms = str(item["bedrooms"]) if item["bedrooms"] is not None else "N/D"
-        lines.extend([f"### {idx}. {title}", f"- Prix : {price}",
-                      f"- Secteur : {item.get('district') or 'N/D'} | Salles de bains : {item.get('bathrooms') if item.get('bathrooms') is not None else 'N/D'}",
-                      f"- Surface : {surface} | Pièces : {rooms} | Chambres : {bedrooms}",
-                      f"- Prix : statut={item.get('price_status')} | candidat={item.get('pending_price_mad')} | observations={item.get('pending_price_count')}",
-                      f"- Revue prix/m² : {(item.get('price_m2_review') or {}).get('status', 'non évalué ce cycle')} "
-                      f"| taux source={(item.get('price_m2_review') or {}).get('source_price_per_m2_mad')}",
-                      f"- Dernière vue : {item['last_seen']}",
-                      f"- Lien : {item['link']}", ""])
+        lines.extend(_render_markdown_listing(item, idx) + [""])
     _write_atomic(md_path, "\n".join(lines))
 
 
