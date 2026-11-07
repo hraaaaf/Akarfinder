@@ -11,6 +11,9 @@ const DOTS = "akarfinder-national-neighborhood-dots";
 const ACTIVE = "akarfinder-national-neighborhood-active";
 const LABELS = "akarfinder-national-neighborhood-labels";
 const ACCENT = "#0B63CE";
+// The 347 V5 neighborhood centers are not useful as national/regional dots.
+// Reveal them only at neighborhood scale; text-only labels remain searchable.
+const NEIGHBORHOOD_MAP_MIN_ZOOM = 9.5;
 
 export type NationalNeighborhood = {
   slug: string;
@@ -111,14 +114,16 @@ export function NationalNeighborhoodOverlay({
       id: HITS,
       type: "circle",
       source: SOURCE,
+      minzoom: NEIGHBORHOOD_MAP_MIN_ZOOM,
       paint: { "circle-radius": 16, "circle-color": ACCENT, "circle-opacity": 0.01 },
     });
     map.addLayer({
       id: DOTS,
       type: "circle",
       source: SOURCE,
+      minzoom: NEIGHBORHOOD_MAP_MIN_ZOOM,
       paint: {
-        "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 2.5, 12, 4.5],
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 9.5, 2.6, 12, 4.5, 14, 5.5],
         "circle-color": ACCENT,
         "circle-opacity": 0.82,
         "circle-stroke-color": theme === "dark" ? "#071426" : "#FFFFFF",
@@ -129,6 +134,7 @@ export function NationalNeighborhoodOverlay({
       id: ACTIVE,
       type: "circle",
       source: SOURCE,
+      minzoom: NEIGHBORHOOD_MAP_MIN_ZOOM,
       filter: emptyFilter() as never,
       paint: {
         "circle-radius": 10,
@@ -142,10 +148,10 @@ export function NationalNeighborhoodOverlay({
       id: LABELS,
       type: "symbol",
       source: SOURCE,
-      minzoom: 9,
+      minzoom: NEIGHBORHOOD_MAP_MIN_ZOOM,
       layout: {
         "text-field": ["get", "name"],
-        "text-size": ["interpolate", ["linear"], ["zoom"], 9, 9, 12, 11.5, 15, 13],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 9.5, 10, 12, 11.5, 15, 13],
         "text-offset": [0, 1.15],
         "text-anchor": "top",
         "text-allow-overlap": false,
@@ -163,6 +169,7 @@ export function NationalNeighborhoodOverlay({
       if (map.getLayer(ACTIVE)) map.setFilter(ACTIVE, (slug ? ["==", ["get", "slug"], slug] : emptyFilter()) as never);
     };
     const renderedSlug = (event: MapMouseEvent) => {
+      if (map.getZoom() < NEIGHBORHOOD_MAP_MIN_ZOOM) return null;
       let nearestSlug: string | null = null;
       let nearestDistance = Infinity;
       for (const item of neighborhoods) {
