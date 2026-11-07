@@ -38,9 +38,11 @@ const MAJOR_CITY_SLUGS = ["casablanca", "rabat", "marrakech", "tanger", "fes", "
 const SECONDARY_CITY_MIN_ZOOM = 8.25;
 const NEIGHBORHOOD_MIN_ZOOM = 9.5;
 const STREET_DETAIL_MIN_ZOOM = 12;
-function mapDetailStage(zoom: number): "major" | "local" | "neighborhood" | "street" {
+function mapDetailStage(zoom: number, citySelected: boolean): "major" | "local" | "neighborhood" | "street" {
   if (zoom < SECONDARY_CITY_MIN_ZOOM) return "major";
-  if (zoom < NEIGHBORHOOD_MIN_ZOOM) return "local";
+  // A zoomed national map without a selected city has no district inventory
+  // mounted. Never claim neighborhood detail that cannot actually be shown.
+  if (!citySelected || zoom < NEIGHBORHOOD_MIN_ZOOM) return "local";
   if (zoom < STREET_DETAIL_MIN_ZOOM) return "neighborhood";
   return "street";
 }
@@ -490,10 +492,10 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
   }, [nationalContext, payload]);
 
   const focusedCitySlug = payload?.view === "city" ? payload.place.slug : null;
-  const zoomStage = mapDetailStage(mapZoom);
+  const zoomStage = mapDetailStage(mapZoom, payload?.view === "city");
   const zoomStageLabel = zoomStage === "major" ? "Grandes villes"
     : zoomStage === "local" ? "Villes locales"
-      : zoomStage === "neighborhood" ? "Quartiers géolocalisés" : "Rues et repères";
+      : zoomStage === "neighborhood" ? "Quartiers géolocalisés" : "Rues · repères selon sources";
   const publicCityName = payload?.view === "city" ? publicNationalCityLabel(payload.place.slug, payload.place.name) : null;
   const searchHref = publicCityName ? `/search?city=${encodeURIComponent(publicCityName)}` : "/search";
 
