@@ -85,6 +85,22 @@ describe("P1A.6 — Responsive hardening", () => {
     assert.ok(rail.includes("href={searchHref}"), "Search handoff remains geo-filtered");
   });
 
+  it("L2-C replaces decorative mobile handle with a true accessible sheet", () => {
+    const rail = source("components/map/P4MapDecisionRail.tsx");
+    const css = source("app/map/l2c-sheet.css");
+    const page = source("app/map/page.tsx");
+    const audit = source("scripts/audits/p1a6-map-responsive-smoke.ts");
+    assert.ok(rail.includes('data-sheet-expanded={sheetExpanded ? "true" : "false"}'));
+    assert.ok(rail.includes('aria-controls="vivre-ici-sheet-extra"'));
+    assert.ok(rail.includes('aria-expanded={sheetExpanded}'));
+    assert.ok(rail.includes('id="vivre-ici-sheet-extra"'));
+    assert.ok(css.includes('max-height: 160px !important'));
+    assert.ok(css.includes('min-height: 44px !important'));
+    assert.ok(page.includes('import "./l2c-sheet.css";'));
+    assert.ok(audit.includes("l2c-sheet-expand-collapse"));
+    assert.ok(audit.includes("map-casablanca-maarif-sheet-expanded-"));
+  });
+
   it("preserves Rabat intelligence for city-only while canonical district routing uses MapLibre", () => {
     const router = source("components/map/NationalMapRouter.tsx");
     assert.match(router, /rabat-market-intelligence/);

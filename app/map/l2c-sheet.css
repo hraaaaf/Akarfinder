@@ -1,0 +1,100 @@
+/* L2-C: the district sheet is a real control, not a painted drag handle.
+   Scope these overrides to phone viewports. The map stays visible and the
+   geo-scoped Search CTA never disappears in compact state. */
+@media (max-width: 767px) {
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail] {
+    position: absolute !important;
+    bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+    box-sizing: border-box !important;
+    padding: 12px 14px 13px !important;
+    overflow: hidden !important;
+  }
+
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail] .p4-sheet-toggle {
+    display: flex !important;
+    position: absolute !important;
+    top: 5px !important;
+    right: 8px !important;
+    z-index: 3 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
+    padding: 0 !important;
+    border: 1px solid var(--border, #d9e2ed) !important;
+    border-radius: 12px !important;
+    background: var(--surface, #fff) !important;
+    color: var(--text-primary, #132a48) !important;
+    font-size: 22px !important;
+    cursor: pointer !important;
+  }
+
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail] .p4-sheet-toggle:focus-visible {
+    outline: 3px solid #276cd1 !important;
+    outline-offset: 2px !important;
+  }
+
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail] .p4-premium-context-header h2 {
+    padding-right: 54px !important;
+  }
+
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="false"] {
+    height: auto !important;
+    max-height: 160px !important;
+  }
+
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="false"] [data-l2c-extra],
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="false"] .p4-premium-proofline,
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="false"] .p4-premium-lede,
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="false"] .p4-premium-kicker,
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="false"] .p4-premium-context-location,
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="false"] [data-l2b-listings] > h3 {
+    display: none !important;
+  }
+
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="false"] .p4-premium-actions {
+    margin-top: 7px !important;
+  }
+
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="true"] {
+    display: flex !important;
+    flex-direction: column !important;
+    height: min(55svh, 480px) !important;
+    max-height: min(55svh, 480px) !important;
+    overflow: hidden !important;
+  }
+
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="true"] [data-l2c-extra] {
+    display: block !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="true"] [data-l2b-living-context] {
+    display: block !important;
+  }
+
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail] [data-l2b-listings] {
+    flex: 0 0 auto !important;
+    margin-top: 7px !important;
+    padding-top: 5px !important;
+  }
+
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail] .p4-premium-primary-action {
+    min-height: 44px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  [data-vivre-ici-page] [data-p4-map-decision-rail] .p4-sheet-toggle {
+    display: none !important;
+  }
+
+  [data-vivre-ici-page] [data-p4-map-decision-rail] [data-l2c-extra] {
+    display: block !important;
+  }
+}
