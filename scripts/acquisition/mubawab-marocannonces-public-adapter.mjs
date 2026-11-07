@@ -185,15 +185,20 @@ export async function discoverMubawabAndMarocAnnonces({
 } = {}) {
   if (typeof fetchImpl !== 'function') throw new TypeError('fetchImpl must be a function');
 
-  const mubawab = await discoverSource({
-    name: 'mubawab',
-    seeds: mubawabSeeds(),
-    extract: extractMubawabListings,
-    fetchImpl,
-    timeoutMs,
-    userAgent,
-    maxUrls: maxUrlsPerSource,
-  });
+  // Retire this legacy Mubawab live leg: it lacks the L8 fresh-robots
+  // verification and must not become a parallel commercial crawler.
+  // Injected fake fetch is reserved for deterministic offline regression tests.
+  const mubawab = fetchImpl === globalThis.fetch
+    ? { name: 'mubawab', urls: [], requests: [], stoppedEarly: 'legacy_live_disabled_use_authorized_L8', zeroDbWrites: true }
+    : await discoverSource({
+        name: 'mubawab',
+        seeds: mubawabSeeds(),
+        extract: extractMubawabListings,
+        fetchImpl,
+        timeoutMs,
+        userAgent,
+        maxUrls: maxUrlsPerSource,
+      });
   const marocannonces = await discoverSource({
     name: 'marocannonces',
     seeds: marocAnnoncesSeeds(maxPages),
