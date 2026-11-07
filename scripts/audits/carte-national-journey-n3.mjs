@@ -39,19 +39,22 @@ async function selectCasablancaFromLegacyNationalMap(page) {
     return { x: rect.left + projected.x, y: rect.top + projected.y };
   }, casablanca.center);
 
+  // A desktop map click directly navigates; the transient hover preview
+  // may render first, so racing against that preview is incorrect and can
+  // click a card that unmounts while the router changes URL.
+  // Touch devices must show a persistent preview on the first tap instead.
+  const coarsePointer = await page.evaluate(() =>
+    navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches);
   await page.mouse.click(clickPoint.x, clickPoint.y);
-  const preview = page.locator('[data-akarfinder-city-preview="casablanca"]');
-  const outcome = await Promise.race([
-    page.waitForURL((url) => url.pathname === "/map" && url.searchParams.get("city") === "casablanca", { timeout: 10000 }).then(() => "city"),
-    preview.waitFor({ state: "visible", timeout: 10000 }).then(() => "preview"),
-  ]);
-
-  if (outcome === "preview") {
-    const alreadySelected = new URL(page.url());
-    if (alreadySelected.pathname !== "/map" || alreadySelected.searchParams.get("city") !== "casablanca") {
-      await preview.getByRole("button", { name: /Explorer Casablanca/i }).click({ timeout: 10000 });
-      await page.waitForURL((url) => url.pathname === "/map" && url.searchParams.get("city") === "casablanca", { timeout: 10000 });
-    }
+  const cityURL = (url) => url.pathname === "/map" &&
+    url.searchParams.get("city") === "casablanca";
+  if (coarsePointer) {
+    const preview = page.locator('[data-akarfinder-city-preview="casablanca"]');
+    await preview.waitFor({ state: "visible", timeout: 10000 });
+    await preview.getByRole("button", { name: /Explorer Casablanca/i }).click({ timeout: 10000 });
+    await page.waitForURL(cityURL, { timeout: 10000 });
+  } else {
+    await page.waitForURL(cityURL, { timeout: 15000 });
   }
 
   await waitForNationalView(page, "city");
