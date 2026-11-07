@@ -55,3 +55,34 @@ La [Direction régionale HCP Casablanca-Settat — RGPH 2024](https://www.hcp.ma
 Le code de `app/api/geo/national-territories/route.ts` interroge `getNationalTerritoryPlace(city)` et renvoie intentionnellement `404 not_found` lorsque le `slug` n'est pas dans les `places` décodées de l'artefact national V5 (`lib/map/national-territory-runtime.server.ts`). **Hypothèse à tester** : absence/variante de slug dans le registre V5 ; elle ne justifie aucune création d'entrée manuelle ni un fallback vers un centre arbitraire.
 
 **Next exact :** vérifier la ligne/identifiant Mohammedia dans l'artefact V5 *décompressé et auditable* ; rattacher la commune HCP et sa clé source si les données le permettent ; chercher des libellés de quartiers Mohammedia avec provenance, puis tester alias, inventaire et absence de faux contour. Sans ligne source valide, maintenir 404 et N2 rouge. Ne pas modifier le code géographique sur la seule base d'un titre de fiche communale.
+
+
+## Closeout L4-A — alias V5 Mohammedia, API 8/8 certifiée (07/11/2026)
+
+**Code réellement testé :** [`ce8442dbaf3d4754d0a3117df1d67250e30d3d80`](https://github.com/hraaaaf/Akarfinder/commit/ce8442dbaf3d4754d0a3117df1d67250e30d3d80). **CI** : [N2 #42398790927](https://github.com/hraaaaf/Akarfinder/actions/runs/42398790927) **SUCCESS**, [N3 #42398790936](https://github.com/hraaaaf/Akarfinder/actions/runs/42398790936) **SUCCESS**. **Artefact N2** : [#13584925329](https://github.com/hraaaaf/Akarfinder/actions/runs/42398790927/artifacts/13584925329), `report.json: ok=true`, `failure=null`, 8/8 entrées `multicityApi[].status=covered`. 12 captures **Casablanca uniquement** (390 / 430 / 768 / 1280 × ville / Maârif / quartier postal sans centre) inspectées : `overflow=0`, `fakeFill=false`, `searchHandoff=true`, absence de centre factice. **Ce n'est PAS une preuve 8 villes × 4 viewports.**
+
+### Cause prouvée et correctif minimal
+
+Le V5 source `lib/map/national-territory-data/places-0.ts` (gzip décompressé et inventorié : 341 places) contient l'entrée `{ slug: "mohammadia", name: "Mohammadia", center: {lng:-7.389329,lat:33.695838}, boundaryRelationId:2523547, confidence:"official_hcp", population:194358, neighborhoodCount:214 }`. Il ne contient pas la graphie du paramètre utilisateur `mohammedia`. Le routeur servait donc le 404 honnêtement. **Les valeurs/provenances indiquées sont celles déclarées par le V5, pas une contre-expertise géodésique indépendante.**
+
+- `lib/map/national-territory-runtime.server.ts` : alias *uniquement* `mohammedia → mohammadia`, conservant `place`, son centre, ses quartiers et les limites **exactement tels que dans V5**. Aucun blob V5 modifié, aucune nouvelle ville, aucun quartier ni contour ajouté.
+- `scripts/audits/carte-national-neighborhoods-n2.mjs` : si l'API est interrogée avec `mohammedia`, elle doit retourner `place.slug = mohammadia`, un inventaire non vide et **un JSON strictement identique** à la requête `city=mohammadia` sur `place`, `neighborhoods` et `boundary`. Les assertions de provenance, coordonnées non inventées, absence de polygones de quartiers publiés restent en place.
+- Le [HCP Casablanca-Settat RGPH 2024](https://www.hcp.ma/reg-casablanca/RGPH-2024-Caracteristiques-demographiques-et-socio-economiques-de-la-Population-Fiches-communales-de-la-region_a144.html) et son [tableau territorial](https://www.hcp.ma/reg-casablanca/docs/docs/tableau_de_bord_rgph2024_wmaker.html) utilisent Mohammedia comme appellation institutionnelle. Cela vérifie la référence territoriale et la graphie, **pas** la qualité des 214 étiquettes quartiers V5.
+
+### Inventaire API N2 observé au SHA testé
+
+| Ville requêtée | Quartiers catalogués | Centres valides (source déclarée) | Sans centre | Contours de quartier certifiés |
+| --- | ---: | ---: | ---: | ---: |
+| Casablanca | 1617 | 134 | 1483 | 0 |
+| Rabat | 318 | 27 | 291 | 0 |
+| Marrakech | 1193 | 44 | 1149 | 0 |
+| Tanger | 322 | 22 | 300 | 0 |
+| Agadir | 254 | 35 | 219 | 0 |
+| Fès | 791 | 42 | 749 | 0 |
+| Kénitra | 205 | 38 | 167 | 0 |
+| Mohammedia (V5 `mohammadia`) | 214 | 5 | 209 | 0 |
+| **TOTAL** | **4914** | **347** | **4567** | **0** |
+
+**Portée de réussite :** **L4-A = GREEN sur la couverture API et absence de données fictives**. La précédente CI rouge #42385007912 reste une preuve historique exacte du défaut avant correctif. **L4 total reste PARTIEL : L4-B UI** navigation 8 villes/17 quartiers, clavier/tactile, cartes et vues réelles sous 390/430/768/1280, source d'attribution, aucune étiquette illustrative non sourcée, ne sont pas encore certifiés. **L3 géométries / POI**, **L5 annonces SQL réelles** et **L6 licences satellite + score visuel final** restent ouverts. Aucun merge, DB ou Vercel.
+
+**Next exact :** baser un lot L4-B de certification utilisateur sur cette correction, capturer *Mohammedia* et les 7 autres villes avec un parcours quartier réellement disponible et preuves source. Si un nom/repère n'est pas sourcé, afficher l'indisponibilité au lieu de l'inventer. Vérifier notamment que l'ancien composant `PremiumInteractiveMap` affiche des quartiers de sélection codés en dur : ne pas les confondre avec l'inventaire V5 prouvé par l'API. Préparer QA UI BEFORE/AFTER et score avant de déclarer L4 complet.
