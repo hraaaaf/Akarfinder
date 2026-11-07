@@ -40,4 +40,28 @@ Le HEAD `277570d6` corrige les deux collisions visibles sur L3-A, avec assertion
 ### Centrage 2D desktop — correction candidate
 
 L'artefact L3-A `6c2ffe8f` montre, au format 1280px, le repère Maârif presque collé au bord inférieur droit du canvas. **Cause vérifiée dans le code :** `NationalMapRouter` passe `desktopCameraOffset=[-0.0055,0.0090]` depuis la perspective 3D historique, et la caméra L3-A le réutilisait malgré `pitch=0`. Correction : sur Maârif uniquement, caméra réelle Quartier/Rue centrée sur le point canonique (aucun changement de ses coordonnées). Rabat/Agdal et autres villes gardent leurs offsets initiaux. P1A.6 doit désormais prouver sur 1280px un repère entre 20% et 80% de la hauteur de la carte, en plus de l'absence de chevauchement avec la navigation. Cette correction exige un screenshot AFTER pour preuve ; pas encore certifié.
-\n\n## Correction d'architecture UI L3-A — fiche mobile étendue (07/11)\n\nLa P1A.6 [#42377509634](https://github.com/hraaaaf/Akarfinder/actions/runs/42377509634) (31 PNG) a échoué au viewport 430 après rétraction : `noteBox.y=272`, `providerBox.y=277.5` (1 finding). Les captures **montrent aussi un défaut réel en mode étendu** : sur 390px les crédits Esri/OSM flottent au niveau du bouton « Rue ». Le contrôle post-collapse lisait également une position intermédiaire avant que le panneau soit replié.\n\n**Règle UX V2 :** lorsque la fiche contextuelle est ouverte sur ≤1023px, masquer les commandes Maârif (qui ne peuvent pas être utilisées pendant l'interaction avec la fiche), conserver les crédits fournisseurs visibles. Après fermeture, les commandes réapparaissent et Playwright attend la séparation géométrique après l'animation avant de statuer. **Ne jamais masquer les crédits fournisseurs**. Validation : P1A.6 31 PNG + 0 finding, captures et preuve manuelle 390/430/768/1280, RTL/mode source sans manipulation de DB.\n
+
+
+## Correction d'architecture UI L3-A — fiche mobile étendue (07/11)
+
+La P1A.6 [#42377509634](https://github.com/hraaaaf/Akarfinder/actions/runs/42377509634) (31 PNG) a échoué au viewport 430 après rétraction : `noteBox.y=272`, `providerBox.y=277.5` (1 finding). Les captures **montrent aussi un défaut réel en mode étendu** : sur 390px les crédits Esri/OSM flottent au niveau du bouton « Rue ». Le contrôle post-collapse lisait également une position intermédiaire avant que le panneau soit replié.
+
+**Règle UX V2 :** lorsque la fiche contextuelle est ouverte sur ≤1023px, masquer les commandes Maârif (qui ne peuvent pas être utilisées pendant l'interaction avec la fiche), conserver les crédits fournisseurs visibles. Après fermeture, les commandes réapparaissent et Playwright attend la séparation géométrique après l'animation avant de statuer. **Ne jamais masquer les crédits fournisseurs**. Validation : P1A.6 31 PNG + 0 finding, captures et preuve manuelle 390/430/768/1280, RTL/mode source sans manipulation de DB.
+
+
+## Closeout QA L3-A — 07/11/2026 (preuve acquise)
+
+**Code exact testé :** `ea5e2256bba9b6f8e63477b1b29ef9a64883071f` (sans fusion, sans déploiement). Les corrections précédentes ont été conservées dans ce SHA : état 2D nord en haut, zoom Rue/retour Quartier réels, caméra centrée sur le point canonique, navigation « Maroc » non masquée, commandes de carte cachées en fiche ouverte, crédits OSM/Esri visibles, transition compacte contrôlée.
+
+**SUCCESS / CI :**
+- [P1A.6 #42378083553](https://github.com/hraaaaf/Akarfinder/actions/runs/42378083553) : **SUCCESS**, artefact **#13576143895**, `report.json` : `routes=4`, `viewports=["390","430","768","1280"]`, `screenshots=31`, `findings=[]`. Captures Maârif Quartier/Rue, fiche ouverte mobile/tablette, Rabat/Agdal et ville nationale.
+- [Required PR Gate #42378083701](https://github.com/hraaaaf/Akarfinder/actions/runs/42378083701), [TypeScript / Baseline #42378083644](https://github.com/hraaaaf/Akarfinder/actions/runs/42378083644), [N3 #42378083596](https://github.com/hraaaaf/Akarfinder/actions/runs/42378083596), [Zillow #42378083525](https://github.com/hraaaaf/Akarfinder/actions/runs/42378083525), [CI Efficiency #42378083597](https://github.com/hraaaaf/Akarfinder/actions/runs/42378083597), [P1B.2 offline #42378083548](https://github.com/hraaaaf/Akarfinder/actions/runs/42378083548) : **SUCCESS**.
+- Tous les workflows PR de ce SHA : **17 SUCCESS + 1 SKIPPED**, sans échec.
+
+**AFTER inspecté manuellement :** comparaison avec [L2-D BEFORE #42375209714](https://github.com/hraaaaf/Akarfinder/actions/runs/42375209714) sur quatre viewports ; captures `map-casablanca-maarif-{390,430,768,1280}.png`, `map-casablanca-maarif-street-{390,430,768,1280}.png`, `map-casablanca-maarif-sheet-expanded-{390,430,768}.png`. Le repère Maârif desktop est recentré et les collisions détectées précédemment ne sont plus visibles. Sur fiche ouverte, crédits présents et commandes Quartier/Rue masquées.
+
+**Appréciation visuelle manuelle : 8,5/10** (indicatif, non un audit UX indépendant, objectif cible 9,5/10 non atteint). Restent des annotations très petites et une valeur locale limitée sans POI récents. Ne pas considérer la conformité d'usage commercial d'Esri ou des licences de tuiles comme acquise.
+
+**État du sous-lot :** **L3-A QA technique et visuelle exécutée**, pas L3 complet. Le mode limites administratives demeure **indisponible** (pas de contour publié : absence de source/périmètre revu), les POI périmés restent écartés et les prix réels non certifiés. La branche du sous-lot doit rester une PR Draft distincte, sur la base de L2-D, sans merge/DB/Vercel.
+
+**NEXT exact :** L3-B = revue des sources SIG/sémantique arrondissement et stratégie de POI frais sans inventer de données ; si géométrie non qualifiée, conserver état indisponible. Puis L4 validation nationale 8 villes/17 quartiers, L5 Search (filtres/état vide/retour/4 viewports), L6 accessibilité/licence fournisseur/certification release. Rien n'est déployé en production.
