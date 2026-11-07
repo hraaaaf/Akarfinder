@@ -33,6 +33,7 @@ try {
   for (const viewport of viewports) {
     const mobile = viewport.width <= 430;
     const context = await browser.newContext({
+      reducedMotion: "reduce",
       viewport: { width: viewport.width, height: viewport.height },
       isMobile: mobile,
       hasTouch: mobile,
@@ -63,43 +64,37 @@ try {
     page.on("requestfailed", (request) => diagnostics.requestFailures.push({ url: request.url(), error: request.failure()?.errorText || "unknown" }));
     try {
       await page.goto(`${baseUrl}/map?layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
-      const shell = page.locator("[data-akarfinder-national-map]");
+      // The canonical /map opens PremiumInteractiveMap (SVG/TopoJSON).
+      // MapLibre's national city-layer contract still belongs to the legacy city router,
+      // not to the current national entry. Keep independent API inventory checks above.
+      const shell = page.locator('[data-premium-map][data-map-level="national"]');
       await shell.waitFor({ state: "visible", timeout: 30000 });
-      const canvas = page.locator(".maplibregl-canvas");
-      await canvas.waitFor({ state: "visible", timeout: 30000 });
-      await page.waitForFunction(() => document.querySelector('[data-akarfinder-national-map]')?.getAttribute('data-akarfinder-national-view') === 'morocco', null, { timeout: 30000 });
-
-      await page.waitForFunction(() => {
-        const map = window.__AKARFINDER_NATIONAL_MAP__;
-        if (!map?.getLayer("akarfinder-national-city-fill") || !map?.getLayer("akarfinder-national-city-labels")) return false;
-        return map.querySourceFeatures("akarfinder-national-city-boundaries").length >= 200;
-      }, null, { timeout: 15000 });
-
-      const layerState = await page.evaluate(() => {
-        const map = window.__AKARFINDER_NATIONAL_MAP__;
-        return {
-          hasBoundary: Boolean(map?.getLayer("akarfinder-national-city-fill")),
-          hasLabels: Boolean(map?.getLayer("akarfinder-national-city-labels")),
-          boundaryFeatures: map?.querySourceFeatures("akarfinder-national-city-boundaries").length ?? 0,
-        };
-      });
-      if (!layerState.hasBoundary || !layerState.hasLabels || layerState.boundaryFeatures < 200) {
-        throw new Error(`map layers incomplete ${JSON.stringify(layerState)}`);
+      await page.waitForFunction(
+        () => document.querySelector('[data-premium-map]')?.getAttribute('data-topology-state') === 'ready',
+        null,
+        { timeout: 30000 },
+      );
+      const svg = page.locator('[data-region-map-svg]');
+      await svg.waitFor({ state: "visible", timeout: 15000 });
+      const layerState = {
+        topologyState: await shell.getAttribute("data-topology-state"),
+        regions: await page.locator('[data-region-slug]').count(),
+        regionButtons: await page.locator('[data-region-list-slug]').count(),
+      };
+      if (layerState.regions !== 12 || layerState.regionButtons !== 12 || layerState.topologyState !== "ready") {
+        throw new Error(`premium national topology incomplete ${JSON.stringify(layerState)}`);
       }
-
       const geometryState = await page.evaluate(() => {
-        const shell = document.querySelector('[data-akarfinder-national-map]');
-        const parent = document.querySelector('[data-p4-map-canvas]');
-        const shellRect = shell?.getBoundingClientRect();
-        const parentRect = parent?.getBoundingClientRect();
+        const mapRect = document.querySelector('section[aria-label="Carte interactive du Maroc"]')?.getBoundingClientRect();
+        const svgRect = document.querySelector('[data-region-map-svg]')?.getBoundingClientRect();
         return {
-          shellHeight: shellRect?.height ?? 0,
-          parentHeight: parentRect?.height ?? 0,
-          heightDelta: (parentRect?.height ?? 0) - (shellRect?.height ?? 0),
+          mapHeight: mapRect?.height ?? 0,
+          svgHeight: svgRect?.height ?? 0,
+          svgWidth: svgRect?.width ?? 0,
         };
       });
-      if (geometryState.parentHeight < 500 || geometryState.shellHeight < geometryState.parentHeight - 2) {
-        throw new Error(`national map does not fill P4 canvas ${JSON.stringify(geometryState)}`);
+      if (geometryState.mapHeight < 550 || geometryState.svgHeight < geometryState.mapHeight - 2 || geometryState.svgWidth < 200) {
+        throw new Error(`premium national map geometry invalid ${JSON.stringify(geometryState)}`);
       }
 
       const touchSignals = await page.evaluate(() => ({
@@ -113,40 +108,83 @@ try {
       if (overflow > 1) throw new Error(`horizontal overflow ${overflow}`);
       await page.screenshot({ path: `${outDir}/morocco-${viewport.name}-after.png`, fullPage: false });
 
-      const casa = api.places.find((place) => place.slug === "casablanca");
-      if (!casa?.center) throw new Error("Casablanca center missing");
-      const projected = await page.evaluate(({ lng, lat }) => {
-        const map = window.__AKARFINDER_NATIONAL_MAP__;
-        const p = map.project([lng, lat]);
-        const rect = map.getCanvas().getBoundingClientRect();
-        return { pageX: rect.left + p.x, pageY: rect.top + p.y, localX: p.x, localY: p.y };
-      }, casa.center);
-      await page.waitForFunction(({ localX, localY }) => {
-        const map = window.__AKARFINDER_NATIONAL_MAP__;
-        return map.queryRenderedFeatures({ x: localX, y: localY }, { layers: ["akarfinder-national-city-hits", "akarfinder-national-city-fill"] })
-          .some((feature) => feature.properties?.slug === "casablanca");
-      }, projected, { timeout: 10000 });
-
+      // Verify real SVG navigation (touch on mobile, focus+Enter on desktop).
+      const region = page.locator('[data-region-slug="casablanca-settat"]');
+      await region.waitFor({ state: "visible", timeout: 10000 });
       if (mobile) {
-        await page.touchscreen.tap(projected.pageX, projected.pageY);
-        await page.locator('[data-akarfinder-city-preview="casablanca"]').waitFor({ state: "visible", timeout: 5000 });
-        await page.screenshot({ path: `${outDir}/active-casablanca-${viewport.name}-after.png`, fullPage: false });
-        await page.getByRole("button", { name: "Explorer Casablanca" }).click();
+        await region.tap();
       } else {
-        await canvas.hover({ position: { x: projected.localX, y: projected.localY } });
-        await page.locator('[data-akarfinder-city-preview="casablanca"]').waitFor({ state: "visible", timeout: 5000 });
-        await page.screenshot({ path: `${outDir}/active-casablanca-${viewport.name}-after.png`, fullPage: false });
-        await canvas.click({ position: { x: projected.localX, y: projected.localY } });
+        await region.focus();
+        await page.keyboard.press("Enter");
       }
-      await page.waitForURL(/city=casablanca/, { timeout: 10000, waitUntil: "commit" });
-      await page.waitForFunction(() => document.querySelector('[data-akarfinder-national-map]')?.getAttribute('data-akarfinder-national-view') === 'city', null, { timeout: 30000 });
+      await page.locator('[data-premium-map][data-map-level="region"]').waitFor({ state: "visible", timeout: 10000 });
+      const city = page.locator('[data-city-list-slug="casablanca"]');
+      await city.waitFor({ state: "visible", timeout: 10000 });
+      await page.screenshot({ path: `${outDir}/active-casablanca-${viewport.name}-after.png`, fullPage: false });
+      if (mobile) await city.tap();
+      else await city.click();
+      await page.locator('[data-premium-map][data-map-level="city"]').waitFor({ state: "visible", timeout: 10000 });
+      await page.getByRole("heading", { name: "Casablanca", exact: true }).waitFor({ state: "visible", timeout: 10000 });
+
+      // Preserve a separate API geography inventory, even though SVG is backed by TopoJSON.
       const casaResponse = await fetch(`${baseUrl}/api/geo/national-territories?city=casablanca`);
       const casaPayload = await casaResponse.json();
-      if (!casaResponse.ok || casaPayload.meta?.neighborhoodCount < 1500) throw new Error(`Casablanca neighborhood inventory ${casaPayload.meta?.neighborhoodCount}`);
-      await page.getByRole("heading", { name: "Vivre à Casablanca", exact: true }).waitFor({ state: "visible", timeout: 10000 });
-      await page.getByRole("button", { name: "Revenir à la carte du Maroc" }).waitFor({ state: "visible", timeout: 10000 });
-      await page.waitForTimeout(600);
+      if (!casaResponse.ok || casaPayload.meta?.neighborhoodCount < 1500) {
+        throw new Error(`Casablanca neighborhood inventory ${casaPayload.meta?.neighborhoodCount}`);
+      }
+
+      const maarif = page.locator('[data-map-side-panel] button').filter({ hasText: "Maârif" }).first();
+      await maarif.waitFor({ state: "visible", timeout: 10000 });
+      if (mobile) await maarif.tap();
+      else await maarif.click();
+      const selected = page.locator('[data-selected-quartier="maarif"]');
+      await selected.waitFor({ state: "visible", timeout: 10000 });
+      await selected.locator('[data-local-evidence="unavailable"]').waitFor({ state: "visible", timeout: 10000 });
+      const districtText = await page.locator('[data-map-side-panel]').innerText();
+      if (!districtText.includes("Aucune statistique non sourcée") ||
+          districtText.includes("DH/m²") || /repère vérifié|17\\s?600|15 repères/i.test(districtText)) {
+        throw new Error("Maârif still shows fabricated local figures or hides the unavailable-data message");
+      }
+      const searchLink = await selected.locator('[data-explorer-selected]').getAttribute("href");
+      const destination = new URL(searchLink || "", baseUrl);
+      const directListings = destination.pathname === "/immobilier/casablanca/maarif";
+      const localMap = destination.pathname === "/map"
+        && destination.searchParams.get("city") === "casablanca"
+        && destination.searchParams.get("district") === "maarif"
+        && destination.searchParams.get("layer") === "explore";
+      if (!directListings && !localMap) {
+        throw new Error(`Maârif handoff loses location or destination: ${searchLink}`);
+      }
       await page.screenshot({ path: `${outDir}/casablanca-${viewport.name}-after.png`, fullPage: false });
+
+      if (localMap) {
+        // The real rendered link currently routes via the district MapLibre view.
+        // Check the *next* Search CTA rather than treating a legitimate intermediate
+        // step as a failed listing URL; don't accept an arbitrary destination.
+        await selected.locator('[data-explorer-selected]').click();
+        await page.locator('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]')
+          .waitFor({ state: "visible", timeout: 20000 });
+        const search = page.locator('[data-p4-map-decision-rail] a.p4-premium-primary-action');
+        await search.waitFor({ state: "visible", timeout: 15000 });
+        const finalHref = await search.getAttribute("href");
+        const searchUrl = new URL(finalHref || "", baseUrl);
+        const placeKey = (value) => (value || "").normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (searchUrl.pathname !== "/search" ||
+            placeKey(searchUrl.searchParams.get("city")) !== "casablanca" ||
+            placeKey(searchUrl.searchParams.get("district")) !== "maarif") {
+          throw new Error(`District map Search handoff drops location: ${finalHref}`);
+        }
+        await page.locator('[data-vivre-ici-territory-back]').click();
+      } else {
+        await page.getByRole("navigation", { name: "Fil d’Ariane cartographique" })
+          .getByRole("button", { name: "Maroc", exact: true }).click();
+      }
+      // Returning to Morocco must restore the 12-region SVG and selection list.
+      await page.locator('[data-premium-map][data-map-level="national"]').waitFor({ state: "visible", timeout: 15000 });
+      if (await page.locator('[data-region-list-slug]').count() !== 12) {
+        throw new Error("Returning to Morocco did not restore all 12 regions");
+      }
 
       const criticalRequestFailures = diagnostics.requestFailures.filter((failure) => failure.url.startsWith(baseUrl) && failure.error !== "net::ERR_ABORTED");
       if (diagnostics.pageErrors.length || criticalRequestFailures.length) {

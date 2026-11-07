@@ -1,0 +1,44 @@
+/* L2-D: keep genuine provider attribution visible, never under phone navigation
+   or the decision sheet. Source names come from MapLibre's tile-source metadata. */
+@media (max-width: 1023px) {
+  [data-vivre-ici-page] [data-premium-map] [data-premium-map-attribution] {
+    bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+    max-width: min(78%, 350px) !important;
+    font-size: 9.5px !important;
+    line-height: 1.4 !important;
+    white-space: normal !important;
+  }
+
+  [data-vivre-ici-page] [data-premium-map] [data-premium-map-controls] {
+    bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+  }
+
+  [data-vivre-ici-page] [data-p4-map-layout]:has([data-maplibre-spike]) .maplibregl-ctrl-bottom-right {
+    bottom: calc(252px + env(safe-area-inset-bottom)) !important;
+    right: 10px !important;
+    z-index: 40 !important;
+    pointer-events: auto;
+  }
+
+  [data-vivre-ici-page] [data-p4-map-layout]:has([data-maplibre-spike]):has([data-sheet-expanded="true"]) .maplibregl-ctrl-bottom-right {
+    bottom: calc(min(55svh, 480px) + 90px + env(safe-area-inset-bottom)) !important;
+  }
+
+  [data-vivre-ici-page] [data-p4-map-layout]:has([data-maplibre-spike]) .maplibregl-ctrl-attrib {
+    max-width: min(300px, calc(100vw - 24px)) !important;
+    padding: 3px 7px !important;
+    background: rgb(255 255 255 / .92) !important;
+    color: #16334c !important;
+    font-size: 10px !important;
+    line-height: 1.45 !important;
+    border-radius: 7px !important;
+    white-space: normal !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-vivre-ici-page] [data-p4-map-layout]:has([data-maplibre-spike]) .maplibregl-ctrl-bottom-right {
+    right: 10px;
+    bottom: 10px;
+  }
+}

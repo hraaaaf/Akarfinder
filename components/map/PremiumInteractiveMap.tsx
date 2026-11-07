@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Building2,
-  CheckCircle2,
   ChevronRight,
   Compass,
   MapPin,
@@ -24,16 +23,9 @@ import type { CanonicalCitySlug } from "@/lib/geo/geo-entity-registry";
 import { selectNationalCityVisibility } from "@/lib/geo/territory-national-visibility";
 import { selectStableTerritoryLabels } from "@/lib/geo/territory-label-stability";
 
-interface QuartierStats {
-  priceRepere?: number;
-  landmarksVerified: number;
-  status: "disponible" | "indisponible";
-}
-
 type Quartier = {
   name: string;
   slug: string;
-  stats: QuartierStats;
 };
 
 type City = {
@@ -133,12 +125,12 @@ function useMapData() {
             signature: "Maritime & Industrie",
             coordinates: [-5.8128, 35.7595],
             quartiers: [
-              // MOCK — statistiques de démonstration uniquement, aucune lecture Supabase.
-              { name: "Malabata", slug: "malabata", stats: { priceRepere: 15400, landmarksVerified: 9, status: "disponible" } },
-              { name: "Iberia", slug: "iberia", stats: { priceRepere: 17100, landmarksVerified: 7, status: "disponible" } },
-              { name: "Centre-ville", slug: "centre-ville-tanger", stats: { priceRepere: 13200, landmarksVerified: 11, status: "disponible" } },
-              { name: "Médina", slug: "medina-tanger", stats: { landmarksVerified: 5, status: "indisponible" } },
-              { name: "Charf", slug: "charf", stats: { priceRepere: 11800, landmarksVerified: 6, status: "disponible" } },
+              // Noms de sélection illustratifs : aucune statistique locale n'est revendiquée.
+              { name: "Malabata", slug: "malabata" },
+              { name: "Iberia", slug: "iberia" },
+              { name: "Centre-ville", slug: "centre-ville-tanger" },
+              { name: "Médina", slug: "medina-tanger" },
+              { name: "Charf", slug: "charf" },
             ],
           },
         ],
@@ -155,11 +147,11 @@ function useMapData() {
             signature: "Artisanat & Culture",
             coordinates: [-5.0033, 34.0331],
             quartiers: [
-              { name: "Ville Nouvelle", slug: "ville-nouvelle-fes", stats: { priceRepere: 9700, landmarksVerified: 10, status: "disponible" } },
-              { name: "Médina", slug: "medina-fes", stats: { landmarksVerified: 13, status: "indisponible" } },
-              { name: "Route Immouzer", slug: "route-immouzer", stats: { priceRepere: 10400, landmarksVerified: 6, status: "disponible" } },
-              { name: "Agdal", slug: "agdal-fes", stats: { priceRepere: 8900, landmarksVerified: 5, status: "disponible" } },
-              { name: "Narjiss", slug: "narjiss", stats: { priceRepere: 8300, landmarksVerified: 4, status: "disponible" } },
+              { name: "Ville Nouvelle", slug: "ville-nouvelle-fes" },
+              { name: "Médina", slug: "medina-fes" },
+              { name: "Route Immouzer", slug: "route-immouzer" },
+              { name: "Agdal", slug: "agdal-fes" },
+              { name: "Narjiss", slug: "narjiss" },
             ],
           },
         ],
@@ -175,12 +167,12 @@ function useMapData() {
             signature: "Capitale & Administration",
             coordinates: [-6.8498, 34.0209],
             quartiers: [
-              { name: "Agdal", slug: "agdal", stats: { priceRepere: 18400, landmarksVerified: 14, status: "disponible" } },
-              { name: "Hay Riad", slug: "hay-riad", stats: { priceRepere: 21300, landmarksVerified: 12, status: "disponible" } },
-              { name: "Souissi", slug: "souissi", stats: { priceRepere: 23600, landmarksVerified: 8, status: "disponible" } },
-              { name: "Hassan", slug: "hassan", stats: { priceRepere: 16600, landmarksVerified: 10, status: "disponible" } },
-              { name: "Océan", slug: "ocean", stats: { priceRepere: 14200, landmarksVerified: 9, status: "disponible" } },
-              { name: "Médina", slug: "medina-rabat", stats: { landmarksVerified: 11, status: "indisponible" } },
+              { name: "Agdal", slug: "agdal" },
+              { name: "Hay Riad", slug: "hay-riad" },
+              { name: "Souissi", slug: "souissi" },
+              { name: "Hassan", slug: "hassan" },
+              { name: "Océan", slug: "ocean" },
+              { name: "Médina", slug: "medina-rabat" },
             ],
           },
           {
@@ -188,10 +180,10 @@ function useMapData() {
             slug: "kenitra",
             coordinates: [-6.5802, 34.261],
             quartiers: [
-              { name: "Centre-ville", slug: "centre-ville-kenitra", stats: { priceRepere: 9300, landmarksVerified: 8, status: "disponible" } },
-              { name: "Bir Rami", slug: "bir-rami", stats: { priceRepere: 10100, landmarksVerified: 5, status: "disponible" } },
-              { name: "Ouled Oujih", slug: "ouled-oujih", stats: { priceRepere: 7600, landmarksVerified: 4, status: "disponible" } },
-              { name: "Maamora", slug: "maamora-kenitra", stats: { landmarksVerified: 5, status: "indisponible" } },
+              { name: "Centre-ville", slug: "centre-ville-kenitra" },
+              { name: "Bir Rami", slug: "bir-rami" },
+              { name: "Ouled Oujih", slug: "ouled-oujih" },
+              { name: "Maamora", slug: "maamora-kenitra" },
             ],
           },
         ],
@@ -208,16 +200,16 @@ function useMapData() {
             signature: "Économique & Affaires",
             coordinates: [-7.5898, 33.5731],
             quartiers: [
-              { name: "Maârif", slug: "maarif", stats: { priceRepere: 17600, landmarksVerified: 15, status: "disponible" } },
-              { name: "Aïn Diab", slug: "ain-diab", stats: { priceRepere: 26800, landmarksVerified: 12, status: "disponible" } },
-              { name: "Gauthier", slug: "gauthier", stats: { priceRepere: 20500, landmarksVerified: 13, status: "disponible" } },
-              { name: "Racine", slug: "racine", stats: { priceRepere: 22400, landmarksVerified: 10, status: "disponible" } },
-              { name: "Californie", slug: "californie", stats: { priceRepere: 19700, landmarksVerified: 7, status: "disponible" } },
-              { name: "Anfa", slug: "anfa", stats: { priceRepere: 27900, landmarksVerified: 9, status: "disponible" } },
-              { name: "Sidi Maârouf", slug: "sidi-maarouf", stats: { priceRepere: 13100, landmarksVerified: 6, status: "disponible" } },
-              { name: "Bourgogne", slug: "bourgogne", stats: { priceRepere: 18100, landmarksVerified: 11, status: "disponible" } },
-              { name: "Oasis", slug: "oasis", stats: { priceRepere: 18900, landmarksVerified: 8, status: "disponible" } },
-              { name: "Palmier", slug: "palmier", stats: { landmarksVerified: 6, status: "indisponible" } },
+              { name: "Maârif", slug: "maarif" },
+              { name: "Aïn Diab", slug: "ain-diab" },
+              { name: "Gauthier", slug: "gauthier" },
+              { name: "Racine", slug: "racine" },
+              { name: "Californie", slug: "californie" },
+              { name: "Anfa", slug: "anfa" },
+              { name: "Sidi Maârouf", slug: "sidi-maarouf" },
+              { name: "Bourgogne", slug: "bourgogne" },
+              { name: "Oasis", slug: "oasis" },
+              { name: "Palmier", slug: "palmier" },
             ],
           },
           {
@@ -225,10 +217,10 @@ function useMapData() {
             slug: "mohammedia",
             coordinates: [-7.3844, 33.6861],
             quartiers: [
-              { name: "Corniche", slug: "corniche-mohammedia", stats: { priceRepere: 13900, landmarksVerified: 7, status: "disponible" } },
-              { name: "Centre-ville", slug: "centre-ville-mohammedia", stats: { priceRepere: 11600, landmarksVerified: 8, status: "disponible" } },
-              { name: "Manesman", slug: "manesman", stats: { priceRepere: 12800, landmarksVerified: 5, status: "disponible" } },
-              { name: "Parc", slug: "parc-mohammedia", stats: { landmarksVerified: 4, status: "indisponible" } },
+              { name: "Corniche", slug: "corniche-mohammedia" },
+              { name: "Centre-ville", slug: "centre-ville-mohammedia" },
+              { name: "Manesman", slug: "manesman" },
+              { name: "Parc", slug: "parc-mohammedia" },
             ],
           },
         ],
@@ -244,12 +236,12 @@ function useMapData() {
             signature: "Tourisme & Patrimoine",
             coordinates: [-7.9811, 31.6295],
             quartiers: [
-              { name: "Guéliz", slug: "gueliz", stats: { priceRepere: 18900, landmarksVerified: 15, status: "disponible" } },
-              { name: "Hivernage", slug: "hivernage", stats: { priceRepere: 22600, landmarksVerified: 10, status: "disponible" } },
-              { name: "Palmeraie", slug: "palmeraie", stats: { priceRepere: 20400, landmarksVerified: 8, status: "disponible" } },
-              { name: "Médina", slug: "medina-marrakech", stats: { landmarksVerified: 17, status: "indisponible" } },
-              { name: "Targa", slug: "targa", stats: { priceRepere: 14200, landmarksVerified: 6, status: "disponible" } },
-              { name: "Sidi Ghanem", slug: "sidi-ghanem", stats: { priceRepere: 11200, landmarksVerified: 5, status: "disponible" } },
+              { name: "Guéliz", slug: "gueliz" },
+              { name: "Hivernage", slug: "hivernage" },
+              { name: "Palmeraie", slug: "palmeraie" },
+              { name: "Médina", slug: "medina-marrakech" },
+              { name: "Targa", slug: "targa" },
+              { name: "Sidi Ghanem", slug: "sidi-ghanem" },
             ],
           },
         ],
@@ -266,11 +258,11 @@ function useMapData() {
             signature: "Littoral & Qualité de vie",
             coordinates: [-9.5981, 30.4278],
             quartiers: [
-              { name: "Founty", slug: "founty", stats: { priceRepere: 16700, landmarksVerified: 9, status: "disponible" } },
-              { name: "Talborjt", slug: "talborjt", stats: { priceRepere: 12100, landmarksVerified: 11, status: "disponible" } },
-              { name: "Hay Mohammadi", slug: "hay-mohammadi", stats: { priceRepere: 10800, landmarksVerified: 7, status: "disponible" } },
-              { name: "Sonaba", slug: "sonaba", stats: { priceRepere: 17800, landmarksVerified: 6, status: "disponible" } },
-              { name: "Centre-ville", slug: "centre-ville-agadir", stats: { landmarksVerified: 10, status: "indisponible" } },
+              { name: "Founty", slug: "founty" },
+              { name: "Talborjt", slug: "talborjt" },
+              { name: "Hay Mohammadi", slug: "hay-mohammadi" },
+              { name: "Sonaba", slug: "sonaba" },
+              { name: "Centre-ville", slug: "centre-ville-agadir" },
             ],
           },
         ],
@@ -293,21 +285,6 @@ function featureSlug(feature: RegionFeature, regions: Region[]) {
   }
   const rawName = properties.shapeName ?? properties.NAME_1 ?? properties.name ?? "";
   return REGION_ALIASES[normalizeName(rawName)] ?? null;
-}
-
-function neighborhoodPolygon(index: number) {
-  const column = index % 3;
-  const row = Math.floor(index / 3);
-  const x = 84 + column * 275 + (row % 2) * 18;
-  const y = 130 + row * 126;
-  const width = 246;
-  const height = 103;
-  const notch = 18 + ((index * 7) % 24);
-  return `${x},${y + 10} ${x + width - notch},${y} ${x + width},${y + height - 20} ${x + width - 20},${y + height} ${x + 14},${y + height - 7} ${x},${y + 28}`;
-}
-
-function readablePrice(value?: number) {
-  return value ? `${value.toLocaleString("fr-FR")} DH/m²` : "non disponible";
 }
 
 export function PremiumInteractiveMap() {
@@ -493,7 +470,9 @@ export function PremiumInteractiveMap() {
     if (!projection) return;
     const point = projection(city.coordinates);
     if (!point) return;
-    const scale = 6.2;
+    // City view is an overview, not a street zoom: retain surrounding sourced regions.
+    // Fine-grained street zoom belongs to a separate sourced MapLibre district route.
+    const scale = 2.6;
     applyCamera(zoomIdentity.translate(MAP_WIDTH / 2 - point[0] * scale, MAP_HEIGHT / 2 - point[1] * scale).scale(scale));
   }, [applyCamera, projection]);
 
@@ -579,7 +558,7 @@ export function PremiumInteractiveMap() {
             </div>
             <h1 className="text-[26px] font-black tracking-[-0.045em] sm:text-[32px] lg:text-[38px]">Où vivre au Maroc ?</h1>
             <p className="mt-1 max-w-2xl text-[12px] font-medium sm:text-[13px]" style={{ color: "var(--text-secondary)" }}>
-              Explorez le territoire par région, ville puis quartier. Les repères affichés dans ce prototype sont des données mock isolées.
+              Explorez le territoire par région, ville puis quartier. Les prix et repères locaux ne sont jamais affichés sans source vérifiable.
             </p>
           </div>
           <div className="flex flex-wrap gap-2 text-[10px] font-extrabold uppercase tracking-[0.08em]" style={{ color: "var(--text-secondary)" }}>
@@ -606,7 +585,7 @@ export function PremiumInteractiveMap() {
               </span>
             </div>
 
-            <div className="absolute bottom-4 right-4 z-30 flex flex-col gap-2">
+            <div data-premium-map-controls className="absolute bottom-4 right-4 z-30 flex flex-col gap-2">
               <button type="button" onClick={() => zoomBy(1.25)} className="grid h-10 w-10 place-items-center rounded-xl border shadow-sm" style={{ borderColor: "var(--border)", background: "var(--surface)" }} aria-label="Zoomer"><Plus size={16} /></button>
               <button type="button" onClick={() => zoomBy(0.8)} className="grid h-10 w-10 place-items-center rounded-xl border shadow-sm" style={{ borderColor: "var(--border)", background: "var(--surface)" }} aria-label="Dézoomer"><Minus size={16} /></button>
               <button type="button" onClick={goNational} className="grid h-10 w-10 place-items-center rounded-xl border shadow-sm" style={{ borderColor: "var(--border)", background: "var(--surface)" }} aria-label="Recentrer"><RotateCcw size={15} /></button>
@@ -770,40 +749,21 @@ export function PremiumInteractiveMap() {
               {level === "city" && selectedCity ? (
                 <motion.div
                   key={selectedCity.slug}
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.97 }}
-                  transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-x-3 bottom-3 top-[66px] z-10 overflow-hidden rounded-[22px] border backdrop-blur-md sm:inset-x-5 sm:bottom-5"
-                  style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 72%, transparent)" }}
-                  data-neighborhood-schematic
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                  className="pointer-events-none absolute left-3 top-[72px] z-10 w-[min(320px,calc(100%-24px))] rounded-2xl border px-4 py-3 shadow-md backdrop-blur-md sm:left-5"
+                  style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 94%, transparent)" }}
+                  role="status"
+                  aria-live="polite"
+                  data-city-location-notice
                 >
-                  <svg viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} className="h-full w-full" aria-label={`Quartiers schématiques de ${selectedCity.name}`}>
-                    <text x="64" y="74" fill="var(--text-primary)" fontSize="25" fontWeight="900">{selectedCity.name}</text>
-                    <text x="64" y="101" fill="var(--text-secondary)" fontSize="12" fontWeight="700">Frontières de quartiers stylisées · non cadastrales</text>
-                    {selectedCity.quartiers.map((quartier, index) => {
-                      const active = quartier.slug === selectedQuartierSlug;
-                      const column = index % 3;
-                      const row = Math.floor(index / 3);
-                      const labelX = 84 + column * 275 + (row % 2) * 18 + 18;
-                      const labelY = 130 + row * 126 + 55;
-                      return (
-                        <g key={quartier.slug} role="button" tabIndex={0} className="cursor-pointer outline-none" aria-label={`Sélectionner ${quartier.name}`} onClick={() => setSelectedQuartierSlug(quartier.slug)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedQuartierSlug(quartier.slug); } }}>
-                          <motion.polygon
-                            points={neighborhoodPolygon(index)}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: Math.min(index * 0.035, 0.25), duration: 0.32 }}
-                            fill={active ? NAVY : "color-mix(in srgb, #6E8DA4 35%, var(--surface))"}
-                            stroke={active ? NAVY : "var(--border-dark)"}
-                            strokeWidth={active ? 3 : 1.5}
-                            style={{ transformOrigin: `${labelX}px ${labelY}px` }}
-                          />
-                          <text x={labelX} y={labelY} fill={active ? "white" : "var(--text-primary)"} fontSize="13" fontWeight="850" pointerEvents="none">{quartier.name}</text>
-                        </g>
-                      );
-                    })}
-                  </svg>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.1em]" style={{ color: NAVY }}>Ville sélectionnée</p>
+                  <p className="mt-1 text-[18px] font-black">{selectedCity.name}</p>
+                  <p className="mt-1.5 text-[11px] font-medium leading-5" style={{ color: "var(--text-secondary)" }}>
+                    Contours de quartiers indisponibles. Aucun périmètre n’est dessiné sans source vérifiée. Choisissez un quartier dans la liste.
+                  </p>
                 </motion.div>
               ) : null}
             </AnimatePresence>
@@ -815,8 +775,11 @@ export function PremiumInteractiveMap() {
               </div>
             ) : null}
 
-            <div className="pointer-events-none absolute bottom-3 left-3 z-20 max-w-[70%] rounded-full border px-3 py-1.5 text-[8.5px] font-bold backdrop-blur" style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 88%, transparent)", color: "var(--text-secondary)" }}>
-              Contours régionaux : geoBoundaries / OSM · 12 ADM1 · navigation prototype
+            <div data-premium-map-attribution className="pointer-events-auto absolute bottom-3 left-3 z-20 max-w-[70%] rounded-xl border px-3 py-1.5 text-[9.5px] font-bold leading-4 backdrop-blur" style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 94%, transparent)", color: "var(--text-secondary)" }}>
+              Sources des contours :{" "}
+              <a href="https://www.geoboundaries.org/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">geoBoundaries</a>
+              {" · "}
+              <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">© OpenStreetMap</a>
             </div>
           </section>
 
@@ -866,11 +829,15 @@ export function PremiumInteractiveMap() {
 
                   {selectedQuartier ? (
                     <div className="mt-4 rounded-[20px] border p-4" style={{ borderColor: "var(--border)", background: "var(--background)" }} data-selected-quartier={selectedQuartier.slug}>
-                      <div className="flex items-start justify-between gap-2"><div><p className="text-[9px] font-black uppercase tracking-[0.12em]" style={{ color: "var(--text-secondary)" }}>Quartier sélectionné</p><h3 className="mt-1 text-[17px] font-black">{selectedQuartier.name}</h3></div><span className="rounded-full px-2.5 py-1 text-[8.5px] font-black uppercase" style={{ background: selectedQuartier.stats.status === "disponible" ? "color-mix(in srgb, #071B33 12%, var(--surface))" : "var(--background)", color: selectedQuartier.stats.status === "disponible" ? NAVY : "var(--text-secondary)" }}>{selectedQuartier.stats.status}</span></div>
-                      <div className="mt-3 grid grid-cols-2 gap-2">
-                        <div className="rounded-xl border p-2.5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}><p className="text-[8.5px] font-black uppercase tracking-[0.1em]" style={{ color: "var(--text-secondary)" }}>repère prix</p><p className="mt-1 text-[11px] font-black">{readablePrice(selectedQuartier.stats.priceRepere)}</p></div>
-                        <div className="rounded-xl border p-2.5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}><p className="text-[8.5px] font-black uppercase tracking-[0.1em]" style={{ color: "var(--text-secondary)" }}>repère vérifié</p><p className="mt-1 flex items-center gap-1.5 text-[11px] font-black"><CheckCircle2 size={13} style={{ color: NAVY }} /> {selectedQuartier.stats.landmarksVerified}</p></div>
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="text-[9px] font-black uppercase tracking-[0.12em]" style={{ color: "var(--text-secondary)" }}>Quartier sélectionné</p>
+                          <h3 className="mt-1 text-[17px] font-black">{selectedQuartier.name}</h3>
+                        </div>
                       </div>
+                      <p className="mt-3 rounded-xl border p-3 text-[11px] font-medium" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }} data-local-evidence="unavailable">
+                        Prix et repères locaux indisponibles dans cette vue. Aucune statistique non sourcée n’est publiée.
+                      </p>
                       <Link href={`/immobilier/${selectedCity.slug}/${selectedQuartier.slug}`} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 text-[11px] font-black text-white" style={{ background: NAVY }} data-explorer-selected>Explorer <ChevronRight size={14} /></Link>
                     </div>
                   ) : null}
@@ -878,7 +845,7 @@ export function PremiumInteractiveMap() {
                   <div className="mt-4 max-h-[420px] space-y-2 overflow-y-auto pr-1">
                     {selectedCity.quartiers.map((quartier) => (
                       <div key={quartier.slug} className="flex items-center gap-2 rounded-2xl border p-2.5" style={{ borderColor: quartier.slug === selectedQuartierSlug ? NAVY : "var(--border)", background: quartier.slug === selectedQuartierSlug ? "color-mix(in srgb, #071B33 6%, var(--surface))" : "var(--surface)" }}>
-                        <button type="button" onClick={() => setSelectedQuartierSlug(quartier.slug)} className="min-w-0 flex-1 text-left"><span className="block truncate text-[11px] font-black">{quartier.name}</span><span className="mt-0.5 block text-[9px] font-semibold" style={{ color: "var(--text-secondary)" }}>{readablePrice(quartier.stats.priceRepere)} · {quartier.stats.landmarksVerified} repère{quartier.stats.landmarksVerified > 1 ? "s" : ""} vérifié{quartier.stats.landmarksVerified > 1 ? "s" : ""}</span></button>
+                        <button type="button" onClick={() => setSelectedQuartierSlug(quartier.slug)} className="min-w-0 flex-1 text-left"><span className="block truncate text-[11px] font-black">{quartier.name}</span><span className="mt-0.5 block text-[9px] font-semibold" style={{ color: "var(--text-secondary)" }}>Informations locales à documenter</span></button>
                         <Link href={`/immobilier/${selectedCity.slug}/${quartier.slug}`} className="inline-flex min-h-9 shrink-0 items-center gap-1 rounded-xl border px-2.5 text-[9.5px] font-black" style={{ borderColor: "var(--border-dark)", color: NAVY, background: "var(--background)" }} data-explorer-link={quartier.slug}>Explorer <ChevronRight size={12} /></Link>
                       </div>
                     ))}
@@ -890,7 +857,7 @@ export function PremiumInteractiveMap() {
         </div>
 
         <footer className="mt-3 flex flex-wrap items-center justify-between gap-2 px-1 text-[9px] font-semibold" style={{ color: "var(--text-secondary)" }}>
-          <span className="inline-flex items-center gap-1.5"><Building2 size={12} /> Aucun appel Supabase · aucune écriture DB · mock isolé dans useMapData()</span>
+          <span className="inline-flex items-center gap-1.5"><Building2 size={12} /> Les repères de prix et d’équipements ne sont affichés que s’ils sont documentés.</span>
           <span>{topologySource ? "TopoJSON ADM1 chargé" : "TopoJSON ADM1 en attente"}</span>
         </footer>
       </div>
