@@ -73,6 +73,26 @@ class TestAkarParserV2(unittest.TestCase):
         r = self.record(description_snippet="Appelez 0612345678 ou vendeur@example.com")
         self.assertEqual(r["extracted"]["description"], "Appelez [PHONE] ou [EMAIL]")
 
+    def test_features_and_media_rights_remain_non_public(self):
+        r = self.record(description_snippet="Avec piscine et terrasse, sans garage", image_urls=["https://example.ma/1.jpg"])
+        p = r["canonical_property_v1"]
+        self.assertEqual(p["facts"]["features"]["has_pool"]["value"], True)
+        self.assertEqual(p["facts"]["features"]["has_terrace"]["value"], True)
+        self.assertNotIn("has_garage", p["facts"]["features"])
+        self.assertEqual(p["media"][0]["rights_status"], "unknown")
+        self.assertEqual(p["media"][0]["publication_permission"], "unknown")
+
+    def test_negative_longitude_preserved(self):
+        r = self.record(latitude="33.97", longitude="-6.85")
+        p = r["canonical_property_v1"]
+        self.assertEqual(p["facts"]["location"]["longitude"]["value"], -6.85)
+        self.assertEqual(p["facts"]["location"]["geo_precision"]["value"], "unknown")
+
+    def test_conflicting_declared_currency_is_quarantined(self):
+        r = self.record(price_currency="EUR")
+        self.assertEqual(r["status"], "quarantine")
+        self.assertIn("price_currency_conflicts_with_mad_field", r["quality"]["issues"])
+
     def test_sqlite_streaming_idempotent_source_immutable(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
