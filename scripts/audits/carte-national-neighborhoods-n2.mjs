@@ -133,7 +133,11 @@ report.api = {
   certifiedNeighborhoodBoundaryCount: api.meta.certifiedNeighborhoodBoundaryCount,
 };
 
-// Collect all 8-city BEFORE/AFTER proof before the legacy Casablanca journey.\n// Preserve evidence if the older N2 scenario hits an unrelated browser error.\nawait import("./vivre-ici-l4b-multicity-ui.mjs");\n\nconst browser = await chromium.launch({ headless: true });
+// Collect all 8-city BEFORE/AFTER proof before the legacy Casablanca journey.
+// Preserve evidence if the older N2 scenario hits an unrelated browser error.
+await import("./vivre-ici-l4b-multicity-ui.mjs");
+
+const browser = await chromium.launch({ headless: true });
 try {
   for (const viewport of viewports) {
     const mobile = viewport.width <= 430;
