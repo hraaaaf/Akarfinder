@@ -232,6 +232,9 @@ async function main() {
               await sheet.locator('[data-l2b-living-context]').waitFor({ state: "visible", timeout: 12_000 });
               if ((await toggle.getAttribute('aria-expanded')) !== 'true') throw new Error("expanded aria-expanded missing");
               await assertAttributionUnobscured("expanded");
+              if (await page.locator("[data-l3-map-modes]").isVisible()) {
+                throw new Error("Map modes must be hidden while the mobile decision sheet is expanded");
+              }
               const expanded = await sheet.boundingBox();
               const expandedCta = await cta.boundingBox();
               if (!expanded || expanded.height <= compact.height + 60 || !expandedCta ||
@@ -244,11 +247,16 @@ async function main() {
               if ((await toggle.getAttribute('aria-expanded')) !== 'false') throw new Error("collapsing does not update aria-expanded");
               const recompact = await sheet.boundingBox();
               if (!recompact || recompact.height > 160) throw new Error(`sheet cannot return to compact state: ${recompact?.height}`);
-              const noteBox = await page.locator("[data-l3-admin-unavailable]").boundingBox();
-              const providerBox = await page.locator(".maplibregl-ctrl-attrib").boundingBox();
-              if (boxesOverlap(noteBox, providerBox)) {
-                throw new Error(`L3 admin-unavailable disclosure overlaps live source credits: ${JSON.stringify({ noteBox, providerBox })}`);
-              }
+              // The attribution position may animate after the sheet transitions.
+              // Await its measured separation instead of sampling the intermediate expanded frame.
+              await page.waitForFunction(() => {
+                const note = document.querySelector("[data-l3-admin-unavailable]")?.getBoundingClientRect();
+                const credit = document.querySelector(".maplibregl-ctrl-attrib")?.getBoundingClientRect();
+                const modes = document.querySelector("[data-l3-map-modes]");
+                if (!note || !credit || !modes || getComputedStyle(modes).display === "none") return false;
+                return note.bottom <= credit.top - 3 || note.top >= credit.bottom + 3 ||
+                  note.right <= credit.left - 3 || note.left >= credit.right + 3;
+              }, null, { timeout: 6000 });
             } catch (error) {
               findings.push({ route: route.path, viewport: viewport.label, check: "l2c-sheet-expand-collapse", detail: String(error).slice(0, 550) });
             }
