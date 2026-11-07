@@ -39,3 +39,22 @@ Sur la PR enfant L4-B : lancer N2/N3 après le correctif candidat ; lire `l4b/re
 - **Défaut d'artefact découvert :** le script 8 villes et le smoke Mohammedia utilisaient tous deux `l4b/report.json` ; le smoke final écrasait le rapport 32/17 bien que la CI ait exécuté et réussi les deux audits. Aucune certification d'un rapport 8-city non conservé ne sera inventée.
 - **Correctif candidat en staging :** le rapport huit villes est séparé sous `l4b-eightcity/report.json`, le smoke parent conserve `l4b/report.json`. L'alias d'affichage public `Mohammedia` est désormais distinct de la clé source V5 `mohammadia`, et les CTA Search sont testés sur `city=Mohammedia`. Aucun changement des blobs V5 ni invention de point.
 - **Next :** exécuter une dernière N2/N3 sur le HEAD contenant ces corrections ; vérifier la présence de **trois rapports** (`report.json`, `l4b/report.json`, `l4b-eightcity/report.json`), les 32/17 entrées et les captures. Alors seulement déclarer la certification technique L4-B. L6 reste indépendant.
+
+
+## Closeout L4-B — 07/11/2026 : GREEN technique, UI/montages de preuve
+
+**Code exact testé :** `5e2e826eb4609df9cac08eb52a94ea23eac8d872`, [N2 #42408104639](https://github.com/hraaaaf/Akarfinder/actions/runs/42408104639) **SUCCESS**, [N3 #42408104568](https://github.com/hraaaaf/Akarfinder/actions/runs/42408104568) **SUCCESS**. Artefact N2 **#13588442456**, inspecté par extraction réelle du ZIP : **104 fichiers dont 101 PNG** et **3 rapports JSON** distincts.
+
+- `report.json` N2 historique : `ok=true` ; scénario Casablanca conservé.
+- `l4b/report.json` Mohammedia : `ok=true`, `failure=null`, quatre viewports, overlay/sélection sourcés, `overflow=0`, `pageErrors=[]`.
+- `l4b-eightcity/report.json` : `ok=true`, `failure=null`, **32/32 cas `state=passed`** (8 villes × 390/430/768/1280), **17 sélections de quartiers issus de l'API V5**, **8 sources ville**, `overflow=0`. Les 17 clics ne prétendent pas valider la totalité des 4914 quartiers ; les positions non sourcées restent non cartographiées. Les tuiles cartographiques et limites de ville sont distinctes de tout contour de quartier certifié (**0**).
+- Les comparaisons BEFORE et AFTER sont effectuées sur les mêmes viewports. Le baseline sur `0b5af317` était 23/32 cas et 12/17 choix ; l'artefact final au SHA testé atteint 32/32 et 17/17. Aucun changement de données V5, ni prix, ni annonce.
+- La PR [#1187](https://github.com/hraaaaf/Akarfinder/pull/1187) est **Draft**, empilée sur la PR [#1186](https://github.com/hraaaaf/Akarfinder/pull/1186), pas de merge ni de Vercel. Le SHA de ce document peut être postérieur au SHA de code testé.
+
+### Direction visuelle validée par l'utilisateur (montage de preuves uniquement)
+
+**Décision approuvée :** conserver les **huit villes dans une même grille 2 × 4, toutes à taille identique** ; encadrer seulement la **ville cible Mohammedia** avec une **bordure bleue, un halo léger et un badge « VILLE CIBLE »**. Ne pas agrandir la ville cible ni effacer les autres.
+
+Les quatre montages reposent sur les **PNG réels** du run N2 #42408104639 et ajoutent uniquement des éléments de présentation sur la carte Mohammedia, sans altérer les cartes ou résultats : `VivreIci_L4B_8villes_FOCUS_Mohammedia_CI-5e2e826e_{390,430,768,1280}px.png`. Ils sont enregistrés dans la conversation ; **ils ne prouvent pas qu'une grille de huit cartes a été implémentée dans l'application**. Une telle évolution de l'UI devra suivre BEFORE → maquette → implémentation → AFTER mêmes viewports → tests et score, sans déploiement Vercel non autorisé.
+
+**Limites produit / next :** L3 contours et POI frais manquants, L5 inventaire/prix SQL réels indisponibles, L6 licences Esri/OpenMapTiles/OSM, a11y et score global ≥9,5/10 non certifiés. L4-B seul = GREEN technique, pas « produit complet ».
