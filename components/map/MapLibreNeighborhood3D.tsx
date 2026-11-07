@@ -85,12 +85,10 @@ export function MapLibreNeighborhood3D({
     if (!isMaarifPilot) return;
     const map = mapInstanceRef.current;
     if (!map) return;
-    const desktop = window.innerWidth >= 1024;
-    const targetCenter: MutablePosition = desktop
-      ? [center[0] + desktopCameraOffset[0], center[1] + desktopCameraOffset[1]]
-      : center;
+    // Flat Maârif camera centers on the sourced neighborhood point.
+    // The historical northwest 3D camera offset placed its marker at the bottom edge on desktop.
     map.easeTo({
-      center: targetCenter,
+      center,
       zoom: view === "rue" ? 17.1 : 14.6,
       pitch: 0,
       bearing: 0,
@@ -147,9 +145,11 @@ export function MapLibreNeighborhood3D({
       .then((maplibregl) => {
         if (disposed || !mapRef.current) return;
         const desktop = window.innerWidth >= 1024;
-        const targetCenter: MutablePosition = desktop
-          ? [center[0] + desktopCameraOffset[0], center[1] + desktopCameraOffset[1]]
-          : center;
+        const targetCenter: MutablePosition = isMaarifPilot
+          ? center
+          : desktop
+            ? [center[0] + desktopCameraOffset[0], center[1] + desktopCameraOffset[1]]
+            : center;
         map = new maplibregl.Map({
           container: mapRef.current,
           center: targetCenter,

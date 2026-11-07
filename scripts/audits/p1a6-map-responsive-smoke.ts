@@ -178,6 +178,17 @@ async function main() {
                 return map?.getAttribute("data-l3-camera-pitch") === "0"
                   && map?.getAttribute("data-l3-camera-bearing") === "0";
               }, null, { timeout: 12_000 });
+              if (viewport.width >= 1024) {
+                const mapBox = await page.locator('[data-l3-maarif-pilot="true"] .maplibre-spike-map').boundingBox();
+                const marker = page.locator('[data-l3-maarif-pilot="true"] .maplibre-spike-neighborhood-label');
+                await marker.waitFor({ state: "visible", timeout: 12_000 });
+                const markerBox = await marker.boundingBox();
+                if (!mapBox || !markerBox) throw new Error("Maârif focal marker not measurable");
+                const normalizedY = (markerBox.y + markerBox.height / 2 - mapBox.y) / mapBox.height;
+                if (normalizedY < 0.2 || normalizedY > 0.8) {
+                  throw new Error(`Maârif 2D focal marker outside central map area: ${normalizedY.toFixed(3)}`);
+                }
+              }
               if ((await shell.getAttribute("data-l3-admin-boundary")) !== "unavailable") {
                 throw new Error("Unreviewed Maârif administrative bounds must remain unavailable");
               }

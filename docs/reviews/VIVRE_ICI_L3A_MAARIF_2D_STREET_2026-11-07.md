@@ -36,3 +36,7 @@ Pour obtenir Required Gate/Responsive P1A.6 (déclenchés uniquement pour une PR
 
 ### Relance unique du contrôle final (provisoire)
 Le HEAD `277570d6` corrige les deux collisions visibles sur L3-A, avec assertions géométriques et sans aucune donnée fictive. La PR Draft est retargetée temporairement `main` uniquement pour activer les Required/Responsive Gates prévus sur `pull_request: main` ; elle doit revenir sur base L2-D immédiatement après publication des preuves de la CI, sans merge.
+
+### Centrage 2D desktop — correction candidate
+
+L'artefact L3-A `6c2ffe8f` montre, au format 1280px, le repère Maârif presque collé au bord inférieur droit du canvas. **Cause vérifiée dans le code :** `NationalMapRouter` passe `desktopCameraOffset=[-0.0055,0.0090]` depuis la perspective 3D historique, et la caméra L3-A le réutilisait malgré `pitch=0`. Correction : sur Maârif uniquement, caméra réelle Quartier/Rue centrée sur le point canonique (aucun changement de ses coordonnées). Rabat/Agdal et autres villes gardent leurs offsets initiaux. P1A.6 doit désormais prouver sur 1280px un repère entre 20% et 80% de la hauteur de la carte, en plus de l'absence de chevauchement avec la navigation. Cette correction exige un screenshot AFTER pour preuve ; pas encore certifié.
