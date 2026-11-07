@@ -1,0 +1,354 @@
+{
+  "batch": "C:\\Users\\lenovo\\Documents\\AkarFinder\\data\\annonces-fraiches\\.bulk\\20261014T121416Z",
+  "accepted_before": 347,
+  "accepted_after": 862,
+  "sources": [
+    {
+      "origin": "https://www.marocimmo.com",
+      "exit_code": 0,
+      "report": {
+        "run_id": "2026-10-14T12:14:17.639971+00:00",
+        "sources": [],
+        "discovered": 0,
+        "fetched": 0,
+        "errors": [
+          {
+            "origin": "https://www.marocimmo.com",
+            "error": "The read operation timed out"
+          }
+        ],
+        "parser_version": "1.9.0",
+        "generated_at": "2026-10-14T12:14:38.015425+00:00",
+        "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
+        "target": 200000,
+        "accepted": 56,
+        "rejected": 222,
+        "target_reached": false,
+        "shortfall": 199944,
+        "reasons": {
+          "invalid_prix": 115,
+          "missing_evidence_prix": 115,
+          "missing_or_unsupported_currency": 115,
+          "missing_evidence_quartier": 46,
+          "missing_quartier": 46,
+          "missing_evidence_type": 140,
+          "missing_type": 140,
+          "unsupported_type": 140,
+          "invalid_superficie": 38,
+          "missing_evidence_superficie": 38,
+          "missing_evidence_ville": 38,
+          "missing_ville": 38
+        },
+        "photos_downloaded": 0,
+        "production_writes": 0,
+        "deduplication": "canonical URL only; distinct properties not guaranteed",
+        "checkpoint_observations": 278
+      },
+      "folder": "C:\\Users\\lenovo\\Documents\\AkarFinder\\data\\annonces-fraiches\\.bulk\\20261014T121416Z\\www.marocimmo.com"
+    },
+    {
+      "origin": "https://agenz.ma",
+      "exit_code": 0,
+      "report": {
+        "run_id": "2026-10-14T12:14:17.634226+00:00",
+        "sources": [
+          {
+            "origin": "https://agenz.ma",
+            "discovered": 36
+          }
+        ],
+        "discovered": 36,
+        "fetched": 15,
+        "errors": [
+          {
+            "url": "https://agenz.ma/fr/annonces/immo-meknes/vente-appartements/avenue-des-f-a.r/346755",
+            "error": "HTTP Error 429: Too Many Requests"
+          }
+        ],
+        "parser_version": "1.9.0",
+        "generated_at": "2026-10-14T12:14:56.843814+00:00",
+        "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
+        "target": 200000,
+        "accepted": 0,
+        "rejected": 16,
+        "target_reached": false,
+        "shortfall": 200000,
+        "reasons": {
+          "invalid_prix": 15,
+          "missing_evidence_prix": 15,
+          "missing_or_unsupported_currency": 15,
+          "invalid_superficie": 10,
+          "missing_evidence_superficie": 10,
+          "missing_evidence_date_publication": 2,
+          "missing_evidence_quartier": 2,
+          "missing_evidence_type": 3,
+          "missing_evidence_ville": 2,
+          "missing_publication_date": 2,
+          "missing_quartier": 2,
+          "missing_type": 3,
+          "missing_ville": 2,
+          "unsupported_type": 3,
+          "HTTP Error 429: Too Many Requests": 1,
+          "not_live_verified": 1
+        },
+        "photos_downloaded": 0,
+        "production_writes": 0,
+        "deduplication": "canonical URL only; distinct properties not guaranteed",
+        "checkpoint_observations": 16
+      },
+      "folder": "C:\\Users\\lenovo\\Documents\\AkarFinder\\data\\annonces-fraiches\\.bulk\\20261014T121416Z\\agenz.ma"
+    },
+    {
+      "origin": "https://limmobiliersansfrontieres.com",
+      "exit_code": 0,
+      "report": {
+        "run_id": "2026-10-14T12:14:57.381028+00:00",
+        "sources": [
+          {
+            "origin": "https://limmobiliersansfrontieres.com",
+            "channel": "public_wordpress_published_properties"
+          }
+        ],
+        "discovered": 42,
+        "fetched": 42,
+        "errors": [],
+        "parser_version": "1.9.0",
+        "generated_at": "2026-10-14T12:16:40.026219+00:00",
+        "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
+        "target": 200000,
+        "accepted": 31,
+        "rejected": 11,
+        "target_reached": false,
+        "shortfall": 199969,
+        "reasons": {
+          "missing_evidence_type": 11,
+          "missing_type": 11,
+          "unsupported_type": 11
+        },
+        "photos_downloaded": 0,
+        "production_writes": 0,
+        "deduplication": "canonical URL only; distinct properties not guaranteed",
+        "checkpoint_observations": 42
+      },
+      "folder": "C:\\Users\\lenovo\\Documents\\AkarFinder\\data\\annonces-fraiches\\.bulk\\20261014T121416Z\\limmobiliersansfrontieres.com"
+    },
+    {
+      "origin": "https://daragadir.com",
+      "exit_code": 0,
+      "report": {
+        "run_id": "2026-10-14T12:14:17.646664+00:00",
+        "sources": [
+          {
+            "origin": "https://daragadir.com",
+            "discovered": 5749
+          }
+        ],
+        "discovered": 5749,
+        "fetched": 500,
+        "errors": [],
+        "parser_version": "1.9.0",
+        "generated_at": "2026-10-14T12:25:26.074289+00:00",
+        "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
+        "target": 200000,
+        "accepted": 0,
+        "rejected": 500,
+        "target_reached": false,
+        "shortfall": 200000,
+        "reasons": {
+          "invalid_prix": 284,
+          "invalid_superficie": 291,
+          "missing_evidence_prix": 284,
+          "missing_evidence_superficie": 291,
+          "missing_or_unsupported_currency": 284,
+          "older_than_30_days": 500,
+          "starting_price_not_exact": 108,
+          "missing_evidence_quartier": 245,
+          "missing_quartier": 245,
+          "missing_evidence_type": 24,
+          "missing_type": 24,
+          "unsupported_type": 24
+        },
+        "photos_downloaded": 0,
+        "production_writes": 0,
+        "deduplication": "canonical URL only; distinct properties not guaranteed",
+        "checkpoint_observations": 500
+      },
+      "folder": "C:\\Users\\lenovo\\Documents\\AkarFinder\\data\\annonces-fraiches\\.bulk\\20261014T121416Z\\daragadir.com"
+    },
+    {
+      "origin": "https://sawim.ma",
+      "exit_code": 0,
+      "report": {
+        "run_id": "2026-10-14T12:14:38.377419+00:00",
+        "sources": [
+          {
+            "origin": "https://sawim.ma",
+            "discovered": 648,
+            "channel": "documented_public_json_feed"
+          }
+        ],
+        "discovered": 648,
+        "fetched": 610,
+        "errors": [
+          {
+            "origin": "https://sawim.ma",
+            "error": "[WinError 5] Accès refusé: 'C:\\\\Users\\\\lenovo\\\\Documents\\\\AkarFinder\\\\data\\\\annonces-fraiches\\\\.bulk\\\\20261014T121416Z\\\\sawim.ma\\\\rapport.json.tmp' -> 'C:\\\\Users\\\\lenovo\\\\Documents\\\\AkarFinder\\\\data\\\\annonces-fraiches\\\\.bulk\\\\20261014T121416Z\\\\sawim.ma\\\\rapport.json'"
+          }
+        ],
+        "feed_documentation": "https://sawim.ma/llms.txt",
+        "feed_pages_read": 27,
+        "feed_rows_read": 648,
+        "feed_total_advertised": 5560,
+        "recent_candidates": 610,
+        "older_feed_rows": 38,
+        "complete": false,
+        "parser_version": "1.9.0",
+        "generated_at": "2026-10-14T12:25:46.876005+00:00",
+        "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
+        "target": 200000,
+        "accepted": 539,
+        "rejected": 129,
+        "target_reached": false,
+        "shortfall": 199461,
+        "reasons": {
+          "missing_evidence_quartier": 45,
+          "missing_quartier": 45,
+          "invalid_superficie": 39,
+          "missing_evidence_superficie": 39,
+          "not_live_verified": 38,
+          "older_than_30_days": 57,
+          "missing_or_unsupported_currency": 5,
+          "starting_price_not_exact": 5,
+          "implausible_price": 1
+        },
+        "photos_downloaded": 0,
+        "production_writes": 0,
+        "deduplication": "canonical URL only; distinct properties not guaranteed",
+        "checkpoint_observations": 668
+      },
+      "folder": "C:\\Users\\lenovo\\Documents\\AkarFinder\\data\\annonces-fraiches\\.bulk\\20261014T121416Z\\sawim.ma"
+    },
+    {
+      "origin": "https://1immo.ma",
+      "exit_code": 0,
+      "report": {
+        "run_id": "2026-10-14T12:14:17.641459+00:00",
+        "sources": [
+          {
+            "origin": "https://1immo.ma",
+            "discovered": 959
+          }
+        ],
+        "discovered": 959,
+        "fetched": 381,
+        "errors": [
+          {
+            "url": "https://1immo.ma/magasin-commercial-a-louer-benslimane-36336",
+            "error": "The read operation timed out"
+          }
+        ],
+        "parser_version": "1.9.0",
+        "generated_at": "2026-10-14T12:25:48.826089+00:00",
+        "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
+        "target": 200000,
+        "accepted": 213,
+        "rejected": 746,
+        "target_reached": false,
+        "shortfall": 199787,
+        "reasons": {
+          "invalid_superficie": 353,
+          "missing_evidence_quartier": 679,
+          "missing_evidence_superficie": 353,
+          "missing_quartier": 679,
+          "invalid_prix": 111,
+          "missing_evidence_prix": 111,
+          "missing_or_unsupported_currency": 111,
+          "older_than_30_days": 79,
+          "missing_evidence_type": 14,
+          "missing_type": 14,
+          "unsupported_type": 14,
+          "implausible_price": 1,
+          "unit_price_not_total": 1,
+          "starting_price_not_exact": 1,
+          "The read operation timed out": 1,
+          "missing_evidence_date_publication": 1,
+          "missing_evidence_ville": 1,
+          "missing_publication_date": 1,
+          "missing_ville": 1,
+          "not_live_verified": 1
+        },
+        "photos_downloaded": 0,
+        "production_writes": 0,
+        "deduplication": "canonical URL only; distinct properties not guaranteed",
+        "checkpoint_observations": 959
+      },
+      "folder": "C:\\Users\\lenovo\\Documents\\AkarFinder\\data\\annonces-fraiches\\.bulk\\20261014T121416Z\\1immo.ma"
+    }
+  ],
+  "net_gain": 515,
+  "followup_passes": [
+    {
+      "origin": "https://1immo.ma",
+      "fetched": 104,
+      "recovered_fields": {
+        "quartier": 45,
+        "superficie": 4
+      },
+      "net_gain": 22,
+      "errors": [
+        {
+          "url": "https://1immo.ma/%D8%B4%D9%82%D8%A9-%D9%85%D8%AC%D9%87%D8%B2%D8%A9-%D9%84%D9%84%D9%83%D8%B1%D8%A7%D8%A1-%D8%A7%D9%84%D9%8A%D9%88%D9%85%D9%8A-%D9%84%D9%84%D8%B9%D8%A7%D8%A6%D9%84%D8%A7%D8%AA-36606",
+          "error": "The read operation timed out"
+        }
+      ]
+    },
+    {
+      "origin": "https://sawim.ma",
+      "report": {
+        "run_id": "2026-10-14T12:27:17.636448+00:00",
+        "sources": [
+          {
+            "origin": "https://sawim.ma",
+            "discovered": 648,
+            "channel": "documented_public_json_feed"
+          }
+        ],
+        "discovered": 648,
+        "fetched": 101,
+        "errors": [],
+        "feed_documentation": "https://sawim.ma/llms.txt",
+        "feed_pages_read": 27,
+        "feed_rows_read": 648,
+        "feed_total_advertised": 5560,
+        "recent_candidates": 610,
+        "older_feed_rows": 38,
+        "complete": true,
+        "reused_live_verified": 509,
+        "tail_not_fetched_reason": "documented_sort_recent_older_than_thirty_day_cutoff",
+        "parser_version": "1.10.0",
+        "generated_at": "2026-10-14T12:29:40.081660+00:00",
+        "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
+        "target": 200000,
+        "accepted": 539,
+        "rejected": 129,
+        "target_reached": false,
+        "shortfall": 199461,
+        "reasons": {
+          "missing_evidence_quartier": 45,
+          "missing_quartier": 45,
+          "invalid_superficie": 39,
+          "missing_evidence_superficie": 39,
+          "not_live_verified": 38,
+          "older_than_30_days": 57,
+          "missing_or_unsupported_currency": 5,
+          "starting_price_not_exact": 5,
+          "implausible_price": 1
+        },
+        "photos_downloaded": 0,
+        "production_writes": 0,
+        "deduplication": "canonical URL only; distinct properties not guaranteed",
+        "checkpoint_observations": 668
+      }
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "origin": "https://daragadir.com",
+    "enabled": false,
+    "hold_reason": "30/30 inspected publication dates older than seven days",
+    "detail_pattern": "^/annonces/annonces-immobilieres/.+\\.html$"
+  },
+  {
+    "origin": "https://www.mubawab.ma",
+    "enabled": false,
+    "hold_reason": "30/30 inspected pages missing verifiable publication date",
+    "detail_pattern": "^/(fr|en|ar)/a/[0-9]+/",
+    "catalogues": [
+      "https://www.mubawab.ma/fr/sc/appartements-a-vendre",
+      "https://www.mubawab.ma/fr/sc/appartements-a-louer"
+    ]
+  },
+  {
+    "origin": "https://www.marocimmo.com",
+    "enabled": true,
+    "detail_pattern": "^/fr/annonces/[^/]+-[0-9]+$",
+    "catalogues": ["https://www.marocimmo.com/fr", "https://www.marocimmo.com/fr/vente", "https://www.marocimmo.com/fr/location"]
+  },
+  {
+    "origin": "https://sawim.ma",
+    "enabled": true,
+    "detail_pattern": "^/annonce/[A-Za-z0-9]+/[^/]+$",
+    "catalogues": ["https://sawim.ma/", "https://sawim.ma/recherche?category=ventes-immobilieres", "https://sawim.ma/recherche?category=locations"]
+  },
+  {
+    "origin": "https://www.avito.ma",
+    "enabled": true,
+    "detail_limit": 5,
+    "detail_pattern": "^/fr/[^/]+/(appartements|maisons|villas|bureaux|locaux_commerciaux)/[^/]+_[0-9]+\\.htm$",
+    "catalogues": ["https://www.avito.ma/fr/maroc/appartements-%C3%A0_vendre", "https://www.avito.ma/fr/maroc/appartements-%C3%A0_louer"]
+  }
+]

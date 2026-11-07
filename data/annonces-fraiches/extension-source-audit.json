@@ -1,0 +1,39 @@
+{
+  "observed_on": "2026-10-13",
+  "scope": "Read-only extension and recent-rejection review; no production mutation",
+  "recent_rejection_review": {
+    "source": "https://www.marocimmo.com",
+    "fetched": 14,
+    "accepted_before": 94,
+    "accepted_after": 98,
+    "net_gain": 4,
+    "fixes": ["explicit Type de bien labels", "URL-bound Place/Store properties", "explicit Surface du terrain in MTK"]
+  },
+  "additional_channels": [
+    {
+      "source": "https://logeland.com",
+      "evidence": "https://logeland.com/fr/properties/appartement-a-louer-rabat-prop_1751482912132_385",
+      "observed_publication": "2025-07-02T19:01:52.132Z",
+      "finding": "Sample publication too old; subsequent robots fetch attempts timed out. No freshness inferred from dateModified or sitemap dates."
+    },
+    {
+      "source": "https://www.masaken.ma",
+      "robots_status": "missing_404",
+      "protocol_reference": "https://www.rfc-editor.org/rfc/rfc9309.html#section-2.3.1.3",
+      "detail_status": 410,
+      "catalogue_status": 404,
+      "finding": "Public sample gone and catalogue path not found; no accepted row. Authentication/challenges/rate limits remain blocking."
+    },
+    {
+      "source": "Connected Supabase project AqarFinder",
+      "project_status": "INACTIVE",
+      "metadata_query": "read-only information_schema publication/date column lookup",
+      "query_result": "connection timeout",
+      "mutations": 0,
+      "finding": "Existing stock could not be inspected; project was not restored or modified."
+    }
+  ],
+  "target": 200000,
+  "target_reached": false,
+  "photos_downloaded": 0
+}
