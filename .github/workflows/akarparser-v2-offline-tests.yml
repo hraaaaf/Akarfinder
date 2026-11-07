@@ -23,3 +23,28 @@ jobs:
           python-version: '3.11'
       - name: Offline standard-library regression suite
         run: python -Werror::ResourceWarning -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v2*.py'
+
+      - name: Canary on 300 repository records (no private uploads)
+        run: |
+          python scripts/acquisition/akarparser_v2_canary.py \
+            --input scripts/scrapers/output/mubawab-expansion-clean-listings.json \
+            --out "$RUNNER_TEMP/akarparser-v2-repo-canary" \
+            --sample-size 300 --audit-size 30
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          path = Path(os.environ["RUNNER_TEMP"]) / "akarparser-v2-repo-canary/aggregate_report.json"
+          result = json.loads(path.read_text(encoding="utf-8"))
+          assert result["selection"]["selected"] == 300
+          assert result["source"]["unchanged"] is True
+          assert result["manual_review"]["queue_size"] == 30
+          assert result["invariants"]["publication_allowed"] == 0
+          assert result["invariants"]["new_detailed_observations_certified"] == 0
+          assert result["invariants"]["cloud_writes"] == 0
+          assert result["invariants"]["production_writes"] == 0
+          assert result["parser"]["counts"]["input"] == 300
+          print("Repo canary: 300 records processed; no auto-publication or certified new observations")
+          print("Statuses:", json.dumps(result["parser"]["status_counts"], sort_keys=True))
+          print("Issues:", json.dumps(result["parser"]["issues"], sort_keys=True))
+          PY
