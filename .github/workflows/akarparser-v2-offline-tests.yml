@@ -6,7 +6,9 @@ on:
   pull_request:
     paths:
       - scripts/acquisition/akarparser_v2.py
+      - scripts/acquisition/akarparser_v2_canary.py
       - scripts/acquisition/__tests__/test_akarparser_v2.py
+      - scripts/acquisition/__tests__/test_akarparser_v2_canary.py
       - .github/workflows/akarparser-v2-offline-tests.yml
   workflow_dispatch:
 jobs:
@@ -20,4 +22,4 @@ jobs:
         with:
           python-version: '3.11'
       - name: Offline standard-library regression suite
-        run: python -Werror::ResourceWarning -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v2.py'
+        run: python -Werror::ResourceWarning -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v2*.py'
