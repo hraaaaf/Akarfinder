@@ -15,6 +15,7 @@ const report = { ok: false, api: null, multicityApi: [], cases: [], failure: nul
 
 // L4-A: read-only national source contract. This does NOT certify browser UX in all 8 cities.
 const L4_SOURCE_CITIES = ["casablanca", "rabat", "marrakech", "tanger", "agadir", "fes", "kenitra", "mohammedia"];
+const unavailableCities = [];
 
 function isValidCenter(center) {
   return Boolean(center) && Number.isFinite(center.lng) && Number.isFinite(center.lat) && center.lng >= -180 && center.lng <= 180 && center.lat >= -90 && center.lat <= 90;
@@ -42,6 +43,15 @@ async function waitForNationalOverlay(page) {
 // Eight-city API inventory; source-backed coordinates only, no inferred pins.
 for (const city of L4_SOURCE_CITIES) {
   const response = await fetch(`${baseUrl}/api/geo/national-territories?city=${encodeURIComponent(city)}`);
+  if (response.status === 404) {
+    // Missing source is a product coverage gap, never an excuse for an invented pin.
+    unavailableCities.push(city);
+    report.multicityApi.push({
+      city, status: "unavailable", httpStatus: 404,
+      neighborhoods: null, validCenters: null, noCenterCount: null, publishedBoundaries: null,
+    });
+    continue;
+  }
   if (!response.ok) throw new Error(`L4 source API ${city} HTTP ${response.status}`);
   const payload = await response.json();
   if (payload.status !== "ok" || payload.view !== "city" || payload.place?.slug !== city) {
@@ -78,6 +88,7 @@ for (const city of L4_SOURCE_CITIES) {
   }
   report.multicityApi.push({
     city,
+    status: "covered",
     neighborhoods: payload.neighborhoods.length,
     validCenters,
     noCenterCount,
@@ -199,7 +210,12 @@ try {
       await context.close();
     }
   }
-  report.ok = true;
+  report.ok = unavailableCities.length === 0;
+  if (!report.ok) {
+    // Keep CI red while still saving valid Casablanca screenshots and all 8 API findings.
+    report.failure = { check: "l4a-national-source-coverage", unavailableCities };
+    throw new Error(`L4-A unverified city coverage: ${unavailableCities.join(", ")}`);
+  }
 } finally {
   await browser.close();
   await writeFile(`${outDir}/report.json`, JSON.stringify(report, null, 2));
