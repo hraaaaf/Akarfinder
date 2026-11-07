@@ -61,6 +61,16 @@ async function verifyFocus(page, citySlug, viewportName) {
   if (JSON.stringify(mapState.activeFilter) !== JSON.stringify(mapState.haloFilter)) {
     throw new Error("outline and halo are not focused on the same source feature");
   }
+  // The eight equal-size choices must not cover the responsive decision sheet.
+  const panelBounds = await panel.boundingBox();
+  const sheetBounds = await page.locator("[data-p4-map-decision-rail]").boundingBox();
+  if (!panelBounds || !sheetBounds) throw new Error("city chooser or decision sheet is missing");
+  const overlapW = Math.max(0, Math.min(panelBounds.x + panelBounds.width, sheetBounds.x + sheetBounds.width) - Math.max(panelBounds.x, sheetBounds.x));
+  const overlapH = Math.max(0, Math.min(panelBounds.y + panelBounds.height, sheetBounds.y + sheetBounds.height) - Math.max(panelBounds.y, sheetBounds.y));
+  if (overlapW * overlapH > 1) throw new Error("city chooser overlaps the responsive decision sheet: " + JSON.stringify({ panelBounds, sheetBounds }));
+  if (citySlug === "casablanca" && await page.locator("[data-vivre-ici-3d-toggle]").count()) {
+    throw new Error("Casablanca regional comparison unexpectedly activates 3D/satellite");
+  }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   if (overflow > 1) throw new Error("horizontal overflow at " + viewportName + ": " + overflow);
   return { cityCount: mapState.citySourceCount, zoom: mapState.mapZoom, canvas: mapState.mapCanvasCount, overflow };
