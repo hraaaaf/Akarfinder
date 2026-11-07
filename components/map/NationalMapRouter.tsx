@@ -1,14 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MapNeighborhoodClient } from "@/components/map/MapNeighborhoodClient";
 import { MapLibreNeighborhood3D } from "@/components/map/MapLibreNeighborhood3D";
 import { National3DBuildingsLayer } from "@/components/map/National3DBuildingsLayer";
 import { NationalNeighborhoodOverlayBridge } from "@/components/map/NationalNeighborhoodOverlayBridge";
 import { getNeighborhoodBySlug } from "@/lib/map/canonical-neighborhood-data";
-import { getPremiumMarketIntelligenceProvider } from "@/lib/map/premium-map-city-registry";
 import { MAP_LAYER_EXPLORE, type MapNavigationState } from "@/lib/map/map-navigation-state";
 
 const NationalTerritoryExperienceDynamic = dynamic(
@@ -42,11 +41,59 @@ export function NationalMapRouter({ initialState }: Props) {
       : null,
     [selectedCitySlug, selectedDistrictSlug],
   );
-  const useMapLibreNeighborhood = rawLayer === MAP_LAYER_EXPLORE && Boolean(selectedNeighborhood);
-  const premiumProvider = getPremiumMarketIntelligenceProvider(selectedCitySlug ?? "all");
-  const useNationalExplore = rawLayer === MAP_LAYER_EXPLORE
-    && premiumProvider !== "rabat-market-intelligence"
-    && !useMapLibreNeighborhood;
+  // L4-B: the historical seeded neighborhood center is not sufficient to
+  // claim a mapped location. Gate district MapLibre on the source V5 label
+  // having a real OSM center; absent center => city + honest text preview.
+  const districtSourceKey = selectedCitySlug && selectedDistrictSlug
+    ? `${selectedCitySlug}/${selectedDistrictSlug}` : null;
+  const [sourceCenter, setSourceCenter] = useState<{ key: string; center: [number, number] | null } | null>(null);
+  const hasCanonicalNeighborhood = Boolean(selectedNeighborhood);
+
+  useEffect(() => {
+    if (!districtSourceKey || !hasCanonicalNeighborhood || rawLayer !== MAP_LAYER_EXPLORE) return;
+    const controller = new AbortController();
+    const citySlug = selectedCitySlug!;
+    const districtSlug = selectedDistrictSlug!;
+    void fetch(`/api/geo/national-territories?city=${encodeURIComponent(citySlug)}`, {
+      cache: "no-store", signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error(`neighborhood source HTTP ${response.status}`);
+        return response.json() as Promise<{
+          status: string;
+          place?: { slug?: string };
+          neighborhoods?: Array<{
+            slug: string;
+            center: { lng: number; lat: number } | null;
+            sourceKinds: string[];
+          }>;
+        }>;
+      })
+      .then((payload) => {
+        if (controller.signal.aborted) return;
+        const expectedSourceSlug = citySlug === "mohammedia" ? "mohammadia" : citySlug;
+        const candidate = payload.status === "ok" && payload.place?.slug === expectedSourceSlug
+          ? payload.neighborhoods?.find((item) => item.slug === districtSlug) : null;
+        const center = candidate?.sourceKinds?.includes("osm_neighborhood_label") &&
+          candidate.center && Number.isFinite(candidate.center.lng) &&
+          Number.isFinite(candidate.center.lat) &&
+          Math.abs(candidate.center.lng) <= 180 && Math.abs(candidate.center.lat) <= 90
+            ? [candidate.center.lng, candidate.center.lat] as [number, number]
+            : null;
+        setSourceCenter({ key: districtSourceKey, center });
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setSourceCenter({ key: districtSourceKey, center: null });
+      });
+    return () => controller.abort();
+  }, [districtSourceKey, hasCanonicalNeighborhood, rawLayer, selectedCitySlug, selectedDistrictSlug]);
+
+  const verifiedCenter = sourceCenter && sourceCenter.key === districtSourceKey ? sourceCenter.center : null;
+  const useMapLibreNeighborhood = rawLayer === MAP_LAYER_EXPLORE
+    && hasCanonicalNeighborhood && Boolean(verifiedCenter);
+  // Vivre Ici's sourced Explore path is consistent in all eight cities,
+  // including Rabat. Dedicated market intelligence remains on non-Explore layers.
+  const useNationalExplore = rawLayer === MAP_LAYER_EXPLORE && !useMapLibreNeighborhood;
 
   useEffect(() => {
     if (!useNationalExplore || !shellRef.current) return;
@@ -105,7 +152,7 @@ export function NationalMapRouter({ initialState }: Props) {
         cityLabel={selectedNeighborhood.city}
         districtSlug={selectedNeighborhood.neighborhoodSlug}
         districtLabel={selectedNeighborhood.neighborhood}
-        center={[selectedNeighborhood.lng, selectedNeighborhood.lat]}
+        center={verifiedCenter!}
         desktopCameraOffset={isMaarifReference ? [-0.0055, 0.0090] : [0, 0]}
       />
     );

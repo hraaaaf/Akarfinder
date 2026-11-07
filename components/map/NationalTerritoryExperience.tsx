@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { applyAkarFinderBasemapTreatment } from "@/lib/map/akarfinder-territorial-style";
+import { publicNationalCityLabel } from "@/lib/map/national-city-label";
 
 const LIGHT_TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const DARK_TILE_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
@@ -96,7 +97,7 @@ function cityPoints(places: NationalCity[]): GeoJSON.FeatureCollection {
       id: place.slug,
       properties: {
         slug: place.slug,
-        name: place.name,
+        name: publicNationalCityLabel(place.slug, place.name),
         population: place.population ?? 0,
         neighborhoodCount: place.neighborhoodCount,
         hasBoundary: Boolean(place.boundaryRelationId),
@@ -358,7 +359,8 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
     return slug ? payload.places.find((place) => place.slug === slug) ?? null : null;
   }, [hoverSlug, payload, previewSlug]);
 
-  const searchHref = payload?.view === "city" ? `/search?city=${encodeURIComponent(payload.place.name)}` : "/search";
+  const publicCityName = payload?.view === "city" ? publicNationalCityLabel(payload.place.slug, payload.place.name) : null;
+  const searchHref = publicCityName ? `/search?city=${encodeURIComponent(publicCityName)}` : "/search";
 
   return (
     <div className="relative h-[calc(100svh-64px)] min-h-[520px] overflow-hidden bg-[#EDF3F7] dark:bg-[#071426]" data-akarfinder-national-map data-akarfinder-national-view={payload?.view ?? "loading"}>
@@ -374,7 +376,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
           <div className="min-w-0 flex-1">
             <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-brand-primary">Vivre ici · territoire</p>
             <h1 className="mt-0.5 truncate text-[16px] font-extrabold tracking-[-0.025em] text-foreground">
-              {payload?.view === "city" ? `Vivre à ${payload.place.name}` : "Où vivre au Maroc ?"}
+              {payload?.view === "city" ? `Vivre à ${publicCityName}` : "Où vivre au Maroc ?"}
             </h1>
             <p className="mt-1 text-[10.5px] font-semibold leading-4 text-muted-foreground">
               {payload?.view === "city"
@@ -388,7 +390,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
         {payload?.view === "city" ? (
           <Link href={searchHref} className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand-primary px-4 text-[11.5px] font-extrabold text-white shadow-accent">
             <Search size={14} aria-hidden="true" />
-            Voir les biens à {payload.place.name}
+            Voir les biens à {publicCityName}
           </Link>
         ) : (
           <p className="mt-2 rounded-xl bg-brand-primary-soft px-3 py-2 text-[10px] font-bold leading-4 text-brand-primary">
@@ -398,12 +400,12 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       </section>
 
       {previewPlace && payload?.view === "morocco" ? (
-        <aside className="absolute inset-x-3 bottom-[84px] z-20 rounded-[22px] border border-white/[0.85] bg-white/[0.96] p-3.5 shadow-[0_18px_48px_rgba(15,35,66,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/[0.96] sm:inset-x-auto sm:bottom-5 sm:left-4 sm:w-[330px]" aria-label={`Ville sélectionnée ${previewPlace.name}`} data-akarfinder-city-preview={previewPlace.slug}>
+        <aside className="absolute inset-x-3 bottom-[84px] z-20 rounded-[22px] border border-white/[0.85] bg-white/[0.96] p-3.5 shadow-[0_18px_48px_rgba(15,35,66,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/[0.96] sm:inset-x-auto sm:bottom-5 sm:left-4 sm:w-[330px]" aria-label={`Ville sélectionnée ${publicNationalCityLabel(previewPlace.slug, previewPlace.name)}`} data-akarfinder-city-preview={previewPlace.slug}>
           <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-[0.14em] text-brand-primary"><MapPin size={11} aria-hidden="true" />Ville sélectionnée</p>
-          <h2 className="mt-1 text-[20px] font-extrabold tracking-[-0.03em] text-foreground">{previewPlace.name}</h2>
+          <h2 className="mt-1 text-[20px] font-extrabold tracking-[-0.03em] text-foreground">{publicNationalCityLabel(previewPlace.slug, previewPlace.name)}</h2>
           <p className="mt-1 text-[10.5px] font-semibold text-muted-foreground">{previewPlace.neighborhoodCount.toLocaleString("fr-FR")} quartiers / labels répertoriés{previewPlace.boundaryRelationId ? " · contour disponible" : " · repère ponctuel"}</p>
           <button type="button" onClick={() => enterCity(previewPlace.slug)} className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-brand-primary px-4 text-[11.5px] font-extrabold text-white shadow-accent">
-            Explorer {previewPlace.name}
+            Explorer {publicNationalCityLabel(previewPlace.slug, previewPlace.name)}
           </button>
         </aside>
       ) : null}

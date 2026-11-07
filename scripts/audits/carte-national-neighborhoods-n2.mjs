@@ -133,6 +133,10 @@ report.api = {
   certifiedNeighborhoodBoundaryCount: api.meta.certifiedNeighborhoodBoundaryCount,
 };
 
+// Collect all 8-city BEFORE/AFTER proof before the legacy Casablanca journey.
+// Preserve evidence if the older N2 scenario hits an unrelated browser error.
+await import("./vivre-ici-l4b-multicity-ui.mjs");
+
 const browser = await chromium.launch({ headless: true });
 try {
   for (const viewport of viewports) {
@@ -153,10 +157,12 @@ try {
     }
     const page = await context.newPage();
     const pageErrors = [];
-    page.on("pageerror", (error) => pageErrors.push(String(error)));
+    let auditPhase = "initial-city-load";
+    page.on("pageerror", (error) => pageErrors.push({ phase: auditPhase, message: String(error), stack: error.stack, url: page.url() }));
 
     try {
       const cityUrl = `${baseUrl}/map?city=casablanca&layer=explore`;
+      auditPhase = "city-map";
       await page.goto(cityUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
       await waitForNationalOverlay(page);
 
@@ -181,6 +187,7 @@ try {
       if (overflow > 1) throw new Error(`horizontal overflow ${overflow}`);
       await page.screenshot({ path: `${outDir}/casablanca-neighborhoods-${viewport.name}-after.png`, fullPage: false });
 
+      auditPhase = "mapped-neighborhood";
       const mappedInput = page.getByRole("textbox", { name: "Rechercher un quartier à Casablanca" });
       await mappedInput.fill("Maârif");
       const mappedSuggestion = page.locator('[data-akarfinder-neighborhood-suggestion="maarif"]');
@@ -204,6 +211,7 @@ try {
 
       await page.goto(cityUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
       await waitForNationalOverlay(page);
+      auditPhase = "postal-no-center";
       const input = page.getByRole("textbox", { name: "Rechercher un quartier à Casablanca" });
       await input.fill("QUARTIER MAARIF");
       const postalSuggestion = page.locator('[data-akarfinder-neighborhood-suggestion="quartier-maarif"]');

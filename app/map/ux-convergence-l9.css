@@ -187,3 +187,28 @@
   font-weight: 600;
   line-height: 1.3;
 }
+
+/* L4-B: the city-wide sourced national map does not mount the neighborhood
+ * MapLibre spike. Previous map-card layout fixes only targeted the spike,
+ * leaving the public national city rail's sources card as two columns, with
+ * its copy compressed to a few characters per line on desktop. */
+[data-p4-map-layout]:has([data-akarfinder-national-map]) [data-p4-map-decision-rail] .p4-premium-market-card {
+  display: block !important;
+  grid-template-columns: none !important;
+}
+[data-p4-map-layout]:has([data-akarfinder-national-map]) [data-p4-map-decision-rail] .p4-premium-market-card > div,
+[data-p4-map-layout]:has([data-akarfinder-national-map]) [data-p4-map-decision-rail] .p4-premium-market-card > p {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+[data-p4-map-layout]:has([data-akarfinder-national-map]) [data-p4-map-decision-rail] .p4-premium-market-title {
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+}
+[data-p4-map-layout]:has([data-akarfinder-national-map]) [data-p4-map-decision-rail] .p4-premium-market-card > p {
+  font-size: 11px !important;
+  line-height: 1.55 !important;
+  overflow-wrap: normal !important;
+}
