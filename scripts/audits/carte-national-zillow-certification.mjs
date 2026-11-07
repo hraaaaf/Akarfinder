@@ -167,8 +167,12 @@ try {
         const search = page.locator('[data-p4-map-decision-rail] a.p4-premium-primary-action');
         await search.waitFor({ state: "visible", timeout: 15000 });
         const finalHref = await search.getAttribute("href");
-        if (!finalHref || !finalHref.startsWith("/search") ||
-            !finalHref.includes("casablanca") || !finalHref.includes("maarif")) {
+        const searchUrl = new URL(finalHref || "", baseUrl);
+        const placeKey = (value) => (value || "").normalize("NFD")
+          .replace(/[\\u0300-\\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (searchUrl.pathname !== "/search" ||
+            placeKey(searchUrl.searchParams.get("city")) !== "casablanca" ||
+            placeKey(searchUrl.searchParams.get("district")) !== "maarif") {
           throw new Error(`District map Search handoff drops location: ${finalHref}`);
         }
         await page.locator('[data-vivre-ici-territory-back]').click();
