@@ -46,3 +46,12 @@ Sur [Carte N2 run #42384591804](https://github.com/hraaaaf/Akarfinder/actions/ru
 **Statut de L4-A** : test/observabilité réussis, **couverture 8/8 NON ATTEINTE** ; CI N2 ROUGE par choix de vérité. Ne pas le renommer green ni inventer un 8e centre. Les [Required #42385007958](https://github.com/hraaaaf/Akarfinder/actions/runs/42385007958), [TypeScript #42385007914](https://github.com/hraaaaf/Akarfinder/actions/runs/42385007914), [P1A.6 #42385007890](https://github.com/hraaaaf/Akarfinder/actions/runs/42385007890), [N3 #42385008004](https://github.com/hraaaaf/Akarfinder/actions/runs/42385008004) et [Zillow #42385008002](https://github.com/hraaaaf/Akarfinder/actions/runs/42385008002) sont SUCCESS.
 
 **Next exact** : source de catalogue Mohammedia à qualifier, conserver l'API 404 sinon ; poursuivre L4-B UI 8 villes/17 quartiers seulement si les sources le permettent. L5-A peut continuer indépendamment. Aucune fusion, DB ou Vercel.
+
+
+## Reprise source externe après L5-B — 07/11/2026 (recherche, NON validation)
+
+La [Direction régionale HCP Casablanca-Settat — RGPH 2024](https://www.hcp.ma/reg-casablanca/RGPH-2024_r14.html) publie des statistiques et une entrée dédiée à la préfecture de **Mohammedia** ; le [portail national HCP RGPH 2024](https://www.hcp.ma/downloads/RGPH-2024_t22752.html) propose des tableaux territoriaux au niveau préfecture/commune. **Cela confirme qu'une source statistique institutionnelle pertinente existe, mais ne prouve pas la disponibilité de quartiers géoréférencés ni de contours de quartiers.** Les documents statistiques ne sont pas promus en source de géométrie.
+
+Le code de `app/api/geo/national-territories/route.ts` interroge `getNationalTerritoryPlace(city)` et renvoie intentionnellement `404 not_found` lorsque le `slug` n'est pas dans les `places` décodées de l'artefact national V5 (`lib/map/national-territory-runtime.server.ts`). **Hypothèse à tester** : absence/variante de slug dans le registre V5 ; elle ne justifie aucune création d'entrée manuelle ni un fallback vers un centre arbitraire.
+
+**Next exact :** vérifier la ligne/identifiant Mohammedia dans l'artefact V5 *décompressé et auditable* ; rattacher la commune HCP et sa clé source si les données le permettent ; chercher des libellés de quartiers Mohammedia avec provenance, puis tester alias, inventaire et absence de faux contour. Sans ligne source valide, maintenir 404 et N2 rouge. Ne pas modifier le code géographique sur la seule base d'un titre de fiche communale.
