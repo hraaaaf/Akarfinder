@@ -44,3 +44,34 @@
 - **Correction N3 sans faux vert :** l'audit teste distinctement le contrat desktop (clic sur ville → navigation directe) et mobile coarse pointer (premier tap → aperçu persistant, puis `Explorer` → navigation) ; il ne lance plus une course mal synchronisée entre un état hover transitoire et un changement de route. L'entrée ville et le quartier Maârif restent vérifiés dans la suite du parcours.
 - **Prochaine preuve indispensable :** CI N2 doit inspecter les cinq rapports et **16 screenshots** aux 390/430/768/1280 ; N3, déclenché automatiquement par push, doit revenir vert sur le **même SHA**. Si un nouveau défaut apparaît, corriger plutôt que diminuer les assertions.
 - **État : candidats non certifiés** jusqu'aux nouveaux rapports ; aucune modification du registre V5, aucune DB, aucun merge, aucun déploiement Vercel.
+
+## CLOSEOUT TECHNIQUE L4-D — N2/N3 GREEN confirmé
+
+**Code réellement testé** : `59c263953081886c62db83c4b9bf0f7fa033b074`. Sur ce **même SHA**, [N2 #42423728463](https://github.com/hraaaaf/Akarfinder/actions/runs/42423728463) **SUCCESS** et [N3 #42423728405](https://github.com/hraaaaf/Akarfinder/actions/runs/42423728405) **SUCCESS**. Aucun rerun manuel N3 : les deux workflows sont démarrés automatiquement après le push groupé.
+
+### SUCCESS / PROOF — artefact N2 inspecté
+
+[Artefact N2 #13594501766](https://github.com/hraaaaf/Akarfinder/actions/runs/42423728463/artifacts/13594501766), archive téléchargée, **134 fichiers**, **129 PNG**, **cinq rapports JSON**, tous avec `ok=true` et `failure=null`.
+
+| Contrôle | Preuve dans l'artefact |
+| --- | --- |
+| Ancien N2 Casablanca | `report.json` 4/4 viewports (390, 430, 768, 1280) ; pas de faux points à zoom ville ; points source au zoom 9.8 ; sélection Maârif et fallback postal sans centre |
+| L4-B1 Mohammedia | `l4b/report.json` 4/4 |
+| L4-B huit villes | `l4b-eightcity/report.json` **32/32** et **17/17** sélections API V5 réelles |
+| L4-C focus | `l4c-focus/report.json` **4/4**, Mohammedia→Casablanca, une seule carte et 341 sources conservées |
+| **L4-D zoom progressif** | `l4d-major/report.json` **4/4 PASS**, une seule canvas, **341 villes source**, **8 villes majeures présentées au niveau national** ; couche secondaire `minzoom=8.25`, quartier `minzoom=9.5`, stade quartier testé à zoom 9.8, stade rue testé à zoom 12.2 ; **overflow=0** pour chaque format |
+| Basemap | couches tiers `label_village`, `label_town`, `label_city`, `label_city_capital` contrôlées (pas de suppression d'attribution de source) |
+| N3 parcours utilisateur | [N3 #42423728405](https://github.com/hraaaaf/Akarfinder/actions/runs/42423728405) succès : navigation Maroc→Casablanca→Maârif→Search aux formats 390 et 1280 |
+
+Les **16 captures L4-D réelles** ont été extraites et examinées : `l4d-major/{national-major,regional-secondary,city-neighborhood,city-street}-{390,430,768,1280}.png`. Montages 4 paliers x 4 formats créés et affichés au client. Un premier rendu BEFORE de l'ancienne route nationale SVG est conservé dans l'archive [N2 #42421864061](https://github.com/hraaaaf/Akarfinder/actions/runs/42421864061), avant raccord de la carte MapLibre à la route `/map?layer=explore`. Les 4 captures de l'échec antérieur ont également été montrées au client.
+
+### Lecture visuelle et limites du score
+
+**L4-D : GREEN technique, pas certification visuelle finale.** Évaluation **indicative ~7/10** d'après les captures : la vue nationale à 8 pôles est moins encombrée, et les étapes de zoom sont distinctes, mais l'image `regional-secondary` peut être **quasi vide** car le test réalise un `jumpTo({zoom:8.6})` en gardant le centre national ; il démontre l'existence et l'éligibilité des couches, **pas** qu'une ville secondaire apparaît lisiblement dans le viewport. En vue Mohammedia, les contours municipaux source OSM deviennent visuellement dominants au niveau rue ; ne jamais les appeler limites de quartiers. Les micro-étiquettes et la densité des cartes mobiles restent à améliorer. **Score global 9.5/10 non atteint ni prouvé.**
+
+### Décisions et suite
+
+- L4-D **validé techniquement** pour « contrôler ce qui apparaît et comment selon le niveau de zoom » sur la source V5 ; **révision de la lisibilité et du recentrage régional** à ouvrir dans le lot visuel L6, avec test réellement visible de villes secondaires dans un viewport approprié (pas seulement test de filtre).
+- Toujours ouverts : L3 frontières réelles des quartiers / fraîcheur POI ; L5 SQL annonces et prix live ; L6 droit d'utilisation des tuiles/fournisseurs, attribution, accessibilité clavier/touch et score visuel final.
+- **PR [#1191](https://github.com/hraaaaf/Akarfinder/pull/1191) Draft, non fusionnée. Aucun déploiement Vercel, aucune DB modifiée.**
+- **Next exact** : documenter le closeout dans la roadmap et Notion, puis attaquer l'audit/itération L6 du cadrage régional à 390/430/768/1280 et le gate légal/fournisseurs. Le SHA docs-only de clôture peut être postérieur au SHA code testé ; ne pas faire passer cette documentation pour une nouvelle certification du code.
