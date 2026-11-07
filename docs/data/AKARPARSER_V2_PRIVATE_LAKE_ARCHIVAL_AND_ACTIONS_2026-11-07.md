@@ -70,3 +70,34 @@ if ($LASTEXITCODE -ne 0) { throw 'Q1E_CANARY_FAILED' }
 ```
 
 Output must be in a new private directory outside repo/checkout, with sufficient free space and private ACL. **Never share** raw sample, source URLs, individual reviews or extracted rows to GitHub/Notion; share only checked aggregate report statistics and source SHA. A technically green run is not a 100-person source-backed accuracy review and adds zero certified detailed observations. The self-hosted Windows runner and main-only protected manual dispatch remain separate steps, not prerequisites of immediate local Codex analysis. Before durable archive certification, procure/authorize an independent second physical destination. **No merge, Neon product write or Vercel deployment.**
+
+
+## 2026-11-07 — Q1E réel canary 1 000 lignes (Windows privé)
+
+**HEAD exécuté :** `00f5af14ada487769e75775a8886eee27fcced59`, PR #1188 Draft. Les options `--verify-only`, `--sample-size` et `--audit-size` sont présentes. L'export original `neon_recovery_export_20261107.jsonl.gz` a passé `--verify-only` : 151 900 lignes, SHA-256 `c3d8a8c9476602baa7663d1e9903e6015cb7300d6e7539183bf48b735cb76b08`, aucune copie créée.
+
+Le canary a traité 1 000 véritables enregistrements, stratifiés à 200 par groupe (Mubawab, Avito, Agenz, Domio, Other), en lecture seule. Résultats : `ready_internal` 133, `complete_candidate` 349, `partial` 485, `candidate_url` 0, `quarantine` 33. Erreurs de parsing 0; doublons exacts identité/horodatage 0. Les statuts sont des états internes; `ready_internal` n'autorise aucune écriture Neon.
+
+### Couverture de sortie (présence, pas précision)
+
+| Champ | Présent / 1 000 |
+|---|---:|
+| Titre | 1 000 |
+| Description | 0 |
+| Ville | 1 000 |
+| Quartier | 600 |
+| Type de bien | 1 000 |
+| Transaction | 1 000 |
+| Prix MAD | 547 |
+| Surface totale (m²) | 574 |
+| Chambres | 65 |
+
+Par groupe, statuts (`ready_internal` / `complete_candidate` / `partial` / `quarantine`) : Agenz 1/48/136/15; Avito 0/151/49/0; Domio 50/1/149/0; Mubawab 32/100/50/18; Other 50/49/101/0. Chaque groupe compte 200 enregistrements. Les issues relevées sont : pays inconnu 1 000, identité source non vérifiée explicitement 487, horodatage source non démontré 728, champs core manquants 485, conflit entre ID source et URL 33 (mis en quarantaine).
+
+### Dossiers de revue et précision
+
+La file privée contient 100 dossiers non annotés. Les 100 sont rattachés à une ligne originale du canary par URL exacte; 60/100 ont aussi un ID source explicitement identique, aucun ID présent des deux côtés ne contredit l'autre. Comparaison automatisée aux champs structurés originaux disponibles : prix 65/65, surface 72/72 et type 100/100 concordent exactement. Cette comparaison de champs persistés ne constitue pas une vérité terrain indépendante ni une annotation humaine. **Précision indépendante pour prix, surface et type : NON VÉRIFIÉE**; revue humaine terminée : 0/100. Les dossiers préparés restent dans le stockage privé local.
+
+Le rapport `aggregate_report.json` et le manifeste de vérification privé `Q1E_CANARY_RESULT.manifest.json` se trouvent sous `Q1E_CANARY_20261107_233845` sur le Bureau; hash du manifeste de vérification : `fba347b1ee9983d46795079c18158c317963e2b8aea588918aec04dc6d7b835f`. La source a la même empreinte avant/après. Aucun changement parser n'a été nécessaire : champs manquants et conflits ont été conservés comme états incomplets/quarantaine, sans enrichissement inventé. Tests locaux liés au parseur : 48/48 PASS.
+
+Aucun nouvel enregistrement détaillé n'est certifié par ce canary; le total de référence reste 9 990, avec un écart de 190 010 à 200 000. Aucun write Supabase/Neon, publication, merge, déploiement ou scraping n'a eu lieu. Le second disque et le runner GitHub n'étaient pas requis.
