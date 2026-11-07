@@ -1,5 +1,12 @@
 name: Sarout Parser V2 Offline Certification
 
+# Cancel superseded pull-request revisions of this workflow only.
+# Preserve independent push/manual runs and all required checks and matrices.
+concurrency:
+  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+
 # Push-only: no PR is required, so the separately human-gated Neon PR workflow
 # cannot be triggered by this source certification.
 on:
