@@ -22,9 +22,51 @@ const ACTIVE_FILL = "akarfinder-national-city-active-fill";
 const ACTIVE_LINE = "akarfinder-national-city-active-line";
 const ACTIVE_HALO = "akarfinder-national-city-focus-halo";
 // These eight options are looked up in V5; no city or geometry is synthesized.
-const COMPARISON_CITY_SLUGS = ["casablanca", "rabat", "marrakech", "tanger", "agadir", "fes", "kenitra", "mohammadia"] as const;
+// The eight featured cities are selected for national display, not as the
+// complete list of searchable Moroccan cities.
 const CITY_HITS = "akarfinder-national-city-hits";
 const CITY_LABELS = "akarfinder-national-city-labels";
+const SECONDARY_CITY_HITS = "akarfinder-national-secondary-city-hits";
+const SECONDARY_CITY_LABELS = "akarfinder-national-secondary-city-labels";
+const SECONDARY_BOUNDARY_FILL = "akarfinder-national-secondary-city-fill";
+const SECONDARY_BOUNDARY_LINE = "akarfinder-national-secondary-city-line";
+// L4-D: show only eight verified major cities at national/regional zoom.
+// All 341 V5 places remain present in the source and available to Search.
+// Smaller cities become labelled and clickable only when zooming locally.
+const MAJOR_CITY_SLUGS = ["casablanca", "rabat", "marrakech", "tanger", "fes", "agadir", "meknes", "oujda"] as const;
+// Zoom controls progressive presentation; never changes source facts.
+const SECONDARY_CITY_MIN_ZOOM = 8.25;
+const NEIGHBORHOOD_MIN_ZOOM = 9.5;
+const STREET_DETAIL_MIN_ZOOM = 12;
+function mapDetailStage(zoom: number, citySelected: boolean): "major" | "local" | "neighborhood" | "street" {
+  if (zoom < SECONDARY_CITY_MIN_ZOOM) return "major";
+  // A zoomed national map without a selected city has no district inventory
+  // mounted. Never claim neighborhood detail that cannot actually be shown.
+  if (!citySelected || zoom < NEIGHBORHOOD_MIN_ZOOM) return "local";
+  if (zoom < STREET_DETAIL_MIN_ZOOM) return "neighborhood";
+  return "street";
+}
+function reduceBasemapSettlementLabels(map: MapLibreMap) {
+  // The third-party basemap has city labels of its own. Hide only place-name
+  // symbols at national zoom, not road labels, provider logos or attributions.
+  const settlementLayer = /(?:^|[-_])(place|city|town|village|hamlet|settlement)(?:[-_]|$)/i;
+  for (const layer of map.getStyle().layers ?? []) {
+    if (layer.type !== "symbol" || !settlementLayer.test(layer.id)) continue;
+    try {
+      map.setPaintProperty(layer.id, "text-opacity", [
+        "step", ["zoom"], 0, SECONDARY_CITY_MIN_ZOOM, 0.58,
+      ]);
+    } catch {
+      // Unsupported paint on provider-specific layers must not break our map.
+    }
+  }
+}
+function majorCityFilter(): unknown[] {
+  return ["in", ["get", "slug"], ["literal", MAJOR_CITY_SLUGS]];
+}
+function secondaryCityFilter(): unknown[] {
+  return ["!", majorCityFilter()];
+}
 const ACTIVE_POINT = "akarfinder-national-city-active-point";
 
 type NationalCity = {
@@ -89,7 +131,7 @@ function cityPoints(places: NationalCity[]): GeoJSON.FeatureCollection {
 }
 
 function removeNationalLayers(map: MapLibreMap) {
-  for (const id of [ACTIVE_POINT, CITY_LABELS, CITY_HITS, ACTIVE_LINE, ACTIVE_FILL, ACTIVE_HALO, BOUNDARY_LINE, BOUNDARY_FILL]) {
+  for (const id of [ACTIVE_POINT, SECONDARY_CITY_LABELS, CITY_LABELS, SECONDARY_CITY_HITS, CITY_HITS, ACTIVE_LINE, ACTIVE_FILL, ACTIVE_HALO, SECONDARY_BOUNDARY_LINE, SECONDARY_BOUNDARY_FILL, BOUNDARY_LINE, BOUNDARY_FILL]) {
     if (map.getLayer(id)) map.removeLayer(id);
   }
   for (const id of [CITY_SOURCE, BOUNDARY_SOURCE]) {
@@ -101,6 +143,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  const [mapZoom, setMapZoom] = useState(MOROCCO_ZOOM);
   const [payload, setPayload] = useState<Payload | null>(null);
   const [nationalContext, setNationalContext] = useState<MoroccoPayload | null>(null);
   const [loadError, setLoadError] = useState(false);
@@ -158,6 +201,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
       instance.once("style.load", () => {
         if (!instance || cancelled) return;
         applyAkarFinderBasemapTreatment(instance, document.documentElement.dataset.theme);
+        reduceBasemapSettlementLabels(instance);
         setMapReady(true);
         (window as unknown as { __AKARFINDER_NATIONAL_MAP__?: MapLibreMap }).__AKARFINDER_NATIONAL_MAP__ = instance;
       });
@@ -180,11 +224,20 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
     map.setStyle(styleForTheme(theme));
     map.once("style.load", () => {
       applyAkarFinderBasemapTreatment(map, theme);
+      reduceBasemapSettlementLabels(map);
       setMapReady(true);
     });
   }, [theme]);
 
   useEffect(() => { previewSlugRef.current = previewSlug; }, [previewSlug]);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    const recordZoom = () => setMapZoom(map.getZoom());
+    map.on("zoomend", recordZoom);
+    recordZoom();
+    return () => { map.off("zoomend", recordZoom); };
+  }, [mapReady]);
 
   const enterCity = useCallback((slug: string) => {
     previewSlugRef.current = null;
@@ -212,13 +265,32 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
       id: BOUNDARY_FILL,
       type: "fill",
       source: BOUNDARY_SOURCE,
+      filter: majorCityFilter() as never,
       paint: { "fill-color": ACCENT, "fill-opacity": 0.018 },
     });
     map.addLayer({
       id: BOUNDARY_LINE,
       type: "line",
       source: BOUNDARY_SOURCE,
+      filter: majorCityFilter() as never,
       paint: { "line-color": ACCENT, "line-opacity": 0.22, "line-width": 0.7 },
+    });
+    // Source-backed secondary boundaries are available only at street/local zoom.
+    map.addLayer({
+      id: SECONDARY_BOUNDARY_FILL,
+      type: "fill",
+      source: BOUNDARY_SOURCE,
+      minzoom: SECONDARY_CITY_MIN_ZOOM,
+      filter: secondaryCityFilter() as never,
+      paint: { "fill-color": ACCENT, "fill-opacity": 0.014 },
+    });
+    map.addLayer({
+      id: SECONDARY_BOUNDARY_LINE,
+      type: "line",
+      source: BOUNDARY_SOURCE,
+      minzoom: SECONDARY_CITY_MIN_ZOOM,
+      filter: secondaryCityFilter() as never,
+      paint: { "line-color": ACCENT, "line-opacity": 0.17, "line-width": 0.6 },
     });
     // Soft halo plus crisp border only where the existing OSM candidate
     // city boundary is available. The user-facing copy never calls it official.
@@ -247,7 +319,16 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
       id: CITY_HITS,
       type: "circle",
       source: CITY_SOURCE,
+      filter: majorCityFilter() as never,
       paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 4.5, 11, 7, 16], "circle-color": ACCENT, "circle-opacity": 0.01 },
+    });
+    map.addLayer({
+      id: SECONDARY_CITY_HITS,
+      type: "circle",
+      source: CITY_SOURCE,
+      minzoom: SECONDARY_CITY_MIN_ZOOM,
+      filter: secondaryCityFilter() as never,
+      paint: { "circle-radius": 12, "circle-color": ACCENT, "circle-opacity": 0.01 },
     });
     map.addLayer({
       id: ACTIVE_POINT,
@@ -260,6 +341,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
       id: CITY_LABELS,
       type: "symbol",
       source: CITY_SOURCE,
+      filter: majorCityFilter() as never,
       layout: {
         "text-field": ["get", "name"],
         "text-size": ["interpolate", ["linear"], ["zoom"], 4.5, 9.5, 7, 12.5, 10, 14],
@@ -270,6 +352,22 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
         "symbol-sort-key": ["-", 0, ["coalesce", ["get", "population"], 0]],
       },
       paint: { "text-color": theme === "dark" ? "#E8F2FF" : "#123250", "text-halo-color": theme === "dark" ? "#071426" : "#FFFFFF", "text-halo-width": 1.7 },
+    });
+    map.addLayer({
+      id: SECONDARY_CITY_LABELS,
+      type: "symbol",
+      source: CITY_SOURCE,
+      minzoom: SECONDARY_CITY_MIN_ZOOM,
+      filter: secondaryCityFilter() as never,
+      layout: {
+        "text-field": ["get", "name"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 8.25, 10, 11, 13],
+        "text-offset": [0, 1.05],
+        "text-anchor": "top",
+        "text-allow-overlap": false,
+        "text-ignore-placement": false,
+      },
+      paint: { "text-color": theme === "dark" ? "#C8D9ED" : "#53687C", "text-halo-color": theme === "dark" ? "#071426" : "#FFFFFF", "text-halo-width": 1.1 },
     });
 
     const setActive = (slug: string | null) => {
@@ -285,7 +383,8 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
         let nearestSlug: string | null = null;
         let nearestDistance = Infinity;
         for (const place of payload.places) {
-          if (!place.center) continue;
+          if (!place.center || (map.getZoom() < SECONDARY_CITY_MIN_ZOOM &&
+              !MAJOR_CITY_SLUGS.includes(place.slug as typeof MAJOR_CITY_SLUGS[number]))) continue;
           const projected = map.project([place.center.lng, place.center.lat]);
           const distance = Math.hypot(projected.x - event.point.x, projected.y - event.point.y);
           if (distance < nearestDistance) {
@@ -297,7 +396,11 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
         const maxCenterDistance = touchLike ? 24 : 18;
         if (nearestSlug && nearestDistance <= maxCenterDistance) return nearestSlug;
       }
-      const boundaryFeature = map.queryRenderedFeatures(event.point, { layers: [BOUNDARY_FILL] })[0];
+      const boundaryFeature = map.queryRenderedFeatures(event.point, {
+        layers: map.getZoom() >= SECONDARY_CITY_MIN_ZOOM
+          ? [BOUNDARY_FILL, SECONDARY_BOUNDARY_FILL]
+          : [BOUNDARY_FILL],
+      })[0];
       const boundarySlug = boundaryFeature?.properties?.slug;
       return typeof boundarySlug === "string" ? boundarySlug : null;
     };
@@ -306,6 +409,16 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
       if (payload.view !== "morocco") return;
       const slug = renderedSlug(event);
       setHoverSlug(slug);
+      // On desktop, hovering a city opens a preview card. Keep that card
+      // mounted while the pointer travels to its Explorer button; otherwise
+      // mousemove over blank map terrain destroys the actionable card.
+      // Do NOT pin previews on coarse pointers: mobile's first tap must still
+      // open the preview, with the second tap/Explorer entering the city.
+      const coarsePointer = navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches;
+      if (slug && !coarsePointer && previewSlugRef.current !== slug) {
+        previewSlugRef.current = slug;
+        setPreviewSlug(slug);
+      }
       setActive(slug ?? previewSlugRef.current);
       map.getCanvas().style.cursor = slug ? "pointer" : "";
     };
@@ -375,18 +488,29 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
 
   const comparisonCities = useMemo(() => {
     const places = payload?.view === "morocco" ? payload.places : nationalContext?.places;
-    return COMPARISON_CITY_SLUGS.flatMap((slug) => {
+    // If a smaller city is selected explicitly, keep it in the eight choices
+    // as the focused target. Replace the last featured item, not the source data.
+    const featuredSlugs: string[] = [...MAJOR_CITY_SLUGS];
+    const focused = payload?.view === "city" ? payload.place.slug : null;
+    if (focused && !featuredSlugs.includes(focused)) {
+      featuredSlugs[featuredSlugs.length - 1] = focused;
+    }
+    return featuredSlugs.flatMap((slug) => {
       const found = places?.find((place) => place.slug === slug);
-      return found ? [found] : [];
+      return found?.center ? [found] : [];
     });
   }, [nationalContext, payload]);
 
   const focusedCitySlug = payload?.view === "city" ? payload.place.slug : null;
+  const zoomStage = mapDetailStage(mapZoom, payload?.view === "city");
+  const zoomStageLabel = zoomStage === "major" ? "Grandes villes"
+    : zoomStage === "local" ? "Villes locales"
+      : zoomStage === "neighborhood" ? "Quartiers géolocalisés" : "Rues · repères selon sources";
   const publicCityName = payload?.view === "city" ? publicNationalCityLabel(payload.place.slug, payload.place.name) : null;
   const searchHref = publicCityName ? `/search?city=${encodeURIComponent(publicCityName)}` : "/search";
 
   return (
-    <div className="relative h-[calc(100svh-64px)] min-h-[520px] overflow-hidden bg-[#EDF3F7] dark:bg-[#071426]" data-akarfinder-national-map data-akarfinder-national-view={payload?.view ?? "loading"}>
+    <div className="relative h-[calc(100svh-64px)] min-h-[520px] overflow-hidden bg-[#EDF3F7] dark:bg-[#071426]" data-akarfinder-national-map data-akarfinder-national-view={payload?.view ?? "loading"} data-akarfinder-zoom-stage={zoomStage}>
       <div ref={mapContainerRef} className="absolute inset-0" />
 
       <section className="absolute inset-x-3 top-3 z-20 rounded-[22px] border border-white/80 bg-white/[0.94] p-3 shadow-[0_18px_50px_rgba(15,35,66,0.14)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/[0.94] sm:left-4 sm:right-auto sm:top-4 sm:w-[min(430px,calc(100vw-32px))]" aria-label="Navigation territoriale nationale">
@@ -405,7 +529,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
               {payload?.view === "city"
                 ? `${payload.place.neighborhoodCount.toLocaleString("fr-FR")} quartiers répertoriés · repères de vie locale selon disponibilité`
                 : payload?.view === "morocco"
-                  ? `${payload.meta.cityCount} villes / localités cartographiées · ${payload.meta.boundaryCount} contours qualifiés`
+                  ? `8 grandes villes en avant · ${payload.meta.cityCount} localités restent consultables`
                   : "Chargement du registre territorial…"}
             </p>
           </div>
@@ -428,9 +552,10 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
           aria-label="Comparer les huit villes"
           data-akarfinder-city-comparison
           data-akarfinder-city-focus={focusedCitySlug ?? ""}
+          data-akarfinder-zoom-stage={zoomStage}
         >
           <div className="mb-2 flex items-center justify-between gap-2 px-1">
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-200">8 villes · même carte</span>
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-200">8 grandes villes · même carte</span>
             <span className="text-[9px] font-bold text-slate-500 dark:text-slate-300">Ville cible en bleu</span>
           </div>
           <div className="grid grid-cols-4 gap-1.5">
@@ -456,14 +581,22 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
             })}
           </div>
           <p className="mt-1.5 px-1 text-[9px] leading-3.5 text-slate-500 dark:text-slate-300">
-            Contour de ville candidat OpenStreetMap · quartier sans limite certifiée
+            {zoomStageLabel} · géométries candidates OSM · aucun quartier délimité sans source
           </p>
         </section>
       ) : null}
 
       {previewPlace && payload?.view === "morocco" ? (
         <aside className="absolute inset-x-3 bottom-[84px] z-20 rounded-[22px] border border-white/[0.85] bg-white/[0.96] p-3.5 shadow-[0_18px_48px_rgba(15,35,66,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/[0.96] sm:inset-x-auto sm:bottom-5 sm:left-4 sm:w-[330px]" aria-label={`Ville sélectionnée ${publicNationalCityLabel(previewPlace.slug, previewPlace.name)}`} data-akarfinder-city-preview={previewPlace.slug}>
-          <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-[0.14em] text-brand-primary"><MapPin size={11} aria-hidden="true" />Ville sélectionnée</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-[0.14em] text-brand-primary"><MapPin size={11} aria-hidden="true" />Ville sélectionnée</p>
+            <button
+              type="button"
+              className="grid min-h-9 min-w-9 place-items-center rounded-lg border border-border text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              aria-label="Fermer l’aperçu de la ville"
+              onClick={() => { previewSlugRef.current = null; setPreviewSlug(null); setHoverSlug(null); }}
+            >×</button>
+          </div>
           <h2 className="mt-1 text-[20px] font-extrabold tracking-[-0.03em] text-foreground">{publicNationalCityLabel(previewPlace.slug, previewPlace.name)}</h2>
           <p className="mt-1 text-[10.5px] font-semibold text-muted-foreground">{previewPlace.neighborhoodCount.toLocaleString("fr-FR")} quartiers / labels répertoriés{previewPlace.boundaryRelationId ? " · contour disponible" : " · repère ponctuel"}</p>
           <button type="button" onClick={() => enterCity(previewPlace.slug)} className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-brand-primary px-4 text-[11.5px] font-extrabold text-white shadow-accent">

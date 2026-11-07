@@ -140,6 +140,9 @@ export function NeighborhoodContextPoiOverlay({
   const [loadState, setLoadState] = useState<LoadState>("idle");
   const [enabled, setEnabled] = useState(true);
   const [filter, setFilter] = useState<NeighborhoodMapPoiFilter>("all");
+  // POI markers only make sense once the visitor is viewing real streets.
+  // Source freshness checks stay in the existing read model.
+  const [streetZoomReady, setStreetZoomReady] = useState(false);
   const popupRef = useRef<MapLibrePopup | null>(null);
   const markersRef = useRef<MapLibreMarker[]>([]);
 
@@ -183,6 +186,17 @@ export function NeighborhoodContextPoiOverlay({
   }, [city, district]);
 
   const filters = useMemo(() => availableMapPoiFilters(context?.anchors ?? []), [context]);
+  useEffect(() => {
+    if (!map || !mapReady) {
+      setStreetZoomReady(false);
+      return;
+    }
+    const sync = () => setStreetZoomReady(map.getZoom() >= 12);
+    map.on("zoomend", sync);
+    sync();
+    return () => { map.off("zoomend", sync); };
+  }, [map, mapReady]);
+
   const visibleAnchors = useMemo(
     () => enabled ? filterMapPoiAnchors(context?.anchors ?? [], filter) : [],
     [context, enabled, filter],
@@ -193,7 +207,7 @@ export function NeighborhoodContextPoiOverlay({
     popupRef.current = null;
     for (const marker of markersRef.current) marker.remove();
     markersRef.current = [];
-    if (!map || !mapReady || !enabled || !visibleAnchors.length) return;
+    if (!map || !mapReady || !enabled || !streetZoomReady || !visibleAnchors.length) return;
 
     let cancelled = false;
     void import("maplibre-gl").then(({ Marker, Popup }) => {
@@ -231,7 +245,7 @@ export function NeighborhoodContextPoiOverlay({
       for (const marker of markersRef.current) marker.remove();
       markersRef.current = [];
     };
-  }, [enabled, map, mapReady, visibleAnchors]);
+  }, [enabled, map, mapReady, streetZoomReady, visibleAnchors]);
 
   if (!city || !district || loadState === "idle" || loadState === "loading") return null;
 
