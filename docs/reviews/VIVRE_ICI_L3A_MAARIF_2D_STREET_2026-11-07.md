@@ -32,3 +32,7 @@ Pour obtenir Required Gate/Responsive P1A.6 (déclenchés uniquement pour une PR
 ## Revue des captures L3-A v0 — collision UI détectée
 - [P1A.6 #42376149573](https://github.com/hraaaaf/Akarfinder/actions/runs/42376149573) était SUCCESS, 31 captures, `findings=[]`, mais le contrôle géométrique initial ne couvrait pas les overlays : à 1280px « Quartier 2D » chevauche « Maroc » ; à 390px la mention limites administratives chevauche parfois le crédit MapLibre après rétraction. **Certification visuelle refusée malgré CI verte.**
 - Correction V1 candidate : déplacer les boutons desktop sous la navigation et la mention mobile sous les crédits, sans masquer les attributions ; assertions `boundingBox` sur boutons/back et mention/crédits après ouverture/rétraction de la sheet ; BEFORE et AFTER aux mêmes 4 viewports obligatoires.
+
+
+### Relance unique du contrôle final (provisoire)
+Le HEAD `277570d6` corrige les deux collisions visibles sur L3-A, avec assertions géométriques et sans aucune donnée fictive. La PR Draft est retargetée temporairement `main` uniquement pour activer les Required/Responsive Gates prévus sur `pull_request: main` ; elle doit revenir sur base L2-D immédiatement après publication des preuves de la CI, sans merge.
