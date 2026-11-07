@@ -3,10 +3,18 @@ on:
   workflow_dispatch:
     inputs:
       approve_archive_canary:
-        description: "Confirm authorized read-only processing of private recovery export"
+        description: "Authorize processing of private historical data on trusted Windows runner"
         type: boolean
         default: false
         required: true
+      operation:
+        description: "Canary-only needs no second volume; archive_then_canary requires two volumes"
+        type: choice
+        required: true
+        default: canary_only
+        options:
+          - canary_only
+          - archive_then_canary
 permissions:
   contents: read
 concurrency:
@@ -14,7 +22,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   private-lake:
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.approve_archive_canary == true
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.approve_archive_canary == true && contains(fromJSON('["canary_only","archive_then_canary"]'), inputs.operation)
     runs-on: [self-hosted, windows, akarfinder-private-lake]
     environment: q1e-private-local
     timeout-minutes: 60
@@ -25,7 +33,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Enforce local-only source and durable archive configuration
+      - name: Preflight private source and output paths (no backups required in canary_only)
         env:
           Q1E_RAW_EXPORT_PATH: ${{ vars.Q1E_RAW_EXPORT_PATH }}
           Q1E_ARCHIVE_PRIMARY: ${{ vars.Q1E_ARCHIVE_PRIMARY }}
@@ -33,7 +41,7 @@ jobs:
           Q1E_PRIVATE_RESULTS: ${{ vars.Q1E_PRIVATE_RESULTS }}
         run: |
           $ErrorActionPreference = 'Stop'
-          foreach ($key in @('Q1E_RAW_EXPORT_PATH','Q1E_ARCHIVE_PRIMARY','Q1E_ARCHIVE_REPLICA','Q1E_PRIVATE_RESULTS')) {
+          foreach ($key in @('Q1E_RAW_EXPORT_PATH','Q1E_PRIVATE_RESULTS')) {
             if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($key))) {
               throw 'Q1E_REQUIRED_LOCAL_RUNNER_CONFIG_MISSING'
             }
@@ -41,14 +49,28 @@ jobs:
           if (-not (Test-Path -LiteralPath $env:Q1E_RAW_EXPORT_PATH -PathType Leaf)) {
             throw 'Q1E_SOURCE_MISSING_ON_PRIVATE_RUNNER'
           }
-          foreach ($key in @('Q1E_ARCHIVE_PRIMARY','Q1E_ARCHIVE_REPLICA','Q1E_PRIVATE_RESULTS')) {
-            if (-not (Test-Path -LiteralPath ([Environment]::GetEnvironmentVariable($key)) -PathType Container)) {
-              throw 'Q1E_DESTINATION_ROOT_NOT_PREPROVISIONED'
+          if (-not (Test-Path -LiteralPath $env:Q1E_PRIVATE_RESULTS -PathType Container)) {
+            throw 'Q1E_RESULTS_FOLDER_MISSING'
+          }
+          if ('${{ inputs.operation }}' -eq 'archive_then_canary') {
+            foreach ($key in @('Q1E_ARCHIVE_PRIMARY','Q1E_ARCHIVE_REPLICA')) {
+              $path = [Environment]::GetEnvironmentVariable($key)
+              if ([string]::IsNullOrWhiteSpace($path) -or -not (Test-Path -LiteralPath $path -PathType Container)) {
+                throw 'Q1E_ARCHIVE_ROOTS_NOT_PREPROVISIONED'
+              }
             }
           }
       - name: Offline Python regression tests (no DB/network)
         run: python -Werror::ResourceWarning -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v2*.py'
+      - name: Verify historical source SHA and all 151900 JSONL objects (no copies)
+        env:
+          Q1E_RAW_EXPORT_PATH: ${{ vars.Q1E_RAW_EXPORT_PATH }}
+        run: |
+          python scripts/acquisition/akarparser_v2_private_archive.py `
+            --verify-only `
+            --input "$env:Q1E_RAW_EXPORT_PATH"
       - name: Immutable dual-volume archive of original 151900 rows
+        if: inputs.operation == 'archive_then_canary'
         env:
           Q1E_RAW_EXPORT_PATH: ${{ vars.Q1E_RAW_EXPORT_PATH }}
           Q1E_ARCHIVE_PRIMARY: ${{ vars.Q1E_ARCHIVE_PRIMARY }}

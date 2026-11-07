@@ -18,6 +18,15 @@ class PrivateWorkflowContractTests(unittest.TestCase):
         self.assertIn('runs-on: [self-hosted, windows, akarfinder-private-lake]', text)
         self.assertIn('environment: q1e-private-local', text)
 
+    def test_canary_only_separates_archive_gate(self):
+        text = WORKFLOW.read_text(encoding='utf-8')
+        self.assertIn('- canary_only', text)
+        self.assertIn('- archive_then_canary', text)
+        self.assertIn('--verify-only', text)
+        self.assertIn("if: inputs.operation == 'archive_then_canary'", text)
+        self.assertIn('--sample-size 1000 --audit-size 100', text)
+        self.assertIn("if ('${{ inputs.operation }}' -eq 'archive_then_canary')", text)
+
     def test_does_not_export_raw_rows_or_use_cloud_database(self):
         text = WORKFLOW.read_text(encoding='utf-8')
         for forbidden in ['actions/upload-artifact', 'NEON_DATABASE_URL',

@@ -135,13 +135,26 @@ def archive(source: Path, primary_root: Path, replica_root: Path, *,
 def main() -> None:
     p = argparse.ArgumentParser(description='Verify and immutably archive private historical JSONL on two volumes')
     p.add_argument('--input', required=True, type=Path)
-    p.add_argument('--primary-root', required=True, type=Path)
-    p.add_argument('--replica-root', required=True, type=Path)
+    p.add_argument('--primary-root', type=Path)
+    p.add_argument('--replica-root', type=Path)
+    p.add_argument('--verify-only', action='store_true',
+                   help='Validate SHA-256, all 151900 JSONL objects and source stability; never copy')
     p.add_argument('--expected-sha256', default=EXPECTED_RECOVERY_SHA256)
     p.add_argument('--expected-rows', default=EXPECTED_RECOVERY_ROWS, type=int)
     args = p.parse_args()
-    outcome = archive(args.input, args.primary_root, args.replica_root,
-                      expected_sha256=args.expected_sha256, expected_rows=args.expected_rows)
+    if args.verify_only:
+        if args.primary_root is not None or args.replica_root is not None:
+            p.error('--verify-only cannot be combined with archive destinations')
+        outcome = validate_export(args.input, expected_sha256=args.expected_sha256,
+                                  expected_rows=args.expected_rows)
+        outcome.update({'mode': 'verify_only', 'copies_created': 0,
+                        'source_unchanged': True, 'archive_certified': False,
+                        'production_db_writes': 0})
+    else:
+        if args.primary_root is None or args.replica_root is None:
+            p.error('both --primary-root and --replica-root are required for archival')
+        outcome = archive(args.input, args.primary_root, args.replica_root,
+                          expected_sha256=args.expected_sha256, expected_rows=args.expected_rows)
     print(json.dumps(outcome, sort_keys=True))
 
 

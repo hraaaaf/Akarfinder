@@ -50,3 +50,23 @@ Register a dedicated self-hosted runner on the Windows workstation, scoped/restr
 - Les six fichiers de tests Python AkarParser V2 ont été exécutés individuellement au HEAD de cette PR dans un worktree détaché propre : **44/44 PASS**. Les contrôles CI de ce HEAD sont SUCCESS pour regression, validate, typecheck, gate et detect_drift; `owner_approval` et `override_preflight` sont SKIPPED pour la PR Draft.
 - Revue statique du workflow privé : dispatch manuel uniquement sur `main`, confirmation booléenne, environnement protégé, pas de déclenchement PR, permission GitHub `contents: read`, pas d’upload d’artefact/cache ni d’accès DB codé. L’enregistrement effectif du runner dédié, ses ACL, son isolation réseau et ses règles d’accès aux branches/jobs restent **non vérifiés**. La PR reste Draft; aucun merge n’a été effectué.
 - **Next exact :** provisionner un volume privé utilisable et indépendant, avec répertoire persistant et ACL réservées au compte du runner ; enregistrer/configurer le runner Windows dédié de manière à exclure tout code de PR non approuvée ; faire valider le workflow sur `main` et autoriser le dispatch protégé. Ensuite reprendre dans l’ordre : double archive et manifeste reproductible, canary stratifié réel de 1 000, puis revue humaine indépendante des 100 dossiers.
+
+## Q1E Amendment — independent canary and durable archive gates (07/11/2026)
+
+**Decision:** the verified historical Windows export can be used immediately for a **read-only 1,000-row canary**, even though the independent second-volume archive remains blocked. Keep its source SHA-256, 151,900 JSONL object, gzip and before/after checks. Nothing is backed up merely by creating derived working files on the same disk.
+
+**Independent modes:** `canary_only` requires only strict `--verify-only` input preflight (zero copies), then the 1,000-row sample and 100 *unreviewed* dossiers; `archive_then_canary` retains both independent archive destination requirements before the same canary. The current archive code must continue to refuse a missing replica. No public publication or Neon product write in either mode.
+
+**Codex Windows immediate command (from an isolated clean PR #1188 worktree, no runner/merge/second disk):**
+
+```powershell
+$private = 'C:\Users\lenovo\Desktop\AkarFinder-DataMass-2026-11-07'
+$inputFile = Join-Path $private 'neon_recovery_export_20261107.jsonl.gz'
+$out = Join-Path $private ('Q1E_CANARY_ONLY_' + (Get-Date -Format 'yyyyMMdd_HHmmss'))
+python scripts/acquisition/akarparser_v2_private_archive.py --verify-only --input "$inputFile"
+if ($LASTEXITCODE -ne 0) { throw 'Q1E_SOURCE_PREFLIGHT_FAILED' }
+python scripts/acquisition/akarparser_v2_canary.py --input "$inputFile" --out "$out" --sample-size 1000 --audit-size 100
+if ($LASTEXITCODE -ne 0) { throw 'Q1E_CANARY_FAILED' }
+```
+
+Output must be in a new private directory outside repo/checkout, with sufficient free space and private ACL. **Never share** raw sample, source URLs, individual reviews or extracted rows to GitHub/Notion; share only checked aggregate report statistics and source SHA. A technically green run is not a 100-person source-backed accuracy review and adds zero certified detailed observations. The self-hosted Windows runner and main-only protected manual dispatch remain separate steps, not prerequisites of immediate local Codex analysis. Before durable archive certification, procure/authorize an independent second physical destination. **No merge, Neon product write or Vercel deployment.**
