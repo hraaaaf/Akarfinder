@@ -1,0 +1,43 @@
+{
+  "schema": "national-v5-n2-historical-aggregate-baseline",
+  "historicalSource": {
+    "runId": 32634250993,
+    "commit": "1aa0f033fefc16bb1fd8981c055f37756b3ba714",
+    "workflow": "Carte National Territory Registry Build",
+    "artifactId": 9491880775,
+    "artifactExpired": true,
+    "source": "GitHub Actions successful job log 2026-08-23"
+  },
+  "v5": {
+    "placeCandidates": 528,
+    "cityPolygonCandidates": 350,
+    "candidateNeighborhoods": 11665,
+    "osmNeighborhoods": 1900,
+    "postalNeighborhoods": 9765,
+    "osmUniqueParentBoundary": 1734
+  },
+  "n2Pack": {
+    "sourceCommit": "768e1b7ec60e474a7de6e0b1dfb1e8a186cf14e7",
+    "places": 341,
+    "cityPolygonCandidates": 292,
+    "sourceLabelRows": 11413,
+    "osmRows": 1648,
+    "postalRows": 9765
+  },
+  "exclusionExplanation": {
+    "aggregateOsmDifference": 252,
+    "postalDifference": 0,
+    "historicalOsmNoUniqueBoundary": 166,
+    "uniqueParentCountMinusPackedOsm": 86,
+    "objectIdsOfExcludedRows": null,
+    "exclusionReasons": null,
+    "proof": "Counts only; historical artifact expired; packed rows lack OSM IDs",
+    "status": "object_level_attribution_blocked_source_missing"
+  },
+  "release": {
+    "mapEligibleAdded": 0,
+    "newBoundaries": 0,
+    "dbWrites": 0,
+    "deployment": "none"
+  }
+}

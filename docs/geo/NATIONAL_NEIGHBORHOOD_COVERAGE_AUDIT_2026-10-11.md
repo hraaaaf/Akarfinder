@@ -1,0 +1,371 @@
+# AkarFinder — National Neighborhood Coverage — Offline Audit (2026-10-11)
+
+## GOAL / SUCCESS / PROOF
+
+**Goal**: enumerate source-backed neighborhood labels and genuine coordinates in the existing HCP/Barid/OSM V5 packed catalog, city by city, **without** implying that a label, center, or administrative arrondissement proves a neighborhood polygon.
+
+**Success**: an exact-code GitHub Actions run decodes all eight N2 chunks and `places-0`, checks accounting invariants and creates a complete JSON report and parent-city CSV.
+
+**Proof**: [GitHub Actions run 38105071300](https://github.com/hraaaaf/Akarfinder/actions/runs/38105071300) — **success** at code HEAD `246de3deeb677230c30d0f3b8524b7c85910ff38`; job `114368732463`; artifact **11689790233**. Script syntax, decoding, invariants, and artifact upload passed. This file is documentation added **after** the validated code commit; it must not be mistaken for a second executed audit.
+
+## VERIFIED INVENTORY
+
+| Source metric | Observed |
+|---|---:|
+| Places in packed national places catalog | 341 |
+| Packed N2 parent groups | 93 |
+| Parent groups uniquely linked to place catalog | 70 |
+| Parent groups not linked by current exact-key lookup | 23 |
+| Ambiguous parent matches | 0 |
+| N2 source label rows decoded | **11,413** |
+| Source rows with finite valid centers | **1,648** |
+| Source rows lacking centers | **9,765** |
+| Source rows with invalid centers | **0** |
+| OSM-tagged source rows | 1,648 |
+| Barid-tagged source rows | 9,765 |
+| Repeated normalized names within one parent | 106 |
+| Distinct normalized parent+name keys | 11,307 |
+| Canonical GEO_NEIGHBORHOODS records | 23 |
+| Validated map-eligible canonical neighborhoods | **17 across 8 cities** |
+| Reviewed/published actual neighborhood polygon boundaries | **0** |
+
+**Count-definition distinction (resolved by CI 38263795893):** `NATIONAL_TERRITORY_META.neighborhoodCount = 10,799` equals the sum of V5 `place.neighborhoodCount` declarations across 341 places, whereas eight N2 chunks decode to **11,413 label rows** (+614). The producer reason for extra rows is unproven. Neither metric means distinct certified Moroccan neighborhoods.
+
+## CITY CANDIDATES — NOT VALIDATED NEIGHBORHOODS
+
+| City | Map-eligible registered | Packed source labels | Source rows with valid centers | Distinct centered names not matching the current map-eligible canonical names/aliases |
+|---|---:|---:|---:|---:|
+| Casablanca | 3 | 1,617 | 134 | 130 |
+| Rabat | 3 | 318 | 27 | 23 |
+| Marrakech | 3 | 1,193 | 44 | 40 |
+| Tanger | 2 | 322 | 22 | 22 |
+| Agadir | 2 | 254 | 35 | 32 |
+| Fès | 2 | 791 | 42 | 38 |
+| Kénitra | 1 | 205 | 38 | 38 |
+| Mohammedia | 1 | **not joined** | **unknown** | **unknown** |
+| **Seven joined cities** | **16** | **4,700** | **342** | **323** |
+
+The national map registry still contains **17** eligible neighborhoods in 8 cities; the 7 joined cities account for **16**, with **Mohammedia** not joined by this source-parent lookup. Do not label it zero coverage.
+
+**Crucial interpretation:** the 323 nonmatching normalized names are a **candidate review queue**, not 323 additional certified neighborhoods; some may be alternate spellings, neighborhood subdivisions, misclassified places, or inconsistent city-parent links.
+
+## FIX-PRIORITY FINDING: PARENT LINKAGE
+
+The packed source contains **23 N2 parent groups not linked to a uniquely matched place**. One striking example is parent `el jadida`: **544 centered source rows, 0 matches** in the currently used exact parent lookup. The runtime `parentKey` removes separators from city names, whereas a packed parent group may preserve them. This discrepancy is a plausible bug contributor; verify the full 23-group source identity and safe normalization contract before changing runtime code.
+
+**Do not** automatically attribute these 544 rows to a similarly spelled city without reviewing source IDs and the parent-key contract. Do not publish these rows as neighborhoods from this finding alone.
+
+## READ-ONLY AUDIT IMPLEMENTATION
+
+- `scripts/audits/national-neighborhood-coverage.mjs`
+- `.github/workflows/carte-national-neighborhood-coverage-audit.yml`
+- Artifact contents: `data/audits/national-neighborhood-coverage/report.json` and `by-parent.csv`.
+- No network fetch, dependency install, DB call, production file mutation, UI change, merge, or Vercel deploy.
+
+This PR [#1111](https://github.com/hraaaaf/Akarfinder/pull/1111) remains **DRAFT**. Cartographic Flat Living Map PR [#1108](https://github.com/hraaaaf/Akarfinder/pull/1108) is a separate product gate, not automatically unblocked by these candidate counts.
+
+## NEXT EXACT / REMAINING SEQUENCE
+
+1. Produce a read-only **23-parent reconciliation matrix** from the CSV: city alias/spelling, available `places-0` candidates, exact source provenance and whether the runtime key mismatch is reproducible. First prioritize **El Jadida** and **Mohammedia**. No speculative joins.
+2. Distinguish and test the **declared V5 place count 10,799** from the **decoded N2 label rows 11,413**, and trace original producer reasons for +614 before proposing any metadata change. Keep **declared**, **raw**, **mapped** and **centered** metrics distinct.
+3. Qualify the **323** centered name candidates in the seven currently joined cities by unique city-scoped identity; separate axes, landmarks, districts, neighborhoods and aliases. Review source attribution and ODbL requirements.
+4. Only after source qualification, add or enable each validated center through the existing shared MapLibre engine. Do not infer polygon boundaries or force `map_eligible` from names alone.
+5. For any product UI change: BEFORE, TARGET, 390/430/768/1280 AFTER, compare, accessibility and actual tile/POI checks. Maintain unrelated PR gates and explicit merge/Vercel human authorization.
+6. Merge/post-merge/closeout only with required gates actually proven; do not merge this draft audit PR on the basis of a green single workflow.
+
+**Current completion**: offline national **inventory measured**; actual expanded, verified **national quartier coverage NOT achieved**. No new neighborhood promoted.
+
+**Notion cross-reference**: https://app.notion.com/p/3f677c6633628114aaa1eedfeb448473
+
+## COMPLETE 23-PARENT RECONCILIATION BACKLOG — VERIFIED
+
+CI [38105223915](https://github.com/hraaaaf/Akarfinder/actions/runs/38105223915) **SUCCESS** on exact audit code HEAD `7258f7a8454085c509344a26c7cdf95433d9431d`, job `114369201962`. The job logs include the complete 23-group backlog below.
+
+- **23 parent groups** unlinked to a unique city/place in current normalized runtime lookup.
+- **1,255 unlinked source label rows**, including **675 centered** and **580 lacking a center**.
+- The total **1,648 centered rows = 973 from source parents joined unambiguously to places + 675 from unlinked parents**. Neither population equals a set of reviewed neighborhoods.
+- El Jadida alone contributes **544** source center rows under a currently unlinked `el jadida` parent. **No automatic re-parenting**.
+
+| Packed parent key (not verified canonical city) | Source rows | Centered | Missing center |
+|---|---:|---:|---:|
+| el jadida | 544 | 544 | 0 |
+| dcheira el jihadia | 48 | 48 | 0 |
+| ait melloul | 16 | 16 | 0 |
+| kasba tadla | 13 | 13 | 0 |
+| al hoceima | 37 | 12 | 25 |
+| es semara | 6 | 6 | 0 |
+| sidi bibi | 5 | 5 | 0 |
+| el hajeb | 5 | 5 | 0 |
+| m diq | 4 | 4 | 0 |
+| sidi kacem | 77 | 3 | 74 |
+| mechouar fes jdid | 3 | 3 | 0 |
+| beni mellal | 483 | 2 | 481 |
+| madagh | 2 | 2 | 0 |
+| oued zem | 2 | 2 | 0 |
+| el marsa | 2 | 2 | 0 |
+| fkih ben salah | 1 | 1 | 0 |
+| ain bni mathar | 1 | 1 | 0 |
+| imouzzer kandar | 1 | 1 | 0 |
+| sidi yahya gharb | 1 | 1 | 0 |
+| sidi ifni | 1 | 1 | 0 |
+| bab taza | 1 | 1 | 0 |
+| al machouar stinia | 1 | 1 | 0 |
+| had soualem | 1 | 1 | 0 |
+
+### Root-cause hypothesis and fail-closed policy
+
+The V5 builder records parent names in multiple source-specific normal forms (`parentCityNormalized`); the runtime performs its own `parentKey` normalization on place display names and looks up exact keys. The 23 misses may reflect name, separator, transliteration or missing-place divergences. Inspect the exact source pair and canonical city identity before changing the resolver. **Never infer an OSM neighborhood parent from a nearby point or name alone.**
+
+Next: introduce a deterministic, collision-checked candidate parent alias matrix for these 23 group keys on an isolated feature branch, with explicit `unresolved` outcomes and tests. No silent fuzzy matching, no polygon publication, no deploy.
+
+## STRICT NORMALIZATION-ONLY PARENT RECOVERY — CERTIFIED READ-ONLY
+
+[CI run 38105321214](https://github.com/hraaaaf/Akarfinder/actions/runs/38105321214): **SUCCESS**, exact audit-script commit `5d3a2e8deda117c0cd02b735386fbbf8e0960116`, job `114369508119`. This pass tests separator/diacritic-insensitive **exact** normalization against names present in the packed `places-0` catalog, without changing the product runtime.
+
+- **20/23 previously unlinked parent keys** have **one and only one candidate place identity** in the known place catalog; these contain **671 centered source rows**. There are **zero ambiguous normalized joins**.
+- **3/23 remain unmatched** even after normalization: `madagh` (**2 centers**), `sidi yahya gharb` (**1**), `bab taza` (**1**).
+- Combined accounting: **1,648 centered source rows = 973 already under exactly matched parents + 671 under strictly normalizable, unique proposed parent matches + 4 still orphaned**.
+- Example: packed group `el jadida` has a unique proposed place `el-jadida` via exact normalization and **544** centered rows. **This is not a claim that 544 urban neighborhoods of El Jadida have been verified**; an OSM point may represent a different geographic level or extended territory. No live parent remapping has occurred.
+- This experiment only diagnoses an index-key compatibility bug/opportunity. Do **not** promote the 20 candidate links to production without provenance, geographical containment and UI/performance certification.
+
+### Shortest safe next lot
+
+1. Build a **shadow normalized-parent resolver** that compares strict normalized keys and returns a city only when the mapping is unique; keep three unresolved names in a review queue. Never use fuzzy proximity guesses.
+2. Measure whether each proposed parent is actually geographically consistent with the source point, checking city-boundary/topology and name classification; reject locations outside defensible city scope.
+3. Test an incremental canary of a small source-backed candidate set on the shared map, preserving clear "limites non certifiées" semantics. Capture BEFORE/AFTER on 390/430/768/1280 and assess density/performance (especially El Jadida).
+4. Only after those gates consider activating source-backed locality points. Certified neighbourhoods remain **17/8**, not 1,648 or 1,644.
+5. Treat 10,799 declared place-count versus 11,413 decoded N2 rows as separate proven metrics; retain separate producer-provenance investigation for their +614 difference, not an automatic patch.
+
+**Status:** SOURCE COVERAGE INVENTORY AND STRICT NORMALIZATION DIAGNOSTIC VERIFIED. **National neighborhood coverage is not expanded/merged/deployed.**
+
+## SPATIAL SHADOW CHECK — VERIFIED, NO PRODUCTION CHANGE
+
+[GitHub Actions run 38105463500](https://github.com/hraaaaf/Akarfinder/actions/runs/38105463500) **SUCCESS**, exact audit-code SHA `8b3ce41c7e760f4947ad73685740a2622a453af6`, job `114369932484`. It decoded all **292 existing OSM candidate city-boundary features**, then tested every source-backed center against the polygon of its parent found by either the existing exact key or the strict-normalized unique candidate key. Ring-holes and multipolygons were accounted for. This is a **shadow-only spatial sanity check**, not a city/quarter certification.
+
+| Shadow classification | Source-point rows |
+|---|---:|
+| Inside candidate parent-city OSM polygon | **1,628** |
+| Outside candidate polygon — requires manual review | **16** |
+| Parent city unresolved | **4** |
+| Parent resolved but no city polygon | **0** |
+| **Total candidate points tested** | **1,648** |
+
+Examples: Casablanca **134/134 inside**, Rabat **27/27**, Agadir **35/35**, Marrakech **44/44**; El Jadida **538 inside / 6 outside** from 544 points under the strictly proposed `el-jadida` parent, and Dcheira El Jihadia **43 inside / 5 outside**. These figures do **not** authorize automatic activation of any locality.
+
+**Important distinction:** OSM city administrative polygons are candidate/simplified geometry, not statutory or official neighborhood polygons. An `inside` result cannot prove a feature is a residential neighborhood; an `outside` result cannot alone disprove it. Check original OSM IDs, dates, sources, boundary precision, settlement category and source licensing before promotion.
+
+**Territorial scope caveat:** the packed source includes `ceuta` and `melilla` groups (38 and 28 centered source rows in the current log). These require an explicit territorial-data policy to avoid misrepresenting all embedded source rows as certified Moroccan neighborhoods. Keep distinct source-volume and product-coverage KPIs.
+
+### Final audit decision
+
+- **Success proven:** national compressed source inventory, strict parent-key analysis, and spatial shadow checks all completed with green exact-code CI.
+- **Not proven/not performed:** a complete list of Moroccan neighborhoods, 1,628 uniquely verified neighborhood identities, reviewed district boundaries, UX performance for thousands of labels, app activation, or general production release.
+- **Next exact:** first inspect the 16 spatial exceptions and 4 unresolved parents and classify 323 unique centered candidate names across the current seven mapped city catalogs; then prepare a bounded city-specific map canary and BEFORE/AFTER screenshots on four viewports. No mass promotion, merge, DB write, or Vercel deployment.
+
+
+## SOURCE CANDIDATE REVIEW QUEUE — VERIFIED
+
+Read-only [CI 38105877702](https://github.com/hraaaaf/Akarfinder/actions/runs/38105877702) on exact audit-script SHA `b67c83500d90cb19f81a39de99582231a47eaf1b` (job `114371192561`) created the fully explicit candidate-review queue and name-level spatial exceptions.
+
+**323** distinct centered **names** from seven directly joined city source groups split as:
+
+| Class | Count | Policy |
+|---|---:|---|
+| Source-only name not yet matched by internal registries | **297** | Original OSM feature identity + semantic review required |
+| Already in older listing district dictionary | **20** | Registry reconciliation before promotion |
+| Already canonical validated, but `map_eligible=false` | **6** | Preserve deliberate safety gate; never auto-enable |
+| **Total** | **323** | These are review records, NOT 323 certified neighborhoods |
+
+**4 candidate names** triggered conservative POI/real-estate-project-name flags, and **9 pairs** of distinct names are within 150 meters. Neither heuristic proves equivalence or invalidity; manual source/semantics review is mandatory.
+
+**All 20 spatial and parent-identity exceptions are now named in the audit artifact** `source-review-exceptions.json` (plus CSV): 16 outside simplified candidate city polygons and four orphaned parent identities. Original OSM feature IDs are not stored in the packed V5 input; the audit deliberately records them as `null` rather than manufacturing stable identity.
+
+- **Outside:** Fès/Aouint Hajjaj (1), Ceuta/El Sarchal and Juan XXIII (2), Melilla/Melilla La Vieja (1), El Hajeb/Paysannat (1), Dcheira El Jihadia/Irhalne, Rochdi, Idder, Zaitoun and Narjiss (5), El Jadida/Résidence Khalil Jabrane, Lot. Annasr, Skippa, Palmiers 8, Lot. Nessma and Lot. Jnane (6). **Total 16.**
+- **No source parent resolved:** Madagh/Hay Chrarba and Hay Essalam (2), Sidi Yahya Gharb/Hay Al Wahda (1), Bab Taza/Tifouzale ès Sefli (1). **Total 4.**
+- These exceptions remain `HOLD`; a coordinate outside a simplified city polygon is not necessarily wrong or outside a residential locality.
+
+## SOURCE-ONLY PILOT AGADIR AL QODS — SOURCE GATE VERIFIED
+
+Selected pilot is **Al Qods / Agadir**, already present in the packed V5 catalog as `osm_neighborhood_label` with longitude **-9.5551165** and latitude **30.4177326**.
+
+- Independent geolocated identity: [Mapcarta / OSM node 3848139959](https://mapcarta.com/N3848139959), `place=suburb`, rounded 30.41773 / -9.55512 matching the packed center.
+- Postal naming corroboration: [Barid search index](https://www.codepostal.ma/search_carte.aspx?keyword=80), `AGADIR QUARTIER QODS 80060`.
+- Independent local descriptions: [Le360 (18 January 2026)](https://fr.le360.ma/societe/agadir-lisolement-des-habitants-du-quartier-al-qods-interpelle-aziz-akhannouch-president-du-conseil_FZTEVMQIL5ENXJSUWLLZVWEUPY/) and [TelQuel (17 July 2018)](https://telquel.ma/2018/07/17/a-agadir-la-nomenclature-palestinienne-des-rues-fait-debat_1603577) both call the place a neighborhood of Agadir.
+- Source fixture: `data/geo/pilot-agadir-al-qods-evidence.json`.
+- Offline canary: `scripts/audits/verify-agadir-al-qods-pilot.mjs`. [CI 38105994983](https://github.com/hraaaaf/Akarfinder/actions/runs/38105994983), exact SHA `35da8eedb4f122d64801dccceffb92a32260d7ba`, **SUCCESS**, job `114371534875`; JSON artifact `agadir-al-qods-pilot.json` produced.
+- Direct OSM node page was not accessible in the verification browser; OSM ID and tag are supported by Mapcarta's explicit OSM reference. Preserve that provenance distinction.
+
+**Source gate PASS only**, NOT public map eligibility. The pilot remains `HOLD` for certified boundaries, public route, visual quality and release. No source center is repurposed into a fabricated polygon.
+
+For real four-viewport browser certification of the existing shared map without product changes, child DRAFT PR [#1112](https://github.com/hraaaaf/Akarfinder/pull/1112) targets map DRAFT [#1108](https://github.com/hraaaaf/Akarfinder/pull/1108). Its first harness commit is `449ac6cbce06b427832e0cdc3bf0db6acf3357eb`. N2 browser run **pending at this documentation checkpoint**, with the exact four requested screenshots `agadir-al-qods-{390,430,768,1280}-after.png`.
+
+**Next exact**: inspect the one N2 run; if green download/screenshots, inspect 4 viewports and compare to Flat Living Map target, update proof and score. If red diagnose and fix only the actual source/harness error. Keep all PRs DRAFT and Vercel/DB untouched.
+
+## AL QODS CARTOGRAPHIC UX CORRECTION — BEFORE / TARGET / CURRENT GATE
+
+The independent source-only pilot [child PR #1112](https://github.com/hraaaaf/Akarfinder/pull/1112), based on the ongoing Flat Living Map [#1108](https://github.com/hraaaaf/Akarfinder/pull/1108), ran **real** N2 browser captures across `390/430/768/1280` on product HEAD `449ac6cbce06b427832e0cdc3bf0db6acf3357eb`. [CI 38106102003](https://github.com/hraaaaf/Akarfinder/actions/runs/38106102003) **SUCCESS**, artifact **11689767359**. Site showed the truthful center-only disclaimer but the P4 decision rail headline remained **Agadir**, not **Al Qods**. Visual review rated this BEFORE **7.2/10 subjective**, below aspirational target. A 4-viewport screenshot montage was prepared for user review.
+
+**Goal:** headline should say **Al Qods** only after source API confirms city/slug/name/center/provenance; kicker must say `Agadir · Repère indicatif`; body reminds boundaries unverified; CTA must remain **city-only `/search?city=Agadir` without a fabricated district**. No new polygon/SEO/DB write/deployment.
+
+- First two-file UI + browser assertion implementation: `0a0385a8c56eeddbb2dd329ae0fee948ec6d3519`, followed by accent regex correction `6774b515a2e0b97fffc12f5c767cc7bb364a170b`.
+- Exact-head [CI 38106603617](https://github.com/hraaaaf/Akarfinder/actions/runs/38106603617) **FAIL in browser after TypeScript and build passed**, missing element `data-p4-map-source-point=al-qods` after timeout. **Root cause proven in code:** `parseMapNavigationState` intentionally drops noncanonical district from `navigationState.district`; the P4 rail had mistakenly read this canonical-only field instead of the raw URL source candidate, unlike NationalMapRouter. No semantic or Search regression proven.
+- Corrective commit `1c9db0ea0256da45d812a429d2b0896b697ec8e0`: read raw `searchParams.get("district")` **only as an untrusted candidate slug**, and verify it against N2 city/source/center before displaying. Do **not** alter canonical parser/Search semantics.
+- New exact-head N2 run [38106758647](https://github.com/hraaaaf/Akarfinder/actions/runs/38106758647) triggered; **pending at this document checkpoint**. It must pass TypeScript/build/4-viewport assertions and produce 4 AFTER screenshots, inspect against BEFORE and assign an evidence-backed score **before** closing UI defect.
+- Keep PRs #1111/#1112/#1108 DRAFT; 17 certified neighborhoods / 8 cities stay unchanged; no Vercel deploy, DB write, merge or mass promotion.
+
+**Next exact:** read one CI #38106758647 result and its artifact; if red diagnose the actual failed assertion then fix, if green inspect all 4 `agadir-al-qods-*-after.png`, create and show BEFORE/AFTER comparison, score and synchronize Notion.
+
+
+## AL QODS AFTER VERIFIED — FOUR-VIEWPORT UI CLOSEOUT (2026-10-11)
+
+**Result:** source-only Al Qods source point has consistent contextual rail labeling across all four browser viewports. **This is pilot UI certification only, not a production release or a new canonical map-eligible neighborhood.**
+
+- Child DRAFT [PR #1112](https://github.com/hraaaaf/Akarfinder/pull/1112), exact product/harness HEAD `887e2fa38ce7e459ef12d861a8dc1e2ce3765816`, base product DRAFT #1108.
+- [GitHub Actions CI 38106898114](https://github.com/hraaaaf/Akarfinder/actions/runs/38106898114) **completed / success**, head SHA matches. Job `114374224880`: npm ci, TypeScript, production build, Playwright Chromium, 4-viewport N2 browser certification and artifact upload **success**.
+- Evidence artifact [11689662979](https://github.com/hraaaaf/Akarfinder/actions/runs/38106898114/artifacts/11689662979), 4 images `agadir-al-qods-{390,430,768,1280}-after.png`, also city/no-center/Casablanca regression screenshots and `report.json` (`ok:true`, `cases.length=4`, `failure=null`).
+- **BEFORE**: successful browser [CI 38106102003](https://github.com/hraaaaf/Akarfinder/actions/runs/38106102003) at HEAD `449ac6cbce06b427832e0cdc3bf0db6acf3357eb`, artifact `11689767359`. The map marker named "Al Qods" but P4 context panel displayed generic "Agadir", subjective visual score **7.2/10**.
+- **AFTER**: P4 rail now reads exact city/source slug through the raw URL and independently validates `label_candidate` / `not_claimed` / original-source kind / finite center through the national API before showing **Al Qods**. Eyebrow **Agadir · Repère indicatif**, explicit noncertified-boundary wording.
+- **Search safety:** the rail's `/search?city=Agadir` link does not contain `district`. This is deliberate; cannot pretend property listings belong to a source-only quartier without geolocation evidence. CI asserts absence of `district` in the search handoff on all 4 sizes.
+- **Spatial truth:** point `lng=-9.5551165, lat=30.4177326`, `sourced-label-candidate`, `center-only`, `boundary semantic=none`, `focus semantic=context-focus-not-boundary`, disclaimer visible. No invented quartier footprint or SEO activation.
+- **Browser passes:** widths `390 / 430 / 768 / 1280`, zero horizontal overflow in all cases; original Casablanca, Maârif, uncoded source center and no-center postal regressions also passed in the same run.
+- **AFTER visual review:** screenshot montage and 390px side-by-side BEFORE/AFTER were prepared and shown to the user. Subjective UI quality **7.8/10**, vs **7.2/10 BEFORE**. Gain is honest selection-context hierarchy, not a redesign; remaining premium polish (better desktop rail density/typographic hierarchy, search field city-only wording) is separate.
+- No merge, no Vercel deploy, no production DB write, no new certified neighborhood. PRs #1111 (data), #1112 (UI pilot), #1108 (product) remain DRAFT pending review and later merge gates.
+
+### Goal / Success / Proof closeout
+
+**Goal:** demonstrate a truthful and visually coherent national N2 point fallback for a cross-checked locality (Al Qods / Agadir) without inventing neighborhood boundaries or Search district availability.
+
+**Success:** production Next build + 4/4 Playwright run, route resolved, city-only Search assertion, contextual rail, disclaimers, map loaded, no overflow, actual captures inspected.
+
+**Proof:** exact HEAD GitHub CI #38106898114, its machine-readable report and screenshots, BEFORE/AFTER image comparison. **This pilot goal is met on the draft branch only.**
+
+**Remaining national expansion sequence:** (1) candidate original OSM ID + semantic classification; (2) preserve tested 10,799 vs 11,413 distinct metric definitions and investigate +614 producer provenance without falsely equating labels to quartiers; (3) review 16 out-of-polygon + 4 orphan points; (4) city-by-city small cohorts with 4-viewport UX proof; (5) source licensing, performance/accessibility, PR checks; (6) permitted merge/post-merge and separate explicit Vercel deployment approval if needed. Never claim 323 names or 1,628 centered points are certified neighborhoods.
+
+
+## TANGER BOUKHALEF — SOURCE-IDENTITY GATE (2026-10-12)
+
+**Purpose:** choose a defensible source-only map reference in the second city, without misclassifying a historical rural commune as a current certified residential quartier.
+
+- V5 packed source review for **Tanger/Boukhalef**: OSM-tagged row `lng=-5.8831334, lat=35.7337667`, source flag `1`, parent Tanger; input V5 does **not** retain the original per-row OSM feature ID.
+- [Mapcarta OSM-derived entry](https://mapcarta.com/25438180) cites `node 1999241428`, `place=suburb`, rounded `35.7338, -5.8831`, GeoNames `6546251`, Wikidata `Q12199841`. It agrees with the V5 center at the precision exposed by Mapcarta, but the OSM API could **not** be read directly in the research browser: mark the OSM ID **corroborated indirectly**, not directly queried.
+- [Mapcarta alternate gazetteer entry](https://mapcarta.com/17489970) cites **GeoNames `2572146`**, `35.7328,-5.89954`; **approx. 1,485 m** great-circle distance between recorded centers. A different ID and center do **not** prove two distinct neighborhoods or that the entries are aliases of one legal quartier. Preserve as separate source references pending reconciliation; **no automatic merge/split**.
+- Historical primary source: [Haut Commissariat au Plan, RGPH 2004/2012 report](https://www.hcp.ma/region-tanger/attachment/992796/) explicitly lists `CR Hjar Ennhal (ex Rural CR Boukhalef)` for 2004/2009 administrative comparisons. [Wikidata Q12199841](https://www.wikidata.org/wiki/Q12199841) identifies former rural commune history, ended 2009; no current quartier polygon verified by either. [Commune de Tanger](https://fr.tanger.ma/sites/aeroport-de-tanger-ibn-battouta/) mentions the airport in the Boukhalef area; proof of commonly used toponym only.
+- Evidence fixture: `data/geo/pilot-tanger-boukhalef-evidence.json` (separates OSM node, GeoNames 6546251, GeoNames 2572146, former commune administrative identity, source categories and explicit release HOLD).
+- Offline test: `scripts/audits/verify-tanger-boukhalef-source-gate.mjs` decodes all V5 chunks, requires exactly one Boukhalef candidate within packed Tanger, checks point/rounded reference, source flag, two distinct GeoNames identities and separation, explicit no auto-merge, no official-classification claim, no map geometry, no property district filter, and no canonical promotion. **[CI 38262256372](https://github.com/hraaaaf/Akarfinder/actions/runs/38262256372) SUCCESS** at exact HEAD `0a71ddb426bb048497d9218c293943b1059ae104`.
+- Product/UI canary remains a separate child of product map PR [#1112](https://github.com/hraaaaf/Akarfinder/pull/1112), updated harness-only HEAD `d28f8851714594edba6b6563800e573bfb3dac94`; four viewports `390/430/768/1280`, source city/slug/coords API gate, visible indicative disclaimer, `center-only` and `boundary semantic=none`, truthful Tanger-only `/search?city=Tanger` with no district, zero page overflow and screenshots `tanger-boukhalef-*-after.png`. **Browser CI [38262453390](https://github.com/hraaaaf/Akarfinder/actions/runs/38262453390) in progress at documentation checkpoint**. No screenshot or grade can be declared certified until it completes.
+- **Decision:** source-identity evidence gate **PASS for indicative source point only**; current residential-quartier status, official neighborhood polygon, cross-gazetteer equivalence, listing geofilter, and publication remain **HOLD**. Certified 17/8 map registry stays untouched.
+- **Next exact:** read CI #38262453390 once; inspect 4 actual screenshots/artifact. If red correct browser harness/root cause, if green show images and score, then record proof in this canonical and Notion. Do not deploy Vercel/merge/create boundaries.
+
+
+## TANGER BOUKHALEF — FOUR-VIEWPORT BROWSER PASS (2026-10-12)
+
+**Source gate:** exact-code [CI 38262256372](https://github.com/hraaaaf/Akarfinder/actions/runs/38262256372) **SUCCESS**, parent audit fixture `data/geo/pilot-tanger-boukhalef-evidence.json` + offline verifier `scripts/audits/verify-tanger-boukhalef-source-gate.mjs`. The source `place=suburb` point label/center matches an OSM-derived gazetteer reference, with historical rural commune name and alternate GeoNames ID left unresolved. No official neighborhood identity or legal boundary granted.
+
+**Browser gate:** [CI 38262453390](https://github.com/hraaaaf/Akarfinder/actions/runs/38262453390) **SUCCESS**, PR [#1112](https://github.com/hraaaaf/Akarfinder/pull/1112), exact HEAD `d28f8851714594edba6b6563800e573bfb3dac94`, job `114856144294`; artifact [11752518939](https://github.com/hraaaaf/Akarfinder/actions/runs/38262453390/artifacts/11752518939). Machine report `ok=true, cases=4, failure=null`.
+
+| Browser viewport | Route and source | Truthful status | Search contract | Overflow |
+|---|---|---|---|---:|
+| 390×844 | Tanger/Boukhalef loaded | label candidate, center-only, no polygon; disclaimer visible | city=Tanger, **no district** | 0px |
+| 430×932 | Tanger/Boukhalef loaded | same | same | 0px |
+| 768×900 | Tanger/Boukhalef loaded | same | same | 0px |
+| 1280×900 | Tanger/Boukhalef loaded | same | same | 0px |
+
+The browser also revalidated Casablanca/Maârif and Agadir/Al Qods regression checks in the same run. Original screenshots: `tanger-boukhalef-390-after.png`, `...430-after.png`, `...768-after.png`, `...1280-after.png`, captured by Playwright and extracted from the artifact. A four-viewport composite was produced and displayed to the user. Visual assessment **7.8/10 subjective**: mobile controls and marker legible, premium basemap cohesive, desktop information rail relatively sparse and typography needs further refinement. **No product UI implementation delta for Tanger**: the browser exercise qualifies the existing codepath; a BEFORE/AFTER code change for Tanger would be misleading.
+
+### Decision / closeout
+
+- **Success proven:** a second city can render an externally cross-checked source point with truthful sourcing, no invented polygon or property filter, on 4 browser widths.
+- **Not proven/not permitted:** current official Boukhalef quartier boundaries, automatic equivalence of OSM node 1999241428 and GeoNames 2572146, modern administrative classification, SEO eligibility, production publication, nationwide rollout.
+- **Release posture:** source record **HOLD**, map pilot DRAFT, no DB write, no merge, no Vercel deploy, no additional canonical `map_eligible` entity; 17 neighborhoods across 8 cities unchanged.
+- **Next:** tackle evidence-first normalized parent backlog and semantics/OSM original IDs before any bulk visual or source expansion. Review national metadata mismatch `10,799` static vs `11,413` decoded source rows as different unverified definitions, not an arithmetic patch by assumption. Visual 10/10 convergence remains an independent UI scope and requires BEFORE/TARGET/AFTER.
+
+
+## V5 vs N2 COUNTER DEFINITION — DIRECT SOURCE PROOF (2026-10-12)
+
+The older metadata field `NATIONAL_TERRITORY_META.neighborhoodCount = 10799` is **not the same population** as the N2 packed label rows. We must neither overwrite it with 11413 nor claim the latter as verified distinct neighborhoods.
+
+A read-only cross-check was added to `scripts/audits/national-neighborhood-coverage.mjs` and run on the exact packed V5 source and runtime declarations:
+
+| Metric definition | Verified value | Where derived |
+|---|---:|---|
+| Historical `neighborhoodCount` in `NATIONAL_TERRITORY_META` | **10,799** | Fixed runtime legacy aggregate |
+| Sum of `neighborhoodCount` across all **341** V5 `places-0` records | **10,799** | Decoded packed V5 city/place declarations |
+| Row count after decoding all **93** N2 neighborhood parent groups | **11,413** | Independently decoded N2 array lengths |
+| Difference (N2 source rows minus V5 legacy place-count sum) | **+614** | Verified arithmetic (not a proven data-loss/correction) |
+| N2 distinct **normalized parent+name** combinations | **11,307** | Separate deduplicated-name approximation; not certified places |
+| Map-eligible canonical neighborhoods | **17** (8 cities) | Separately validated geo registry |
+
+**[CI 38263795893](https://github.com/hraaaaf/Akarfinder/actions/runs/38263795893) SUCCESS** on source-audit HEAD `3a8955a9d3ae527064981214c4e539824137d153`, output `sourceCountDefinitionAudit` confirms exact equality **10,799 = legacy static = sum of place declarations** and **11,413 = decoded N2 label rows**.
+
+**Interpretation bounded by evidence:** these are **two different stored counter definitions**. This audit does not demonstrate why exactly 614 more N2 rows were produced, what historical V5 producer filtering contract applied, or whether the difference includes duplicates, additional source tiers or other data. The earlier wording "metadata mismatch" is *not sufficient* to declare a runtime bug. Never silently patch the static count.
+
+**CI contract strengthened** on `27d84e269097d5ab5191e9e3d38f7edc428ae627`: for this frozen V5 source, require static and city/place-declared counts both 10,799, require N2 decoded rows match report 11,413, assert the +614 derived delta. Exact-run CI [38263960017](https://github.com/hraaaaf/Akarfinder/actions/runs/38263960017) **completed / SUCCESS** on exact workflow+audit HEAD `27d84e269097d5ab5191e9e3d38f7edc428ae627`; all legacy/N2 count invariants passed. No product runtime/UI/DB changes.
+
+**Next exact:** certify the CI contract, and only if needed trace the original V5 producer to explain +614. Separate *source volume*, *candidate georeferenced points*, and *legally certified map neighborhoods* in all product KPIs.
+
+
+## HISTORICAL V5 BUILDER AND N2 REPACKAGING — SOURCE-CODE TRACE (2026-10-12)
+
+The original V5 source build is recoverable in repository history even though its `scripts/map/` builder files are no longer on current `main`:
+
+- [Original GitHub Actions run 32634250993](https://github.com/hraaaaf/Akarfinder/actions/runs/32634250993), **SUCCESS** on commit `1aa0f033fefc16bb1fd8981c055f37756b3ba714`, job `97181515513`, dated **2026-08-23**.
+- Workflow at that exact historical commit: `.github/workflows/carte-national-territory-registry-build.yml`; downloads MD5-verified Geofabrik Morocco PBF, extracts `nwr/place=city,town`, `nwr/place=neighbourhood,suburb,quarter,borough`, administrative `r/admin_level=8,9`; then invokes `python scripts/map/build-morocco-territory-registry-v5.py`.
+- Original Python V5 builder's `neighborhood_map` indexes Barid records by **normalized parent city+district**, deduplicating postal combinations; OSM rows are keyed by **unique candidate parent + normalized source name + original OSM ID**, preserving distinct OSM objects even if names repeat. Original `neighborhoods.json` entries had `id=osm:<osmType>:<osmId>`. These stable IDs were **not retained in the later packed N2 four-column rows**, creating the source-identity review gap.
+- The original successful build **logged 528 place candidates, 350 candidate city boundaries, 11,665 total neighborhood candidates (9,765 Barid + 1,900 OSM), 1,734 OSM with unique parent boundary**. These are **pre-repackaging historical V5 report figures**, NOT the numbers now included in the product.
+- Current packed runtime contains **341 places, 292 city polygon features, 11,413 decoded N2 rows (9,765 Barid + 1,648 OSM)**. This implies a later selective packaging/transformation stage. The observed difference **11,665 − 11,413 = 252**, and specifically **1,900 − 1,648 = 252 OSM rows** (Barid unchanged). This is an arithmetically exact class-level difference, **not proof of which objects were removed or why**.
+- Independently, packed 341 places declare a **10,799 sum of legacy `neighborhoodCount` fields**. The difference **11,413 − 10,799 = 614** is a different comparison, between N2 row counts and source place aggregates, **not the 252 pre/post-packaging OSM row delta**. Do not conflate.
+- Direct source: [historical builder code at original SHA](https://github.com/hraaaaf/Akarfinder/blob/1aa0f033fefc16bb1fd8981c055f37756b3ba714/scripts/map/build-morocco-territory-registry-v5.py). The original artifact has expired from GitHub Actions; the exact V5 source run report totals were read from immutable historical job logs. Full per-object before/after reconciliation is **not yet proven**.
+
+**Verdict:** independent **historical producer trace completed**, count classes and OSM-identifier loss exposed. **Still needed for a safe V6:** retain original `osmType`+`osmId` and parent/relation provenance through every compacted row, distinguish place-locality labels from valid quarters, and inventory precisely which 252 OSM rows were dropped and why. No live runtime change or reclassification authorized from this audit alone.
+
+## NATIONAL V6 PROVENANCE CONTRACT — VERIFIED READ-ONLY GATE (2026-10-12)
+
+**Goal:** never lose original OSM identity or parent provenance again during next national territorial packaging; quantify the 252 pre-V5 vs embedded-N2 OSM-row gap without fabricating object identifiers or reasons. **Production/DB/UI untouched.**
+
+**Source proof:** historical builder [run 32634250993](https://github.com/hraaaaf/Akarfinder/actions/runs/32634250993), SHA `1aa0f033fefc16bb1fd8981c055f37756b3ba714`, log says **11,665 candidates (1,900 OSM, 9,765 Barid)** and **1,734 OSM uniquely parented**. Embedded N2 contains **11,413 (1,648 OSM, 9,765 Barid)**. Reconciliation: **252 fewer OSM rows, zero difference Barid**. The 166 V5 OSM rows without a unique candidate city boundary and the separate arithmetic difference 86 (= 1,734 - 1,648) are useful diagnostics, **not identified dropped objects**.
+
+**Real blocker:** historical V5 artifact ID `9491880775` has expired (GitHub API returns **0 artifacts** for that original run), while the N2 four-column rows lack `osmType`/`osmId`. **The 252 individual IDs and precise omission reasons are not recoverable from the available files.** A re-download of mutable `morocco-latest.osm.pbf` is not a proof-equivalent August 2026 replay.
+
+**Implemented shadow contract (PR #1111 only):**
+- [docs/geo/NATIONAL_TERRITORY_V6_PROVENANCE_CONTRACT.md](https://github.com/hraaaaf/Akarfinder/blob/audit/national-neighborhood-coverage-20261011/docs/geo/NATIONAL_TERRITORY_V6_PROVENANCE_CONTRACT.md) — per-row immutable original ID, OSM type/id, source label, candidate-parent name/key, method of parent assignment, explicit missing relation ID/tag where V5 didn't store them, and publication `HOLD`.
+- `scripts/audits/national-v6-osm-lineage.mjs` — decodes real N2, writes `v6-source-lineage-audit.json`, returns `blocked_missing_historical_v5_neighborhoods_json` and null per-object lists when source absent. Optional `V5_HISTORICAL_ARTIFACT_DIR` mode strictly validates original IDs and performs collision-aware tuple comparison against N2, with ambiguous identities held rather than silently matched.
+- `packV6Provenance` / `unpackV6Provenance` are implemented using Brotli plus SHA-256, with original OSM IDs, parent provenance, nullable fields and HOLD state round-tripped without loss; duplicate IDs, checksum drift and map-eligibility promotion are rejected.
+- `data/geo/national-v5-aggregate-baseline.json` immutable aggregate fixture grounded in historical job log and compact N2 inventory.
+- `.github/workflows/carte-national-v6-provenance-shadow.yml` — dedicated CI; never publishes runtime data, writes only audit artifacts.
+
+**Exact-code verification:** [CI #38267505881](https://github.com/hraaaaf/Akarfinder/actions/runs/38267505881) **SUCCESS**, exact SHA `a1939bae18c864c8b096e0c9c017e7b08dcc26d7`, **12 tests / 12 PASS / 0 FAIL**, plus decode of real 11,413 N2 entries and fail-closed 252 gap. [Existing national coverage CI #38267505882](https://github.com/hraaaaf/Akarfinder/actions/runs/38267505882) **SUCCESS** on same code SHA. No new geography certified: 17 neighborhoods / 8 cities unchanged.
+
+**Closeout:** **V6 contract + compression roundtrip + aggregate historical delta VERIFIED on DRAFT #1111**. **252 object-ID reconciliation remains BLOCKED by the missing original immutable artifact; do not claim completion.** Next is to recover exact historical `neighborhoods.json` and upstream snapshot checksum (if possible), otherwise start a new versioned snapshot and instrument the new V6 producer with immutable input checksum and a complete inclusion/exclusion ledger. No Vercel deploy, DB write, merge or new polygon authorized.
+
+
+### Additional V6 non-null provenance roundtrip — VERIFIED
+- The future V6 pack/unpack also preserves a **real explicitly supplied** OSM `osmTag`, a non-null `boundaryRelationId`, and a parent-association status, rather than preserving only historical V5 null placeholders. This is verified in a new adversarial synthetic test and is NOT a claim that historical relation IDs have been restored.
+- [Exact-HEAD CI #38267985081](https://github.com/hraaaaf/Akarfinder/actions/runs/38267985081) **SUCCESS**, code SHA `8c28204dc6b6b2678b0f8795b27c14a0b87f5a72`, **13/13 tests PASS**. The real packed N2 audit remains fail-closed for unavailable original IDs.
+- **Final contract gate**: implemented, tested, DRAFT only. **Individual 252 OSM record identification stays BLOCKED by expiry of original V5 artifact**; do not promote any localities or report an unproven deletion reason.
+
+
+## V6 NEW NATIONAL SOURCE SNAPSHOT — VERIFIED / SOURCE-ONLY (2026-10-13)
+
+**Goal:** create a fresh, traceable OSM source inventory with original feature IDs, source tags, candidate parent relations and full per-feature inclusion/exclusion ledger, while preserving fail-closed geographic safety. This is **not** a replay of 2026-08-23 V5 and **not** an activation of new official quartiers.
+
+### Actual source execution, cross-checked
+
+- [First run 38389717234](https://github.com/hraaaaf/Akarfinder/actions/runs/38389717234) **FAIL correctly** on 120 repeated `way` IDs and 10 administrative geometries not of type `relation`. Its [artifact 11808985651](https://github.com/hraaaaf/Akarfinder/actions/runs/38389717234/artifacts/11808985651) was downloaded and raw GeoJSON examined: **all 120 repeats are one way exported as LineString AND MultiPolygon, same OSM ID, all tags and bbox center equal**; the 10 administrative features are **ways**, so cannot supply a relation ID. Source truth is independent of test assumptions.
+- Corrected code HEAD `0407013276d7b32971d89192a3841163d4108673`: record both exported geometries in the source-decision ledger, allow only byte-equivalent tags/center plus LineString/MultiPolygon on a shared *way* ID as an explicitly recognized geometry variant; retain only one source identity for review. Unrelated duplicated IDs or changed names remain fail-closed. Explicitly log 10 non-relation administrative ways as excluded parent candidates, without inventing relations. Three additional adversarial tests cover all three rules.
+- [Exact-HEAD GitHub CI 38390371557](https://github.com/hraaaaf/Akarfinder/actions/runs/38390371557) **completed SUCCESS**, **17 unit tests PASS**, real Geofabrik PBF official published MD5 verified, full source extraction + SHA-256 ledger and nonpublication contract verified. GitHub artifact [11808252110](https://github.com/hraaaaf/Akarfinder/actions/runs/38390371557/artifacts/11808252110) uploaded successfully.
+- Input provenance: **2026-10-13T11:28:28Z**, source PBF **243,761,899 bytes**, SHA-256 `82425e414f2c581c97cbc89723ae5f3115b2d3e5a7e98cc7fc833ee609160bd4`, published Geofabrik MD5 `376f8c87cee724525cae03d2d55a5ec0`, Osmium **1.16.0**. Full original PBF is **not** archived; both filtered neighborhood/admin GeoJSON and PBF, downloaded-at stamp and MD5 are in the artifact.
+- Verified ledger population: **2,183 raw GeoJSON features = 2,183 ledger rows; 1,958 retained source identities + 225 excluded feature representations**. **1,958 retained IDs unique**, zero genuine conflicting ID, zero missing source IDs.
+- Geometry/source QA: **120 legitimate dual-geometry ways**, **10 administrative `way` shapes explicitly excluded from the 1,527 valid `relation` parents**; original reason flags overlap: 120 dual representations, 115 missing-name, 35 unsupported tag (do not add them as separate excluded populations).
+- Indicative parent matching on the **1,958 retained** source labels: **1,271 unique candidate OSM administrative relation / 686 overlapping ambiguous relations / 1 without a matching relation**. A unique OSM relation candidate is **not** legal certification of a quartier or proof of a mapped property district.
+- Direct artifact crosscheck (separate from green CI): ZIP **5,201,868 bytes** and both emitted JSONL SHA-256 hashes recomputed from the actual downloaded contents matched the manifest. Original identities are unique, no recognized value was silently published.
+- **Durable second copy:** [Google Drive national V6 source snapshot CI38390371557 ZIP](https://drive.google.com/file/d/14XxiTD15uKc2aqwto2Qr7_C_d-t1tDK5/view?usp=drivesdk), in the existing AkarFinder Vivre Ici Territory Dictionary handover folder. Upload **success**, subsequent Drive metadata readback confirmed **5,201,868 bytes** in the expected folder. Artifacts on GitHub expire after up to 90 days. The Drive copy includes filtered inputs and ledger but **not the original full PBF**.
+
+### Status and next gate
+
+**Verified:** new snapshot source-only pipeline, identities preserved, complete raw feature ledger, all source/geometry exceptions explicitly tracked, passing test evidence and Drive archive.
+
+**Not verified and must not be claimed:** 1,958 current labels as certified neighborhoods; official/legal quartier limits; property listing neighborhood membership; historical individual IDs and deletion reasons behind the **252** difference from V5 2026-08-23. That original artifact ID `9491880775` expired; Drive historic-name search returned no copy. A new current Geofabrik snapshot cannot reconstruct the 2026 historic object set.
+
+**Product constraints:** 0 DB writes, 0 Vercel deploy, 0 merges, 0 new `map_eligible`, 0 published quartier polygon, 0 new district search filter; certified registry remains **17 neighborhoods / 8 cities**.
+
+**Next exact:** construct a semantic/administrative review backlog focusing first on **686 ambiguous parent candidates**, 1 unresolved, and suspect residential project/POI labels; qualify original OSM features and city association before any publication. Full historical 252-ID reconciliation remains a separate external source recovery gate. Keep PR #1111 DRAFT, no Vercel deployment.

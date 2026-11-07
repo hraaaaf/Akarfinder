@@ -1,0 +1,55 @@
+name: Carte National Territory V6 Provenance Shadow
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/national-v6-osm-lineage.mjs"
+      - "scripts/audits/__tests__/national-v6-lineage.test.mjs"
+      - "data/geo/national-v5-aggregate-baseline.json"
+      - ".github/workflows/carte-national-v6-provenance-shadow.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  v6-provenance-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: V6 syntax checks
+        run: |
+          node --check scripts/audits/national-v6-osm-lineage.mjs
+          node --check scripts/audits/__tests__/national-v6-lineage.test.mjs
+      - name: V6 deterministic lineage tests
+        run: node --test scripts/audits/__tests__/national-v6-lineage.test.mjs
+      - name: Decode real N2 and report unavailable historical IDs
+        run: node scripts/audits/national-v6-osm-lineage.mjs
+      - name: Fail-closed historical source contract
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import { readFileSync } from "node:fs";
+          const x=JSON.parse(readFileSync("data/audits/national-neighborhood-coverage/v6-source-lineage-audit.json","utf8"));
+          const b=JSON.parse(readFileSync("data/geo/national-v5-aggregate-baseline.json","utf8"));
+          assert.equal(x.status,"blocked_missing_historical_v5_neighborhoods_json");
+          assert.equal(x.deltaOsmCount,252);
+          assert.equal(x.deltaPostalCount,0);
+          assert.equal(x.historicalParentedMinusPackedOsm,86);
+          assert.equal(x.originalArtifactAvailable,false);
+          assert.equal(x.missingOsmObjectIds,null);
+          assert.equal(x.exactMissingReason,null);
+          assert.equal(b.exclusionExplanation.objectIdsOfExcludedRows,null);
+          console.log("PASS: 252 aggregate OSM delta; individual OSM identities correctly BLOCKED");
+          NODE
+      - name: Upload V6 read-only evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-national-v6-provenance-${{ github.run_id }}
+          path: data/audits/national-neighborhood-coverage/v6-*.json
+          if-no-files-found: error
+          retention-days: 30

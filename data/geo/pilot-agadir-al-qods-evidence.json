@@ -1,0 +1,68 @@
+{
+  "schema": "akarfinder.source_point_pilot_evidence.v1",
+  "candidateId": "source_point_agadir_al_qods",
+  "citySlug": "agadir",
+  "canonicalName": "Al Qods",
+  "aliases": [
+    "Quartier Qods",
+    "Hay Al Qods"
+  ],
+  "status": "source_point_reviewed_not_published",
+  "sourceCatalog": "carte-national-territory-registry-v5-32634250993",
+  "sourceRow": {
+    "name": "Al Qods",
+    "longitude": -9.5551165,
+    "latitude": 30.4177326,
+    "sourceFlag": 1
+  },
+  "independentLocationReference": {
+    "provider": "OpenStreetMap contributors (via Mapcarta)",
+    "osmType": "node",
+    "osmId": 3848139959,
+    "osmTag": "place=suburb",
+    "latitudeRounded": 30.41773,
+    "longitudeRounded": -9.55512,
+    "url": "https://mapcarta.com/N3848139959",
+    "originUrl": "https://www.openstreetmap.org/node/3848139959",
+    "matchToleranceDegrees": 0.00001
+  },
+  "corroboratingNameSources": [
+    {
+      "provider": "Barid Al-Maghrib (postal index)",
+      "url": "https://www.codepostal.ma/search_carte.aspx?keyword=80",
+      "evidence": "AGADIR QUARTIER QODS 80060"
+    },
+    {
+      "provider": "Le360",
+      "url": "https://fr.le360.ma/societe/agadir-lisolement-des-habitants-du-quartier-al-qods-interpelle-aziz-akhannouch-president-du-conseil_FZTEVMQIL5ENXJSUWLLZVWEUPY/",
+      "evidence": "mentions quartier Al Qods in Agadir, article 2026-01-18"
+    },
+    {
+      "provider": "TelQuel",
+      "url": "https://telquel.ma/2018/07/17/a-agadir-la-nomenclature-palestinienne-des-rues-fait-debat_1603577",
+      "evidence": "identifies 42 streets and a boulevard in quartier Al-Qods Agadir"
+    }
+  ],
+  "verification": {
+    "scope": "source label identity and source point only; city-polygon/MapLibre-specific certification remains separate",
+    "reviewDate": "2026-10-11",
+    "sourceIdEvidence": "Mapcarta explicitly cites OSM node 3848139959 and place=suburb; direct OSM page could not be independently opened through research browser",
+    "sourceValueRoundTrip": "candidate coordinates agree with Mapcarta to 5 decimals",
+    "passed": "source_label_location_crosscheck",
+    "notPassed": [
+      "reviewed_neighborhood_polygon",
+      "map_eligible",
+      "visual_browser_canary",
+      "public_page_or_release"
+    ]
+  },
+  "restrictions": {
+    "mayRenderVerifiedCenterAsIndicativeLocalityAfterBrowserCanary": true,
+    "mayDeclareCertifiedNeighborhood": false,
+    "mayRenderBoundary": false,
+    "publicationStatus": "hold",
+    "allowAutoPromote": false,
+    "attribution": "© OpenStreetMap contributors",
+    "licenseId": "ODbL-1.0"
+  }
+}
