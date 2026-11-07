@@ -33,7 +33,7 @@ def mock_html():
 
 @contextmanager
 def scratch():
-    with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {s.PUBLICATION_HMAC_KEY_ENV: TEST_KEY}):
+    with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as trust, patch.dict(os.environ, {s.PUBLICATION_HMAC_KEY_ENV: TEST_KEY, s.TRUSTED_HEAD_ENV: str(Path(trust) / "trusted_head.json")}):
         before = os.getcwd()
         try:
             os.chdir(tmp)
