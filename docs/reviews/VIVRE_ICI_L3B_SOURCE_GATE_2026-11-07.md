@@ -25,3 +25,16 @@ Préserver l'UI `limites administratives indisponibles` et `aucun repère suffis
 
 ## Closeout
 **NEXT exact :** tests exact HEAD ; si verts, conserver le blocage source avec preuve et passer à L4 multiville / L5 Search, sans prétendre L3 complet.
+
+
+## Closeout / preuves — 07/11/2026
+
+**HEAD applicatif testé :** [`d5d800fc84f66a2e944f21dded5406c4db0716c0`](https://github.com/hraaaaf/Akarfinder/commit/d5d800fc84f66a2e944f21dded5406c4db0716c0).
+
+- [P1A.6 #42384180778](https://github.com/hraaaaf/Akarfinder/actions/runs/42384180778) : **SUCCESS**. Logs : 27/27 tests, dont les deux cas L3-B **PASS** ; audit navigateur 31 captures / `findings=[]`. Artefact #13578743514.
+- [Required PR Gate #42384180777](https://github.com/hraaaaf/Akarfinder/actions/runs/42384180777), [Canonical Baseline #42384180807](https://github.com/hraaaaf/Akarfinder/actions/runs/42384180807), [CI Efficiency #42384180850](https://github.com/hraaaaf/Akarfinder/actions/runs/42384180850), [P1B.2 OFFLINE #42384180823](https://github.com/hraaaaf/Akarfinder/actions/runs/42384180823), [N3 #42384180800](https://github.com/hraaaaf/Akarfinder/actions/runs/42384180800) et [Zillow #42384180720](https://github.com/hraaaaf/Akarfinder/actions/runs/42384180720) : **SUCCESS**.
+- Vérifié : le statut `shadow/reviewed=false` du contour et le rejet de POI âgés de plus de 30 jours sont maintenant couverts par tests.
+
+**Lot L3-B source-guard : VALIDÉ TECHNIQUEMENT**, mais L3 fonctionnel complet **NON** (aucun contour administratif publié ni POI neuf acquis). Aucun build public, fusion, activation DB ou Vercel.
+
+**Next exact :** restauration de la base PR #1182 vers L3-A ; L4-A source multiville sur branche séparée ; L5 Search E2E et revue fournisseurs/licences avant L6.
