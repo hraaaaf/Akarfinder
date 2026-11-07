@@ -250,3 +250,6 @@ await import("./vivre-ici-l4b-mohammedia-smoke.mjs");
 
 // L4-C: source-backed national city focus + eight comparable choices, four viewports.
 await import("./vivre-ici-l4c-city-focus.mjs");
+
+// L4-D: major cities on national map, sourced secondary places shown only after zoom.
+await import("./vivre-ici-l4d-major-cities.mjs");
