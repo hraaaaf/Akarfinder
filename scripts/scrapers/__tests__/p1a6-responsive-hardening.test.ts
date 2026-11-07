@@ -56,6 +56,22 @@ describe("P1A.6 — Responsive hardening", () => {
     assert.match(national, /__AKARFINDER_NATIONAL_MAP__/);
   });
 
+  it("L2-A captures an honest city-scale map and prevents synthetic neighborhood geometry", () => {
+    const audit = source("scripts/audits/p1a6-map-responsive-smoke.ts");
+    const national = source("components/map/PremiumInteractiveMap.tsx");
+    for (const required of [
+      "data-city-location-notice",
+      "map-casablanca-city-",
+      "l2a-no-fake-geometries",
+      'data-neighborhood-schematic',
+    ]) assert.ok(audit.includes(required), `L2-A browser audit must retain ${required}`);
+    assert.ok(national.includes("Contours de quartiers indisponibles"));
+    assert.ok(national.includes("data-region-slug"));
+    for (const invented of ["neighborhoodPolygon", "<motion.polygon", "data-neighborhood-schematic"]) {
+      assert.equal(national.includes(invented), false, `UI must never return to ${invented}`);
+    }
+  });
+
   it("preserves Rabat intelligence for city-only while canonical district routing uses MapLibre", () => {
     const router = source("components/map/NationalMapRouter.tsx");
     assert.match(router, /rabat-market-intelligence/);
