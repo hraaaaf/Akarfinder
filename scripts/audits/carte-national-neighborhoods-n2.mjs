@@ -35,8 +35,9 @@ async function waitForNationalOverlay(page) {
     if (!map?.isStyleLoaded() || map.isMoving()) return false;
     const baseLayers = (map.getStyle().layers ?? []).filter((layer) => !layer.id.startsWith("akarfinder-"));
     const renderedBaseFeatures = map.queryRenderedFeatures().filter((feature) => !feature.layer.id.startsWith("akarfinder-"));
-    const renderedDots = map.queryRenderedFeatures().filter((feature) => feature.layer.id === "akarfinder-national-neighborhood-dots");
-    return baseLayers.length >= 20 && renderedBaseFeatures.length >= 20 && renderedDots.length >= 1;
+    // L4-D: dots are intentionally invisible in city context (zoom ~6.65).
+    // Check the real basemap here; assert source dots only after zoom 9.5.
+    return baseLayers.length >= 20 && renderedBaseFeatures.length >= 20;
   }, null, { timeout: 15000 });
 }
 
@@ -180,12 +181,36 @@ try {
           renderedBasemapFeatureCount: rendered.filter((feature) => !feature.layer.id.startsWith("akarfinder-")).length,
         };
       });
-      if (!layerState.sourceExists || !layerState.labels || !layerState.dots || layerState.renderedNeighborhoodFeatureCount < 1 || layerState.fakeFill) throw new Error(`neighborhood map layers invalid ${JSON.stringify(layerState)}`);
-      if (layerState.basemapLayerCount < 20 || layerState.renderedBasemapFeatureCount < 20) throw new Error(`real basemap missing ${JSON.stringify(layerState)}`);
+      if (!layerState.sourceExists || !layerState.labels || !layerState.dots || layerState.fakeFill) {
+        throw new Error(`neighborhood map layers invalid ${JSON.stringify(layerState)}`);
+      }
+      // At city scale the catalog is available for text Search, but the
+      // 347 sourced neighborhood points must NOT crowd the regional map.
+      if (layerState.renderedNeighborhoodFeatureCount !== 0) {
+        throw new Error(`neighborhood dots leaked at city scale: ${JSON.stringify(layerState)}`);
+      }
+      if (layerState.basemapLayerCount < 20 || layerState.renderedBasemapFeatureCount < 20) {
+        throw new Error(`real basemap missing ${JSON.stringify(layerState)}`);
+      }
 
       let overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (overflow > 1) throw new Error(`horizontal overflow ${overflow}`);
       await page.screenshot({ path: `${outDir}/casablanca-neighborhoods-${viewport.name}-after.png`, fullPage: false });
+
+      // Verify the second presentation tier instead of keeping an obsolete
+      // city-zoom expectation: real V5 point features appear at zoom >=9.5.
+      await page.evaluate(() => window.__AKARFINDER_NATIONAL_MAP__.jumpTo({ zoom: 9.8 }));
+      await page.waitForFunction(() => {
+        const map = window.__AKARFINDER_NATIONAL_MAP__;
+        if (!map?.isStyleLoaded() || map.isMoving() || map.getZoom() < 9.5) return false;
+        return map.queryRenderedFeatures().some((feature) =>
+          feature.layer.id === "akarfinder-national-neighborhood-dots");
+      }, null, { timeout: 15000 });
+      const zoomedDots = await page.evaluate(() =>
+        window.__AKARFINDER_NATIONAL_MAP__.queryRenderedFeatures()
+          .filter((feature) => feature.layer.id === "akarfinder-national-neighborhood-dots").length);
+      if (zoomedDots < 1) throw new Error("neighborhood dots missing after zoom 9.5");
+      await page.screenshot({ path: `${outDir}/casablanca-neighborhood-zoom-${viewport.name}-after.png`, fullPage: false });
 
       auditPhase = "mapped-neighborhood";
       const mappedInput = page.getByRole("textbox", { name: "Rechercher un quartier à Casablanca" });
@@ -226,7 +251,7 @@ try {
       await page.screenshot({ path: `${outDir}/postal-maarif-${viewport.name}-after.png`, fullPage: false });
 
       if (pageErrors.length) throw new Error(`browser page errors ${JSON.stringify(pageErrors)}`);
-      report.cases.push({ viewport: viewport.name, overflow, layerState, mappedSelection: "maplibre", noCenterFallback: true, searchHandoff: true });
+      report.cases.push({ viewport: viewport.name, overflow, layerState, zoomedDots, mappedSelection: "maplibre", noCenterFallback: true, searchHandoff: true });
     } catch (error) {
       report.failure = { viewport: viewport.name, error: String(error) };
       throw error;
