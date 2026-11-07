@@ -135,7 +135,7 @@ async function main() {
             const selectedText = await selected.innerText();
             const allDistrictText = await page.locator("[data-map-side-panel]").innerText();
             if (!selectedText.includes("Aucune statistique non sourcée") ||
-                /DH\\/m²|repère vérifié|17\\s?600|15 repères/i.test(allDistrictText)) {
+                /DH\/m²|repère vérifié|17\s?600|15 repères/i.test(allDistrictText)) {
               findings.push({ route: route.path, viewport: viewport.label, check: "mock-local-data", detail: "National district panel still contains unsupported metrics or lacks its unavailable state" });
             }
           } catch (error) {
