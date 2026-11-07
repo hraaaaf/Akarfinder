@@ -78,6 +78,10 @@ Les 8 blobs Git comparés entre `main@c0f172bc6755d769a3103051d90c2953f3215de2` 
 - **Décision :** correction P0 du rendu, **sans** `npm audit fix --force`, `DB write` ou transfert indiscriminé des sources shadow.
 
 ### L2 — Information architecture / mockup carte + fiche — P1
+#### L2 — 07/11/2026 : cible UX concrète AVANT code
+
+La [cible UX pré-implémentation](../reviews/VIVRE_ICI_L2_UX_TARGET_2026-11-07.md) est rédigée depuis l'onboarding 6/6 et les captures [L0 #98](https://github.com/hraaaaf/Akarfinder/actions/runs/42320980541) / [L1 #42358643944](https://github.com/hraaaaf/Akarfinder/actions/runs/42358643944). Wireframes desktop carte ~65% / fiche ~35%, mobile carte dominante + fiche vraiment repliable cible ≤160px (CTA ≥44px). Quatre sous-lots : L2-A **retirer `neighborhoodPolygon(index)` faux contours** au profit de carte ponctuelle sourcée + liste ; L2-B fiche « Quotidien → Cadre de vie → Biens » ; L2-C bottom sheet réelle, clavier/ARIA ; L2-D contrôles/crédits. Les 3 vues Maârif et frontière SIG sont L3. **Ce document est un mockup fonctionnel de référence, pas un design validé par captures AFTER ni une permission de modifier la production.**
+
 
 - **Goal :** une interface où l'on voit toujours la carte et comprend d'un coup ce qu'apporte la fiche.
 - **Success :** prototype approuvé en desktop carte + rail et mobile carte + bottom sheet **repliée ≤160px** (cible historique à contrôler), sections « Quotidien », « Cadre de vie », « Biens », source/état ; **vrais** contrôles et CTA ≥44px ; retour intuitif.
