@@ -83,6 +83,13 @@ class Round3P1(unittest.TestCase):
 
 
 class PublicationConsistency(unittest.TestCase):
+    def setUp(self):
+        self.key_scope = patch.dict(os.environ, {s.PUBLICATION_HMAC_KEY_ENV: "4a" * 32})
+        self.key_scope.start()
+
+    def tearDown(self):
+        self.key_scope.stop()
+
     def run_main(self, *, html: str | None = None, blocked: bool = False,
                  replace_fault: str | None = None) -> int:
         async def gather(urls, *, engine, headed, browser_path, diagnostics):
