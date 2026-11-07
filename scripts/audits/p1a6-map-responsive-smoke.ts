@@ -119,16 +119,28 @@ async function main() {
           } catch {
             findings.push({ route: route.path, viewport: viewport.label, check: "decision-rail", detail: "Vivre Ici decision rail missing" });
           }
-          try {
+          // Measure real tile-source attribution in both mobile sheet states.
+          const assertAttributionUnobscured = async (sheetState: "compact" | "expanded") => {
             const attribution = page.locator(".maplibregl-ctrl-attrib");
             await attribution.waitFor({ state: "visible", timeout: 12_000 });
             if (!(await attribution.innerText()).includes("Esri")) throw new Error("Tile attribution has no provider label");
+            const creditBox = await attribution.boundingBox();
+            const sheetBox = await page.locator('[data-p4-map-decision-rail]').boundingBox();
+            if (!creditBox || !sheetBox ||
+                creditBox.x < 0 || creditBox.y < 0 ||
+                creditBox.x + creditBox.width > viewport.width + 1 ||
+                creditBox.y + creditBox.height > viewport.height + 1 ||
+                creditBox.y + creditBox.height > sheetBox.y - 4) {
+              throw new Error(`provider credits hidden in ${sheetState} sheet: ${JSON.stringify({ creditBox, sheetBox })}`);
+            }
+          };
+          try {
             if (viewport.width <= 430) {
-              const creditBox = await attribution.boundingBox();
-              const sheetBox = await page.locator('[data-p4-map-decision-rail]').boundingBox();
-              if (!creditBox || !sheetBox || creditBox.y + creditBox.height > sheetBox.y - 4) {
-                throw new Error(`provider credits hidden by decision sheet: ${JSON.stringify({ creditBox, sheetBox })}`);
-              }
+              await assertAttributionUnobscured("compact");
+            } else {
+              const attribution = page.locator(".maplibregl-ctrl-attrib");
+              await attribution.waitFor({ state: "visible", timeout: 12_000 });
+              if (!(await attribution.innerText()).includes("Esri")) throw new Error("Tile attribution has no provider label");
             }
           } catch (error) {
             findings.push({ route: route.path, viewport: viewport.label, check: "l2d-maplibre-attribution", detail: String(error).slice(0, 550) });
@@ -166,6 +178,7 @@ async function main() {
               await sheet.locator('[data-l2b-daily-context]').waitFor({ state: "visible", timeout: 12_000 });
               await sheet.locator('[data-l2b-living-context]').waitFor({ state: "visible", timeout: 12_000 });
               if ((await toggle.getAttribute('aria-expanded')) !== 'true') throw new Error("expanded aria-expanded missing");
+              await assertAttributionUnobscured("expanded");
               const expanded = await sheet.boundingBox();
               const expandedCta = await cta.boundingBox();
               if (!expanded || expanded.height <= compact.height + 60 || !expandedCta ||
