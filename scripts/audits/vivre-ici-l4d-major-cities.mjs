@@ -96,7 +96,8 @@ try {
       const basemap = await page.evaluate(() => {
         const map = window.__AKARFINDER_NATIONAL_MAP__;
         const placePattern = /(?:^|[-_])(place|city|town|village|hamlet|settlement)(?:[-_]|$)/i;
-        return (map.getStyle().layers || []).filter(layer => layer.type === "symbol" && placePattern.test(layer.id))
+        return (map.getStyle().layers || []).filter(layer =>
+          layer.type === "symbol" && !layer.id.startsWith("akarfinder-") && placePattern.test(layer.id))
           .map(layer => ({ id: layer.id, textOpacity: map.getPaintProperty(layer.id, "text-opacity") }));
       });
       for (const item of basemap) {
