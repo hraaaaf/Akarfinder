@@ -52,3 +52,28 @@ Auditer avant modification du code produit l'expérience `/map` sur le HEAD `mai
 **Succès partiel vérifié :** identité des 8 blobs avec candidature CI ; parcours N3 complet à 390/1280 avec `report.ok=true` et `overflow=0`. **NON certifié :** screenshots, 430/768, rendu 3 vues, score UX, données et sources, accessibilité. Ce lot **reste ouvert**.
 
 **Next exact :** obtenir le run `workflow_dispatch` manuel sur `main`, inspecter/afficher le paquet de captures 4 formats ; rédiger verdicts avant corrections L1. Aucune autorisation de merge/deploy inférée.
+
+## 07/11/2026 — AFTER CERTIFICATION #98 : LE WORKFLOW MANUEL CORRECT A RÉUSSI — L0 CAPTURES BEFORE DISPONIBLES
+
+**Rectification indispensable** : la capture initiale de l'utilisateur affichait la chaîne `on:pull_request`, mais la donnée d'exécution GitHub pour le run exact [#42320980541](https://github.com/hraaaaf/Akarfinder/actions/runs/42320980541) **prouve `event:"workflow_dispatch"`**, `head_branch:"main"`, `head_sha:"c0f172bc6755d769a3103051d90c2953f3215de2"`, `status:"completed"`, `conclusion:"success"`, `run_number:98`, créé le `2026-11-07T00:53:49Z` et terminé avant `2026-11-07T01:17:41Z`. **L'utilisateur avait bien déclenché le bon run** ; l'ancien blocage « lancer manuellement le workflow » est **levé**.
+
+- **Artefact GitHub exact** : `vivre-ici-after` **ID #13553704238**, taille **4 383 698 octets**, `expired:false`. ZIP **téléchargé, ouvert et inspecté**, contenant **12 PNG** (4 `premium-national`, 4 `premium-national-zoomed`, 4 `n3-casablanca-maarif`) et `summary.json`.
+- **Résumé daté** `generatedAt:"2026-11-07T01:17:36.956Z"`, `mode:"branch-local-after-v2"`; ce nom est celui du harness historique, **les PNG sont ici la baseline BEFORE de `main`**, sans aucun changement produit entre capture et base Git.
+- **8 résultats scénario × viewport** : tous **HTTP 200**, `horizontalOverflow:0`, `pageErrors:[]`, `supabaseRequestCount:0`; quatre `premium-national` avec `topologyState:"ready"`, **12 régions listées**, **6 villes initiales** et **8 après zoom**, `zoomedCityLabelOverlapCount:0`; quatre `n3` avec `maplibreReady:"true"`, `sourceState:"available"`, rail de décision visible et CTA `/search?city=Casablanca&district=Ma%C3%A2rif` ; bâtiments visibles 52/55/71/77 (390/430/768/1280), mais **`anchorCount:0` pour les quatre viewports**.
+- **Qualité des preuves** : captures réelles Playwright sur `main` (pas des maquettes, pas des images de production Vercel). **12/12 PNG effectivement présents** ; 8 originaux national+Maârif et 4 zoom national ; montages présentés au propriétaire dans la conversation, **non hébergés dans GitHub**. Pas de pseudo-score de style ou de pixel accuracy.
+
+### Lecture visuelle de l'artefact — ce que l'on peut réellement voir
+
+**Carte nationale (4 viewports + 4 zoom)** : le moteur rend une vraie représentation de régions et villes. La carte occupe peu de surface utile relative à l'espace blanc selon les formats et sa **partie méridionale est hors de l'image initiale sur les formats observés** ; une capacité de défilement/zoom ne prouve pas, à elle seule, le cadrage initial satisfaisant. Les labels de localité et les métadonnées sont de petite taille sur smartphone. La page affiche un bandeau d'explication **« données mock isolées »** ; il faut le remplacer par une présentation métier honnête sans republier les valeurs mock. Aucun débordement horizontal selon report, mais **ce test ne mesure pas les éléments hors champ verticalement**.
+
+**Maârif (4 viewports)** : raster satellite 3D et halo/pin central visibles, panneau desktop et fiche mobile compacte avec **CTA « Voir les biens disponibles à Maârif »**. Mais la fiche mobile ne renseigne pas vraiment sur transports, écoles, commerces, santé, parcs : **la promesse de l'onboarding (vivre au quotidien) n'est pas encore satisfaite**. **Zéro ancre POI visible dans le read-model des quatre runs (`anchorCount:0`)** ; cela atteste une absence de données dans la réponse testée, **sans en identifier la cause**. Les contrôles Maârif 2D/limites administratives/zoom rue ne sont **pas certifiés** par ces captures; la branche candidate [#1108](https://github.com/hraaaaf/Akarfinder/pull/1108) demeure un réservoir de réemploi, pas une preuve du `main`.
+
+**Données** : `dbMode:"mock-only"` sur national, `useMapData()` toujours présente ; prix et compteurs de repères démonstratifs **ne sont pas des données métier certifiées**, même quand une section affiche « repère vérifié ». **L1/P0 fiabilité reste prioritaire**.
+
+### Verdict L0
+
+**Acquis — preuves réelles :** 12 captures BEFORE sur les quatre viewports, rapport JSON, 8 HTTP 200, zéro overflow horizontal et zéro exception navigateur dans les scénarios testés, affichage national et Maârif, lien Search correct, analyse visuelle des screenshots effectuée.
+
+**À terminer avant L0 complet :** tests interactifs directs national→région→ville→quartier avec clavier/tactile, ouverture/fermeture de fiche mobile, état des modes Maârif (dont leur **absence** sur `main`), attribution visible/licences des tuiles, vérification des chiffres fictifs rendus après sélection d'un quartier, et comparaison de la cible 3 écrans aux images fournies; aucun score visuel ≥9,5/10 revendiqué. Les screenshots AFTER ne seront produits **qu'après une implémentation dans une PR distincte**, mêmes fixtures et viewports.
+
+**Next exact mis à jour :** terminer l'inventaire interactif/source de L0 (les captures ne bloquent plus), puis commencer **L1 suppression à l'affichage des valeurs mock** et états de couverture fiables ; conserver `vercel.mjs` et le strict gate de fusion. Aucune fusion ni déploiement Vercel par cette mise à jour.

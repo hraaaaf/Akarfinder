@@ -142,3 +142,8 @@ Ces références orientent le travail et **ne prouvent pas** la conformité du c
 - **Séquence restante :** BEFORE → source/mocks P0 → cible UX carte+fiche → Maârif trois vues → national/fallback → passage Search → AFTER/QAs → vraie CI `gate` → autorisation fusion → post-merge → closeout → **déploiement Vercel seulement sur nouveau feu vert explicite**.
 
 **Fichier canonique : `docs/handovers/AKARFINDER_VIVRE_ICI_ROADMAP_ONBOARDING_2026-11-07.md`.**
+
+
+#### L0 — 07/11/2026 : preuve de capture main ACQUISE
+
+Le bon run manuel [Vivre Ici AFTER Certification #98](https://github.com/hraaaaf/Akarfinder/actions/runs/42320980541) est **`workflow_dispatch` / main@c0f172bc6755d769a3103051d90c2953f3215de2 / completed SUCCESS** (run #42320980541). L'artefact **#13553704238** téléchargé contient **12 captures PNG** (national 4, zoom 4, Maârif 4) + `summary.json` : **8/8 scénarios HTTP 200**, zéro overflow horizontal, zéro page error, zéro requête Supabase, région national `ready` et Maârif `maplibreReady:true`. **Alerte produit** : `anchorCount:0` dans les quatre vues Maârif ; pas de contenu de vie quotidienne dans la fiche, vue nationale à recadrer, présence de mock, trois modes Maârif non certifiés. L0 visuel BEFORE établi, **L0 interactions et sources restent à terminer**. Le précédent blocage « workflow_dispatch non lancé » est levé ; **ne plus demander à l'utilisateur de relancer le run #98**. Détails dans `docs/reviews/VIVRE_ICI_L0_BASELINE_2026-11-07.md`. Aucun Vercel.
