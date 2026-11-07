@@ -70,29 +70,6 @@ function emptyFilter(): unknown[] {
   return ["==", ["get", "slug"], "__none__"];
 }
 
-function boundsForGeoJSON(collection: GeoJSON.FeatureCollection): [[number, number], [number, number]] | null {
-  let minLng = Infinity;
-  let minLat = Infinity;
-  let maxLng = -Infinity;
-  let maxLat = -Infinity;
-  const walk = (value: unknown) => {
-    if (!Array.isArray(value)) return;
-    if (value.length >= 2 && typeof value[0] === "number" && typeof value[1] === "number") {
-      minLng = Math.min(minLng, value[0]);
-      maxLng = Math.max(maxLng, value[0]);
-      minLat = Math.min(minLat, value[1]);
-      maxLat = Math.max(maxLat, value[1]);
-      return;
-    }
-    for (const item of value) walk(item);
-  };
-  for (const feature of collection.features) {
-    const geometry = feature.geometry as (GeoJSON.Geometry & { coordinates?: unknown }) | null;
-    walk(geometry?.coordinates);
-  }
-  return Number.isFinite(minLng) ? [[minLng, minLat], [maxLng, maxLat]] : null;
-}
-
 function cityPoints(places: NationalCity[]): GeoJSON.FeatureCollection {
   return {
     type: "FeatureCollection",
@@ -403,6 +380,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
     });
   }, [nationalContext, payload]);
 
+  const focusedCitySlug = payload?.view === "city" ? payload.place.slug : null;
   const publicCityName = payload?.view === "city" ? publicNationalCityLabel(payload.place.slug, payload.place.name) : null;
   const searchHref = publicCityName ? `/search?city=${encodeURIComponent(publicCityName)}` : "/search";
 
@@ -448,7 +426,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
           className="pointer-events-auto absolute inset-x-3 bottom-[110px] z-20 rounded-[18px] border border-white/85 bg-white/94 p-2.5 shadow-[0_15px_42px_rgba(15,35,66,0.17)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/95 sm:inset-x-auto sm:bottom-5 sm:left-4 sm:w-[440px]"
           aria-label="Comparer les huit villes"
           data-akarfinder-city-comparison
-          data-akarfinder-city-focus={payload.place.slug}
+          data-akarfinder-city-focus={focusedCitySlug ?? ""}
         >
           <div className="mb-2 flex items-center justify-between gap-2 px-1">
             <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-200">8 villes · même carte</span>
@@ -456,7 +434,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
           </div>
           <div className="grid grid-cols-4 gap-1.5">
             {comparisonCities.map((city) => {
-              const selected = city.slug === payload.place.slug;
+              const selected = city.slug === focusedCitySlug;
               const label = publicNationalCityLabel(city.slug, city.name);
               return (
                 <button
