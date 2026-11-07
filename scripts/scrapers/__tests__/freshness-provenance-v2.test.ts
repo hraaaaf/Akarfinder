@@ -112,6 +112,32 @@ describe("#13 Freshness & Provenance V2", () => {
     assert.equal(runFeed(LISTING_AGING_MAX_AGE_DAYS + 1).freshness.freshness_state, "stale");
   });
 
+
+  it("fails closed for a future-dated structured observation instead of inventing freshness", () => {
+    const result = runFeed(-2);
+    assert.equal(result.freshness.last_seen_at, isoDaysAgo(-2));
+    assert.equal(result.freshness.observation_age_days, null);
+    assert.equal(result.freshness.freshness_state, "unknown");
+    assert.equal(result.freshness.freshness_score, null);
+    assert.equal(result.freshness.claim.strength, "unavailable");
+    assert.equal(result.freshness.can_claim_current_availability, false);
+  });
+
+  it("keeps a genuine current observation fresh without claiming availability", () => {
+    const result = runFeed(0);
+    assert.equal(result.freshness.observation_age_days, 0);
+    assert.equal(result.freshness.freshness_state, "fresh");
+    assert.equal(result.freshness.can_claim_current_availability, false);
+  });
+
+  it("future source-updated timestamps cannot override an older observed clock", () => {
+    const result = runFeed(40, { updated_at_source: isoDaysAgo(-3) });
+    assert.equal(result.freshness.freshness_state, "stale");
+    assert.equal(result.freshness.observation_age_days, 40);
+    assert.equal(result.freshness.source_updated_at, isoDaysAgo(-3));
+    assert.equal(result.freshness.can_claim_current_availability, false);
+  });
+
   it("does not turn a newer source_updated_at into a fabricated fresh observation", () => {
     const result = runFeed(40, { updated_at_source: NOW });
 

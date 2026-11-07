@@ -293,11 +293,13 @@ export function evaluateFreshnessProvenanceV2(
     ? offer.updated_at_source
     : null;
 
-  const generatedTime = parseIso(generatedAt) ?? Date.now();
+  const generatedTime = parseIso(generatedAt);
   const lastSeenTime = parseIso(lastSeenAt);
-  const ageDays = lastSeenTime == null
+  // A future observation (or invalid evaluation clock) is not evidence of
+  // recency. Fail closed instead of clamping a negative age to zero days.
+  const ageDays = generatedTime === null || lastSeenTime === null || lastSeenTime > generatedTime
     ? null
-    : Math.max(0, Number(((generatedTime - lastSeenTime) / 86_400_000).toFixed(2)));
+    : Number(((generatedTime - lastSeenTime) / 86_400_000).toFixed(2));
   const state = classifyFreshness(ageDays);
   const availability = availabilitySignal(offer);
   const { claim, validation } = buildFreshnessClaim({
