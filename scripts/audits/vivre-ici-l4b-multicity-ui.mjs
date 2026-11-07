@@ -110,6 +110,17 @@ try {
           row.overflow = await page.evaluate(() =>
             document.documentElement.scrollWidth - document.documentElement.clientWidth);
           if (row.overflow > 1) throw new Error("horizontal overflow " + row.overflow);
+          // L4-B visual contract: a national-city rail must not squeeze source
+          // disclosures into 20px columns (legacy CSS grid regression).
+          if (viewport.name === "1280") {
+            const copyWidths = await page.locator(
+              '[data-p4-map-decision-rail] .p4-premium-market-card > p'
+            ).evaluateAll(items => items.map(item => item.getBoundingClientRect().width));
+            if (copyWidths.length === 0 || copyWidths.some(width => width < 160)) {
+              throw new Error("source disclosure too narrow on desktop: " + JSON.stringify(copyWidths));
+            }
+            row.disclosureWidths = copyWidths.map(width => Math.round(width));
+          }
           await page.screenshot({ path: prefix + "-city-ready.png", fullPage: false });
           row.state = "city_ready";
 
