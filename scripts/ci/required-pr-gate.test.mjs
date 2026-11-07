@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { config as vercelConfig } from "../../vercel.mjs";
+// Keep false neighborhood price/POI claims out of every future PR.
+import "../audits/vivre-ici-l1-truth-contract.mjs";
 
 const workflow = readFileSync(".github/workflows/required-pr-gate.yml", "utf8");
 
