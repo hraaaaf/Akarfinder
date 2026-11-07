@@ -74,6 +74,8 @@ Le `inventory.json` téléchargé/CRC vérifié établit **17 attendues / 2 disp
 
 Audit en lecture seule. Aucune migration, écriture hébergée, restauration, publication ou requête de site source.
 
+La PR [Draft #1176](https://github.com/hraaaaf/Akarfinder/pull/1176) reste non fusionnée. Commit de l’audit : `0a049137cbc78334211f238a47ed46f3f5bf46c6`. Contrôles de ce HEAD exact : [inventaire](https://github.com/hraaaaf/Akarfinder/actions/runs/42369587331), [validation](https://github.com/hraaaaf/Akarfinder/actions/runs/42369587253), [typecheck](https://github.com/hraaaaf/Akarfinder/actions/runs/42369587255), [gate PR](https://github.com/hraaaaf/Akarfinder/actions/runs/42369587286) et [gate d’approbation](https://github.com/hraaaaf/Akarfinder/actions/runs/42369585500) terminés avec succès; `owner_approval` et `override_preflight` sont `skipped` comme prévu.
+
 ### Matrice des projets et sources
 
 | Source | État observé | Données vérifiées | Exportabilité |
