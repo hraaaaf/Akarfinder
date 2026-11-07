@@ -88,7 +88,7 @@ export function NationalMapRouter({ initialState }: Props) {
     return () => controller.abort();
   }, [districtSourceKey, hasCanonicalNeighborhood, rawLayer, selectedCitySlug, selectedDistrictSlug]);
 
-  const verifiedCenter = sourceCenter?.key === districtSourceKey ? sourceCenter.center : null;
+  const verifiedCenter = sourceCenter && sourceCenter.key === districtSourceKey ? sourceCenter.center : null;
   const useMapLibreNeighborhood = rawLayer === MAP_LAYER_EXPLORE
     && hasCanonicalNeighborhood && Boolean(verifiedCenter);
   // Vivre Ici's sourced Explore path is consistent in all eight cities,
