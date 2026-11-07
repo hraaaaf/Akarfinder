@@ -313,3 +313,22 @@ La vérification des fichiers locaux n’a pas retrouvé l’archive V2 nommée 
 Cette étape ajoute des URL candidates L0, pas des annonces détaillées : union exacte **327 514** URL, observations détaillées inchangées **9 990**, écart à 200 000 détaillées **190 010**. Fraîcheur actuelle, unicité des biens physiques et droits d'exploitation restent **UNKNOWN / NOT PROVEN**. Aucun écrit Supabase/Neon, merge, déploiement ou scraping n'a eu lieu.
 
 **Next exact :** confronter les 253 372 représentations historiques et les autres preuves récupérables à cette union privée par clés vérifiables, puis établir les droits et la fraîcheur avant tout enrichissement de contenu.
+
+
+### Q1D — triage structurel indépendant des routes Akaar/Domio (07/11/2026)
+
+**GOAL :** éviter de traiter les URL candidates J6 comme 95 696 nouvelles annonces. Classification reproductible et **hors ligne** à partir du fichier privé `AKARFINDER_J6_PRIVATE_DELTA.sqlite` (SHA-256 `c284833c1bcc0b66d541169276a8f2af9b32ac5e6401c65ab50262ff6a112a50`, `integrity_check=ok`) et des `summary.json` des archives GitHub Akaar/Domio. **Aucune requête aux sites et aucune écriture dans les bases de données cloud.**
+
+| Provenance | URL candidates | Chemins « fiche/unité » probables | Autres chemins | Déjà dans L0 |
+|---|---:|---:|---:|---:|
+| Akaar.fr | 78 202 | **76 843** : 49 034 `/listing/<ID>` + 27 809 `/listing/<ID>/unit/<ID>` | 1 359 (dont 1 248 `/shop`) | 0 |
+| Domio.ma | 17 623 | **7** : routes localisées avec ID numérique + slug | 17 616 (catégories/filtres/navigation dominants) | 129 |
+| **Total** | **95 825** | **76 850** | **18 975** | **129** |
+
+Sur les **95 696 URL miroir absentes** du lac L0, **76 850** sont compatibles avec une fiche/unité au seul niveau de l'URL et **18 846** relèvent d'autres catégories. Ceci est un **triage de chemins, pas une vérification de contenu, d'activité, de Maroc, de droits, ni d'unicité physique**.
+
+**Défaut de métrique constaté :** le fichier Domio `listing_hint_urls.txt` contient 2 020 URL « hints », alors que seulement **3** d'entre elles présentent une route probable de fiche ; **2 017** ne sont pas des chemins de détail reconnus. Inversement, **4** chemins de fiche probable Domio n'ont pas le flag « hint ». La nomenclature `listing_hint` doit rester indicative, jamais être promue automatiquement en observation ou annonce. Le `summary.json` Domio rapporte que `sitemap-properties.xml` était en timeout : l'inventaire des fiches Domio n'est pas complet.
+
+**PROOF :** classification exacte, stricte, déterministe par segments d'URL ; contrôle de 95 825 lignes, somme par source, recoupement des flags 129, et correspondance avec les volumes des sitemaps historiques. Rapport agrégé Q1D privé disponible dans la conversation, SHA-256 du Markdown `0ba543f43a0a77a2ef5cc9b91fda67eda7a06263ef0c1a7f636a9f322829301b`. Aucun listing brut, URL individuelle ou export de données privé dans ce commit.
+
+**Next exact :** ajouter une classification versionnée **dans la copie privée du staging Windows**, vérifier les totaux et éviter toute promotion des filtres Domio en fiches. Ensuite, vérifier pertinence Maroc et droit d'utilisation avant un échantillon de vérification de pages ou une collecte autorisée, et maintenir le suivi des 15 archives historiques inaccessibles. L0 reste **327 514** URL candidates ; identités **69 619**, observations détaillées **9 990** (écart **190 010**) ; aucune preuve nouvelle de fraîcheur ou d'exploitation. Aucun merge ni Vercel.
