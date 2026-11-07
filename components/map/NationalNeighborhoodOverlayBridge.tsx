@@ -5,6 +5,7 @@ import type { Map as MapLibreMap } from "maplibre-gl";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { NationalNeighborhoodOverlay, type NationalNeighborhood } from "@/components/map/NationalNeighborhoodOverlay";
 import { NeighborhoodContextPoiOverlay } from "@/components/map/NeighborhoodContextPoiOverlay";
+import { publicNationalCityLabel } from "@/lib/map/national-city-label";
 
 const NEIGHBORHOOD_SOURCE = "akarfinder-national-neighborhood-points";
 
@@ -120,7 +121,7 @@ export function NationalNeighborhoodOverlayBridge({ citySlug, districtSlug, onSe
         map={map}
         mapReady={mapReady}
         citySlug={payload.place.slug}
-        cityName={payload.place.name}
+        cityName={publicNationalCityLabel(payload.place.slug, payload.place.name)}
         neighborhoods={payload.neighborhoods}
         centeredNeighborhoodCount={payload.meta.centeredNeighborhoodCount}
         certifiedNeighborhoodBoundaryCount={payload.meta.certifiedNeighborhoodBoundaryCount}
