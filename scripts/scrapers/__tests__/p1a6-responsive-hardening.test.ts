@@ -13,7 +13,7 @@ describe("P1A.6 — Responsive hardening", () => {
     for (const expected of [
       '{ width: 390, height: 844, label: "390" }',
       '{ width: 430, height: 932, label: "430" }',
-      '{ width: 768, height: 1024, label: "768" }',
+      '{ width: 768, height: 900, label: "768" }',
       '{ width: 1280, height: 900, label: "1280" }',
     ]) assert.ok(audit.includes(expected));
   });
@@ -23,7 +23,13 @@ describe("P1A.6 — Responsive hardening", () => {
     assert.ok(audit.includes('{ path: "/map", slug: "map", experience: "national" }'));
     assert.ok(audit.includes('{ path: "/map?city=Rabat", slug: "map-rabat", experience: "intelligence" }'));
     assert.ok(audit.includes('{ path: "/map?city=Rabat&district=Agdal", slug: "map-rabat-agdal", experience: "maplibre", citySlug: "rabat", districtSlug: "agdal" }'));
-    assert.ok(audit.includes('/api/geo/national-territories'));
+    assert.ok(audit.includes('{ path: "/map?city=casablanca&district=maarif&layer=explore", slug: "map-casablanca-maarif", experience: "maplibre", citySlug: "casablanca", districtSlug: "maarif" }'));
+    assert.ok(audit.includes('data-selected-quartier="maarif"'));
+    assert.ok(audit.includes('data-local-evidence="unavailable"'));
+    assert.ok(audit.includes("fresh-poi-empty-state"));
+    assert.ok(audit.includes('[data-premium-map]'));
+    assert.ok(audit.includes('[data-region-slug]'));
+    assert.ok(audit.includes('[data-region-list-slug]'));
     assert.ok(audit.includes('[data-akarfinder-market-intelligence-map]'));
     assert.ok(audit.includes('[data-maplibre-spike]'));
   });
@@ -31,18 +37,39 @@ describe("P1A.6 — Responsive hardening", () => {
   it("certifies real viewport composition rather than full-page screenshots", () => {
     const audit = source("scripts/audits/p1a6-map-responsive-smoke.ts");
     assert.ok(audit.includes("fullPage: false"));
+    assert.ok(audit.includes("screenshotsCaptured += 1"));
     assert.ok(audit.includes("horizontal-overflow"));
     assert.ok(audit.includes("MapLibre canvas missing"));
+    assert.ok(audit.includes('route.experience !== "national"'));
     assert.equal(audit.includes('keyboard.press("Tab")'), false);
   });
 
-  it("uses the current national router for generic explore mode", () => {
+  it("uses the premium SVG on initial /map and the city map router on other routes", () => {
+    const page = source("app/map/page.tsx");
     const router = source("components/map/NationalMapRouter.tsx");
     const national = source("components/map/NationalTerritoryExperience.tsx");
+    assert.match(page, /usePremiumNationalExplore/);
+    assert.match(page, /PremiumInteractiveMapBridge/);
     assert.match(router, /NationalTerritoryExperienceDynamic/);
     assert.match(router, /useNationalExplore/);
     assert.match(national, /\/api\/geo\/national-territories/);
     assert.match(national, /__AKARFINDER_NATIONAL_MAP__/);
+  });
+
+  it("L2-A captures an honest city-scale map and prevents synthetic neighborhood geometry", () => {
+    const audit = source("scripts/audits/p1a6-map-responsive-smoke.ts");
+    const national = source("components/map/PremiumInteractiveMap.tsx");
+    for (const required of [
+      "data-city-location-notice",
+      "map-casablanca-city-",
+      "l2a-no-fake-geometries",
+      'data-neighborhood-schematic',
+    ]) assert.ok(audit.includes(required), `L2-A browser audit must retain ${required}`);
+    assert.ok(national.includes("Contours de quartiers indisponibles"));
+    assert.ok(national.includes("data-region-slug"));
+    for (const invented of ["neighborhoodPolygon", "<motion.polygon", "data-neighborhood-schematic"]) {
+      assert.equal(national.includes(invented), false, `UI must never return to ${invented}`);
+    }
   });
 
   it("preserves Rabat intelligence for city-only while canonical district routing uses MapLibre", () => {

@@ -86,9 +86,11 @@ export function P4MapDecisionRail() {
     ? Array.from(new Set(localContext.categories.map((category) => mapPoiCategoryLabel(category))))
     : [];
   const contextIntro = districtEntity
-    ? localContext
-      ? `${districtEntity.canonical_name} se découvre ici à travers ${localContext.anchor_count} repère${localContext.anchor_count > 1 ? "s" : ""} public${localContext.anchor_count > 1 ? "s" : ""} sourcé${localContext.anchor_count > 1 ? "s" : ""}. Les biens ne sont cartographiés que lorsqu’une position exacte vérifiée est disponible.`
-      : `Découvrez ${districtEntity.canonical_name} par ses repères publics sourcés. Les biens ne sont cartographiés que lorsqu’une position exacte vérifiée est disponible.`
+    ? localContext?.anchor_count
+      ? `${districtEntity.canonical_name} : ${localContext.anchor_count} repère${localContext.anchor_count > 1 ? "s" : ""} public${localContext.anchor_count > 1 ? "s" : ""} sourcé${localContext.anchor_count > 1 ? "s" : ""}. Les biens ne sont cartographiés que lorsqu’une position exacte vérifiée est disponible.`
+      : localContext
+        ? `Aucun repère suffisamment récent n’est actuellement disponible pour ${districtEntity.canonical_name}. Les lieux seront présentés après vérification de leurs sources.`
+        : `Les repères de ${districtEntity.canonical_name} ne sont affichés que lorsqu’ils disposent de sources récentes et vérifiables.`
     : cityName === "Maroc"
       ? "Explorez les territoires disponibles, puis descendez vers les villes et quartiers avec une précision explicitement qualifiée."
       : `Explorez ${cityName} et ses quartiers avec des repères sourcés uniquement.`;
@@ -125,11 +127,17 @@ export function P4MapDecisionRail() {
         <p className="p4-premium-lede">{contextIntro}</p>
         {districtEntity ? (
           <div className="p4-premium-proofline" aria-label="Règles de fiabilité">
-            <span>Repères publics sourcés</span>
+            <span>{localContext?.anchor_count ? "Repères publics sourcés" : "Repères récents indisponibles"}</span>
             <span>Positions immobilières exactes uniquement</span>
           </div>
         ) : null}
       </header>
+
+      {districtEntity && localContext?.anchor_count === 0 ? (
+        <p className="p4-premium-empty-evidence" role="status">
+          Aucun repère suffisamment récent n’est actuellement disponible pour {districtEntity.canonical_name}.
+        </p>
+      ) : null}
 
       <nav className="p4-premium-tabs" aria-label="Contexte Vivre ici">
         <span aria-current="page">Vue d’ensemble</span>
