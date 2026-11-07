@@ -3,14 +3,14 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 const read = (path: string) => readFileSync(path, "utf8");
-const canonicalDocs = ["README.md", "docs/ROADMAP.md", "docs/SESSION.md"];
+const pilotArchiveDocs = ["README.md"];
 const visualRoadmap = read("docs/NEIGHBORHOOD_VISUAL_LIBRARY_ROADMAP.md");
 const p07Function = read("supabase/functions/neighborhood-visual-p0-7-ingest/index.ts");
 const p07Closeout = read("supabase/migrations/20260811213000_neighborhood_visual_p0_7_security_closeout.sql");
 
 describe("NEIGHBORHOOD-VISUAL-P0.8 — Souissi production closeout", () => {
-  it("keeps canonical docs compatible with the closed Souissi pilot or a newer Rabat closeout", () => {
-    for (const path of canonicalDocs) {
+  it("preserves historical Souissi proof in README or a newer Rabat closeout", () => {
+    for (const path of pilotArchiveDocs) {
       const text = read(path);
       const hasNewerRabatCloseout =
         /Bibliothèque visuelle quartiers — Rabat P0 → P2 ✅ CLOSED/.test(text) ||
@@ -33,6 +33,13 @@ describe("NEIGHBORHOOD-VISUAL-P0.8 — Souissi production closeout", () => {
         assert.match(text, /Aucune activation implicite du Visual Resolver V2/);
       }
     }
+  });
+
+  it("keeps global roadmap/session documents independent of the old P0.8 text anchors", () => {
+    // These global files now track data recovery and the current project session.
+    // Souissi's archived evidence remains in README and the dedicated visual roadmap.
+    assert.match(read("docs/ROADMAP.md"), /M250K|AKARFINDER_RECONCILIATION_2026-10-30/);
+    assert.match(read("docs/SESSION.md"), /M250K|AKARFINDER_RECONCILIATION_2026-10-30/);
   });
 
   it("marks P0.1 through P0.8 closed in the dedicated visual roadmap", () => {
