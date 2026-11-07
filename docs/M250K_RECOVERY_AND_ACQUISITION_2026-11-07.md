@@ -272,3 +272,28 @@ Un recoupement local supplémentaire a comparé les 151 900 URL Neon aux 231 818
 Export privé : candidate_neon_exact_url_crossrefs_20261107.jsonl.gz, **17 631 lignes**, SHA-256 13ad6b4ba59f13cfa22ac96c822158ad877183e29ab8564996cdd35c6b891609. Deux exécutions ont donné le même hash de table logique et le même hash d’export; integrity_check SQLite demeure ok.
 
 La vérification des fichiers locaux n’a pas retrouvé l’archive V2 nommée ci-dessus ni l’export complet des 253 372 représentations. Les artefacts GitHub du run 42365367984 sont toujours marqués disponibles jusqu’au 05/02/2027, dont le miroir 13570849757 (digest SHA-256 5c87cc1f8b362a9f7692b006c297afa7c884eef884b3f3c6a760c1cee29dc8e8). Le connecteur a fourni une référence de fichier téléchargeable, mais pas un chemin local; la commande gh run download échoue car le CLI local n’est pas authentifié (gh auth login requis). Aucun état vide ou HTTP 410 n’est inféré pour cet artefact. L’union complète contre 253 372 représentations reste donc non certifiée jusqu’à matérialisation privée de l’archive et de ses preuves.
+
+
+### Q1C/J6 — réconciliation exacte URL du miroir Akaar/Domio (07/11/2026)
+
+**GOAL :** rapprocher les empreintes privées du lac L0 et le miroir GitHub existant sans diffuser de données brutes ni compter de nouvelles annonces à tort. Exécution indépendante dans ChatGPT après réception du fichier `AKARFINDER_J6_MINIMAL_EXPORT.zip` transmis par Codex.
+
+**PROOF :** SHA-256 du ZIP minimal `4be70ebef3bd0d55d909c6050ae794f0a61ef88b5be48385596ee764fe08a91b` ; ZIP miroir `5c87cc1f8b362a9f7692b006c297afa7c884eef884b3f3c6a760c1cee29dc8e8` ; CRC de toutes les archives OK. Les 231 818 empreintes URL et 69 619 empreintes d'identités source sont au bon format, triées, uniques et correspondent au SHA-256 déclaré dans le manifeste. La règle `stored-canonical-url-v1` a été respectée : hachage des URL littérales du miroir par encodage versionné à longueur UTF-8, sans réécriture d'hôte, chemin ou query.
+
+| Indicateur vérifié | Résultat |
+|---|---:|
+| URL candidates distinctes du lac privé | **231 818** |
+| URL candidates distinctes du miroir Akaar | 78 202 |
+| URL candidates distinctes du miroir Domio | 17 623 |
+| Intersection exacte miroir/lac — Akaar | 0 |
+| Intersection exacte miroir/lac — Domio | 129 |
+| Intersection totale | **129** |
+| URL miroir absentes du lac | **95 696** |
+| URL seulement dans le lac | 231 689 |
+| **Union URL candidats dédupliquée** | **327 514** |
+| Indices d'annonces du miroir | 78 863, sous-ensemble des URL candidates |
+| Indices d'annonces en intersection avec le lac | 42 |
+
+**Limites / comptabilité :** les 327 514 éléments sont des **URL candidates historiques**, pas des offres exploitables. Les identités source certifiées restent **69 619** et les observations historiques détaillées **9 990** ; aucune URL n'est convertie en observation. Cette réconciliation couvre le lac privé L0 et les **deux archives** disponibles, **pas** les 15 archives historiques HTTP 410 ni les 253 372 représentations historiques complètes. Aucun nouveau bien physique unique, aucune fraîcheur et aucun droit d'exploitation ne sont prouvés. Le timeout historique `domio.ma/sitemap-properties.xml` rend sa couverture incomplète. L'intégrité du SQLite original est **rapportée par le manifeste Codex**, non revérifiée directement ici faute de fichier brut.
+
+**SUCCESS :** union exacte d'URL calculée et indépendante du backup complet. **Next exact :** importer les 95 696 URL absentes en staging L0 privé, de façon idempotente, avec provenance explicite, puis confronter la couverture au reste des représentations et vérifier droits / fraîcheur avant toute qualification. Ne pas envoyer d'URL privées sur GitHub/Notion ; aucun write Supabase/Neon, merge ou déploiement.
