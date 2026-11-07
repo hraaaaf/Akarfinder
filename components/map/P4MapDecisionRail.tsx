@@ -48,7 +48,12 @@ export function P4MapDecisionRail() {
   const contextName = districtEntity?.canonical_name ?? cityName;
   const title = cityName === "Maroc" ? "Où vivre au Maroc ?" : contextName;
   const [localContext, setLocalContext] = useState<NeighborhoodContextReadModelV1 | null>(null);
+  const [sheetExpanded, setSheetExpanded] = useState(false);
   const railRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    setSheetExpanded(false);
+  }, [navigationState.city, navigationState.district]);
 
   useEffect(() => {
     setLocalContext(null);
@@ -99,9 +104,19 @@ export function P4MapDecisionRail() {
       className="p4-map-decision-rail"
       data-p4-map-decision-rail
       data-vivre-ici-premium-context
+      data-sheet-expanded={sheetExpanded ? "true" : "false"}
       aria-label="Vivre ici : territoire, vie locale et biens"
     >
-      <div className="p4-sheet-handle" aria-hidden="true" />
+      <button
+        type="button"
+        className="p4-sheet-handle p4-sheet-toggle"
+        onClick={() => setSheetExpanded((value) => !value)}
+        aria-controls="vivre-ici-sheet-extra"
+        aria-expanded={sheetExpanded}
+        aria-label={sheetExpanded ? "Réduire la fiche quartier" : "Afficher la fiche détaillée"}
+      >
+        <span aria-hidden="true">{sheetExpanded ? "⌄" : "⌃"}</span>
+      </button>
 
       {districtHero ? (
         <figure className="relative -mx-6 -mt-6 mb-4 hidden h-[136px] overflow-hidden bg-[#d7e3e1] lg:block" data-p4-neighborhood-hero>
@@ -137,6 +152,7 @@ export function P4MapDecisionRail() {
         </p>
       ) : null}
 
+      <div id="vivre-ici-sheet-extra" data-l2c-extra>
       {districtEntity ? (
         <section className="mt-4 rounded-2xl border px-4 py-3" style={{ borderColor: "var(--border)", background: "var(--surface)" }} aria-labelledby="vivre-ici-quotidien" data-l2b-daily-context>
           <h3 id="vivre-ici-quotidien" className="text-[15px] font-extrabold">Vie quotidienne</h3>
@@ -225,6 +241,8 @@ export function P4MapDecisionRail() {
           })}
         </div>
       ) : null}
+
+      </div>
 
       <section className="mt-4" aria-labelledby="vivre-ici-biens" data-l2b-listings>
         <h3 id="vivre-ici-biens" className="mb-2 text-[15px] font-extrabold">Biens</h3>
