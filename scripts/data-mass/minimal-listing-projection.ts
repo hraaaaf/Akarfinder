@@ -52,17 +52,21 @@ export function projectExistingListingRepresentation(
 
   const sourceDomain = normalizeSourceDomain(input.listingUrl);
   const titleOrStructuralSignal = reliableStructuralSignal(input);
+  // A canonical-link-only source does not grant rights to republish photo or prose.
+  const partnerContentAllowed = policy.authorization_status === "authorized_partner" &&
+    policy.display_policy === "partner_content";
 
   const minimal = buildMinimalListing(
     {
       canonicalUrl: input.listingUrl,
       sourceDomain,
       titleOrStructuralSignal,
-      geography: input.district?.trim() || input.city?.trim() || null,
+      city: input.city,
+      district: input.district,
       price: input.priceMad,
       surface: input.surfaceM2,
-      photoUrl: input.thumbnailUrl,
-      description: input.descriptionSnippet,
+      photoUrl: partnerContentAllowed ? input.thumbnailUrl : null,
+      description: partnerContentAllowed ? input.descriptionSnippet : null,
     },
     policy,
     now,
