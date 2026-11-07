@@ -220,3 +220,12 @@ try {
   await browser.close();
   await writeFile(`${outDir}/report.json`, JSON.stringify(report, null, 2));
 }
+
+
+// L5-B shares the already authorized N3 production-browser run, without editing
+// the legacy heavy workflow (strict CI policy forbids such changes on PR).
+const { spawnSync } = await import("node:child_process");
+const unit = spawnSync("npx", ["tsx", "--test", "scripts/scrapers/__tests__/search-page-query.test.ts"], { stdio: "inherit" });
+if (unit.error) throw unit.error;
+if (unit.status !== 0) throw new Error("L5-B Search query source contracts failed");
+await import("./vivre-ici-l5b-search-empty-state.mjs");

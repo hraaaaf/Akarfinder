@@ -2,7 +2,7 @@ import { chromium } from "playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 
 const baseUrl = process.env.BASE_URL || "http://127.0.0.1:3213";
-const outDir = process.env.L5B_AUDIT_OUTPUT_DIR || "data/audits/vivre-ici-l5b-search-empty";
+const outDir = process.env.L5B_AUDIT_OUTPUT_DIR || "data/audits/carte-national-journey-n3/l5b";
 await mkdir(outDir, { recursive: true });
 
 const viewports = [

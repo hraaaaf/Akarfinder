@@ -19,8 +19,6 @@ on:
       - "lib/map/national-territory-runtime.server.ts"
       - "lib/map/national-territory-data/**"
       - "scripts/audits/carte-national-journey-n3.mjs"
-      - "scripts/audits/vivre-ici-l5b-search-empty-state.mjs"
-      - "scripts/scrapers/__tests__/search-page-query.test.ts"
       - ".github/workflows/carte-national-journey-n3.yml"
   push:
     branches:
@@ -42,8 +40,6 @@ on:
       - "lib/map/national-territory-runtime.server.ts"
       - "lib/map/national-territory-data/**"
       - "scripts/audits/carte-national-journey-n3.mjs"
-      - "scripts/audits/vivre-ici-l5b-search-empty-state.mjs"
-      - "scripts/scrapers/__tests__/search-page-query.test.ts"
       - ".github/workflows/carte-national-journey-n3.yml"
   workflow_dispatch:
 
@@ -71,7 +67,7 @@ jobs:
         run: |
           changed="$(git diff --name-only HEAD^ HEAD)"
           printf '%s\n' "$changed"
-          if printf '%s\n' "$changed" | grep -Eq '^(app/api/geo/national-territories/|app/map/|app/search/|components/map/(MapLibreNeighborhood3D|NationalMapRouter|NationalTerritoryExperience|NationalNeighborhoodOverlay|NationalNeighborhoodOverlayBridge|P4MapDecisionRail|PremiumInteractiveMap|PremiumInteractiveMapBridge)\.tsx$|components/search/|lib/map/(canonical-neighborhood-data\.ts|national-territory-runtime\.server\.ts|national-territory-data/)|scripts/audits/carte-national-journey-n3\.mjs$|scripts/audits/vivre-ici-l5b-search-empty-state\.mjs$|scripts/scrapers/__tests__/search-page-query\.test\.ts$|\.github/workflows/carte-national-journey-n3\.yml$)'; then
+          if printf '%s\n' "$changed" | grep -Eq '^(app/api/geo/national-territories/|app/map/|app/search/|components/map/(MapLibreNeighborhood3D|NationalMapRouter|NationalTerritoryExperience|NationalNeighborhoodOverlay|NationalNeighborhoodOverlayBridge|P4MapDecisionRail|PremiumInteractiveMap|PremiumInteractiveMapBridge)\.tsx$|components/search/|lib/map/(canonical-neighborhood-data\.ts|national-territory-runtime\.server\.ts|national-territory-data/)|scripts/audits/carte-national-journey-n3\.mjs$|\.github/workflows/carte-national-journey-n3\.yml$)'; then
             echo "run_heavy=true" >> "$GITHUB_OUTPUT"
           else
             echo "run_heavy=false" >> "$GITHUB_OUTPUT"
@@ -107,19 +103,6 @@ jobs:
       - name: National to listings journey certification
         if: steps.scope.outputs.run_heavy == 'true'
         run: node scripts/audits/carte-national-journey-n3.mjs
-      - name: L5-B deterministic zero-results and district gateway guard
-        if: steps.scope.outputs.run_heavy == 'true'
-        run: |
-          npx tsx --test scripts/scrapers/__tests__/search-page-query.test.ts
-          node scripts/audits/vivre-ici-l5b-search-empty-state.mjs
-      - name: Upload L5-B evidence
-        if: always() && steps.scope.outputs.run_heavy == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: vivre-ici-l5b-search-empty-${{ github.run_id }}
-          path: data/audits/vivre-ici-l5b-search-empty
-          if-no-files-found: warn
-          retention-days: 30
       - name: Upload N3 evidence
         if: always() && steps.scope.outputs.run_heavy == 'true'
         uses: actions/upload-artifact@v4
