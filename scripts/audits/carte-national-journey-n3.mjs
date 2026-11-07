@@ -166,6 +166,14 @@ try {
         throw new Error("Search location filter chips do not match Maârif navigation");
       }
 
+      // Screenshots must represent a settled Search, not stale SSR counts or loading skeletons.
+      await page.waitForFunction(() => {
+        const toolbar = document.querySelector("[data-search-results-toolbar]");
+        const results = document.querySelector("[data-search-results-section]");
+        return Boolean(toolbar && results &&
+          !toolbar.querySelector(".animate-spin") &&
+          !results.querySelector(".animate-pulse"));
+      }, null, { timeout: 30000 });
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (overflow > 1) throw new Error(`search horizontal overflow ${overflow}`);
       await page.screenshot({ path: `${outDir}/search-maarif-${viewport.name}-after.png`, fullPage: false });
@@ -177,6 +185,14 @@ try {
         url.searchParams.get("district") === "maarif", { timeout: 20000 });
       await page.locator('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]')
         .waitFor({ state: "visible", timeout: 20000 });
+      // A mounted canvas is NOT enough. Require real source-backed building features
+      // before claiming visually successful map restoration (no blank raster screenshots).
+      await page.waitForFunction(() => {
+        const map = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
+        return map?.getAttribute("data-maplibre-render-state") === "ready" &&
+          map?.getAttribute("data-maplibre-source-state") === "available" &&
+          Number(map.getAttribute("data-maplibre-building-count")) > 0;
+      }, null, { timeout: 35000 });
       await page.screenshot({ path: `${outDir}/return-map-maarif-${viewport.name}-after.png`, fullPage: false });
       if (pageErrors.length) throw new Error(`browser page errors ${JSON.stringify(pageErrors)}`);
 
