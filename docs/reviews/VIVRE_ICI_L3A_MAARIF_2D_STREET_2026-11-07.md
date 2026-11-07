@@ -24,3 +24,6 @@ Limites administratives indisponibles · source non revue
 - Les repères POI historiques périmés ne sont pas rajeunis ; aucun marqueur, distance, temps ou prix ajouté.
 - Pas de fusion, de collecte, de DB cloud, d'import Supabase, de Vercel ou de nouvelles dépendances.
 - **Next :** CI+captures, corrections, closeout L3-A ; revue SIG géométrie administrative (human gate), vérification des POI et modes réels L3-B, puis L4–L6.
+
+## CI route temporaire — test exact HEAD
+Pour obtenir Required Gate/Responsive P1A.6 (déclenchés uniquement pour une PR cible `main`), la PR Draft #1181 est temporairement retargetée vers `main`. Les changements L3-A restent dans une branche distincte et les branches L1/L2 ne sont pas fusionnées. Revenir à la base `feat/vivre-ici-l2d-attribution-20261107` une fois les tests et captures inspectés. Une CI passée sur la cible `main` prouve le SHA testé, mais pas la sécurité d'une future opération de merge.
