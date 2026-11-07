@@ -189,7 +189,8 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
   const enterCity = useCallback((slug: string) => {
     previewSlugRef.current = null;
     setPreviewSlug(null);
-    onSelectCity(slug);
+    // V5 keeps "mohammadia"; the public URL and Search use "mohammedia".
+    onSelectCity(slug === "mohammadia" ? "mohammedia" : slug);
   }, [onSelectCity]);
 
   useEffect(() => {
@@ -440,7 +441,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
                 <button
                   key={city.slug}
                   type="button"
-                  onClick={() => enterCity(city.slug === "mohammadia" ? "mohammedia" : city.slug)}
+                  onClick={() => enterCity(city.slug)}
                   aria-pressed={selected}
                   aria-label={`Explorer ${label}${selected ? " — ville cible" : ""}`}
                   data-akarfinder-city-option={city.slug}
