@@ -58,3 +58,14 @@ Le libellé `listing_hint` des fichiers originaux est **moins précis** qu'un ty
 **Archive V2 reproductible créée et CRC vérifié :** `AkarFinder_L0_RECOVERED_EVIDENCE_V2_20261107.zip`, **942 204 octets**, SHA256 `6f21dfe98df4188fa4f00992320463dc0acec5859500b82fe19e890a8fefc980`. Six entrées : les deux archives originales, manifest JSONL.gz de 95 825 lignes avec `url_pattern_kind`, rapport, README et script de reconstruction. L'inventaire historique ne change pas : il s'agit de **95 825 URL L0**, non de 95 825 annonces détaillées. **La V2 est à préférer au pack V1** car elle renseigne la distinction filtre/unité/fiches candidates.
 
 Ce travail n'a effectué **aucune requête aux sites sources**, aucune écriture SQL et aucune activation Search.
+
+## Premier inventaire CI sur PR — 07/11/2026
+
+**Workflow read-only réellement exécuté avec succès :** [Candidate Lake Q1 Artifact Inventory run #42365053878](https://github.com/hraaaaf/Akarfinder/actions/runs/42365053878), code HEAD `82ce6d41cdbad24268f451a45cc4b31b3e74e11e`, artefact diagnostic `13571351631` ; étapes unitaires, téléchargements, inventaire et upload toutes SUCCESS.
+
+Le `inventory.json` téléchargé/CRC vérifié établit **17 attendues / 2 disponibles / 15 manquantes**, précisément :
+- **OK** : `9974670013` Akaar, `9974714576` Domio, trois fichiers par archive ;
+- **HTTP 410** : les **15 autres IDs** du catalogue, preuve des liens GitHub actuellement indisponibles. Les causes archivistiques ou l'existence de copies alternatives ne sont pas déterminées ;
+- `completeProofCoverage=false`, `candidateUnionCertified=false`. Ce résultat **ne valide pas** la disponibilité du freeze 253 372.
+
+**Préservation ajoutée à la CI :** le workflow sauvegarde désormais également les ZIP originaux encore accessibles dans un nouvel artefact `candidate-lake-q1-recovered-source-proof-mirror` (rétention demandée 90 jours), sans modifier leurs contenus. **L'exécution du miroir et son artefact ne sont pas encore vérifiés** dans ce document ; distinguer code ajouté et sauvegarde observée.
