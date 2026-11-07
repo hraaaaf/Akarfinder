@@ -1,0 +1,51 @@
+name: Mubawab Common Crawl Parquet Safety Gate
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/mubawab-fresh/parquet_index_probe.py'
+      - 'scripts/acquisition/mubawab-fresh/test_parquet_index_probe.py'
+      - '.github/workflows/mubawab-commoncrawl-parquet-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  public-parquet-index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned DuckDB
+        run: python -m pip install duckdb==1.4.1
+      - name: Local-only metadata, budget and parser tests
+        working-directory: scripts/acquisition/mubawab-fresh
+        run: python -m unittest -v test_parquet_index_probe.py
+      # The 300 CC-MAIN-2026-43 Parquet shards are not ordered globally by
+      # SURT. The previous footer binary-search produced false zero matches.
+      # This workflow now certifies fail-closed behavior only. To resume remote
+      # Parquet indexing, design a reliable indexed partition locator first.
+      - name: Verify unsorted 300-shard manifest is rejected before HTTP
+        working-directory: scripts/acquisition/mubawab-fresh
+        run: |
+          python - <<'PYBLOCK'
+          from parquet_index_probe import pick_shards
+          calls=[]
+          try:
+              pick_shards([str(i) for i in range(300)],
+                          lambda path: calls.append(path) or ('a','z',1),
+                          max_metadata=16, max_shards=2)
+          except ValueError as exc:
+              assert 'UNSORTED' in str(exc), str(exc)
+              assert not calls, 'unsafe metadata reads occurred'
+              print('PASS: unsorted 300-shard index fails closed without any Parquet fetch')
+          else:
+              raise AssertionError('unsafe binary-search fallback not blocked')
+          PYBLOCK
