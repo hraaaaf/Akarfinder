@@ -13,6 +13,12 @@ from __future__ import annotations
 import argparse
 import hashlib
 import hmac
+import stat
+from contextlib import contextmanager
+try:
+    import fcntl  # OS-level advisory producer lock, Unix runner only
+except ImportError:
+    fcntl = None
 import urllib.request
 import urllib.error
 import asyncio
@@ -1087,6 +1093,48 @@ def _write_trusted_head(run_id: str, status: str, generation: int, *,
         temp.unlink(missing_ok=True)
 
 
+class ProducerLockBusy(RuntimeError):
+    pass
+
+
+@contextmanager
+def _exclusive_producer_lock():
+    """Serialize every producer across processes on the SAME filesystem.
+
+    The lock is held from before reading generation through the final status
+    write. Fail closed rather than waiting or blocking an event loop. Deployers
+    running on different hosts MUST use a real distributed lock instead.
+    """
+    if fcntl is None:
+        raise PublicationVerificationError("producer_lock_unsupported_platform")
+    # Two scopes: every producer of the same export directory shares its
+    # output lock, even if a process omitted its HMAC environment; producers
+    # targeting the same signed generation share one external trust lock.
+    locks = [Path(PUBLICATION_STATUS + ".producer.lock").resolve()]
+    if _publication_key() is not None:
+        trust = _trusted_head_path()
+        locks.append(trust.with_name(trust.name + ".producer.lock"))
+    flags = os.O_CREAT | os.O_RDWR | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    locked: list[int] = []
+    try:
+        for path in sorted(set(locks), key=str):
+            fd = os.open(path, flags, 0o600)
+            locked.append(fd)
+            if not stat.S_ISREG(os.fstat(fd).st_mode):
+                raise PublicationVerificationError("producer_lock_not_regular_file")
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as exc:
+                raise ProducerLockBusy("producer_already_running") from exc
+        yield
+    finally:
+        for fd in reversed(locked):
+            try:
+                fcntl.flock(fd, fcntl.LOCK_UN)
+            finally:
+                os.close(fd)
+
+
 def _write_publication_status(run_id: str, status: str, *,
                               failure_code: int | None = None,
                               generation: int | None = None) -> None:
@@ -1574,6 +1622,22 @@ def fetch_and_check_robots(urls: list[str]) -> dict[str, Any]:
 
 
 async def main(engine: str = "auto", pages: int = MAX_PAGES,
+               headed: bool = False, browser_path: str | None = None,
+               urls_file: str | None = None) -> int:
+    """Only one producer may execute per trusted head/output lock scope.
+
+    Lock contention fails immediately with code 3. No second producer may
+    read generation or touch publication files while the first is active.
+    """
+    try:
+        with _exclusive_producer_lock():
+            return await _main_with_exclusive_lock(engine, pages, headed, browser_path, urls_file)
+    except (ProducerLockBusy, PublicationVerificationError, OSError) as exc:
+        print(f"[ERREUR PRODUCTEUR] Verrou exclusif indisponible: {exc}")
+        return 3
+
+
+async def _main_with_exclusive_lock(engine: str = "auto", pages: int = MAX_PAGES,
                 headed: bool = False,
                 browser_path: str | None = None,
                 urls_file: str | None = None) -> int:
@@ -1621,6 +1685,15 @@ async def main(engine: str = "auto", pages: int = MAX_PAGES,
     except (OSError, ValueError, TypeError) as exc:
         # Never report success without a published and hash-verifiable marker.
         print(f"[ERREUR PUBLICATION] Marqueur non vérifiable: {exc}")
+        # Mark failure explicitly if the filesystem still permits writes. If
+        # not, the trusted head remains "running", already fail-closed.
+        try:
+            _write_publication_status(run_id, "failed", failure_code=5,
+                                      generation=generation)
+            if generation is not None:
+                _write_trusted_head(run_id, "failed", generation)
+        except (OSError, ValueError, TypeError):
+            pass
         return 5 if code == 0 else code
     return code
 
