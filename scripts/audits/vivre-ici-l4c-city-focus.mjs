@@ -33,10 +33,16 @@ async function verifyFocus(page, citySlug, viewportName) {
   }
   await page.waitForFunction((slug) => {
     const map = window.__AKARFINDER_NATIONAL_MAP__;
-    const filter = map?.getFilter("akarfinder-national-city-active-line");
-    const halo = map?.getLayer("akarfinder-national-city-focus-halo");
-    return Boolean(map?.isStyleLoaded() && halo && Array.isArray(filter) &&
-      filter[0] === "==" && filter[2] === slug && !map.isMoving());
+    // MapLibre getFilter throws if the target style layer has not been added
+    // yet. Wait for BOTH sourced layers before reading either filter.
+    if (!map?.isStyleLoaded() || map.isMoving()) return false;
+    if (!map.getLayer("akarfinder-national-city-active-line") ||
+        !map.getLayer("akarfinder-national-city-focus-halo")) return false;
+    const filter = map.getFilter("akarfinder-national-city-active-line");
+    const haloFilter = map.getFilter("akarfinder-national-city-focus-halo");
+    return Array.isArray(filter) && Array.isArray(haloFilter) &&
+      filter[0] === "==" && filter[2] === slug &&
+      JSON.stringify(filter) === JSON.stringify(haloFilter);
   }, citySlug, { timeout: 25000 });
   const mapState = await page.evaluate(() => {
     const map = window.__AKARFINDER_NATIONAL_MAP__;
