@@ -335,3 +335,40 @@ Sur les **95 696 URL miroir absentes** du lac L0, **76 850** sont compatibles av
 
 
 **Q1D sidecar classifié sans URL en clair :** paquet privé `AKARFINDER_Q1D_CLASSIFICATION_PRIVEE_2026-11-07.zip`, créé à partir du delta J6 sans accès aux sites. Contient un SQLite annexe `classification` (une ligne par URL-hash, sans URL en clair) et un manifeste des règles `q1d-urlpath-v1`. **95 825** lignes, dont **76 850** chemins de fiche/unité probable ; 129 recoupements L0. `integrity_check=ok`, `foreign_key_check=0` ; SHA-256 du SQLite annexe `2fc1d451540a426600fdaa1594686173e099dd5c7f00a62dd8fb578dadfde2c9`, SHA logique `7d0dadb739ac7252d4e046af00f3b3158c624f3114a7b5fb883f7b7471142031`, ZIP `65851d1800b0f436c963968029f03aff58a9d98a90f65befcfd0b01a7c0e052b` (CRC OK). Le fichier est **privé dans la conversation**, non publié dans ce dépôt. **Prochaine action locale** : joindre ce sidecar à la copie de staging Windows en lecture seule sur `url_hash`; vérifier la couverture et contrôler la pertinence Maroc et les droits avant toute consultation automatisée de pages. Aucune altération du lac Windows dans cette session.
+
+
+### Q1E — étude d'application du parseur aux candidats L0, audit direct Neon (07/11/2026)
+
+**GOAL :** distinguer l'index de liens du contenu réellement re-parsable ; inventorier les capacités effectives des parseurs existants et mesurer, en lecture seule, ce qui pourrait être requalifié sans réseau ni données inventées.
+
+**Code réellement inspecté sur le dépôt (main) :** `scripts/acquisition/canonical_listing_extractor.py` consomme **URL + HTML** (JSON-LD, meta, texte) ; `lib/intelligence/structured-listing-pipeline.ts` adapte des **fiches structurées / flux** ; `scripts/acquisition/cross_source_dedupe.py` et `lib/dedup-clustering/v2-scorer.ts` identifient des paires. **Point de performance important** : les fonctions `cluster_records` et `findCandidatePairs` comportent chacune une boucle imbriquée globale sur toutes les paires. **Ne pas les lancer tels quels sur 327 514 lignes**. Préférer dédoublonnage exact par hash/clé et génération de paires *indexée/bloquée* (ville, type, transaction et dimensions proches) pour le fuzzy, sans fusion automatique des collisions.
+
+**Neon Recovery, branche `recovery-schema-cert-20260924`, base `AkarFinder` ; toutes les requêtes ont été des `SELECT` agrégés :**
+
+| Mesure | Observé |
+|---|---:|
+| URL distinctes du lac Q1C (backup + miroir) | **327 514** (index de liens, pas HTML) |
+| `raw_listings` (Neon Recovery et test) | **0 lignes** |
+| `property_listings` (Neon Recovery) | **151 900** fiches structurées |
+| Fiches avec ville/type/transaction/prix positif/surface positive | **53 083** |
+| Fiches avec description non vide | **14 950** |
+| Descriptions associées à un prix manquant | 9 528 |
+| Descriptions associées à une surface manquante | 5 232 |
+| Fiches avec champs structurés requis, sans `source_offer_key` | **9 259** |
+| Parmi celles-ci, avec `first_seen_at` renseigné | **1 048** |
+| Fiches complètes avec clé explicite + `first_seen_at` | **3 740** (compteur historique strict Neon inchangé) |
+
+**Pilote URL→ID sans réseau, ni écriture :** correspondance du motif d'URL avec des clés explicites déjà stockées, avant toute attribution aux lignes sans clé :
+
+| Source | Lignes sans clé à motif correspondant | IDs distincts à motif | IDs distincts non déjà clés dans Neon | Contradictions URL/clé constatées parmi les lignes clés |
+|---|---:|---:|---:|---:|
+| Mubawab | 12 066 | 12 049 | **11 649** | **34** |
+| Avito | 578 | 574 | **574** | 0 |
+| Agenz | 3 004 | 2 463 | **2 111** | **15** |
+| **Total** | **15 648** | **15 086** | **14 334** | **49** |
+
+**Attention :** 14 334 = **IDs candidats supplémentaires par rapport aux clés explicites de Neon seulement**, et non nouveaux biens, nouvelles observations ni nouvelles identités dans l'union avec le backup. Les 49 divergences sont à isoler et à revoir manuellement/avec règles propres à chaque source. Les éventuels ID présents dans le backup et les ID de plusieurs observations d'un même bien ne sont pas ici retirés.
+
+**Potentiel de qualification temporelle immédiat beaucoup plus faible** : parmi les **1 048** fiches Neon avec champs requis + `first_seen_at` mais sans clé, **137** lignes ont le motif Mubawab/Avito (122 + 15), et **266** le motif Agenz : **403 lignes**, correspondant à **339 IDs distincts jusque-là non explicitement clés dans Neon** (Mubawab 119, Avito 13, Agenz 207). Ne pas les promouvoir sans contrôle d'identité, de provenance, de collisions, d'horodatages et d'intersection avec le backup ; compteur strict global **9 990** inchangé. Ces chiffres ne prouvent ni fraîcheur ni droit d'exploitation.
+
+**SUCCESS de cet audit :** les 327 514 liens ne constituent pas un corpus HTML brut ; le parseur existant a besoin de contenu sauvegardé pour une extraction complète. Un retraitement **hors ligne** des 151 900 lignes structurées et des 19 908 observations source du backup (à inspecter localement) est une piste ; il faut ne pas remplacer des timestamps manquants par des dates d'exécution. **Next exact :** sur le poste Codex, créer un adaptateur lecture seule de flux `source_offer_observations` / `property_listings` et faire un dry-run stratifié, rapporter les changements de couverture et le taux d'erreur des IDs avant un batch ; ajouter un générateur de paires O(n)-indexé / buckets, jamais O(n²) global ; ne pas ingérer/publier sans droits. Aucune modification de base ni Vercel.
