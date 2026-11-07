@@ -69,6 +69,21 @@ async function main() {
           } catch {
             findings.push({ route: route.path, viewport: viewport.label, check: "premium-national", detail: "Premium SVG map missing or topology not ready" });
           }
+          const nationalCredits = page.locator('[data-premium-map-attribution]');
+          try {
+            await nationalCredits.waitFor({ state: "visible", timeout: 12_000 });
+            const osmLink = nationalCredits.locator('a[href="https://www.openstreetmap.org/copyright"]');
+            const boundaryLink = nationalCredits.locator('a[href="https://www.geoboundaries.org/"]');
+            if (!(await osmLink.isVisible()) || !(await boundaryLink.isVisible())) throw new Error("real attribution links hidden");
+            if (viewport.width <= 430) {
+              const box = await nationalCredits.boundingBox();
+              if (!box || box.y + box.height > viewport.height - 76) {
+                throw new Error(`national attribution obscured by fixed navigation: ${JSON.stringify(box)}`);
+              }
+            }
+          } catch (error) {
+            findings.push({ route: route.path, viewport: viewport.label, check: "l2d-national-attribution", detail: String(error).slice(0, 550) });
+          }
           const regionCount = await page.locator("[data-region-slug]").count();
           if (regionCount !== 12) {
             findings.push({ route: route.path, viewport: viewport.label, check: "national-regions", detail: `Expected 12 actual region paths, found ${regionCount}` });
@@ -103,6 +118,20 @@ async function main() {
             await page.locator("[data-p4-map-decision-rail]").waitFor({ state: "visible", timeout: 10_000 });
           } catch {
             findings.push({ route: route.path, viewport: viewport.label, check: "decision-rail", detail: "Vivre Ici decision rail missing" });
+          }
+          try {
+            const attribution = page.locator(".maplibregl-ctrl-attrib");
+            await attribution.waitFor({ state: "visible", timeout: 12_000 });
+            if (!(await attribution.innerText()).includes("Esri")) throw new Error("Tile attribution has no provider label");
+            if (viewport.width <= 430) {
+              const creditBox = await attribution.boundingBox();
+              const sheetBox = await page.locator('[data-p4-map-decision-rail]').boundingBox();
+              if (!creditBox || !sheetBox || creditBox.y + creditBox.height > sheetBox.y - 4) {
+                throw new Error(`provider credits hidden by decision sheet: ${JSON.stringify({ creditBox, sheetBox })}`);
+              }
+            }
+          } catch (error) {
+            findings.push({ route: route.path, viewport: viewport.label, check: "l2d-maplibre-attribution", detail: String(error).slice(0, 550) });
           }
           if (route.citySlug === "casablanca" && route.districtSlug === "maarif") {
             try {
