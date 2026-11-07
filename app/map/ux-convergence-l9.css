@@ -202,3 +202,13 @@
   width: 100% !important;
   max-width: none !important;
 }
+
+[data-p4-map-layout]:has([data-akarfinder-national-map]) [data-p4-map-decision-rail] .p4-premium-market-title {
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+}
+[data-p4-map-layout]:has([data-akarfinder-national-map]) [data-p4-map-decision-rail] .p4-premium-market-card > p {
+  font-size: 11px !important;
+  line-height: 1.55 !important;
+  overflow-wrap: normal !important;
+}
