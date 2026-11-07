@@ -1,0 +1,55 @@
+name: Akar Supabase Clean Bootstrap Offline Audit
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/audit_supabase_clean_bootstrap.py"
+      - "scripts/audits/tests/test_audit_supabase_clean_bootstrap.py"
+      - ".github/workflows/akar-supabase-bootstrap-offline-audit.yml"
+      - "supabase/migrations/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test offline checker
+        run: python -m unittest discover -s scripts/audits/tests -p "test_audit_supabase_clean_bootstrap.py" -v
+      - name: Inspect historical migrations (no database/network access)
+        run: python scripts/audits/audit_supabase_clean_bootstrap.py --root supabase/migrations --output /tmp/akar-supabase-bootstrap-report.json
+      - name: Verify audit consistency without freezing historical blocker counts
+        run: |
+          python - <<'PY'
+          import json
+          with open("/tmp/akar-supabase-bootstrap-report.json", encoding="utf-8") as f:
+              audit = json.load(f)
+          assert audit["migration_file_count"] > 0, "No migration files found"
+          assert audit["distinct_named_versions"] <= audit["migration_file_count"]
+          assert not audit["invalid_filenames"], "Unexpected migration names; see audit report"
+          assert not audit["sql_executed"] and not audit["database_connected"]
+          print("OFFLINE SCANNER PASS; migration replay NOT TESTED")
+          print("Migrations:", audit["migration_file_count"],
+                "Version collisions:", len(audit["duplicate_versions"]))
+          print("Bootstrap status:", audit["clean_bootstrap_status"])
+          with open("/tmp/akar-supabase-status.txt", "w", encoding="utf-8") as out:
+              out.write(audit["clean_bootstrap_status"] + "\\n")
+          PY
+      - name: Upload aggregate-only audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: akar-supabase-bootstrap-audit
+          path: /tmp/akar-supabase-bootstrap-report.json
+          if-no-files-found: error
+          retention-days: 30
