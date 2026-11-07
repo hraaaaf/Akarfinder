@@ -50,7 +50,11 @@ export default async function MapPage({ searchParams }: MapPageProps) {
   const district = firstParam(params.district).trim();
   const layer = firstParam(params.layer).trim() || "explore";
   const hasNeighborhoodSelection = Boolean(city && district);
-  const usePremiumNationalExplore = !city && !district && layer === "explore";
+  // L4-D: the real public /map?layer=explore entrypoint must use the same
+  // V5-backed MapLibre national zoom ladder as city views. The former SVG
+  // regional atlas stays reachable explicitly with ?layer=premium for
+  // comparison and backwards compatibility, never as a hidden default.
+  const usePremiumNationalExplore = !city && !district && layer === "premium";
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-[#F8FAFC] text-[#0B1F3A]" data-vivre-ici-page>
