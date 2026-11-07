@@ -41,6 +41,17 @@ FIELD_ALIASES = {
     "bathrooms": ("bathrooms_count", "bathrooms", "nbBathrooms", "sdb"),
     "rooms": ("rooms_count", "rooms", "pieces", "nbRooms"),
     "floor": ("floor_number", "floor", "etage"),
+    "surface_built": ("built_surface_m2", "surface_built_m2", "builtArea"),
+    "surface_land": ("plot_surface_m2", "surface_land_m2", "landArea"),
+    "terrace_m2": ("terrace_m2", "terrace_surface_m2"),
+    "garden_m2": ("garden_m2", "garden_surface_m2"),
+    "region": ("region", "region_name"),
+    "latitude": ("latitude", "lat"),
+    "longitude": ("longitude", "lng", "lon"),
+    "condition": ("condition", "state", "property_condition"),
+    "orientation": ("orientation", "exposure"),
+    "price_period": ("price_period", "rent_period", "payment_period"),
+    "price_currency": ("price_currency", "priceCurrency", "currency"),
     "observed_at": ("first_seen_at", "observed_at", "scraped_at", "captured_at", "first_observed_at"),
     "published_at": ("published_at_source", "published_at", "datePublished"),
     "images": ("image_urls", "images", "photos", "media_urls"),
@@ -52,6 +63,20 @@ EMAIL = re.compile(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", re.I)
 PRICE_RX = re.compile(r"(?<!\d)(\d[\d \u00a0.,]{2,15}\d|\d{4,10})\s*(MAD|DHS?|DRH|درهم)\b", re.I)
 AREA_RX = re.compile(r"(?<!\d)(\d{1,5}(?:[.,]\d{1,2})?)\s*(?:m²|m2)\b", re.I)
 BED_RX = re.compile(r"(?<!\d)(\d{1,2})\s*(?:chambres?|bedrooms?)\b", re.I)
+FEATURE_TOKENS = {
+    "has_pool": ("piscine", "swimming pool"),
+    "has_parking": ("parking", "place de parking"),
+    "has_elevator": ("ascenseur", "elevator"),
+    "has_garden": ("jardin", "garden"),
+    "has_terrace": ("terrasse", "terrace"),
+    "has_balcony": ("balcon", "balcony"),
+    "has_equipped_kitchen": ("cuisine équipée", "cuisine equipee", "equipped kitchen"),
+    "has_air_conditioning": ("climatisation", "climatisé", "climatise", "air conditioning"),
+    "has_security": ("sécurité 24", "securite 24", "security 24"),
+    "has_garage": ("garage",),
+    "has_solar_panels": ("panneaux solaires", "solar panels"),
+    "is_furnished": ("meublé", "meuble", "furnished"),
+}
 
 
 def digest(data: bytes) -> str:
@@ -100,6 +125,18 @@ def number(v: Any) -> float | None:
     try:
         n = float(s)
         return n if 0 < n < 10**12 else None
+    except ValueError:
+        return None
+
+
+def coordinate_number(value: Any, limit: float) -> float | None:
+    """Coordinates preserve a minus sign; never use price/area normalization."""
+    raw = clean(value)
+    if not raw:
+        return None
+    try:
+        n = float(raw.replace(",", "."))
+        return n if -limit <= n <= limit else None
     except ValueError:
         return None
 
@@ -236,6 +273,55 @@ def normalize_country(s: Any) -> str | None:
     return v
 
 
+def feature_facts(layers: list[tuple[str, dict]], text: str) -> tuple[dict, dict]:
+    """Explicit booleans first; text positives only when not locally negated."""
+    found, proofs = {}, {}
+    low_text = text.lower()
+    for field, synonyms in FEATURE_TOKENS.items():
+        for origin, payload in layers:
+            if field not in payload:
+                continue
+            value = payload[field]
+            if isinstance(value, bool):
+                found[field] = value
+            elif isinstance(value, (int, float)) and value in (0, 1):
+                found[field] = bool(value)
+            elif isinstance(value, str) and value.strip().lower() in ("yes", "no", "true", "false", "oui", "non", "1", "0"):
+                found[field] = value.strip().lower() in ("yes", "true", "oui", "1")
+            if field in found:
+                proofs[field] = {"origin": f"{origin}.{field}", "raw": str(value), "confidence": "high"}
+                break
+        if field in found:
+            continue
+        for token in synonyms:
+            m = re.search(rf"(?<!\w){re.escape(token)}(?!\w)", low_text)
+            if m is None:
+                continue
+            prior = low_text[max(0, m.start()-20):m.start()]
+            if re.search(r"(?:sans|pas de|without|no|absence de)\s*$", prior):
+                continue  # Negated mention does not prove presence or absence reliably.
+            found[field] = True
+            proofs[field] = {"origin": "text:positive_feature", "raw": token, "confidence": "low"}
+            break
+    return found, proofs
+
+
+def media_items(raw: Any) -> list[str]:
+    if isinstance(raw, str):
+        try:
+            raw = json.loads(raw)
+        except ValueError:
+            raw = [raw]
+    if not isinstance(raw, list):
+        raw = [raw] if raw else []
+    urls = []
+    for item in raw[:50]:
+        url = clean(item if isinstance(item, str) else item.get("url") if isinstance(item, dict) else None)
+        if url and urlparse(url).scheme in ("http", "https") and len(url) < 2048 and url not in urls:
+            urls.append(url)
+    return urls[:40]
+
+
 def parse_record(row: dict, *, generated_at: str) -> dict:
     layers = raw_layers(row)
     values = {}
@@ -275,7 +361,7 @@ def parse_record(row: dict, *, generated_at: str) -> dict:
     price = number(values["price"])
     # Only convert to MAD when unit is explicit or the input column states MAD.
     price_origin = (evidence.get("price") or {}).get("origin", "")
-    source_currency = clean(row.get("price_currency")) or clean(as_mapping(row.get("raw_json")).get("priceCurrency"))
+    source_currency = clean(values["price_currency"]) or clean(as_mapping(row.get("raw_json")).get("priceCurrency"))
     currency = "MAD" if price_origin.endswith(".price_mad") else (source_currency.upper() if source_currency else None)
     if not price and searchable:
         m = PRICE_RX.search(searchable)
@@ -303,15 +389,30 @@ def parse_record(row: dict, *, generated_at: str) -> dict:
     observed_at = timestamp(values["observed_at"])
     published_at = timestamp(values["published_at"])
     country = normalize_country(values["country"])
+    extras = {}
+    for key in ("surface_built", "surface_land", "terrace_m2", "garden_m2"):
+        v = number(values[key])
+        extras[key] = v if v is not None and 1 <= v <= 100_000 else None
+    extras["floor"] = number(values["floor"])
+    extras["latitude"] = coordinate_number(values["latitude"], 90)
+    extras["longitude"] = coordinate_number(values["longitude"], 180)
+    amenities, amenity_evidence = feature_facts(layers, searchable)
+    evidence.update(amenity_evidence)
+    images = media_items(values["images"])
+    price_period = clean(values["price_period"])
+    price_period = {"monthly": "month", "mois": "month", "month": "month", "day": "day", "jour": "day", "daily": "day", "total": "total"}.get((price_period or "").lower(), "unknown")
+    currency_mismatch = bool(price_origin.endswith(".price_mad") and source_currency and source_currency.upper() not in ("MAD", "DH", "DHS"))
     identity_key = f"{domain}|{source_id}" if domain and source_id else None
     stable_basis = f"{identity_key}|{observed_at}" if identity_key and observed_at else f"{url or ''}|{json.dumps(row,sort_keys=True,default=str,ensure_ascii=False)}"
     record_id = "observation-" + digest(stable_basis.encode("utf-8"))[:24]
 
     core = bool(title and city and ptype and tx and price_mad and area)
-    status = "quarantine" if conflict else ("ready_internal" if core and identity_state == "explicit" and observed_at else "complete_candidate" if core else "candidate_url" if url and not any((title, city, price_mad, area)) else "partial")
+    status = "quarantine" if conflict or currency_mismatch else ("ready_internal" if core and identity_state == "explicit" and observed_at else "complete_candidate" if core else "candidate_url" if url and not any((title, city, price_mad, area)) else "partial")
     issues = []
     if conflict:
         issues.append("source_id_conflicts_with_url")
+    if currency_mismatch:
+        issues.append("price_currency_conflicts_with_mad_field")
     if not observed_at:
         issues.append("no_proven_observation_timestamp")
     if identity_state != "explicit":
@@ -334,10 +435,13 @@ def parse_record(row: dict, *, generated_at: str) -> dict:
             "project_id": None, "project_unit_id": None,
             "facts": {
                 "classification": {"property_type": fact(ptype, "property_type"), "market_segment": fact("unknown")},
-                "location": {"country": fact(country, "country"), "city": fact(city, "city"), "district": fact(district, "district"), "geo_precision": fact("unknown"), "geo_source": fact("unknown")},
-                "surfaces": {"surface_total_m2": fact(area, "surface")} if area else {},
+                "location": {"country": fact(country, "country"), "city": fact(city, "city"), "district": fact(district, "district"), "geo_precision": fact("unknown"), "geo_source": fact("unknown"), **({"latitude": fact(extras["latitude"], "latitude")} if extras["latitude"] is not None else {}), **({"longitude": fact(extras["longitude"], "longitude")} if extras["longitude"] is not None else {})},
+                "surfaces": {**({"surface_total_m2": fact(area, "surface")} if area else {}), **{field: fact(extras[key], key) for key, field in (("surface_built", "surface_built_m2"), ("surface_land", "surface_land_m2"), ("terrace_m2", "terrace_m2"), ("garden_m2", "garden_m2")) if extras[key] is not None}},
                 "layout": {k: fact(v, k.replace("_count", "")) for k, v in (("bedrooms_count", int(bedrooms) if bedrooms else None), ("bathrooms_count", int(number(values["bathrooms"])) if number(values["bathrooms"]) else None), ("rooms_count", int(number(values["rooms"])) if number(values["rooms"]) else None)) if v is not None},
-                "building": {}, "features": {}, "condition": {}, "land": {}, "legal": {},
+                "building": {**({"floor_number": fact(int(extras["floor"]), "floor")} if extras["floor"] is not None and extras["floor"] <= 100 else {}), **({"orientation": fact(clean(values["orientation"]), "orientation")} if clean(values["orientation"]) else {})},
+                "features": {key: fact(value, key) for key, value in amenities.items()},
+                "condition": {"condition": fact(clean(values["condition"]), "condition")} if clean(values["condition"]) else {},
+                "land": {}, "legal": {},
             },
             "offers": [{
                 "offer_id": record_id + ":offer", "property_id": record_id,
@@ -345,20 +449,21 @@ def parse_record(row: dict, *, generated_at: str) -> dict:
                 "external_offer_id": source_id, "source_url": url, "canonical_source_url": url,
                 "acquisition_channel": "system", "origin_type": "legacy_import", "transaction_type": tx,
                 "title": fact(title, "title"), "description": fact(description, "description"),
-                "price_amount": fact(price_mad, "price"), "price_currency": "MAD", "price_period": "unknown",
+                "price_amount": fact(price_mad, "price"), "price_currency": "MAD", "price_period": price_period,
                 "price_status": "valid" if price_mad else "unavailable",
                 "availability_status": "unknown", "published_at_source": published_at,
                 "first_observed_at": observed_at, "last_observed_at": observed_at,
                 "updated_at_source": None, "offer_status": "unknown", "compliance_status": "review_required",
                 "media_set_id": None, "ingestion_run_id": None,
             }],
-            "media": [], "intelligence": None, "display_policies": [],
+            "media": [{"media_id": f"{record_id}:image:{i}", "property_id": record_id, "offer_id": record_id + ":offer", "type": "image", "url": u, "source_url": url, "rights_status": "unknown", "publication_permission": "unknown", "cache_permission": False, "download_permission": False, "attribution": None, "observed_at": observed_at, "last_checked_at": None} for i, u in enumerate(images, 1)],
+            "intelligence": None, "display_policies": [],
             "created_at": observed_at, "updated_at": observed_at,
         }
     return {
         "version": VERSION, "record_id": record_id, "status": status,
         "source": {"domain": domain, "source_name": source, "source_url": url, "source_offer_id": source_id, "identity_state": identity_state},
-        "extracted": {"title": title, "description": description, "country": country, "city": city, "district": district, "property_type": ptype, "transaction_type": tx, "price_amount_raw": price, "price_currency_raw": currency, "price_mad": price_mad, "surface_total_m2": area, "bedrooms_count": int(bedrooms) if bedrooms else None, "observed_at": observed_at, "published_at": published_at},
+        "extracted": {"title": title, "description": description, "country": country, "city": city, "district": district, "property_type": ptype, "transaction_type": tx, "price_amount_raw": price, "price_currency_raw": currency, "price_mad": price_mad, "price_period": price_period, "surface_total_m2": area, "bedrooms_count": int(bedrooms) if bedrooms else None, "extras": extras, "features": amenities, "image_urls_count": len(images), "observed_at": observed_at, "published_at": published_at},
         "canonical_property_v1": canonical,
         "evidence": evidence,
         "quality": {"core_facts_present": core, "timestamp_verified_from_source": bool(observed_at), "source_id_explicit": identity_state == "explicit", "issues": issues, "publication_allowed": False},
