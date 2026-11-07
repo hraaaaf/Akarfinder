@@ -133,7 +133,7 @@ report.api = {
   certifiedNeighborhoodBoundaryCount: api.meta.certifiedNeighborhoodBoundaryCount,
 };
 
-const browser = await chromium.launch({ headless: true });
+// Collect all 8-city BEFORE/AFTER proof before the legacy Casablanca journey.\n// Preserve evidence if the older N2 scenario hits an unrelated browser error.\nawait import("./vivre-ici-l4b-multicity-ui.mjs");\n\nconst browser = await chromium.launch({ headless: true });
 try {
   for (const viewport of viewports) {
     const mobile = viewport.width <= 430;
@@ -153,10 +153,12 @@ try {
     }
     const page = await context.newPage();
     const pageErrors = [];
-    page.on("pageerror", (error) => pageErrors.push(String(error)));
+    let auditPhase = "initial-city-load";
+    page.on("pageerror", (error) => pageErrors.push({ phase: auditPhase, message: String(error), stack: error.stack, url: page.url() }));
 
     try {
       const cityUrl = `${baseUrl}/map?city=casablanca&layer=explore`;
+      auditPhase = "city-map";
       await page.goto(cityUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
       await waitForNationalOverlay(page);
 
@@ -181,6 +183,7 @@ try {
       if (overflow > 1) throw new Error(`horizontal overflow ${overflow}`);
       await page.screenshot({ path: `${outDir}/casablanca-neighborhoods-${viewport.name}-after.png`, fullPage: false });
 
+      auditPhase = "mapped-neighborhood";
       const mappedInput = page.getByRole("textbox", { name: "Rechercher un quartier à Casablanca" });
       await mappedInput.fill("Maârif");
       const mappedSuggestion = page.locator('[data-akarfinder-neighborhood-suggestion="maarif"]');
@@ -204,6 +207,7 @@ try {
 
       await page.goto(cityUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
       await waitForNationalOverlay(page);
+      auditPhase = "postal-no-center";
       const input = page.getByRole("textbox", { name: "Rechercher un quartier à Casablanca" });
       await input.fill("QUARTIER MAARIF");
       const postalSuggestion = page.locator('[data-akarfinder-neighborhood-suggestion="quartier-maarif"]');
@@ -239,6 +243,3 @@ try {
 
 // L4-B Mohammedia: read-only visual certification on the existing authorized N2 job.
 await import("./vivre-ici-l4b-mohammedia-smoke.mjs");
-
-// L4-B2: 8 cities x 4 viewports and 17 source-backed selections.
-await import("./vivre-ici-l4b-multicity-ui.mjs");
