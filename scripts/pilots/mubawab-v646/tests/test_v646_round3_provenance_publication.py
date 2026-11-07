@@ -84,11 +84,16 @@ class Round3P1(unittest.TestCase):
 
 class PublicationConsistency(unittest.TestCase):
     def setUp(self):
-        self.key_scope = patch.dict(os.environ, {s.PUBLICATION_HMAC_KEY_ENV: "4a" * 32})
+        self.trusted_root = tempfile.TemporaryDirectory()
+        self.key_scope = patch.dict(os.environ, {
+            s.PUBLICATION_HMAC_KEY_ENV: "4a" * 32,
+            s.TRUSTED_HEAD_ENV: str(Path(self.trusted_root.name) / "trusted_head.json")
+        })
         self.key_scope.start()
 
     def tearDown(self):
         self.key_scope.stop()
+        self.trusted_root.cleanup()
 
     def run_main(self, *, html: str | None = None, blocked: bool = False,
                  replace_fault: str | None = None) -> int:
