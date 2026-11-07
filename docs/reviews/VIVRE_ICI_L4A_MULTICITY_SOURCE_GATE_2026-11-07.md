@@ -86,3 +86,30 @@ Le V5 source `lib/map/national-territory-data/places-0.ts` (gzip décompressé e
 **Portée de réussite :** **L4-A = GREEN sur la couverture API et absence de données fictives**. La précédente CI rouge #42385007912 reste une preuve historique exacte du défaut avant correctif. **L4 total reste PARTIEL : L4-B UI** navigation 8 villes/17 quartiers, clavier/tactile, cartes et vues réelles sous 390/430/768/1280, source d'attribution, aucune étiquette illustrative non sourcée, ne sont pas encore certifiés. **L3 géométries / POI**, **L5 annonces SQL réelles** et **L6 licences satellite + score visuel final** restent ouverts. Aucun merge, DB ou Vercel.
 
 **Next exact :** baser un lot L4-B de certification utilisateur sur cette correction, capturer *Mohammedia* et les 7 autres villes avec un parcours quartier réellement disponible et preuves source. Si un nom/repère n'est pas sourcé, afficher l'indisponibilité au lieu de l'inventer. Vérifier notamment que l'ancien composant `PremiumInteractiveMap` affiche des quartiers de sélection codés en dur : ne pas les confondre avec l'inventaire V5 prouvé par l'API. Préparer QA UI BEFORE/AFTER et score avant de déclarer L4 complet.
+
+
+## Closeout L4-A — 07/11/2026 : 8/8 API sourcées (GREEN), sans contours inventés
+
+**Code testé :** [`ce8442dbaf3d4754d0a3117df1d67250e30d3d80`](https://github.com/hraaaaf/Akarfinder/commit/ce8442dbaf3d4754d0a3117df1d67250e30d3d80). **N2** [#42398790927](https://github.com/hraaaaf/Akarfinder/actions/runs/42398790927) **SUCCESS**, artefact [#13584925329](https://github.com/hraaaaf/Akarfinder/actions/runs/42398790927/artifacts/13584925329). **N3** [#42398790936](https://github.com/hraaaaf/Akarfinder/actions/runs/42398790936) **SUCCESS**.
+
+**Cause du 404 résolue sans mutation source :** le registre national V5 `places-0.ts` contient une entrée existante `slug:mohammadia`, `name:Mohammadia`, centre `(-7.389329,33.695838)`, `boundaryRelationId:2523547`, `confidence:official_hcp`, 214 quartiers annoncés. L'API testée cherchait `mohammedia` avec une correspondance exacte ; seul alias `mohammedia→mohammadia` ajouté. Le test N2 compare intégralement `place`, `neighborhoods` et `boundary` entre le slug public et le slug source : aucune nouvelle ville, coordonnée, géométrie ou label ajoutés.
+
+**Preuve de l'artefact N2 inspecté :** `report.json` : `ok=true`, `failure=null`, 8/8 entrées `status:covered`; 4/4 scénarios Casablanca et 12 PNG aux viewports 390/430/768/1280. Comptages réels du rapport :
+
+| Ville | Quartiers | Centres renseignés | Sans centre | Contours de quartiers certifiés |
+| --- | ---: | ---: | ---: | ---: |
+| Casablanca | 1617 | 134 | 1483 | 0 |
+| Rabat | 318 | 27 | 291 | 0 |
+| Marrakech | 1193 | 44 | 1149 | 0 |
+| Tanger | 322 | 22 | 300 | 0 |
+| Agadir | 254 | 35 | 219 | 0 |
+| Fès | 791 | 42 | 749 | 0 |
+| Kénitra | 205 | 38 | 167 | 0 |
+| Mohammedia | 214 | 5 | 209 | 0 |
+| **Total** | **4914** | **347** | **4567** | **0** |
+
+**Limite essentielle :** `L4-A GREEN` prouve l'intégrité du registre API 8 villes et l'E2E Casablanca seulement ; **L4-B (parcours UI 8 villes/17 quartiers et captures) NON validé**. Les centres de quartier ne certifient pas les géométries de quartiers, les annonces ni les prix. Les 214 quartiers déclarés dans la source et 214 entrées renvoyées par l'API ne sont pas tous géolocalisés (5 seulement), et aucune frontière de quartier certifiée n'est publiée. Le score visuel global L6 reste à démontrer.
+
+**Statut Git :** PR [#1183](https://github.com/hraaaaf/Akarfinder/pull/1183) Draft, non mergée. Aucune DB, aucun Vercel.
+
+**Next exact :** préparer L4-B visuel multivilles sur branche/PR distincte avec captures et tests 390/430/768/1280 ; exiger la preuve source pour tout quartier affiché et refuser de créer un contour de quartier fictif. La certification L6 (licences, accessibilité, score visuel) reste indépendante.
