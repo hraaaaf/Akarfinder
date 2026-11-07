@@ -7,6 +7,8 @@ on:
     paths:
       - scripts/acquisition/akarparser_v2.py
       - scripts/acquisition/akarparser_v2_canary.py
+      - scripts/acquisition/akarparser_v2_neon_readonly_canary.py
+      - scripts/acquisition/__tests__/test_akarparser_v2_neon_canary.py
       - scripts/acquisition/__tests__/test_akarparser_v2.py
       - scripts/acquisition/__tests__/test_akarparser_v2_canary.py
       - .github/workflows/akarparser-v2-offline-tests.yml
