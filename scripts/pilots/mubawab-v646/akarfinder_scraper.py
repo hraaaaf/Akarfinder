@@ -1114,6 +1114,7 @@ def verify_publication(root: Path | str = ".") -> dict[str, Any]:
     except (OSError, ValueError, TypeError, AttributeError, sqlite3.Error) as exc:
         return {"valid": False, "reason": "proof_unavailable", "detail": type(exc).__name__}
 
+
 def export_reports(conn: sqlite3.Connection, cycle_ids: list[str], stats: ImportStats,
                    page_stats: dict[str, int], json_path: str = "akarfinder_data.json",
                    md_path: str = "akarfinder_report.md",
