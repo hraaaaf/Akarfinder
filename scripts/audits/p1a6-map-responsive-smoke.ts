@@ -119,6 +119,11 @@ async function main() {
           } catch {
             findings.push({ route: route.path, viewport: viewport.label, check: "decision-rail", detail: "Vivre Ici decision rail missing" });
           }
+          // L3 genuine camera controls must never cover navigation or source credits.
+          const boxesOverlap = (a: { x: number; y: number; width: number; height: number } | null,
+                                b: { x: number; y: number; width: number; height: number } | null): boolean =>
+            Boolean(a && b && a.x < b.x + b.width && a.x + a.width > b.x &&
+                    a.y < b.y + b.height && a.y + a.height > b.y);
           // Measure real tile-source attribution in both mobile sheet states.
           const assertAttributionUnobscured = async (sheetState: "compact" | "expanded") => {
             const attribution = page.locator(".maplibregl-ctrl-attrib");
@@ -163,6 +168,11 @@ async function main() {
             const shell = page.locator('[data-l3-maarif-pilot="true"]');
             try {
               await controls.waitFor({ state: "visible", timeout: 12_000 });
+              const quartierButtonBox = await controls.locator("[data-l3-go-quarter]").boundingBox();
+              const backButtonBox = await page.locator("[data-vivre-ici-territory-back]").boundingBox();
+              if (boxesOverlap(quartierButtonBox, backButtonBox)) {
+                throw new Error("L3 mode control overlaps return-to-Morocco navigation");
+              }
               await page.waitForFunction(() => {
                 const map = document.querySelector('[data-l3-maarif-pilot="true"]');
                 return map?.getAttribute("data-l3-camera-pitch") === "0"
@@ -223,6 +233,11 @@ async function main() {
               if ((await toggle.getAttribute('aria-expanded')) !== 'false') throw new Error("collapsing does not update aria-expanded");
               const recompact = await sheet.boundingBox();
               if (!recompact || recompact.height > 160) throw new Error(`sheet cannot return to compact state: ${recompact?.height}`);
+              const noteBox = await page.locator("[data-l3-admin-unavailable]").boundingBox();
+              const providerBox = await page.locator(".maplibregl-ctrl-attrib").boundingBox();
+              if (boxesOverlap(noteBox, providerBox)) {
+                throw new Error(`L3 admin-unavailable disclosure overlaps live source credits: ${JSON.stringify({ noteBox, providerBox })}`);
+              }
             } catch (error) {
               findings.push({ route: route.path, viewport: viewport.label, check: "l2c-sheet-expand-collapse", detail: String(error).slice(0, 550) });
             }

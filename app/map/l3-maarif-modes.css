@@ -3,7 +3,7 @@
 [data-vivre-ici-page] [data-l3-maarif-pilot="true"] .l3-maarif-view-controls {
   position: absolute;
   z-index: 16;
-  top: 138px;
+  top: 236px;
   left: 24px;
   display: flex;
   flex-wrap: wrap;
@@ -52,5 +52,6 @@
   }
   [data-vivre-ici-page] .l3-maarif-view-controls [data-l3-admin-unavailable] {
     max-width: min(340px, 100%);
+    margin-top: 35px;
   }
 }
