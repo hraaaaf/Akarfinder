@@ -5,6 +5,14 @@ on:
     branches: [main]
     paths:
       - 'scripts/audits/candidate-lake-q1-artifact-inventory.py'
+      - 'scripts/audits/candidate-lake-q1-artifact-catalog.json'
+      - 'scripts/audits/test_candidate_lake_q1_inventory.py'
+      - '.github/workflows/candidate-lake-q1-artifact-inventory.yml'
+  pull_request:
+    paths:
+      - 'scripts/audits/candidate-lake-q1-artifact-inventory.py'
+      - 'scripts/audits/candidate-lake-q1-artifact-catalog.json'
+      - 'scripts/audits/test_candidate_lake_q1_inventory.py'
       - '.github/workflows/candidate-lake-q1-artifact-inventory.yml'
   workflow_dispatch:
 
@@ -12,68 +20,82 @@ permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   inventory:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     env:
       Q1_ARTIFACT_ROOT: .tmp/q1-artifacts
       Q1_INVENTORY_OUT: .tmp/q1-artifact-inventory
+      Q1_MIRROR_OUT: .tmp/q1-original-archives
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Fetch frozen proof artifacts only
+      - name: Verify offline inventory contracts
+        run: python -m unittest -v scripts/audits/test_candidate_lake_q1_inventory.py
+      - name: Try frozen proof artifacts; never hide missing originals
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          mkdir -p "$Q1_ARTIFACT_ROOT"
-          fetch_artifact() {
-            id="$1"; slug="$2"; dir="$Q1_ARTIFACT_ROOT/${id}-${slug}"
+          mkdir -p "$Q1_ARTIFACT_ROOT" "$Q1_INVENTORY_OUT" "$Q1_MIRROR_OUT" .tmp
+          : > "$Q1_INVENTORY_OUT/download-status.tsv"
+          python - <<'PY' > .tmp/q1-expected.tsv
+          import json
+          p='scripts/audits/candidate-lake-q1-artifact-catalog.json'
+          for a in json.load(open(p, encoding='utf-8')):
+              print(f"{a['id']}\t{a['slug']}")
+          PY
+          while IFS=$'\t' read -r id slug; do
+            dir="$Q1_ARTIFACT_ROOT/${id}-${slug}"
             mkdir -p "$dir"
-            curl --fail --location --retry 3 \
+            zip=".tmp/${id}.zip"
+            code=$(curl -sS --location --retry 1 --connect-timeout 12 --max-time 120 \
+              -o "$zip" -w '%{http_code}' \
               -H "Authorization: Bearer $GH_TOKEN" \
               -H 'Accept: application/vnd.github+json' \
               -H 'X-GitHub-Api-Version: 2022-11-28' \
-              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${id}/zip" \
-              -o ".tmp/${id}.zip"
-            unzip -q ".tmp/${id}.zip" -d "$dir"
-          }
-          fetch_artifact 9971118875 avito-baseline
-          fetch_artifact 9974670013 akaar
-          fetch_artifact 9969651653 mubawab-direct
-          fetch_artifact 9888335708 marocannonces
-          fetch_artifact 9897323745 sarouty
-          fetch_artifact 9898224274 agenz-direct
-          fetch_artifact 9974714576 domio
-          fetch_artifact 9976337671 yakeey-purchase
-          fetch_artifact 9988296190 mass1-additive
-          fetch_artifact 9988514932 historical-gap
-          fetch_artifact 9989328673 agenz-historical
-          fetch_artifact 9991042950 realestatebuddy
-          fetch_artifact 9991207598 hicham
-          fetch_artifact 9991403015 marwane
-          fetch_artifact 9991447841 mubawab-public-batch
-          fetch_artifact 9991488198 avito-public-batch
-          fetch_artifact 9205427369 mass-x5
-      - name: Inventory files and identity candidates
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${id}/zip" || true)
+            if [[ "$code" == "200" ]] && unzip -tq "$zip" >/dev/null 2>&1 && unzip -q "$zip" -d "$dir"; then
+              status=OK
+              cp "$zip" "$Q1_MIRROR_OUT/${id}.zip"
+            else
+              status="HTTP_${code:-NETWORK_ERROR}"
+              rm -rf "$dir"/*
+            fi
+            printf '%s\t%s\n' "$id" "$status" >> "$Q1_INVENTORY_OUT/download-status.tsv"
+            echo "ARTIFACT $id status=$status"
+            rm -f "$zip"
+          done < .tmp/q1-expected.tsv
+      - name: Produce honest available/missing inventory
         run: python scripts/audits/candidate-lake-q1-artifact-inventory.py
-      - name: Verify read-only invariants
+      - name: Verify read-only and no false M250K claims
         run: |
           python - <<'PY'
-          import json
-          p=json.load(open('.tmp/q1-artifact-inventory/inventory.json'))
-          assert p['readOnly'] is True
-          assert p['databaseWrites']==0
-          assert p['sourceSiteFetches']==0
-          assert p['productionWrites']==0
-          assert p['artifactCount']==17
-          print('artifactCount=',p['artifactCount'])
+          import json, os
+          p=json.load(open(os.path.join(os.environ['Q1_INVENTORY_OUT'], 'inventory.json')))
+          assert p['readOnly'] and not p['databaseWrites'] and not p['productionWrites']
+          assert p['sourceSiteFetches'] == 0 and p['candidateUnionCertified'] is False
+          assert p['availableArtifactCount'] + p['missingArtifactCount'] == p['expectedArtifactCount'] == 17
+          print('Inventory only; available=', p['availableArtifactCount'], 'missing=', p['missingArtifactCount'])
           PY
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: candidate-lake-q1-artifact-inventory
+          name: candidate-lake-q1-recovery-availability
           path: .tmp/q1-artifact-inventory/
-          retention-days: 30
-          if-no-files-found: error
+          retention-days: 90
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: candidate-lake-q1-recovered-source-proof-mirror
+          path: .tmp/q1-original-archives/*.zip
+          retention-days: 90
+          if-no-files-found: warn
