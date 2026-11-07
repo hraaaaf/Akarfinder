@@ -13,7 +13,6 @@ import {
   mapNavigationStateFromUrlSearchParams,
   withMapLocation,
 } from "@/lib/map/map-navigation-state";
-import { getPremiumMarketIntelligenceProvider } from "@/lib/map/premium-map-city-registry";
 
 const FLAGSHIP_CITIES = ["Casablanca", "Rabat", "Marrakech", "Tanger", "Agadir", "Fès"] as const;
 
@@ -45,7 +44,6 @@ export function P4MapDecisionRail() {
   const districtHero = districtHeroKey
     ? DISTRICT_HERO_MEDIA[districtHeroKey as keyof typeof DISTRICT_HERO_MEDIA] ?? null
     : null;
-  const provider = getPremiumMarketIntelligenceProvider(navigationState.city);
   const searchHref = buildMapSearchHref(navigationState);
   const contextName = districtEntity?.canonical_name ?? cityName;
   const title = cityName === "Maroc" ? "Où vivre au Maroc ?" : contextName;
