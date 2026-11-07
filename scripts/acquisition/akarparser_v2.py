@@ -175,6 +175,7 @@ class HTMLFacts(HTMLParser):
         self.text = []
         self.meta = {}
         self.jsonld_on = False
+        self.skip_markup = False
         self.jsonld_buffer = []
         self.jsonld = []
 
@@ -183,13 +184,20 @@ class HTMLFacts(HTMLParser):
         self.title_on = tag == "title"
         if tag == "meta" and attrs.get("content"):
             self.meta[attrs.get("name") or attrs.get("property") or ""] = attrs["content"]
-        if tag == "script" and "ld+json" in (attrs.get("type") or ""):
-            self.jsonld_on = True
-            self.jsonld_buffer = []
+        if tag == "script":
+            if "ld+json" in (attrs.get("type") or ""):
+                self.jsonld_on = True
+                self.jsonld_buffer = []
+            else:
+                self.skip_markup = True
+        if tag == "style":
+            self.skip_markup = True
 
     def handle_endtag(self, tag):
         if tag == "title":
             self.title_on = False
+        if tag in ("script", "style"):
+            self.skip_markup = False
         if tag == "script" and self.jsonld_on:
             self.jsonld_on = False
             try:
@@ -201,7 +209,7 @@ class HTMLFacts(HTMLParser):
     def handle_data(self, data):
         if self.jsonld_on:
             self.jsonld_buffer.append(data)
-        else:
+        elif not self.skip_markup:
             self.text.append(data)
             if self.title_on:
                 self.title.append(data)
@@ -218,10 +226,14 @@ def raw_layers(row: dict) -> list[tuple[str, dict]]:
         parser = HTMLFacts()
         try:
             parser.feed(raw_html)
-            layers.append(("html", {"title": " ".join(parser.title), "description": parser.meta.get("description") or parser.meta.get("og:description"), "body": " ".join(parser.text)}))
+            layers.append(("html", {"title": " ".join(parser.title) or parser.meta.get("og:title"), "description": parser.meta.get("description") or parser.meta.get("og:description"), "body": " ".join(parser.text)}))
             for node in parser.jsonld[:100]:
                 if isinstance(node, dict):
                     layers.append(("jsonld", node))
+                    offer = node.get("offers")
+                    for item in (offer if isinstance(offer, list) else [offer]):
+                        if isinstance(item, dict):
+                            layers.append(("jsonld.offers", item))
         except Exception:
             pass
     return layers
@@ -372,7 +384,8 @@ def parse_record(row: dict, *, generated_at: str) -> dict:
         currency = "MAD"
     # No silent conversion of EUR/USD/unspecified amount to MAD.
     price_mad = price if currency == "MAD" and price and 100 <= price <= 1_000_000_000 else None
-    area = number(values["surface"])
+    raw_area = values["surface"]
+    area = number(raw_area.get("value")) if isinstance(raw_area, dict) else number(raw_area)
     if not area and searchable:
         m = AREA_RX.search(searchable)
         if m:
@@ -484,7 +497,22 @@ def iter_records(path: Path, fmt: str, table: str | None) -> Iterable[dict]:
                         break
             if not table or not re.fullmatch(r"[A-Za-z_][\w]*", table):
                 raise ValueError("Specify a valid --table matching the source schema")
-            cursor = conn.execute(f'SELECT * FROM "{table}"')
+            if table == "property_listings":
+                # If the linked source table is present, join proven source
+                # identity and timestamps; property rows alone lack both.
+                tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+                if "listing_sources" in tables:
+                    pcols = {r[1] for r in conn.execute('PRAGMA table_info("property_listings")')}
+                    scols = {r[1] for r in conn.execute('PRAGMA table_info("listing_sources")')}
+                    required = {"source_name", "listing_url", "source_offer_key", "first_seen_at", "property_listing_id"}
+                    if "id" in pcols and required <= scols:
+                        cursor = conn.execute('SELECT p.*, s.source_name AS source_name, s.listing_url AS listing_url, s.source_offer_key AS source_offer_key, s.first_seen_at AS first_seen_at FROM "property_listings" p LEFT JOIN "listing_sources" s ON s.property_listing_id = p.id ORDER BY p.id, s.listing_url')
+                    else:
+                        cursor = conn.execute('SELECT * FROM "property_listings"')
+                else:
+                    cursor = conn.execute('SELECT * FROM "property_listings"')
+            else:
+                cursor = conn.execute(f'SELECT * FROM "{table}"')
             names = [x[0] for x in cursor.description]
             for row in cursor:
                 yield dict(zip(names, row))
