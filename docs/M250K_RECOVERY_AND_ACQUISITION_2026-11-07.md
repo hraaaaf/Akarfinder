@@ -260,5 +260,6 @@ Comptage des observations distinctes par source et total :
     GROUP BY evidence_stores
     ORDER BY evidence_stores;
 
-La CI exacte de la PR reste à revalider après ce commit documentaire. PR #1176 maintenue en Draft, non fusionnée. Prochaine étape : rapprocher les 253 372 représentations historiques et les archives GitHub récupérables par clés prouvées, puis examiner les conditions d’usage avant tout enrichissement externe.
+CI vérifiée sur le commit 4a645aaaf997eb248e7ab32033d0ece533f4bf9a : validate, typecheck, inventory, gates et detect_drift SUCCESS; owner_approval et override_preflight SKIPPED comme attendu en Draft. PR #1176 maintenue en Draft, non fusionnée. Prochaine étape : rapprocher les 253 372 représentations historiques et les archives GitHub récupérables par clés prouvées, puis examiner les conditions d’usage avant tout enrichissement externe.
+
 
