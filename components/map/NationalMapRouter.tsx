@@ -164,6 +164,7 @@ export function NationalMapRouter({ initialState }: Props) {
     <div ref={shellRef} className="relative h-[calc(100svh-64px)] min-h-[520px] overflow-hidden" data-vivre-ici-map-shell>
       <NationalTerritoryExperienceDynamic
         selectedCitySlug={selectedCitySlug}
+        selectedDistrictSlug={selectedDistrictSlug}
         onSelectCity={selectCity}
         onBackToMorocco={backToMorocco}
       />
