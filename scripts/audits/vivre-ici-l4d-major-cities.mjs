@@ -87,8 +87,25 @@ try {
       for (const slug of [...main, ...secondary]) {
         if (!state.slugs.includes(slug)) throw Error("sourced city dropped from national index: " + slug);
       }
+      await page.waitForFunction(() =>
+        document.querySelector("[data-akarfinder-national-map]")?.getAttribute("data-akarfinder-zoom-stage") === "major",
+        null, { timeout: 6000 });
+      // The third-party basemap may carry independent place-name layers.
+      // Record whether our style suppression is active; source attributions
+      // and road/street labels must not be muted.
+      const basemap = await page.evaluate(() => {
+        const map = window.__AKARFINDER_NATIONAL_MAP__;
+        const placePattern = /(?:^|[-_])(place|city|town|village|hamlet|settlement)(?:[-_]|$)/i;
+        return (map.getStyle().layers || []).filter(layer => layer.type === "symbol" && placePattern.test(layer.id))
+          .map(layer => ({ id: layer.id, textOpacity: map.getPaintProperty(layer.id, "text-opacity") }));
+      });
+      for (const item of basemap) {
+        if (JSON.stringify(item.textOpacity) !== JSON.stringify(["step", ["zoom"], 0, 8.25, 0.58])) {
+          throw Error("unfiltered basemap town label " + item.id + ": " + JSON.stringify(item.textOpacity));
+        }
+      }
       await page.screenshot({ path: outDir + "/national-major-" + viewport.name + ".png", fullPage: false });
-      row.national = { zoom: state.zoom, featured: main.length, sourceCities: state.features, canvases: state.canvases, overflow: state.overflow };
+      row.national = { zoom: state.zoom, featured: main.length, sourceCities: state.features, canvases: state.canvases, overflow: state.overflow, mutedBasemapPlaceLayers: basemap.map(x => x.id) };
       // Simulate a user zooming in: the source-backed secondary label layers
       // become eligible; the national view remains restricted at initial zoom.
       await page.evaluate(() => window.__AKARFINDER_NATIONAL_MAP__.jumpTo({ zoom: 8.6 }));
@@ -99,8 +116,48 @@ try {
       });
       if (secondaryState.zoom < 8.25 || !secondaryState.labels ||
           secondaryState.citySource !== state.features) throw Error("secondary towns unavailable after zoom");
+      await page.waitForFunction(() =>
+        document.querySelector("[data-akarfinder-national-map]")?.getAttribute("data-akarfinder-zoom-stage") === "local",
+        null, { timeout: 6000 });
       await page.screenshot({ path: outDir + "/regional-secondary-" + viewport.name + ".png", fullPage: false });
       row.zoomed = { zoom: secondaryState.zoom, sourceCities: secondaryState.citySource };
+      // At higher zoom without a selected city, do NOT claim that a
+      // neighborhood inventory was loaded; the stage remains "local".
+      await page.evaluate(() => window.__AKARFINDER_NATIONAL_MAP__.jumpTo({ zoom: 9.8 }));
+      await page.waitForFunction(() =>
+        document.querySelector("[data-akarfinder-national-map]")?.getAttribute("data-akarfinder-zoom-stage") === "local",
+        null, { timeout: 6000 });
+
+      // A sourced city selection unlocks only sourced neighborhood centers.
+      await page.goto(baseUrl + "/map?city=mohammedia&layer=explore", { waitUntil: "domcontentloaded", timeout: 30000 });
+      await page.locator('[data-akarfinder-national-map][data-akarfinder-national-view="city"]').waitFor({ state: "visible", timeout: 18000 });
+      await page.waitForFunction(() => {
+        const map = window.__AKARFINDER_NATIONAL_MAP__;
+        return Boolean(map?.isStyleLoaded() &&
+          map.getLayer("akarfinder-national-neighborhood-dots") &&
+          map.getLayer("akarfinder-national-neighborhood-hits") &&
+          map.getLayer("akarfinder-national-neighborhood-labels"));
+      }, null, { timeout: 17000 });
+      const neighborhoodMinZoom = await page.evaluate(() => {
+        const map = window.__AKARFINDER_NATIONAL_MAP__;
+        const ids = ["akarfinder-national-neighborhood-dots", "akarfinder-national-neighborhood-hits",
+          "akarfinder-national-neighborhood-labels"];
+        return ids.map(id => ({ id, minzoom: map.getLayer(id)?.minzoom ?? null }));
+      });
+      if (neighborhoodMinZoom.some(item => item.minzoom !== 9.5)) {
+        throw Error("neighborhood markers are visible before the sourced neighborhood zoom: " + JSON.stringify(neighborhoodMinZoom));
+      }
+      await page.evaluate(() => window.__AKARFINDER_NATIONAL_MAP__.jumpTo({ zoom: 9.8 }));
+      await page.waitForFunction(() =>
+        document.querySelector("[data-akarfinder-national-map]")?.getAttribute("data-akarfinder-zoom-stage") === "neighborhood",
+        null, { timeout: 8000 });
+      await page.screenshot({ path: outDir + "/city-neighborhood-" + viewport.name + ".png", fullPage: false });
+      await page.evaluate(() => window.__AKARFINDER_NATIONAL_MAP__.jumpTo({ zoom: 12.2 }));
+      await page.waitForFunction(() =>
+        document.querySelector("[data-akarfinder-national-map]")?.getAttribute("data-akarfinder-zoom-stage") === "street",
+        null, { timeout: 8000 });
+      await page.screenshot({ path: outDir + "/city-street-" + viewport.name + ".png", fullPage: false });
+      row.zoomLadder = { neighborhoodZoom: 9.8, streetZoom: 12.2, neighborhoodsMinZoom: 9.5, sourceCity: "mohammadia" };
       if (errs.length) throw Error("browser JS errors: " + JSON.stringify(errs));
       row.state = "passed";
     } catch (error) {
