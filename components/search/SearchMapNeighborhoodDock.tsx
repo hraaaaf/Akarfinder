@@ -13,7 +13,9 @@ function readCanonicalSearch(): string {
 }
 
 export function SearchMapNeighborhoodDock() {
-  const [search, setSearch] = useState(readCanonicalSearch);
+  // Keep the server render and first client render identical; sync the URL after hydration.
+  // Reading window.location during useState initialization causes React #418 on scoped searches.
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const sync = () => setSearch(readCanonicalSearch());
