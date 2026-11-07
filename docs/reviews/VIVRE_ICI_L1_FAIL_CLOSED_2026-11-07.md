@@ -24,3 +24,7 @@ Files edited: `components/map/PremiumInteractiveMap.tsx`, `components/map/P4MapD
 5. **Human merge gate** : no merge or Vercel deploy without owner approval. Keep PR candidate open after tests; do not label L1 complete before AFTER.
 
 **Status**: implementation candidate / source checks, awaiting exact-head CI and browser AFTER; no production claims.
+
+## Contrat de non-régression intégré au `gate` (07/11/2026)
+
+`scripts/ci/required-pr-gate.test.mjs` importe désormais `../audits/vivre-ici-l1-truth-contract.mjs`. Ce n'est **pas** une modification du workflow GitHub ni un allègement de son contrôle : le job requis `gate` exécute ses tests Node existants **plus** ce test source à chaque PR vers main. Le test empêche la réintroduction des champs `priceRepere`, `landmarksVerified`, vérifie la sortie « données indisponibles » et l'expiration de la seed POI avec TTL 30 jours. Le test est retenu uniquement si le run `gate` exact-head passe. Pas de fusion/Vercel.
