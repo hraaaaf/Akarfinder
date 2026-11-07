@@ -12,6 +12,8 @@ import json
 import os
 from pathlib import Path
 import sqlite3
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -146,6 +148,21 @@ class WALAuthenticatedPublication(unittest.TestCase):
                 self.assertEqual(offline_main(), 0)
                 self.assertEqual(json.loads(Path(s.PUBLICATION_STATUS).read_text())["authentication"], "unsigned_untrusted")
                 self.assertFalse(s.verify_publication()["valid"])
+
+    def test_cli_emits_the_same_authenticated_bytes_without_reopening(self):
+        with scratch():
+            self.assertEqual(offline_main(), 0)
+            expected = Path("akarfinder_data.json").read_bytes()
+            cli = Path(s.__file__).with_name("verify_v646_publication.py")
+            result = subprocess.run([sys.executable, str(cli), "--read-export", "akarfinder_data.json"],
+                                    capture_output=True, check=False)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout, expected)
+            Path("akarfinder_data.json").write_bytes(b"bad")
+            denied = subprocess.run([sys.executable, str(cli), "--read-export", "akarfinder_data.json"],
+                                    capture_output=True, check=False)
+            self.assertEqual(denied.returncode, 1)
+            self.assertEqual(denied.stdout, b"")
 
     def test_valid_hmac_verified_snapshot_contains_all_required_files(self):
         with scratch():
