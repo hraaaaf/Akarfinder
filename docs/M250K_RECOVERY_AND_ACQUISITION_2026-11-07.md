@@ -47,3 +47,14 @@ Branche **`data/m250k-proof-recovery-inventory-20261107`**, séparée de la PR #
 4. Faire progresser le nombre d'**observations détaillées exploitables**, non seulement le nombre d'URL, vers 200 000.
 
 **Aucune hypothèse de disponibilité de 253 372 fichiers bruts ne doit être transformée en résultat.**
+
+## Contrôle complémentaire des structures URL et archive V2 (07/11/2026)
+
+Le libellé `listing_hint` des fichiers originaux est **moins précis** qu'un type de page ; il ne doit jamais être assimilé à une fiche bien. Classification du **motif du chemin seulement**, sans accès source :
+- Akaar : **49 034** URL de racine `/listing/{id}`, **27 809** URL de forme `/listing/{id}/unit/{id}` (unités liées, pas autant de biens physiques nouveaux).
+- Domio : **2 017** URL à structure probable de filtre/catégorie et **3** URL à structure probable de détail.
+- Autres URL découvertes, hors liste source `listing_hint` : **16 962**.
+
+**Archive V2 reproductible créée et CRC vérifié :** `AkarFinder_L0_RECOVERED_EVIDENCE_V2_20261107.zip`, **942 204 octets**, SHA256 `6f21dfe98df4188fa4f00992320463dc0acec5859500b82fe19e890a8fefc980`. Six entrées : les deux archives originales, manifest JSONL.gz de 95 825 lignes avec `url_pattern_kind`, rapport, README et script de reconstruction. L'inventaire historique ne change pas : il s'agit de **95 825 URL L0**, non de 95 825 annonces détaillées. **La V2 est à préférer au pack V1** car elle renseigne la distinction filtre/unité/fiches candidates.
+
+Ce travail n'a effectué **aucune requête aux sites sources**, aucune écriture SQL et aucune activation Search.
