@@ -37,3 +37,29 @@ réconcilier/rejouer explicitement, jamais réutiliser les fichiers sans validat
 Ce protocole fournit une cohérence *vérifiable pour les consommateurs qui utilisent
 le garde* ; il ne constitue pas une transaction ACID entre SQLite et le système
 de fichiers et ne bloque pas un lecteur tiers qui ignore la vérification.
+
+### Round 4 — intégrité WAL, signature, lectures et limites de sécurité
+
+Le manifeste de publication **version 2** contient `db_logical_sha256`, calculé sur un instantané logique SQLite (`backup()`), y compris les commits résidant dans un journal **WAL**. Le SHA du fichier `.db` reste contrôlé, mais **n'est plus la seule preuve**.
+
+Pour empêcher qu'un acteur puisse remplacer à la fois les données et leurs SHA dans le manifeste, la certification exige une **clé HMAC-SHA256 de 32 octets** conservée **hors du répertoire de publication et hors Git/artefacts**. Elle est fournie au producteur **et au lecteur autorisé** par la variable `AKAR_V646_PUBLICATION_HMAC_KEY_HEX` (exactement 64 caractères hexadécimaux). Ne jamais mettre de vraie clé dans un fichier de test, les logs ou une sortie JSON. Les tests disposent uniquement d'une clé de fixture, qui **n'est jamais une clé de déploiement**. Protéger et provisionner ce secret relève de l'exploitant. Sans clé, le producteur peut exécuter un pilote synthétique mais le manifeste est marqué `unsigned_untrusted` et **aucune lecture ne peut obtenir `valid: true`**.
+
+**Ne jamais faire** `verify_v646_publication.py` suivi d'une réouverture des fichiers par chemin : cela introduit un TOCTOU. Lire plutôt les octets vérifiés **dans la même opération** :
+
+```bash
+python verify_v646_publication.py --read-export akarfinder_data.json > verified_data.json
+```
+
+Ou, dans le même processus Python :
+
+```python
+from akarfinder_scraper import read_verified_publication
+with read_verified_publication(".") as publication:
+    contents = publication.read_export("akarfinder_data.json")
+    rows = publication.db.execute("SELECT id, price_mad FROM listings").fetchall()
+    # contents et publication.db sont deux snapshots déjà vérifiés.
+```
+
+L'objet retourné conserve des **octets immuables** et une copie mémoire cohérente de SQLite, y compris WAL ; des modifications ultérieures des fichiers originaux n'affectent pas ces lectures. Le contrôle sans `--read-export` est un **diagnostic ponctuel**, **pas** une autorisation pour ouvrir un fichier ultérieurement.
+
+Si la toute première écriture du marqueur échoue, le producteur refuse de démarrer et tente de supprimer le marqueur précédent. Si le système de fichiers empêche à la fois son remplacement **et sa suppression**, aucun processus local ne peut garantir l'invalidation : bloquer les consommateurs par une politique externe (permissions, retrait de service). La clé HMAC n'empêche ni la falsification par un acteur possédant aussi la clé, ni le rejeu d'anciens ensembles signés ; utiliser un registre externe de versions monotones si ce modèle de menace est requis. **Aucun GO réseau/live/production n'est conféré par ce protocole.**
