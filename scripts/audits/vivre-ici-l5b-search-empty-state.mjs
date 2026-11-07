@@ -88,6 +88,7 @@ try {
         document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (overflow > 1) throw new Error("search overflow " + viewport.name + ": " + overflow);
       await page.screenshot({ path: outDir + "/empty-maarif-" + viewport.name + ".png", fullPage: false });
+      if (pageErrors.length) throw new Error("initial Search hydration/page errors: " + JSON.stringify(pageErrors));
 
       await page.getByRole("button", { name: "Élargir la recherche" }).click();
       await page.waitForURL(url => url.pathname === "/search" &&
