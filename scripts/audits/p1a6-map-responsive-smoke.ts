@@ -135,7 +135,7 @@ async function main() {
             }
           };
           try {
-            if (viewport.width <= 430) {
+            if (viewport.width <= 768) {
               await assertAttributionUnobscured("compact");
             } else {
               const attribution = page.locator(".maplibregl-ctrl-attrib");
@@ -157,7 +157,7 @@ async function main() {
               findings.push({ route: route.path, viewport: viewport.label, check: "fresh-poi-empty-state", detail: "Maârif has no sourced recent POIs but empty-state disclosure was not visible" });
             }
           }
-          if (route.citySlug === "casablanca" && route.districtSlug === "maarif" && viewport.width <= 430) {
+          if (route.citySlug === "casablanca" && route.districtSlug === "maarif" && viewport.width <= 768) {
             // Real mobile sheet behavior: compact 160px, 44px toggle, visible Search CTA,
             // expanded scrollable context, then collapse again without hiding the CTA.
             const sheet = page.locator('[data-p4-map-decision-rail]');

@@ -1,7 +1,7 @@
 /* L2-C: the district sheet is a real control, not a painted drag handle.
    Scope these overrides to phone viewports. The map stays visible and the
    geo-scoped Search CTA never disappears in compact state. */
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail] {
     position: absolute !important;
     bottom: calc(76px + env(safe-area-inset-bottom)) !important;
@@ -89,7 +89,7 @@
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   [data-vivre-ici-page] [data-p4-map-decision-rail] .p4-sheet-toggle {
     display: none !important;
   }

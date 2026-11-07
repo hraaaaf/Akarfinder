@@ -16,7 +16,28 @@ permissions:
   contents: read
 
 jobs:
+  # PRs keep P1B.2 contract coverage without invoking the retired hosted database.
+  # This offline job is NOT a certification of actual market-price availability.
+  territorial-contracts-offline:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: P1B.2 offline contracts
+        run: npx tsx --test scripts/scrapers/__tests__/p1b2-territorial-intelligence.test.ts scripts/scrapers/__tests__/p1b1-akarfinder-map-visual-layer.test.ts scripts/scrapers/__tests__/p1a6-responsive-hardening.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+
   territorial-intelligence:
+    # Historical cloud-price probe is explicitly opt-in and NEVER runs on PRs.
+    # Owner must approve hosted DB use separately; absence of the variable skips it.
+    if: ${{ github.event_name == 'workflow_dispatch' && vars.P1B2_HOSTED_AUDIT_APPROVED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:

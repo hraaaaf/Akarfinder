@@ -1,6 +1,6 @@
 /* L2-D: keep genuine provider attribution visible, never under phone navigation
    or the decision sheet. Source names come from MapLibre's tile-source metadata. */
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   [data-vivre-ici-page] [data-premium-map] [data-premium-map-attribution] {
     bottom: calc(88px + env(safe-area-inset-bottom)) !important;
     max-width: min(78%, 350px) !important;
@@ -36,7 +36,7 @@
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   [data-vivre-ici-page] [data-p4-map-layout]:has([data-maplibre-spike]) .maplibregl-ctrl-bottom-right {
     right: 10px;
     bottom: 10px;
