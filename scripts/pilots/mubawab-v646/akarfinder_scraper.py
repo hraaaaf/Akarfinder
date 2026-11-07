@@ -27,7 +27,7 @@ from pathlib import Path
 import random
 import re
 import sqlite3
-from contextlib import contextmanager
+from contextlib import closing
 from types import MappingProxyType
 import tempfile
 import uuid
@@ -47,6 +47,7 @@ MAX_ROBOTS_BYTES = 128 * 1024
 DB_NAME = "akarfinder.db"
 PUBLICATION_STATUS = "akarfinder_publication.json"
 PUBLICATION_HMAC_KEY_ENV = "AKAR_V646_PUBLICATION_HMAC_KEY_HEX"
+TRUSTED_HEAD_ENV = "AKAR_V646_TRUSTED_HEAD_PATH"  # absolute, outside publication root
 PUBLICATION_FILES = (
     "akarfinder_data.json", "akarfinder_report.md",
     "akarfinder_price_anomalies.json", "akarfinder_price_m2_flags.json",
@@ -984,8 +985,111 @@ def _db_logical_sha256(conn: sqlite3.Connection) -> str:
     return digest.hexdigest()
 
 
+def _assert_export_matches_snapshot(db: sqlite3.Connection, data_json: bytes) -> None:
+    """Prove exported data and immutable SQL snapshot have identical stored rows.
+
+    The JSON may add two *derived* review fields, but every SQLite listing
+    column, row ID and value must match exactly. No sample-based checks.
+    """
+    try:
+        records = json.loads(data_json)
+    except (UnicodeError, ValueError, TypeError) as exc:
+        raise PublicationVerificationError("json_export_unreadable") from exc
+    if not isinstance(records, list):
+        raise PublicationVerificationError("json_export_not_list")
+    cursor = db.execute("SELECT * FROM listings")
+    columns = tuple(column[0] for column in cursor.description)
+    expected: dict[str, dict[str, Any]] = {}
+    for row in cursor:
+        obj = dict(zip(columns, row))
+        identifier = obj["id"]
+        if identifier is None or identifier in expected:
+            raise PublicationVerificationError("sqlite_export_duplicate_id")
+        expected[identifier] = obj
+    if len(records) != len(expected):
+        raise PublicationVerificationError("database_export_mismatch")
+    seen = set()
+    for record in records:
+        if not isinstance(record, dict):
+            raise PublicationVerificationError("json_export_invalid_row")
+        identifier = record.get("id")
+        if identifier not in expected or identifier in seen:
+            raise PublicationVerificationError("database_export_mismatch")
+        seen.add(identifier)
+        stored = expected[identifier]
+        if any(col not in record or record[col] != value
+               for col, value in stored.items()):
+            raise PublicationVerificationError("database_export_mismatch")
+
+
+def _trusted_head_path(root: Path | str = ".") -> Path:
+    """Trust anchor location must not be under files an attacker can restore.
+
+    A file is a testable local implementation, NOT a non-rollbackable service.
+    The operator must protect this file/parent directory against rollback.
+    """
+    raw = os.environ.get(TRUSTED_HEAD_ENV, "")
+    if not raw or not Path(raw).is_absolute():
+        raise PublicationVerificationError("trusted_head_unconfigured")
+    trusted = Path(raw).resolve()
+    if trusted.is_relative_to(Path(root).resolve()):
+        raise PublicationVerificationError("trusted_head_inside_publication")
+    if not trusted.parent.is_dir():
+        raise PublicationVerificationError("trusted_head_parent_missing")
+    return trusted
+
+
+def _read_trusted_head(root: Path | str = ".") -> dict[str, Any] | None:
+    path = _trusted_head_path(root)
+    if not path.exists():
+        return None
+    try:
+        doc = json.loads(path.read_bytes())
+    except (OSError, ValueError, TypeError) as exc:
+        raise PublicationVerificationError("trusted_head_unreadable") from exc
+    key = _publication_key()
+    if key is None:
+        raise PublicationVerificationError("authentication_key_unavailable")
+    if not isinstance(doc, dict) or doc.get("schema_version") != 1:
+        raise PublicationVerificationError("trusted_head_untrusted")
+    signature = doc.get("hmac_sha256")
+    if not isinstance(signature, str) or not hmac.compare_digest(
+        hmac.new(key, _signed_payload(doc), hashlib.sha256).hexdigest(), signature
+    ):
+        raise PublicationVerificationError("trusted_head_authentication_mismatch")
+    if not isinstance(doc.get("generation"), int) or doc["generation"] < 1:
+        raise PublicationVerificationError("trusted_head_invalid_generation")
+    return doc
+
+
+def _write_trusted_head(run_id: str, status: str, generation: int, *,
+                        root: Path | str = ".") -> None:
+    """Atomic signed trust marker, separate from the replaceable export set.
+
+    Security contract: operator enforces monotonic/rollback-resistant storage.
+    A plain replaceable local file is insufficient against full-system rollback.
+    """
+    key = _publication_key()
+    if key is None:
+        raise PublicationVerificationError("authentication_key_unavailable")
+    path = _trusted_head_path(root)
+    doc: dict[str, Any] = {"schema_version": 1, "generation": generation,
+                            "run_id": run_id, "status": status}
+    doc["hmac_sha256"] = hmac.new(key, _signed_payload(doc), hashlib.sha256).hexdigest()
+    temp = path.with_name(path.name + ".tmp")
+    try:
+        with temp.open("w", encoding="utf-8") as fp:
+            json.dump(doc, fp, sort_keys=True)
+            fp.flush()
+            os.fsync(fp.fileno())
+        os.replace(temp, path)
+    finally:
+        temp.unlink(missing_ok=True)
+
+
 def _write_publication_status(run_id: str, status: str, *,
-                              failure_code: int | None = None) -> None:
+                              failure_code: int | None = None,
+                              generation: int | None = None) -> None:
     """Signed manifest; absent secret gives an explicit UNAUTHENTICATED result.
 
     Only verified-reader consumers may claim publication authenticity. Without
@@ -997,6 +1101,7 @@ def _write_publication_status(run_id: str, status: str, *,
         "status": status,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "consumer_contract": "read_verified_publication_only",
+        "generation": generation,
     }
     if failure_code is not None:
         marker["failure_exit_code"] = failure_code
@@ -1007,8 +1112,9 @@ def _write_publication_status(run_id: str, status: str, *,
             name: hashlib.sha256(Path(name).read_bytes()).hexdigest()
             for name in (*PUBLICATION_FILES, DB_NAME)
         }
-        with _sqlite_snapshot(Path(DB_NAME)) as snapshot:
+        with closing(_sqlite_snapshot(Path(DB_NAME))) as snapshot:
             marker["db_logical_sha256"] = _db_logical_sha256(snapshot)
+            _assert_export_matches_snapshot(snapshot, Path("akarfinder_data.json").read_bytes())
         key = _publication_key()
         marker["authentication"] = "hmac_sha256" if key else "unsigned_untrusted"
         if key:
@@ -1023,6 +1129,29 @@ class PublicationVerificationError(ValueError):
         self.reason = reason
 
 
+class ReadOnlySqliteSnapshot:
+    """Restrict verified in-memory SQL snapshot to read-only queries.
+
+    Not a hostile-code sandbox; prevents accidental writes through public API.
+    """
+    __slots__ = ("_conn", "_authorizer")
+
+    def __init__(self, conn: sqlite3.Connection):
+        self._conn = conn
+        permitted = {sqlite3.SQLITE_SELECT, sqlite3.SQLITE_READ, sqlite3.SQLITE_FUNCTION,
+                     sqlite3.SQLITE_RECURSIVE}
+        def authorizer(action, arg1, arg2, db_name, source):
+            return sqlite3.SQLITE_OK if action in permitted else sqlite3.SQLITE_DENY
+        self._authorizer = authorizer
+        conn.set_authorizer(authorizer)
+
+    def execute(self, sql: str, parameters: tuple | list = ()):
+        return self._conn.execute(sql, parameters)
+
+    def close(self) -> None:
+        self._conn.close()
+
+
 class VerifiedPublication:
     """Immutable verified export bytes + coherent in-memory SQLite snapshot.
 
@@ -1031,7 +1160,7 @@ class VerifiedPublication:
     def __init__(self, run_id: str, exports: dict[str, bytes], db: sqlite3.Connection):
         self.run_id = run_id
         self.exports = MappingProxyType(exports)
-        self.db = db
+        self.db = ReadOnlySqliteSnapshot(db)
 
     def read_export(self, filename: str) -> bytes:
         return self.exports[filename]
@@ -1068,6 +1197,12 @@ def read_verified_publication(root: Path | str = ".") -> VerifiedPublication:
         hmac.new(key, _signed_payload(proof), hashlib.sha256).hexdigest(), auth
     ):
         raise PublicationVerificationError("authentication_mismatch")
+    trusted = _read_trusted_head(root)
+    if trusted is None or trusted.get("status") != "complete" or (
+        trusted.get("run_id") != proof.get("run_id") or
+        trusted.get("generation") != proof.get("generation")
+    ):
+        raise PublicationVerificationError("publication_superseded_or_revoked")
     digests = proof.get("sha256")
     expected_names = set((*PUBLICATION_FILES, DB_NAME))
     if not isinstance(digests, dict) or set(digests) != expected_names:
@@ -1088,8 +1223,12 @@ def read_verified_publication(root: Path | str = ".") -> VerifiedPublication:
         # This detects committed WAL changes even if .db bytes are unchanged.
         if _db_logical_sha256(db_snapshot) != proof.get("db_logical_sha256"):
             raise PublicationVerificationError("db_logical_digest_mismatch")
+        _assert_export_matches_snapshot(db_snapshot, exports["akarfinder_data.json"])
         if (root / PUBLICATION_STATUS).read_bytes() != raw_marker:
             raise PublicationVerificationError("publication_changed_during_read")
+        current_head = _read_trusted_head(root)
+        if current_head != trusted:
+            raise PublicationVerificationError("trusted_head_changed_during_read")
         return VerifiedPublication(str(proof["run_id"]), exports, db_snapshot)
     except BaseException:
         db_snapshot.close()
@@ -1446,9 +1585,15 @@ async def main(engine: str = "auto", pages: int = MAX_PAGES,
     """
     diagnostics: list[dict[str, Any]] = []
     run_id = uuid.uuid4().hex
+    generation = None
+    key = _publication_key()
     try:
-        _write_publication_status(run_id, "running")
-    except OSError as exc:
+        if key is not None:
+            old_head = _read_trusted_head()
+            generation = 1 if old_head is None else old_head["generation"] + 1
+            _write_trusted_head(run_id, "running", generation)
+        _write_publication_status(run_id, "running", generation=generation)
+    except (OSError, PublicationVerificationError) as exc:
         # If replacing the initial marker fails, best-effort revocation of
         # the previous signed state. If even unlink is prohibited, a previous
         # publication cannot be forcibly revoked on a read-only filesystem.
@@ -1470,7 +1615,9 @@ async def main(engine: str = "auto", pages: int = MAX_PAGES,
         code = 4
     try:
         _write_publication_status(run_id, "complete" if code == 0 else "failed",
-                                  failure_code=code if code else None)
+                                  failure_code=code if code else None, generation=generation)
+        if generation is not None:
+            _write_trusted_head(run_id, "complete" if code == 0 else "failed", generation)
     except (OSError, ValueError, TypeError) as exc:
         # Never report success without a published and hash-verifiable marker.
         print(f"[ERREUR PUBLICATION] Marqueur non vérifiable: {exc}")
