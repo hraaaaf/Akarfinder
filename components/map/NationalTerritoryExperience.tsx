@@ -409,6 +409,16 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
       if (payload.view !== "morocco") return;
       const slug = renderedSlug(event);
       setHoverSlug(slug);
+      // On desktop, hovering a city opens a preview card. Keep that card
+      // mounted while the pointer travels to its Explorer button; otherwise
+      // mousemove over blank map terrain destroys the actionable card.
+      // Do NOT pin previews on coarse pointers: mobile's first tap must still
+      // open the preview, with the second tap/Explorer entering the city.
+      const coarsePointer = navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches;
+      if (slug && !coarsePointer && previewSlugRef.current !== slug) {
+        previewSlugRef.current = slug;
+        setPreviewSlug(slug);
+      }
       setActive(slug ?? previewSlugRef.current);
       map.getCanvas().style.cursor = slug ? "pointer" : "";
     };
@@ -578,7 +588,15 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
 
       {previewPlace && payload?.view === "morocco" ? (
         <aside className="absolute inset-x-3 bottom-[84px] z-20 rounded-[22px] border border-white/[0.85] bg-white/[0.96] p-3.5 shadow-[0_18px_48px_rgba(15,35,66,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/[0.96] sm:inset-x-auto sm:bottom-5 sm:left-4 sm:w-[330px]" aria-label={`Ville sélectionnée ${publicNationalCityLabel(previewPlace.slug, previewPlace.name)}`} data-akarfinder-city-preview={previewPlace.slug}>
-          <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-[0.14em] text-brand-primary"><MapPin size={11} aria-hidden="true" />Ville sélectionnée</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-[0.14em] text-brand-primary"><MapPin size={11} aria-hidden="true" />Ville sélectionnée</p>
+            <button
+              type="button"
+              className="grid min-h-9 min-w-9 place-items-center rounded-lg border border-border text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              aria-label="Fermer l’aperçu de la ville"
+              onClick={() => { previewSlugRef.current = null; setPreviewSlug(null); setHoverSlug(null); }}
+            >×</button>
+          </div>
           <h2 className="mt-1 text-[20px] font-extrabold tracking-[-0.03em] text-foreground">{publicNationalCityLabel(previewPlace.slug, previewPlace.name)}</h2>
           <p className="mt-1 text-[10.5px] font-semibold text-muted-foreground">{previewPlace.neighborhoodCount.toLocaleString("fr-FR")} quartiers / labels répertoriés{previewPlace.boundaryRelationId ? " · contour disponible" : " · repère ponctuel"}</p>
           <button type="button" onClick={() => enterCity(previewPlace.slug)} className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-brand-primary px-4 text-[11.5px] font-extrabold text-white shadow-accent">
