@@ -68,7 +68,7 @@ try {
         const { payload, candidates } = sourceByCity.get(city);
         const page = await context.newPage();
         const errors = [];
-        page.on("pageerror", error => errors.push(String(error)));
+        page.on("pageerror", error => errors.push({ message: String(error), stack: error.stack, url: page.url() }));
         const row = {
           city, viewport: viewport.name, canonicalSlug: payload.place.slug,
           sourceNeighborhoods: payload.neighborhoods.length,
