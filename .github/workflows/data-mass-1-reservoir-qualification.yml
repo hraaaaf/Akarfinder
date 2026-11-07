@@ -8,9 +8,8 @@ on:
       - "scripts/data-mass/__tests__/reservoir-hospitality-exclusions.test.ts"
       - "scripts/audits/data-mass-1-reservoir-qualification.ts"
       - ".github/workflows/data-mass-1-reservoir-qualification.yml"
+      - "scripts/ci/__tests__/legacy-data-live-audit-isolation.test.mjs"
       - "docs/data/DATA-MASS-1-RESERVOIR-QUALIFICATION.md"
-      - "docs/ROADMAP.md"
-      - "docs/SESSION.md"
   workflow_dispatch:
 
 permissions:
@@ -18,10 +17,11 @@ permissions:
 
 concurrency:
   group: data-mass-1-reservoir-qualification-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   contract:
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -35,10 +35,11 @@ jobs:
         run: npx tsx --test scripts/data-mass/__tests__/reservoir-qualification.test.ts scripts/data-mass/__tests__/reservoir-hospitality-exclusions.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
-      - name: Production build
-        run: npm run build
+      - name: Privileged DATA gate regression
+        run: node --test scripts/ci/__tests__/legacy-data-live-audit-isolation.test.mjs
 
   live-audit:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     needs: contract
     runs-on: ubuntu-latest
     timeout-minutes: 25
