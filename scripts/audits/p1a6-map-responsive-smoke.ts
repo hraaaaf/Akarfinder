@@ -171,12 +171,19 @@ async function main() {
             const cityDisclosure = page.locator('[data-city-location-notice]');
             await cityDisclosure.waitFor({ state: "visible", timeout: 12_000 });
             await page.getByRole("heading", { name: "Casablanca", exact: true }).waitFor({ state: "visible", timeout: 12_000 });
-            // Wait for the *visual* state, not just React's data attribute: Framer Motion
-            // otherwise creates false screenshots with a faded notice and stale region rail.
+            // Framer Motion handles map notice and side-rail transition independently.
+            // A DOM-visible title/notice alone can still produce a ghosted rail in screenshots.
             await page.waitForFunction(() => {
               const notice = document.querySelector('[data-city-location-notice]');
-              return notice !== null && Number.parseFloat(getComputedStyle(notice).opacity) >= 0.98;
-            }, null, { timeout: 12_000 });
+              const rail = document.querySelector('[data-map-side-panel]');
+              const activePanel = rail?.firstElementChild;
+              const isCurrentCity = Boolean(rail?.querySelector('[data-selected-quartier="maarif"]'));
+              return notice !== null
+                && Number.parseFloat(getComputedStyle(notice).opacity) >= 0.98
+                && isCurrentCity
+                && activePanel !== null
+                && Number.parseFloat(getComputedStyle(activePanel).opacity) >= 0.98;
+            }, null, { timeout: 15_000 });
             if (!(await cityDisclosure.innerText()).includes("Contours de quartiers indisponibles") ||
                 await page.locator('[data-neighborhood-schematic], [data-premium-map] polygon').count() > 0) {
               findings.push({ route: route.path, viewport: viewport.label, check: "l2a-no-fake-geometries", detail: "City view still contains synthetic district polygons or hides its coverage disclaimer" });
