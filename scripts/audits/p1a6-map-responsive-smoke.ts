@@ -133,6 +133,13 @@ async function main() {
             await page.locator('[data-premium-map][data-map-level="city"]').waitFor({ state: "visible", timeout: 12_000 });
             const cityDisclosure = page.locator('[data-city-location-notice]');
             await cityDisclosure.waitFor({ state: "visible", timeout: 12_000 });
+            await page.getByRole("heading", { name: "Casablanca", exact: true }).waitFor({ state: "visible", timeout: 12_000 });
+            // Wait for the *visual* state, not just React's data attribute: Framer Motion
+            // otherwise creates false screenshots with a faded notice and stale region rail.
+            await page.waitForFunction(() => {
+              const notice = document.querySelector('[data-city-location-notice]');
+              return notice !== null && Number.parseFloat(getComputedStyle(notice).opacity) >= 0.98;
+            }, null, { timeout: 12_000 });
             if (!(await cityDisclosure.innerText()).includes("Contours de quartiers indisponibles") ||
                 await page.locator('[data-neighborhood-schematic], [data-premium-map] polygon').count() > 0) {
               findings.push({ route: route.path, viewport: viewport.label, check: "l2a-no-fake-geometries", detail: "City view still contains synthetic district polygons or hides its coverage disclaimer" });
