@@ -118,8 +118,15 @@ export const NATIONAL_TERRITORY_META = {
 
 const placeBySlug = new Map(NATIONAL_TERRITORY_PLACES.map((place) => [place.slug, place] as const));
 
+// Preserve the already sourced V5 entry "mohammadia". User-facing French uses
+// "Mohammedia": it is a lookup alias, NOT a new city, center or polygon.
+const nationalPlaceAliases: Readonly<Record<string, string>> = {
+  mohammedia: "mohammadia",
+};
+
 export function getNationalTerritoryPlace(slug: string) {
-  return placeBySlug.get(slug) ?? null;
+  const canonicalSlug = nationalPlaceAliases[slug] ?? slug;
+  return placeBySlug.get(canonicalSlug) ?? null;
 }
 
 export function getNationalNeighborhoodsForPlace(place: NationalTerritoryPlace) {
