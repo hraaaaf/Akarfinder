@@ -775,8 +775,11 @@ export function PremiumInteractiveMap() {
               </div>
             ) : null}
 
-            <div data-premium-map-attribution className="pointer-events-none absolute bottom-3 left-3 z-20 max-w-[70%] rounded-full border px-3 py-1.5 text-[8.5px] font-bold backdrop-blur" style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 88%, transparent)", color: "var(--text-secondary)" }}>
-              Contours régionaux : geoBoundaries / OSM · 12 ADM1 · navigation prototype
+            <div data-premium-map-attribution className="pointer-events-auto absolute bottom-3 left-3 z-20 max-w-[70%] rounded-xl border px-3 py-1.5 text-[9.5px] font-bold leading-4 backdrop-blur" style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 94%, transparent)", color: "var(--text-secondary)" }}>
+              Sources des contours :{" "}
+              <a href="https://www.geoboundaries.org/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">geoBoundaries</a>
+              {" · "}
+              <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">© OpenStreetMap</a>
             </div>
           </section>
 
