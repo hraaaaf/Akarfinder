@@ -172,3 +172,93 @@ Les comptages du backup ont été calculés sur les sections `COPY`, sans restau
 3. Réconcilier les 253 372 représentations historiques et les preuves GitHub manquantes par identité exacte. N’utiliser l’URL comme fallback qu’après preuve du normaliseur.
 4. Quarantainer les lignes Neon sans ID et les groupes conflictuels; établir les droits applicables avant tout enrichissement ou usage externe.
 5. Garder fraîcheur, biens physiques et droits `UNKNOWN` tant que leurs preuves ne sont pas acquises.
+
+## Q1B — Réconciliation privée Supabase backup + Neon Recovery (07/11/2026)
+
+Cette section remplace les anciennes mentions « UNKNOWN » de chevauchement cross-source du diagnostic initial. L’export Neon et les rapprochements sont terminés. Les sources originales restent intactes et les nouvelles données sont uniquement dans le stockage privé local du Bureau.
+
+### Export Neon en lecture seule
+
+Branche recovery-schema-cert-20260924, projet ancient-violet-43534870, base AkarFinder. Export de listing_sources joint à property_listings, 76 pages ORDER BY listing_sources.id (75 × 2 000, dernière page 1 900), et export séparé de la relation listing_sources.id → property_listings.id en 31 pages. Requêtes SELECT seulement; aucun secret/chaîne de connexion n’a été récupéré et aucune écriture Neon/Supabase n’a été faite.
+
+- **151 900** lignes Neon exportées; **151 900** IDs de lignes uniques.
+- **57 683** clés source renseignées et uniques; **94 217** sans source_offer_key.
+- La relation parent a été vérifiée sur **151 900** lignes : **127 031** listing_sources.id diffèrent de property_listings.id. L’export privé conserve la vraie clé étrangère, vérifiée ligne par ligne.
+- Le dump Supabase original a été laissé intact. Les extraits COPY privés et le nouveau JSONL Neon comprimé ont chacun leurs SHA-256 dans le manifeste privé.
+
+### Réconciliation exacte des identités
+
+source_name est un libellé différent entre les systèmes (nom de marque vs domaine); l’intersection textuelle directe (source_name, source_offer_key) est **0**. Pour éviter une table d’alias spéculative, le domaine d’identité est extrait du listing_url de chaque ligne : hôte minuscule, retrait du seul préfixe www. et du point final. Le chemin et la query URL ne sont jamais normalisés ou rapprochés. Le source_name d’origine reste conservé.
+
+| Identités source avec clé validée | Backup Supabase | Neon Recovery | Union |
+|---|---:|---:|---:|
+| Identités domaine + ID | 13 784 | 57 683 | 69 619 |
+| Intersection exacte |  | **1 848** |  |
+| Uniquement backup | **11 936** |  |  |
+| Uniquement Neon |  | **55 835** |  |
+
+L’export conserve séparément les **19 621** lignes listing_sources du backup et les **151 900** lignes Neon comme preuves, sans additionner leurs lignes comme annonces uniques. Les **5 837** lignes source backup et **94 217** lignes Neon sans ID restent traçables dans une table d’identités non résolues; aucun rapprochement par URL similaire n’a été tenté.
+
+### Définition unique et résultat des observations détaillées
+
+Une observation historique détaillée exige : domaine source + ID source, horodatage d’observation, titre, ville, type de bien, transaction, prix positif avec devise explicite (ou prix normalisé MAD), et surface positive. Le quartier est conservé mais n’est pas une condition de cette définition. Une identité source réobservée à un autre horodatage constitue une autre observation historique; elle n’est pas déclarée active.
+
+- Backup : **6 250** observations historiques qualifiées.
+- Neon : **3 740** observations historiques qualifiées.
+- **23 identités détaillées** sont communes, mais les horodatages diffèrent; **0 paire exacte (domaine, ID, horodatage)** ne se répète. Elles restent donc **9 990 observations datées dédupliquées**; elles représentent **9 967 identités source** dans ce seul sous-ensemble.
+- Les **44 426** fiches « titre + prix positif + ville + quartier + surface » constituent un filtre différent. **2 577** satisfont aussi le contrat détaillé; **1 163** autres satisfont le contrat détaillé mais n’ont pas de quartier. Parmi les 44 426, **7 156** n’ont pas d’ID source et **41 422** n’ont pas first_seen_at (ces catégories se recouvrent). Cela explique pourquoi 44 426 ne sont pas 44 426 observations détaillées.
+
+### Tableau Q1B
+
+| Indicateur | Résultat vérifié |
+|---|---:|
+| Candidats L0 du backup, tous domaines | 231 818 |
+| Lignes source récupérées Neon | 151 900 |
+| Lignes source récupérées backup listing_sources | 19 621 |
+| Identités source domaine + ID dans l’union | 69 619 |
+| Observations détaillées du backup | 6 250 |
+| Observations détaillées Neon | 3 740 |
+| Observations historiques détaillées de l’union | **9 990** |
+| Fiches Neon à cinq champs | 44 426 (définition distincte) |
+| Observations vérifiées dans les 30 derniers jours | **0** |
+| Dernier last_seen_at Neon | 2026-09-26; fraîcheur actuelle non démontrée |
+| Quarantaine préexistante conservée | **975 groupes** |
+| Nouveaux conflits exacts identité + horodatage | **0** |
+| Biens physiques uniques prouvés | **UNKNOWN** |
+| Droits d’exploitation prouvés | **0** |
+| Écart à l’objectif de 200 000 observations détaillées | **190 010** |
+
+Les 231 818 clés L0 sont des URLs candidates et ne sont pas ajoutées à ce total. Les archives Akaar/Domio et l’inventaire historique L0/L1 de 253 372 restent non rapprochés de cette union.
+
+### Lac privé, tests et empreintes
+
+Lac SQLite privé actualisé de manière idempotente avec source_listing_evidence (171 521 lignes de preuve), source_identity_union (69 619 identités), unresolved_source_rows (100 054 lignes sans rapprochement exact), observations_detailed_union (9 990 observations) et la quarantaine préexistante (975 groupes).
+
+Validation : 151 900 lignes d’export et IDs uniques; 76 pages et 31 pages de relation parent sans lacune; identité et compteurs concordants avec SQL Neon; PRAGMA integrity_check=ok; foreign_key_check=0; deux ingestions complètes consécutives donnent des empreintes de tables SQLite identiques. Aucune URL ni annonce brute n’est placée dans ce dépôt ou dans Notion.
+
+Artefacts privés : neon_recovery_export_20261107.jsonl.gz (151 900 lignes), neon_parent_map_20261107.csv.gz, source_identity_union_20261107.jsonl.gz, observations_detailed_union_20261107.jsonl.gz, unresolved_source_rows_20261107.jsonl.gz, couvertures par domaine, reconciliation_proof_queries.sql, et manifest.json + manifest.sha256, dans AkarFinder-DataMass-2026-11-07 sur le Bureau.
+
+- Export Neon détaillé SHA-256 : c3d8a8c9476602baa7663d1e9903e6015cb7300d6e7539183bf48b735cb76b08.
+- Union des identités SHA-256 : 3efb90a0ba422f2ae92a67848ad547cc652a1afe77da0f885c55f59542ec10db.
+- Union des observations détaillées SHA-256 : 76635208549dbce618cf0de9de5e3109f0ac39deefb08f83a330a882fed5f1ee.
+- Manifeste privé SHA-256 : 5e2f06a116b1d6b2e2b5e68b92385101cd40c12eda5577537ef98c81789d90eb.
+
+### Requêtes de preuve agrégées
+
+Comptage des identités dans le lac privé :
+
+    SELECT sum(backup_present=1 AND neon_present=1) AS intersection,
+           sum(backup_present=1 AND neon_present=0) AS backup_only,
+           sum(backup_present=0 AND neon_present=1) AS neon_only,
+           count(*) AS union_count
+    FROM source_identity_union;
+
+Comptage des observations distinctes par source et total :
+
+    SELECT evidence_stores, count(*) AS observations
+    FROM observations_detailed_union
+    GROUP BY evidence_stores
+    ORDER BY evidence_stores;
+
+La CI exacte de la PR reste à revalider après ce commit documentaire. PR #1176 maintenue en Draft, non fusionnée. Prochaine étape : rapprocher les 253 372 représentations historiques et les archives GitHub récupérables par clés prouvées, puis examiner les conditions d’usage avant tout enrichissement externe.
+
