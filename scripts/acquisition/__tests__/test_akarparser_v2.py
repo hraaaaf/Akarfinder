@@ -93,6 +93,18 @@ class TestAkarParserV2(unittest.TestCase):
         self.assertEqual(r["status"], "quarantine")
         self.assertIn("price_currency_conflicts_with_mad_field", r["quality"]["issues"])
 
+    def test_html_jsonld_offer_price_and_script_noise_ignored(self):
+        document = ("<html><head><title>Villa à vendre Rabat</title>"
+                    "<script>var unrelated='9900000 MAD';</script>"
+                    '<script type="application/ld+json">{"@type":"Offer","offers":{"price":"2150000","priceCurrency":"MAD"}}</script>'
+                    "</head><body>Villa 160 m2 à vendre</body></html>")
+        raw = dict(listing_url="https://example.ma/property/abc", source_offer_key="abc", city="Rabat", html=document, first_seen_at=self.observed)
+        r = parse_record(raw, generated_at="2026-11-07T12:00:00Z")
+        self.assertEqual(r["extracted"]["price_mad"], 2150000)
+        self.assertEqual(r["extracted"]["surface_total_m2"], 160)
+        self.assertEqual(r["extracted"]["property_type"], "villa")
+        self.assertFalse(r["quality"]["publication_allowed"])
+
     def test_neon_style_linked_tables_join_as_read_only(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -108,18 +120,6 @@ class TestAkarParserV2(unittest.TestCase):
             m = run(db, root / "out", table="property_listings")
             self.assertEqual(m["counts"]["ready_internal"], 1)
             self.assertEqual(sha_file(db), before)
-
-    def test_html_jsonld_offer_price_and_script_noise_ignored(self):
-        document = ("<html><head><title>Villa à vendre Rabat</title>"
-                    "<script>var unrelated='9900000 MAD';</script>"
-                    '<script type="application/ld+json">{"@type":"Offer","offers":{"price":"2150000","priceCurrency":"MAD"}}</script>'
-                    "</head><body>Villa 160 m2 à vendre</body></html>")
-        raw = dict(listing_url="https://example.ma/property/abc", source_offer_key="abc", city="Rabat", html=document, first_seen_at=self.observed)
-        r = parse_record(raw, generated_at="2026-11-07T12:00:00Z")
-        self.assertEqual(r["extracted"]["price_mad"], 2150000)
-        self.assertEqual(r["extracted"]["surface_total_m2"], 160)
-        self.assertEqual(r["extracted"]["property_type"], "villa")
-        self.assertFalse(r["quality"]["publication_allowed"])
 
     def test_sqlite_streaming_idempotent_source_immutable(self):
         with tempfile.TemporaryDirectory() as tmp:
