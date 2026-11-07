@@ -208,3 +208,18 @@ Après [L4-A API N2 #42398790927 SUCCESS](https://github.com/hraaaaf/Akarfinder/
 - **Correctif candidat** SHA [`a6ead3d4`](https://github.com/hraaaaf/Akarfinder/commit/a6ead3d46d3656e03bbb730f4ad709c80e8716e3) : seul `mohammedia` peut accepter la réponse canonique V5 `mohammadia`; aucune source de quartiers ni géométrie créée. [N2 AFTER #42399951940](https://github.com/hraaaaf/Akarfinder/actions/runs/42399951940) **non conclu à la dernière lecture** : L4-B1 reste non certifié.
 - **Risque Search/noms** : V5 présente le nom `Mohammadia`, le [HCP](https://www.hcp.ma/reg-casablanca/RGPH-2024-Caracteristiques-demographiques-et-socio-economiques-de-la-Population-Fiches-communales-de-la-region_a144.html) et `geo-entity-registry` `Mohammedia` ; liaison Carte→Search doit être testée explicitement, sans assimiler les libellés V5 non qualifiés à 17 quartiers validés.
 - **Next exact** : lire AFTER N2, `l4b/report.json` et les 4 captures, corriger les défaillances ; ensuite documenter limite BEFORE, séparer L4-B complet 8 villes/17 quartiers et L6 licences. Aucun merge, DB ou déploiement Vercel.
+
+
+## 07/11/2026 — JALONS VÉRIFIÉS APRÈS L4-A 8/8 (remplace les statuts L4-A anciens ci-dessus)
+
+| Jalon | État borné par la preuve |
+| --- | --- |
+| **L1** | GREEN technique : fail-closed et retrait des sources fictives |
+| **L2** | GREEN technique : carte responsive, attributions présentes ; droits fournisseur restent L6 |
+| **L3-A** | GREEN Maârif 2D/rue techniquement ; **L3 entier AMBER**, contours et POI frais absents |
+| **L4-A** | **GREEN, 8/8 villes API** : code testé `ce8442dbaf3d4754d0a3117df1d67250e30d3d80`, [N2 #42398790927](https://github.com/hraaaaf/Akarfinder/actions/runs/42398790927) SUCCESS + [N3 #42398790936](https://github.com/hraaaaf/Akarfinder/actions/runs/42398790936) SUCCESS ; artefact N2 #13584925329 inspecté : `ok=true`, 8/8 couvertes, **4914 quartiers**, **347 centres**, **4567 sans centre**, **0 contour quartier certifié**, 4 cas Casablanca et 12 captures aux 4 viewports. Mohammedia (214 quartiers, 5 centres) reconnue par alias vers l'entrée V5 existante `mohammadia`; aucune donnée ajoutée. [Doc review closeout](https://github.com/hraaaaf/Akarfinder/blob/test/vivre-ici-l4a-multicity-source-20261107/docs/reviews/VIVRE_ICI_L4A_MULTICITY_SOURCE_GATE_2026-11-07.md) docs-only HEAD `3de97ec8`; [PR #1183](https://github.com/hraaaaf/Akarfinder/pull/1183) toujours Draft/unmerged. |
+| **L4-B** | **NON certifié** : expérience utilisateur 8 villes/17 quartiers et captures hors Casablanca à faire |
+| **L5-A / L5-B** | **GREEN technique** : N3/Search et état vide, hydrate React corrigé ; vraies annonces SQL/prix **non certifiés**. [PR Draft #1185](https://github.com/hraaaaf/Akarfinder/pull/1185) base L5-A, code testé `58639998`, N3 #42397029558 GREEN, 8 captures L5-B |
+| **L6** | **NON certifié** : licences Esri, attribution OpenMapTiles/OSM, accès clavier/touch, score visuel global ≥9,5/10 et gate release |
+
+**Next exact :** L4-B, contrôle UI 8 villes et sélection quartier sourcée, 390/430/768/1280, zéro contour/POI inventé ; puis L6 droits/cartographie, a11y et score, avec annonces réelles seulement si une DB autorisée est disponible. PR Draft et aucun merge ni déploiement Vercel sans approbation. **Aucun pourcentage global certifié.**
