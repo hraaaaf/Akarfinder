@@ -119,3 +119,21 @@
 **Limites et gates :** aucune garantie multi-hôtes, Windows ou FS ne respectant pas flock ; gestion d'une vraie clé HMAC et ancre anti-rejeu inaltérable hors dossier du scraper non provisionnées ; nécessité que les consommateurs utilisent `read_verified_publication()` ; Chromium, preuves réseau/MIME, droits commerciaux, exhaustivité et fraîcheur non certifiés. **NO_GO_LIVE**, aucun import cloud, merge ou déploiement Vercel. La note **7,2/10** est celle de l'ancien HEAD : **ne pas la réattribuer** au code actuel. Le résultat de la CI spécifique `Mubawab V646 offline tests` doit être vérifié au dernier commit.
 
 **Next exact :** CI offline sur le HEAD final ; si rouge diagnostiquer/corriger ; si verte préparer un artefact reproductible à réauditer indépendamment des deux contre-exemples, sans passer à des validations live. Choix opérateur obligatoire pour stockage anti-rollback réel / verrou distribué si usage multi-hôtes.
+
+## 07/11/2026 — VERDICT INDÉPENDANT HEAD 32d6b214 : clôture ciblée, NON clôture V6.4.6
+
+**Rapport du propriétaire après réaudit du pack exact :** score **7,8/10**, archive **32/32** conforme ; suite **188 tests = 183 PASS + 5 SKIP**, aucun échec ; **6/6 contre-tests indépendants PASS**. Cette note concerne le commit `32d6b2147facb470df4562b5630e61acdbcc89a7` de la Draft PR #1172. Le test Chromium reste non exécuté. L'auditeur conclut **PASS des deux correctifs P1 ciblés**, en périmètre **offline mono-hôte / filesystem respectant flock**, **mais CHANGES_REQUIRED / NO_GO_LIVE pour le système complet**.
+
+### Résultat observable / décision de périmètre
+
+- **P1 concurrence producteurs coopérants sur même FS : CLOS POUR CE PÉRIMÈTRE SEULEMENT.** Les producteurs concurrents ne publient pas simultanément avec le même fichier de verrou intact ; **la suppression/remplacement de ce fichier pendant le run n'est pas exclue** par le code. Le verrou `flock` est consultatif et attaché à l'inode ; on ne prétend pas garantir l'exclusivité si l'inode est remplacé. Aucune revendication multi-hôtes.
+- **P1 champs des annonces Markdown affichées ↔ JSON/SQLite : CLOS POUR CE PÉRIMÈTRE SEULEMENT.** Les prix/titres/surfaces des annonces visibles sont comparés, mais les **compteurs métier du rapport** (`Nouvelles`, `Modifiées`, `Inchangées`, `Doublons de pagination`, `Prix suspects`, `Signalements prix/m²`, `Pages`) et **signaux de qualité dérivés** ne sont pas prouvés dans l'ensemble. Les annonces réellement observées dans le cycle nécessitent une traçabilité indépendante des compteurs historiques.
+- **Anti-rejeu / provenance de génération : OUVERT, gate architecture + exploitation.** Un attaquant pouvant restaurer **l'ancien registre signé ET l'ancien dossier d'exports** peut rejouer une génération. La présence d'un HMAC ne rend pas un fichier local monotone. Aucun secret HMAC réel, registre externe non restaurable ni verrou distribué n'ont été provisionnés.
+
+**Décision :** clôturer administrativement les **deux tickets P1 ciblés avec cette restriction écrite**, et ne pas changer le verdict du chantier complet : **CHANGES_REQUIRED / NO_GO_LIVE**. Ne pas réattribuer 7,8/10 à un commit futur.
+
+### Prochain lot prioritaire, sans changement d'infrastructure autorisé
+
+Nouvelle proposition d'architecture (NON déployée) : [`MUBAWAB_V646_PUBLICATION_TRUST_DESIGN_2026-11-07.md`](MUBAWAB_V646_PUBLICATION_TRUST_DESIGN_2026-11-07.md). Préférence : **source transactionnelle de génération/fencing externe au dossier d'exports**, avec protection effective contre rollback et droits minimaux, plus artefacts versionnés immuables. Séparer **la preuve d'un instantané des annonces** de **la preuve des compteurs et signaux dérivés**. Ajouter le contrat source des compteurs, critères de reprise/crash et lecteur vérifié.
+
+**NEXT EXACT :** préciser/valider avec l'opérateur la source de vérité monotone, sa protection et le périmètre mono-hôte/multi-hôtes ; inventorier les champs sources des compteurs dans `export_reports` et les journaux disponibles ; écrire des tests du contrat complet sans nouvelle collecte live. **CI scraper du dernier HEAD non indépendamment confirmée.** Aucun merge, prod, cloud, Vercel ou crawl autorisé.
