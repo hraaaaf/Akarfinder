@@ -120,6 +120,13 @@ try {
               throw new Error("source disclosure too narrow on desktop: " + JSON.stringify(copyWidths));
             }
             row.disclosureWidths = copyWidths.map(width => Math.round(width));
+            const copyFontSizes = await page.locator(
+              '[data-p4-map-decision-rail] .p4-premium-market-card > p'
+            ).evaluateAll(items => items.map(item => Number.parseFloat(getComputedStyle(item).fontSize)));
+            if (copyFontSizes.some(size => size < 10.5)) {
+              throw new Error("source disclosure unreadable type size: " + JSON.stringify(copyFontSizes));
+            }
+            row.disclosureFontSizes = copyFontSizes;
           }
           await page.screenshot({ path: prefix + "-city-ready.png", fullPage: false });
           row.state = "city_ready";
