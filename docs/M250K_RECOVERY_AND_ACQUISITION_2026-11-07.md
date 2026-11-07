@@ -69,3 +69,104 @@ Le `inventory.json` téléchargé/CRC vérifié établit **17 attendues / 2 disp
 - `completeProofCoverage=false`, `candidateUnionCertified=false`. Ce résultat **ne valide pas** la disponibilité du freeze 253 372.
 
 **Préservation ajoutée à la CI :** le workflow sauvegarde désormais également les ZIP originaux encore accessibles dans un nouvel artefact `candidate-lake-q1-recovered-source-proof-mirror` (rétention demandée 90 jours), sans modifier leurs contenus. **L'exécution du miroir et son artefact ne sont pas encore vérifiés** dans ce document ; distinguer code ajouté et sauvegarde observée.
+
+## Audit Supabase, backup local et réconciliation Q1B (07/11/2026)
+
+Audit en lecture seule. Aucune migration, écriture hébergée, restauration, publication ou requête de site source.
+
+### Matrice des projets et sources
+
+| Source | État observé | Données vérifiées | Exportabilité |
+|---|---|---|---|
+| Supabase `kusfiyimwvxblvsrhaes` (AqarFinder historique) | `INACTIVE`; catalogue inaccessible (« Database is possibly not accessible »), migrations en timeout | Projet hébergé non joignable par la connexion actuelle. Le backup local de ce projet contient les tables de collecte et d’observation décrites ci-dessous. | Backup local récupérable; ne pas conclure que le projet hébergé est vide. Aucune restauration. |
+| Supabase `mgqsckxsqdqbzqwkgvwo` (AkarfFnder) | `ACTIVE_HEALTHY`, `eu-west-1`, PostgreSQL 17.11 | 0 relation publique, 0 bucket, 0 objet Storage, 0 utilisateur Auth. | Aucun patrimoine immobilier exportable observé. |
+| Backup PostgreSQL du Bureau | `db_cluster-13-10-2026@00-10-00.backup.gz`, gzip d’un dump SQL; SHA-256 `cb0da8c09b81217cb2202b9f2a8ba66276c2ab2faa413e9dbfce8a99e8597e60` | Backup local du projet Supabase inactif, confirmé par l’utilisateur. Le fichier source est intact. | 14 extraits `COPY` verbatim, lac privé SQLite et JSONL.gz au Bureau. Manifest local vérifié; aucun contenu brut committé. |
+| Neon `ancient-violet-43534870`, branche `br-cold-mouse-b2a50yaa` (`recovery-schema-cert-20260924`), base `AkarFinder` | Accessible en lecture seule; branche `ready` | 151 900 `property_listings`, 151 900 `listing_sources`, 0 `raw_listings`, 0 `scrape_runs`, 0 cluster dans cette branche. | Agrégats et couverture par source vérifiés. Export de lignes Neon vers le backup non fait; les sources ne sont donc pas réconciliées entre elles. |
+| Neon AkarFinder, branche `br-wild-mud-b2y0dhc2` | Archivée | Même comptage exact de 151 900 `property_listings` et `listing_sources`. | Copie de test/snapshot, jamais additionnée à la branche recovery. L’égalité de volume seule ne prouve pas l’identité complète. |
+| Neon AkarFinder, branche `production` `br-frosty-glitter-b2762sv1` | `ready`; 39 436 288 octets logiques | Base `neondb` vide; aucune relation applicative observée dans `AkarFinder`. | Pas de données immobilières exportables observées. |
+
+### Données retrouvées dans le backup Supabase inactif
+
+Le dump contient notamment `discovery_candidates` **321 173** lignes, `source_offer_seeds` **78 110**, `listing_representations` **143 121**, `mubawab_listing_corpus_v1` **37 420**, `source_offer_observations` **19 908**, `listing_sources` **19 621**, `property_listings` **19 616**, `property_clusters` **7 796**, `property_cluster_members` **7 802**, `property_condition_observations` **1 885**, `source_freshness_state` **35**, `source_freshness_transition_events` **50**, `source_offer_lifecycle_signals` **4** et `observation_ledger_events` **5**. Les tables se recouvrent; leurs nombres ne s’additionnent pas.
+
+Les extraits privés sont dans `AkarFinder-DataMass-2026-11-07` sur le Bureau. `manifest.json` contient les empreintes et volumes. Le lac SQLite contient **231 818** clés L0 exactes et **399 283** références de preuve. JSONL.gz déterministe : SHA-256 `858585ef6f2010fbdfadf27eeaa58186c198044245bbf55c937fb9909a8a5a94`. SQLite : SHA-256 `75d3d388c226076645c073c8aa29e7c33dd165e614325b28cdae0e91912eb352`. Manifeste privé : SHA-256 `3657777bb479afd7eb878dc63c55c66a02e010aed26e3806472a776c6c6fa8bc`.
+
+Règle L0 : `source_domain` (trim + minuscules) et `canonical_url` comparée exactement, sans normalisation d’URL. `discovery_candidates` fournit **171 728** clés exactes; `source_offer_seeds` en fournit **78 110**; **18 020** sont communes; l’union est **231 818**. Les lignes candidates ont **151 447 `rejected`**, **138 951 `unclassified`**, **13 813 `accepted`** et **16 962 `discovered`** (statuts de lignes, pas d’identités distinctes). Plusieurs domaines ne sont pas immobiliers. Ces clés restent L0 URL, `source_listing_id=NULL`, `rights_status=UNKNOWN_NOT_PROVEN`; elles ne certifient pas 231 818 annonces.
+
+`listing_representations` compte **143 121** lignes et **143 116** couples distincts `canonical_source_system + canonical_source_record_id`. Quatre groupes ont des payloads contradictoires (cinq lignes supplémentaires) et sont quarantainés. `materialized_at` ne prouve pas une observation source; ces lignes ne sont pas comptées comme observations détaillées.
+
+`source_offer_observations` comporte **19 908** snapshots datés, **18 087** identifiants d’offre distincts et **18 937** couples offre/date exacts. Les **971** couples répétés ont des payloads différents; ils sont quarantainés, sans fusion. **6 250 observations historiques détaillées** satisfont les champs requis : source et clé enregistrées, heure d’observation, transaction, type, ville, prix/devise et surface observés, et titre de la fiche liée par clé étrangère. Déduplication au couple identifiant/date. La clé est unique selon l’index de la base, mais non revalidée sur les sites. Dernière observation du backup : **2026-09-07**; aucune observation dans les 30 jours avant le 07/11/2026.
+
+La couverture des champs par source est conservée dans deux CSV privés : `field_coverage_inactive_backup.csv` (23 sources; SHA-256 `08fdc443af9aa13aef4b28212cb6727d95dbd2c4fd9bcd4653628ab812eaf562`) et `field_coverage_neon_recovery.csv` (28 sources; SHA-256 `794a27c397b05b2f5594a678d5c16ee369e5f7440cca5ec8aafe06c2ad91fbfd`). Ils recensent clés, dates et champs manquants sans inclure d’enregistrements.
+
+### Mesures Neon et rapprochement prudent
+
+Sur Neon recovery, `source_offer_key` est présent et unique par `(source_name, source_offer_key)` pour **57 683** lignes; **94 217** n’ont pas de clé. `first_seen_at` est présent sur **11 639** lignes, mais clé + date sur **5 378**. `title`, ville, type et transaction sont présents sur les 151 900 fiches; prix MAD sur **56 274**, surface sur **62 110**, `description_snippet` sur **14 950**. La requête stricte retient **3 740 observations détaillées**. `last_seen_at` le plus récent : **2026-09-26**; aucune ligne `first_seen_at` ou `last_seen_at` des 30 derniers jours.
+
+Les 151 900 lignes portent `is_active=true`, mais cet indicateur ancien ne prouve pas l’activité récente. Les 151 864 étiquettes `compliance_status` sont des valeurs `recovery_*` internes, pas des preuves de droit d’exploitation; **36** sont nulles. Droits d’exploitation démontrés : **0**. Les clusters Neon sont vides. Les **7 796** clusters du backup Supabase sont des groupes techniques d’identités source, pas une preuve de biens physiques uniques. Biens physiques uniques prouvés : **UNKNOWN**.
+
+Les **6 250** observations détaillées du backup et les **3 740** de Neon n’ont pas été rapprochées par identité; le chevauchement est `UNKNOWN`. L’union exacte est donc inconnue; les limites calculées sont **6 250–9 990** avant rapprochement. Ne pas annoncer 9 990 comme volume dédupliqué. L’écart exact à 200 000 reste `UNKNOWN`; il est de **193 750** au minimum conservateur de 6 250.
+
+| Indicateur | Résultat vérifié au 07/11/2026 |
+|---|---:|
+| Clés URL L0 exactes dans le backup (tous domaines, avant qualification immobilière) | 231 818 |
+| Références de preuve des deux tables L0 | 399 283 |
+| Observations détaillées du backup inactif | 6 250 historiques |
+| Observations détaillées de Neon recovery | 3 740 historiques; chevauchement inconnu |
+| Union détaillée cross-source dédupliquée | UNKNOWN |
+| Observations vérifiées durant les 30 derniers jours | 0 |
+| Lignes Neon sans clé source | 94 217 |
+| Groupes en quarantaine (observations + représentations) | 975 |
+| Biens physiques uniques prouvés | UNKNOWN |
+| Données avec droits d’exploitation démontrés | 0 |
+| Écart certifié à 200 000 | UNKNOWN; minimum conservateur : 193 750 |
+
+### Preuves SQL en lecture seule
+
+Catalogue Supabase actif et volumes Storage/Auth, exécutés sur `mgqsckxsqdqbzqwkgvwo` :
+
+```sql
+SELECT
+  (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+   WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m')) AS public_relations,
+  (SELECT count(*) FROM storage.buckets) AS storage_buckets,
+  (SELECT count(*) FROM storage.objects) AS storage_objects,
+  (SELECT count(*) FROM auth.users) AS auth_users;
+```
+
+Comptages exacts Neon, base `AkarFinder`, branche recovery :
+
+```sql
+SELECT 'listing_sources', count(*) FROM public.listing_sources
+UNION ALL SELECT 'property_listings', count(*) FROM public.property_listings
+UNION ALL SELECT 'raw_listings', count(*) FROM public.raw_listings
+UNION ALL SELECT 'scrape_runs', count(*) FROM public.scrape_runs
+UNION ALL SELECT 'property_clusters', count(*) FROM public.property_clusters
+UNION ALL SELECT 'property_cluster_members', count(*) FROM public.property_cluster_members;
+```
+
+Complétude et identité stricte Neon (résultats agrégés) :
+
+```sql
+SELECT count(*) AS total,
+       count(*) FILTER (WHERE s.source_offer_key IS NOT NULL AND btrim(s.source_offer_key)<>'') AS keyed,
+       count(*) FILTER (WHERE s.first_seen_at IS NOT NULL) AS dated,
+       count(*) FILTER (WHERE s.source_offer_key IS NOT NULL AND btrim(s.source_offer_key)<>''
+         AND s.first_seen_at IS NOT NULL AND p.title IS NOT NULL AND btrim(p.title)<>''
+         AND p.transaction_type IS NOT NULL AND p.property_type IS NOT NULL
+         AND p.city IS NOT NULL AND btrim(p.city)<>''
+         AND ((p.price_mad>0) OR (s.displayed_price>0 AND NULLIF(btrim(s.price_currency),'') IS NOT NULL))
+         AND COALESCE(p.surface_m2,p.built_surface_m2)>0) AS detailed
+FROM public.listing_sources s
+JOIN public.property_listings p ON p.id=s.property_listing_id;
+```
+
+Les comptages du backup ont été calculés sur les sections `COPY`, sans restauration SQL. Les contrôles privés ont validé SHA-256, CRC gzip, nombre exact de lignes des 14 extraits, unicité des clés L0/L1, comptes SQLite, quarantaine et re-sérialisation déterministe du JSONL L0 : **231 818 lignes reproduites, SHA-256 identique**. Tous les résultats sont agrégés; aucune annonce ni donnée personnelle n’a été copiée dans cette PR.
+
+### Suite immédiatement exécutable
+
+1. Comparer les clés exactes `(source_name, source_offer_key)` Neon et celles du backup privé; mesurer l’intersection avant toute union cross-source.
+2. Ajouter un export client Neon privé, en lecture seule, avec pagination reprenable et empreintes; ne transférer aucune ligne brute vers GitHub ou Notion.
+3. Réconcilier les 253 372 représentations historiques et les preuves GitHub manquantes par identité exacte. N’utiliser l’URL comme fallback qu’après preuve du normaliseur.
+4. Quarantainer les lignes Neon sans ID et les groupes conflictuels; établir les droits applicables avant tout enrichissement ou usage externe.
+5. Garder fraîcheur, biens physiques et droits `UNKNOWN` tant que leurs preuves ne sont pas acquises.
