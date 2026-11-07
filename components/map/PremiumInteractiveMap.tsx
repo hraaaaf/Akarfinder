@@ -585,7 +585,7 @@ export function PremiumInteractiveMap() {
               </span>
             </div>
 
-            <div className="absolute bottom-4 right-4 z-30 flex flex-col gap-2">
+            <div data-premium-map-controls className="absolute bottom-4 right-4 z-30 flex flex-col gap-2">
               <button type="button" onClick={() => zoomBy(1.25)} className="grid h-10 w-10 place-items-center rounded-xl border shadow-sm" style={{ borderColor: "var(--border)", background: "var(--surface)" }} aria-label="Zoomer"><Plus size={16} /></button>
               <button type="button" onClick={() => zoomBy(0.8)} className="grid h-10 w-10 place-items-center rounded-xl border shadow-sm" style={{ borderColor: "var(--border)", background: "var(--surface)" }} aria-label="Dézoomer"><Minus size={16} /></button>
               <button type="button" onClick={goNational} className="grid h-10 w-10 place-items-center rounded-xl border shadow-sm" style={{ borderColor: "var(--border)", background: "var(--surface)" }} aria-label="Recentrer"><RotateCcw size={15} /></button>
@@ -775,7 +775,7 @@ export function PremiumInteractiveMap() {
               </div>
             ) : null}
 
-            <div className="pointer-events-none absolute bottom-3 left-3 z-20 max-w-[70%] rounded-full border px-3 py-1.5 text-[8.5px] font-bold backdrop-blur" style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 88%, transparent)", color: "var(--text-secondary)" }}>
+            <div data-premium-map-attribution className="pointer-events-none absolute bottom-3 left-3 z-20 max-w-[70%] rounded-full border px-3 py-1.5 text-[8.5px] font-bold backdrop-blur" style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 88%, transparent)", color: "var(--text-secondary)" }}>
               Contours régionaux : geoBoundaries / OSM · 12 ADM1 · navigation prototype
             </div>
           </section>
