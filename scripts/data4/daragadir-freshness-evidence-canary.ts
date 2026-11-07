@@ -57,12 +57,21 @@ function withEvidenceMetadata(
 export function buildProposedSitemapFreshnessUpdate(
   before: CanarySeedState,
   evidence: SitemapPresenceEvidence,
+  evaluatedAt: string = new Date().toISOString(),
 ): ProposedFreshnessCanaryUpdate {
   if (before.canonicalUrl !== evidence.canonicalUrl) {
     throw new Error(`Canonical URL mismatch: ${before.canonicalUrl} != ${evidence.canonicalUrl}`);
   }
   const observedAt = new Date(evidence.observedAt);
+  const evaluatedAtMs = Date.parse(evaluatedAt);
   if (!Number.isFinite(observedAt.getTime())) throw new Error(`Invalid observedAt: ${evidence.observedAt}`);
+  if (!Number.isFinite(evaluatedAtMs)) throw new Error("Invalid freshness evaluation clock");
+  // Presence observations in the future or beyond their 14-day TTL cannot
+  // be promoted into fresh_confirmed, even by a replay of old canary evidence.
+  const evidenceAgeMs = evaluatedAtMs - observedAt.getTime();
+  if (evidenceAgeMs < 0 || evidenceAgeMs > SITEMAP_FRESHNESS_TTL_DAYS * 86_400_000) {
+    throw new Error("Sitemap freshness evidence outside validity window");
+  }
   if (!/^https:\/\/[^/]+\//.test(evidence.sitemapUrl)) throw new Error(`Invalid sitemap URL: ${evidence.sitemapUrl}`);
 
   return {

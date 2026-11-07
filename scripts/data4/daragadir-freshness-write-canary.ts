@@ -54,11 +54,12 @@ function withRollbackMarker(
 export function buildWriteCanaryPlan(
   before: CanarySeedState,
   evidence: SitemapPresenceEvidence,
+  evaluatedAt: string = new Date().toISOString(),
 ): WriteCanaryPlan {
   if (before.freshnessStatus !== "seed_only") {
     throw new Error(`Write canary must begin seed_only: ${before.canonicalUrl}`);
   }
-  const proposal = buildProposedSitemapFreshnessUpdate(before, evidence);
+  const proposal = buildProposedSitemapFreshnessUpdate(before, evidence, evaluatedAt);
   return {
     canonicalUrl: proposal.canonicalUrl,
     before: structuredClone(proposal.before),

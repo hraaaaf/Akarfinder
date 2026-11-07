@@ -199,7 +199,7 @@ async function main(): Promise<void> {
       canonicalUrl: candidate.canonicalUrl,
       observedAt: generatedAt,
       sitemapUrl,
-    });
+    }, generatedAt);
   });
 
   const proof = {
