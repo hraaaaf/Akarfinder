@@ -7,6 +7,12 @@ on:
     paths:
       - scripts/acquisition/akarparser_v2.py
       - scripts/acquisition/akarparser_v2_canary.py
+      - scripts/acquisition/akarparser_v2_private_archive.py
+      - scripts/acquisition/akarparser_v2_promotion_gate.py
+      - scripts/acquisition/__tests__/test_akarparser_v2_private_archive.py
+      - scripts/acquisition/__tests__/test_akarparser_v2_private_workflow.py
+      - scripts/acquisition/__tests__/test_akarparser_v2_promotion_gate.py
+      - .github/workflows/akarparser-v2-private-windows-lake.yml
       - scripts/acquisition/akarparser_v2_neon_readonly_canary.py
       - scripts/acquisition/__tests__/test_akarparser_v2_neon_canary.py
       - scripts/acquisition/__tests__/test_akarparser_v2.py

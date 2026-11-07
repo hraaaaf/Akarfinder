@@ -1,0 +1,81 @@
+name: AkarParser V2 Private Windows Lake
+on:
+  workflow_dispatch:
+    inputs:
+      approve_archive_canary:
+        description: "Confirm authorized read-only processing of private recovery export"
+        type: boolean
+        default: false
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  private-lake:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.approve_archive_canary == true
+    runs-on: [self-hosted, windows, akarfinder-private-lake]
+    environment: q1e-private-local
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Enforce local-only source and durable archive configuration
+        env:
+          Q1E_RAW_EXPORT_PATH: ${{ vars.Q1E_RAW_EXPORT_PATH }}
+          Q1E_ARCHIVE_PRIMARY: ${{ vars.Q1E_ARCHIVE_PRIMARY }}
+          Q1E_ARCHIVE_REPLICA: ${{ vars.Q1E_ARCHIVE_REPLICA }}
+          Q1E_PRIVATE_RESULTS: ${{ vars.Q1E_PRIVATE_RESULTS }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($key in @('Q1E_RAW_EXPORT_PATH','Q1E_ARCHIVE_PRIMARY','Q1E_ARCHIVE_REPLICA','Q1E_PRIVATE_RESULTS')) {
+            if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($key))) {
+              throw 'Q1E_REQUIRED_LOCAL_RUNNER_CONFIG_MISSING'
+            }
+          }
+          if (-not (Test-Path -LiteralPath $env:Q1E_RAW_EXPORT_PATH -PathType Leaf)) {
+            throw 'Q1E_SOURCE_MISSING_ON_PRIVATE_RUNNER'
+          }
+          foreach ($key in @('Q1E_ARCHIVE_PRIMARY','Q1E_ARCHIVE_REPLICA','Q1E_PRIVATE_RESULTS')) {
+            if (-not (Test-Path -LiteralPath ([Environment]::GetEnvironmentVariable($key)) -PathType Container)) {
+              throw 'Q1E_DESTINATION_ROOT_NOT_PREPROVISIONED'
+            }
+          }
+      - name: Offline Python regression tests (no DB/network)
+        run: python -Werror::ResourceWarning -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v2*.py'
+      - name: Immutable dual-volume archive of original 151900 rows
+        env:
+          Q1E_RAW_EXPORT_PATH: ${{ vars.Q1E_RAW_EXPORT_PATH }}
+          Q1E_ARCHIVE_PRIMARY: ${{ vars.Q1E_ARCHIVE_PRIMARY }}
+          Q1E_ARCHIVE_REPLICA: ${{ vars.Q1E_ARCHIVE_REPLICA }}
+        run: |
+          python scripts/acquisition/akarparser_v2_private_archive.py `
+            --input "$env:Q1E_RAW_EXPORT_PATH" `
+            --primary-root "$env:Q1E_ARCHIVE_PRIMARY" `
+            --replica-root "$env:Q1E_ARCHIVE_REPLICA"
+      - name: Local real-data canary only (1000 rows, 100 review dossiers)
+        env:
+          Q1E_RAW_EXPORT_PATH: ${{ vars.Q1E_RAW_EXPORT_PATH }}
+          Q1E_PRIVATE_RESULTS: ${{ vars.Q1E_PRIVATE_RESULTS }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $destination = Join-Path $env:Q1E_PRIVATE_RESULTS "q1e-canary-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+          python scripts/acquisition/akarparser_v2_canary.py `
+            --input "$env:Q1E_RAW_EXPORT_PATH" `
+            --out "$destination" `
+            --sample-size 1000 --audit-size 100
+          $report = Get-Content -LiteralPath (Join-Path $destination 'aggregate_report.json') -Raw | ConvertFrom-Json
+          if ($report.selection.selected -ne 1000 -or $report.manual_review.queue_size -ne 100 `
+              -or -not $report.source.unchanged -or $report.invariants.publication_allowed -ne 0 `
+              -or $report.invariants.new_detailed_observations_certified -ne 0) {
+            throw 'Q1E_PRIVATE_CANARY_FAIL_CLOSED'
+          }
+          Write-Host 'Q1E_PRIVATE_CANARY_VALIDATED_STRUCTURE_ONLY=1'
+          Write-Host 'Q1E_INDEPENDENT_FIELD_PRECISION_VALIDATED=0'
+          Write-Host 'Q1E_NEON_WRITES=0'
+      # NO upload-artifact / cache / database / URL logging of raw or parsed rows.
