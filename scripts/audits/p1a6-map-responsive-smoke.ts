@@ -106,8 +106,12 @@ async function main() {
           }
           if (route.citySlug === "casablanca" && route.districtSlug === "maarif") {
             try {
-              await page.getByText("Aucun repère suffisamment récent n’est actuellement disponible", { exact: false })
-                .waitFor({ state: "visible", timeout: 15_000 });
+              const emptyState = page.locator("[data-p4-map-decision-rail] .p4-premium-empty-evidence");
+              await emptyState.waitFor({ state: "visible", timeout: 15_000 });
+              const text = await emptyState.innerText();
+              if (!text.includes("Aucun repère suffisamment récent n’est actuellement disponible")) {
+                throw new Error("Visible Maârif empty-state does not explain source freshness");
+              }
             } catch {
               findings.push({ route: route.path, viewport: viewport.label, check: "fresh-poi-empty-state", detail: "Maârif has no sourced recent POIs but empty-state disclosure was not visible" });
             }

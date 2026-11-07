@@ -176,3 +176,14 @@
   background: rgb(8 31 61 / .78);
   color: #b8c7d9;
 }
+
+/* L1 P0: preserve a truthful compact empty-state even when the legacy lede
+ * and zero-valued statistic cards are hidden on the map-first mobile sheet. */
+[data-p4-map-layout] .p4-premium-empty-evidence {
+  display: block;
+  margin: 6px 0 4px;
+  color: #52657a;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.3;
+}

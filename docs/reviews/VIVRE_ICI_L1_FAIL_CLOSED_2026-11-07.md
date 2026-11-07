@@ -48,3 +48,12 @@ Le test révisé P1A.6 sur HEAD précédent [#42357749536](https://github.com/hr
 - Ne teste pas la promesse de **3 vues Maârif** de #1108 : celles-ci ne sont pas présentes sur `main` et restent L3. La baseline BEFORE de la sélection nationale n'existe pas, donc comparaison visuelle de ce sous-écran non complète ; le test prouve le nouvel état mais pas une note UX.
 
 **Next exact** : exécution complète sur SHA candidat puis ouverture/affichage des captures, vérification de l'absence de nouveaux findings ; si sélecteurs E2E inadéquats, diagnostiquer sans réduire les critères métier. Aucune fusion ni Vercel.
+
+
+## Correctif P0 d'affichage — CSS masquait le message de pénurie (07/11/2026)
+
+**Cause prouvée :** `app/map/ux-convergence-l9.css` contient un sélecteur `:has([data-maplibre-anchor-count="0"])` qui applique `display:none !important` à `.p4-premium-lede`. Donc la première correction du texte `contextIntro` (« aucun repère récent… ») était correcte dans le DOM mais **pas visible pour l'utilisateur**. Le CSS masque aussi les cartes statistiques zéro, comportement à conserver pour éviter pseudo-indicateurs.
+
+**Correction ciblée sans contournement :** `P4MapDecisionRail.tsx` rend un court `<p role="status" className="p4-premium-empty-evidence">Aucun repère suffisamment récent…</p>` **uniquement** lorsque `localContext?.anchor_count===0`, en dehors de `.p4-premium-lede`; `ux-convergence-l9.css` contient une règle compacte pour la fiche sur 390/430 et desktop. Le test de non-publication exécuté dans required `gate` impose désormais l'existence de cette classe côté composant et CSS. L'E2E attend son **affichage effectif**, pas la seule présence d'un texte caché. 
+
+**Validation** : le nouveau test browser exact HEAD doit prouver visibilité et aucun chevauchement du CTA sur les quatre viewports ; pas de preuve avant résultat du run. Ne pas supprimer le TTL 30 jours, ni remplir de faux POI.

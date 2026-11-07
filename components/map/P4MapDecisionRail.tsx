@@ -133,6 +133,12 @@ export function P4MapDecisionRail() {
         ) : null}
       </header>
 
+      {districtEntity && localContext?.anchor_count === 0 ? (
+        <p className="p4-premium-empty-evidence" role="status">
+          Aucun repère suffisamment récent n’est actuellement disponible pour {districtEntity.canonical_name}.
+        </p>
+      ) : null}
+
       <nav className="p4-premium-tabs" aria-label="Contexte Vivre ici">
         <span aria-current="page">Vue d’ensemble</span>
         <span>Vie locale</span>

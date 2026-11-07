@@ -20,6 +20,9 @@ test("zero recent POIs have an explicit honest fallback, not a false sourcing cl
   assert.match(rail, /localContext\?\.anchor_count/);
   assert.match(rail, /Aucun repère suffisamment récent n’est actuellement disponible/);
   assert.match(rail, /Repères récents indisponibles/);
+  assert.match(rail, /className="p4-premium-empty-evidence"/);
+  const css = readFileSync("app/map/ux-convergence-l9.css", "utf8");
+  assert.match(css, /\.p4-premium-empty-evidence/);
 });
 
 test("seed is expired by audit date; don't increase the source freshness window to hide missing POIs", () => {
