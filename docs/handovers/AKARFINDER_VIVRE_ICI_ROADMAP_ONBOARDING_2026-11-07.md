@@ -197,3 +197,14 @@ Le bon run manuel [Vivre Ici AFTER Certification #98](https://github.com/hraaaaf
 4. Git/merge/post-merge/closeout seulement si explicitement autorisés. Toutes les PR ici sont non mergées ; roadmap totale et % non certifiés.
 
 **Source vivante externe :** [Notion Akarfinder Command Center](https://app.notion.com/p/3df77c663362816d8678c28ad6a49bcf?pvs=204). Cette section remplace l'ancien checkpoint L1 « CI en cours » comme état de reprise, sans supprimer l'historique.
+
+
+## 07/11/2026 — L4-B1 Mohammedia overlay (en cours, pas certifié)
+
+Après [L4-A API N2 #42398790927 SUCCESS](https://github.com/hraaaaf/Akarfinder/actions/runs/42398790927), un **second défaut client** a été détecté : `NationalNeighborhoodOverlayBridge` rejetait le payload source V5 `place.slug=mohammadia` lorsque la route navigateur passait `city=mohammedia`. L'API fournissait bien 214 labels et 5 centres, mais l'UI n'affichait pas l'overlay de recherche de quartiers.
+
+- **Nouveau lot/PR Draft** [#1186](https://github.com/hraaaaf/Akarfinder/pull/1186), branche `test/vivre-ici-l4b-mohammedia-overlay-20261107` **base L4-A**. Test E2E Mohammedia 390/430/768/1280 + sélection d'un label sourcé, dans workflow N2 existant, aucune modification `.github/workflows`.
+- **BEFORE** : SHA `e0330f30`, [N2 #42399721190](https://github.com/hraaaaf/Akarfinder/actions/runs/42399721190) annulé automatiquement lors d'un nouveau push ; artefact #13585326427 conservant **une capture 390 px seulement**, examinée : vue de la ville correcte, **champ quartier absent** malgré compteur 214. Les captures BEFORE 430/768/1280 **NE SONT PAS acquises**.
+- **Correctif candidat** SHA [`a6ead3d4`](https://github.com/hraaaaf/Akarfinder/commit/a6ead3d46d3656e03bbb730f4ad709c80e8716e3) : seul `mohammedia` peut accepter la réponse canonique V5 `mohammadia`; aucune source de quartiers ni géométrie créée. [N2 AFTER #42399951940](https://github.com/hraaaaf/Akarfinder/actions/runs/42399951940) **non conclu à la dernière lecture** : L4-B1 reste non certifié.
+- **Risque Search/noms** : V5 présente le nom `Mohammadia`, le [HCP](https://www.hcp.ma/reg-casablanca/RGPH-2024-Caracteristiques-demographiques-et-socio-economiques-de-la-Population-Fiches-communales-de-la-region_a144.html) et `geo-entity-registry` `Mohammedia` ; liaison Carte→Search doit être testée explicitement, sans assimiler les libellés V5 non qualifiés à 17 quartiers validés.
+- **Next exact** : lire AFTER N2, `l4b/report.json` et les 4 captures, corriger les défaillances ; ensuite documenter limite BEFORE, séparer L4-B complet 8 villes/17 quartiers et L6 licences. Aucun merge, DB ou déploiement Vercel.
