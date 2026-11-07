@@ -8,6 +8,12 @@ on:
       - 'scripts/audits/candidate-lake-q1-artifact-catalog.json'
       - 'scripts/audits/test_candidate_lake_q1_inventory.py'
       - '.github/workflows/candidate-lake-q1-artifact-inventory.yml'
+  pull_request:
+    paths:
+      - 'scripts/audits/candidate-lake-q1-artifact-inventory.py'
+      - 'scripts/audits/candidate-lake-q1-artifact-catalog.json'
+      - 'scripts/audits/test_candidate_lake_q1_inventory.py'
+      - '.github/workflows/candidate-lake-q1-artifact-inventory.yml'
   workflow_dispatch:
 
 permissions:
