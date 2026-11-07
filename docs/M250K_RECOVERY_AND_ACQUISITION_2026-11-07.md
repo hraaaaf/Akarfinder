@@ -241,7 +241,7 @@ Artefacts privés : neon_recovery_export_20261107.jsonl.gz (151 900 lignes), neo
 - Export Neon détaillé SHA-256 : c3d8a8c9476602baa7663d1e9903e6015cb7300d6e7539183bf48b735cb76b08.
 - Union des identités SHA-256 : 3efb90a0ba422f2ae92a67848ad547cc652a1afe77da0f885c55f59542ec10db.
 - Union des observations détaillées SHA-256 : 76635208549dbce618cf0de9de5e3109f0ac39deefb08f83a330a882fed5f1ee.
-- Manifeste privé SHA-256 : 5e2f06a116b1d6b2e2b5e68b92385101cd40c12eda5577537ef98c81789d90eb.
+- Manifeste privé SHA-256 : 6dc6fe94cdc2ff909a769d8820b49eeac020f8d88061f245f85b5a1a25b8b523.
 
 ### Requêtes de preuve agrégées
 
@@ -263,3 +263,12 @@ Comptage des observations distinctes par source et total :
 CI vérifiée sur le commit 4a645aaaf997eb248e7ab32033d0ece533f4bf9a : validate, typecheck, inventory, gates et detect_drift SUCCESS; owner_approval et override_preflight SKIPPED comme attendu en Draft. PR #1176 maintenue en Draft, non fusionnée. Prochaine étape : rapprocher les 253 372 représentations historiques et les archives GitHub récupérables par clés prouvées, puis examiner les conditions d’usage avant tout enrichissement externe.
 
 
+
+
+### Q1B complément — recoupement exact avec les URLs L0 (07/11/2026)
+
+Un recoupement local supplémentaire a comparé les 151 900 URL Neon aux 231 818 paires domaine + URL du Candidate Lake L0, sans normaliser aucun caractère de l’URL. **17 631** paires exactes ont été référencées : **7 826** lignes Neon avec ID source et **9 805** sans ID. Elles sont conservées dans une table et un export privé de preuves de correspondance URL. **Aucune de ces correspondances URL n’est fusionnée comme identité source ou observation**, et les compteurs 69 619 identités / 9 990 observations restent inchangés. Les 9 805 sans ID restent non résolues.
+
+Export privé : candidate_neon_exact_url_crossrefs_20261107.jsonl.gz, **17 631 lignes**, SHA-256 13ad6b4ba59f13cfa22ac96c822158ad877183e29ab8564996cdd35c6b891609. Deux exécutions ont donné le même hash de table logique et le même hash d’export; integrity_check SQLite demeure ok.
+
+La vérification des fichiers locaux n’a pas retrouvé l’archive V2 nommée ci-dessus ni l’export complet des 253 372 représentations. Les artefacts GitHub du run 42365367984 sont toujours marqués disponibles jusqu’au 05/02/2027, dont le miroir 13570849757 (digest SHA-256 5c87cc1f8b362a9f7692b006c297afa7c884eef884b3f3c6a760c1cee29dc8e8). Le connecteur a fourni une référence de fichier téléchargeable, mais pas un chemin local; la commande gh run download échoue car le CLI local n’est pas authentifié (gh auth login requis). Aucun état vide ou HTTP 410 n’est inféré pour cet artefact. L’union complète contre 253 372 représentations reste donc non certifiée jusqu’à matérialisation privée de l’archive et de ses preuves.
