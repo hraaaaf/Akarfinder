@@ -278,3 +278,6 @@ await import("./vivre-ici-l4c-city-focus.mjs");
 
 // L4-D: major cities on national map, sourced secondary places shown only after zoom.
 await import("./vivre-ici-l4d-major-cities.mjs");
+
+// L6-A: real on-screen secondary label + municipality boundaries fading at street zoom.
+await import("./vivre-ici-l6a-regional-representation.mjs");
