@@ -169,7 +169,7 @@ try {
         const finalHref = await search.getAttribute("href");
         const searchUrl = new URL(finalHref || "", baseUrl);
         const placeKey = (value) => (value || "").normalize("NFD")
-          .replace(/[\\u0300-\\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+          .replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
         if (searchUrl.pathname !== "/search" ||
             placeKey(searchUrl.searchParams.get("city")) !== "casablanca" ||
             placeKey(searchUrl.searchParams.get("district")) !== "maarif") {
