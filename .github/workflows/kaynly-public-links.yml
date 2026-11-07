@@ -1,0 +1,57 @@
+name: Kaynly Public Landing Source Links
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/kaynly-open-links/**'
+      - '.github/workflows/kaynly-public-links.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  source-links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Offline tests
+        working-directory: scripts/acquisition/kaynly-open-links
+        run: |
+          python -m compileall -q collector.py test_collector.py
+          python -m unittest -v test_collector.py
+      - name: Limited read-only sitemap acquisition
+        id: scan
+        continue-on-error: true
+        working-directory: scripts/acquisition/kaynly-open-links
+        run: |
+          python collector.py --out ../../../artifacts/kaynly-balanced-links --max-pages 60 --delay 1.3 --selection balanced-new
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kaynly-balanced-source-link-evidence
+          path: artifacts/kaynly-balanced-links/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Certify balanced run, not only nonempty URLs
+        if: always()
+        run: |
+          python - <<'PY'
+          import json,sys
+          from pathlib import Path
+          f=Path("artifacts/kaynly-balanced-links/report.json")
+          if not f.exists():
+              sys.exit("Missing audit report")
+          r=json.loads(f.read_text())
+          counts=r.get("selected_type_counts",{})
+          assert r.get("selection")=="balanced-new",r
+          assert counts.get("vente",0)>=25 and counts.get("location",0)>=25,counts
+          assert r.get("selected_overlap_prior_60")==0,r
+          assert r.get("pages_successful",0)>=40,r
+          assert r.get("stop_reason") in ("page_budget",None),r
+          assert r.get("unique_source_ids",0)>0,r
+          PY
