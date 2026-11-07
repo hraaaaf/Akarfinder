@@ -146,15 +146,42 @@ try {
         throw new Error("Maârif still shows fabricated local figures or hides the unavailable-data message");
       }
       const searchLink = await selected.locator('[data-explorer-selected]').getAttribute("href");
-      if (searchLink !== "/immobilier/casablanca/maarif") {
-        throw new Error(`Maârif Search handoff wrong: ${searchLink}`);
+      const destination = new URL(searchLink || "", baseUrl);
+      const directListings = destination.pathname === "/immobilier/casablanca/maarif";
+      const localMap = destination.pathname === "/map"
+        && destination.searchParams.get("city") === "casablanca"
+        && destination.searchParams.get("district") === "maarif"
+        && destination.searchParams.get("layer") === "explore";
+      if (!directListings && !localMap) {
+        throw new Error(`Maârif handoff loses location or destination: ${searchLink}`);
       }
       await page.screenshot({ path: `${outDir}/casablanca-${viewport.name}-after.png`, fullPage: false });
 
+      if (localMap) {
+        // The real rendered link currently routes via the district MapLibre view.
+        // Check the *next* Search CTA rather than treating a legitimate intermediate
+        // step as a failed listing URL; don't accept an arbitrary destination.
+        await selected.locator('[data-explorer-selected]').click();
+        await page.locator('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]')
+          .waitFor({ state: "visible", timeout: 20000 });
+        const search = page.locator('[data-p4-map-decision-rail] a.p4-premium-primary-action');
+        await search.waitFor({ state: "visible", timeout: 15000 });
+        const finalHref = await search.getAttribute("href");
+        const searchUrl = new URL(finalHref || "", baseUrl);
+        const placeKey = (value) => (value || "").normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (searchUrl.pathname !== "/search" ||
+            placeKey(searchUrl.searchParams.get("city")) !== "casablanca" ||
+            placeKey(searchUrl.searchParams.get("district")) !== "maarif") {
+          throw new Error(`District map Search handoff drops location: ${finalHref}`);
+        }
+        await page.locator('[data-vivre-ici-territory-back]').click();
+      } else {
+        await page.getByRole("navigation", { name: "Fil d’Ariane cartographique" })
+          .getByRole("button", { name: "Maroc", exact: true }).click();
+      }
       // Returning to Morocco must restore the 12-region SVG and selection list.
-      await page.getByRole("navigation", { name: "Fil d’Ariane cartographique" })
-        .getByRole("button", { name: "Maroc", exact: true }).click();
-      await page.locator('[data-premium-map][data-map-level="national"]').waitFor({ state: "visible", timeout: 10000 });
+      await page.locator('[data-premium-map][data-map-level="national"]').waitFor({ state: "visible", timeout: 15000 });
       if (await page.locator('[data-region-list-slug]').count() !== 12) {
         throw new Error("Returning to Morocco did not restore all 12 regions");
       }
