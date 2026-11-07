@@ -101,6 +101,22 @@ describe("P1A.6 — Responsive hardening", () => {
     assert.ok(audit.includes("map-casablanca-maarif-sheet-expanded-"));
   });
 
+  it("L3-A Maârif modes use actual 2D camera and street navigation, not fake administrative bounds", () => {
+    const map = source("components/map/MapLibreNeighborhood3D.tsx");
+    const css = source("app/map/l3-maarif-modes.css");
+    const audit = source("scripts/audits/p1a6-map-responsive-smoke.ts");
+    assert.ok(map.includes('data-l3-maarif-pilot={isMaarifPilot ? "true" : "false"}'));
+    assert.ok(map.includes("data-l3-admin-boundary=\"unavailable\""));
+    assert.ok(map.includes('data-l3-go-street'));
+    assert.ok(map.includes('data-l3-go-quarter'));
+    assert.ok(map.includes('pitch: isMaarifPilot ? 0'));
+    assert.ok(map.includes('bearing: isMaarifPilot ? 0'));
+    assert.equal(map.includes('<span>Quartiers</span>'), false);
+    assert.ok(css.includes('min-height: 44px'));
+    assert.ok(audit.includes('l3a-maarif-real-camera-modes'));
+    assert.ok(audit.includes('map-casablanca-maarif-street-'));
+  });
+
   it("L2-D exposes real OSM/Esri map credits without hiding them under the mobile sheet", () => {
     const maplibre = source("components/map/MapLibreNeighborhood3D.tsx");
     const national = source("components/map/PremiumInteractiveMap.tsx");

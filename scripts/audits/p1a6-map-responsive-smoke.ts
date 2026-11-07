@@ -119,6 +119,11 @@ async function main() {
           } catch {
             findings.push({ route: route.path, viewport: viewport.label, check: "decision-rail", detail: "Vivre Ici decision rail missing" });
           }
+          // L3 genuine camera controls must never cover navigation or source credits.
+          const boxesOverlap = (a: { x: number; y: number; width: number; height: number } | null,
+                                b: { x: number; y: number; width: number; height: number } | null): boolean =>
+            Boolean(a && b && a.x < b.x + b.width && a.x + a.width > b.x &&
+                    a.y < b.y + b.height && a.y + a.height > b.y);
           // Measure real tile-source attribution in both mobile sheet states.
           const assertAttributionUnobscured = async (sheetState: "compact" | "expanded") => {
             const attribution = page.locator(".maplibregl-ctrl-attrib");
@@ -157,6 +162,54 @@ async function main() {
               findings.push({ route: route.path, viewport: viewport.label, check: "fresh-poi-empty-state", detail: "Maârif has no sourced recent POIs but empty-state disclosure was not visible" });
             }
           }
+          if (route.citySlug === "casablanca" && route.districtSlug === "maarif") {
+            // L3-A: genuine north-up 2D default, real street zoom, non-published admin bounds.
+            const controls = page.locator("[data-l3-map-modes]");
+            const shell = page.locator('[data-l3-maarif-pilot="true"]');
+            try {
+              await controls.waitFor({ state: "visible", timeout: 12_000 });
+              const quartierButtonBox = await controls.locator("[data-l3-go-quarter]").boundingBox();
+              const backButtonBox = await page.locator("[data-vivre-ici-territory-back]").boundingBox();
+              if (boxesOverlap(quartierButtonBox, backButtonBox)) {
+                throw new Error("L3 mode control overlaps return-to-Morocco navigation");
+              }
+              await page.waitForFunction(() => {
+                const map = document.querySelector('[data-l3-maarif-pilot="true"]');
+                return map?.getAttribute("data-l3-camera-pitch") === "0"
+                  && map?.getAttribute("data-l3-camera-bearing") === "0";
+              }, null, { timeout: 12_000 });
+              if (viewport.width >= 1024) {
+                const mapBox = await page.locator('[data-l3-maarif-pilot="true"] .maplibre-spike-map').boundingBox();
+                const marker = page.locator('[data-l3-maarif-pilot="true"] .maplibre-spike-neighborhood-label');
+                await marker.waitFor({ state: "visible", timeout: 12_000 });
+                const markerBox = await marker.boundingBox();
+                if (!mapBox || !markerBox) throw new Error("Maârif focal marker not measurable");
+                const normalizedY = (markerBox.y + markerBox.height / 2 - mapBox.y) / mapBox.height;
+                if (normalizedY < 0.2 || normalizedY > 0.8) {
+                  throw new Error(`Maârif 2D focal marker outside central map area: ${normalizedY.toFixed(3)}`);
+                }
+              }
+              if ((await shell.getAttribute("data-l3-admin-boundary")) !== "unavailable") {
+                throw new Error("Unreviewed Maârif administrative bounds must remain unavailable");
+              }
+              await controls.locator("[data-l3-go-street]").click();
+              await page.waitForFunction(() => {
+                const map = document.querySelector('[data-l3-maarif-pilot="true"]');
+                return map?.getAttribute("data-l3-maarif-view") === "rue"
+                  && Number(map?.getAttribute("data-l3-camera-zoom")) >= 16.8;
+              }, null, { timeout: 12_000 });
+              await page.screenshot({ path: join(outputDir, `map-casablanca-maarif-street-${viewport.label}.png`), fullPage: false });
+              screenshotsCaptured += 1;
+              await controls.locator("[data-l3-go-quarter]").click();
+              await page.waitForFunction(() => {
+                const map = document.querySelector('[data-l3-maarif-pilot="true"]');
+                return map?.getAttribute("data-l3-maarif-view") === "quartier"
+                  && Number(map?.getAttribute("data-l3-camera-zoom")) <= 15.2;
+              }, null, { timeout: 12_000 });
+            } catch (error) {
+              findings.push({ route: route.path, viewport: viewport.label, check: "l3a-maarif-real-camera-modes", detail: String(error).slice(0, 550) });
+            }
+          }
           if (route.citySlug === "casablanca" && route.districtSlug === "maarif" && viewport.width <= 768) {
             // Real mobile sheet behavior: compact 160px, 44px toggle, visible Search CTA,
             // expanded scrollable context, then collapse again without hiding the CTA.
@@ -179,6 +232,9 @@ async function main() {
               await sheet.locator('[data-l2b-living-context]').waitFor({ state: "visible", timeout: 12_000 });
               if ((await toggle.getAttribute('aria-expanded')) !== 'true') throw new Error("expanded aria-expanded missing");
               await assertAttributionUnobscured("expanded");
+              if (await page.locator("[data-l3-map-modes]").isVisible()) {
+                throw new Error("Map modes must be hidden while the mobile decision sheet is expanded");
+              }
               const expanded = await sheet.boundingBox();
               const expandedCta = await cta.boundingBox();
               if (!expanded || expanded.height <= compact.height + 60 || !expandedCta ||
@@ -191,6 +247,16 @@ async function main() {
               if ((await toggle.getAttribute('aria-expanded')) !== 'false') throw new Error("collapsing does not update aria-expanded");
               const recompact = await sheet.boundingBox();
               if (!recompact || recompact.height > 160) throw new Error(`sheet cannot return to compact state: ${recompact?.height}`);
+              // The attribution position may animate after the sheet transitions.
+              // Await its measured separation instead of sampling the intermediate expanded frame.
+              await page.waitForFunction(() => {
+                const note = document.querySelector("[data-l3-admin-unavailable]")?.getBoundingClientRect();
+                const credit = document.querySelector(".maplibregl-ctrl-attrib")?.getBoundingClientRect();
+                const modes = document.querySelector("[data-l3-map-modes]");
+                if (!note || !credit || !modes || getComputedStyle(modes).display === "none") return false;
+                return note.bottom <= credit.top - 3 || note.top >= credit.bottom + 3 ||
+                  note.right <= credit.left - 3 || note.left >= credit.right + 3;
+              }, null, { timeout: 6000 });
             } catch (error) {
               findings.push({ route: route.path, viewport: viewport.label, check: "l2c-sheet-expand-collapse", detail: String(error).slice(0, 550) });
             }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Layers3, LocateFixed, Minus, Plus, Search } from "lucide-react";
+import { LocateFixed, Minus, Plus, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 type LivingHereCategory =
@@ -65,6 +65,9 @@ export function MapLibreNeighborhood3D({
 }: MapLibreNeighborhood3DProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const isMaarifPilot = citySlug === "casablanca" && districtSlug === "maarif";
+  const [pilotView, setPilotView] = useState<"quartier" | "rue">("quartier");
+  const [observedCamera, setObservedCamera] = useState({ pitch: -1, bearing: -1, zoom: -1 });
   const [ready, setReady] = useState(false);
   const [renderState, setRenderState] = useState<"loading" | "ready" | "error">("loading");
   const [sourceState, setSourceState] = useState<"loading" | "available" | "unavailable">("loading");
@@ -75,7 +78,27 @@ export function MapLibreNeighborhood3D({
   const [screenPoints, setScreenPoints] = useState<Record<string, ScreenPoint>>({});
   const [centerPoint, setCenterPoint] = useState<ScreenPoint | null>(null);
 
+  useEffect(() => { setPilotView("quartier"); }, [citySlug, districtSlug]);
+
+  // L3-A: user-triggered camera changes, never pretend to offer a published boundary.
+  const selectMaarifView = (view: "quartier" | "rue") => {
+    if (!isMaarifPilot) return;
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    // Flat Maârif camera centers on the sourced neighborhood point.
+    // The historical northwest 3D camera offset placed its marker at the bottom edge on desktop.
+    map.easeTo({
+      center,
+      zoom: view === "rue" ? 17.1 : 14.6,
+      pitch: 0,
+      bearing: 0,
+      duration: 450,
+    });
+    setPilotView(view);
+  };
+
   const restoreCamera = () => {
+    if (isMaarifPilot) { selectMaarifView("quartier"); return; }
     const map = mapInstanceRef.current;
     if (!map) return;
     const desktop = window.innerWidth >= 1024;
@@ -122,15 +145,17 @@ export function MapLibreNeighborhood3D({
       .then((maplibregl) => {
         if (disposed || !mapRef.current) return;
         const desktop = window.innerWidth >= 1024;
-        const targetCenter: MutablePosition = desktop
-          ? [center[0] + desktopCameraOffset[0], center[1] + desktopCameraOffset[1]]
-          : center;
+        const targetCenter: MutablePosition = isMaarifPilot
+          ? center
+          : desktop
+            ? [center[0] + desktopCameraOffset[0], center[1] + desktopCameraOffset[1]]
+            : center;
         map = new maplibregl.Map({
           container: mapRef.current,
           center: targetCenter,
-          zoom: desktop ? 14.05 : 14.45,
-          pitch: desktop ? 52 : 44,
-          bearing: desktop ? -27 : -18,
+          zoom: isMaarifPilot ? 14.6 : desktop ? 14.05 : 14.45,
+          pitch: isMaarifPilot ? 0 : desktop ? 52 : 44,
+          bearing: isMaarifPilot ? 0 : desktop ? -27 : -18,
           // Provider/OSM attributions must remain legible during map use.
           attributionControl: { compact: false },
           canvasContextAttributes: { antialias: true },
@@ -252,6 +277,15 @@ export function MapLibreNeighborhood3D({
             if (features.length > 0) setSourceState("available");
             setReady(true);
             setRenderState("ready");
+            const cameraNow = {
+              pitch: Math.round(map.getPitch() * 100) / 100,
+              bearing: Math.round(map.getBearing() * 100) / 100,
+              zoom: Math.round(map.getZoom() * 100) / 100,
+            };
+            setObservedCamera((previous) =>
+              previous.pitch === cameraNow.pitch && previous.bearing === cameraNow.bearing && previous.zoom === cameraNow.zoom
+                ? previous : cameraNow,
+            );
           } catch {
             setSourceState("unavailable");
           }
@@ -313,6 +347,12 @@ export function MapLibreNeighborhood3D({
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
       data-maplibre-city={citySlug}
       data-maplibre-district={districtSlug}
+      data-l3-maarif-pilot={isMaarifPilot ? "true" : "false"}
+      data-l3-maarif-view={isMaarifPilot ? pilotView : "legacy"}
+      data-l3-camera-pitch={observedCamera.pitch}
+      data-l3-camera-bearing={observedCamera.bearing}
+      data-l3-camera-zoom={observedCamera.zoom}
+      data-l3-admin-boundary="unavailable"
       data-maplibre-boundary-status={boundaryGeometry ? "provided" : "center-only"}
       data-maplibre-reserve-rail={reserveRail ? "true" : "false"}
     >
@@ -335,15 +375,18 @@ export function MapLibreNeighborhood3D({
         </div>
       </div>
 
+      {isMaarifPilot ? (
+        <div className="l3-maarif-view-controls" data-l3-map-modes role="group" aria-label="Modes de la carte Maârif">
+          <button type="button" data-l3-go-quarter aria-pressed={pilotView === "quartier"} onClick={() => selectMaarifView("quartier")}>Quartier · 2D</button>
+          <button type="button" data-l3-go-street aria-pressed={pilotView === "rue"} onClick={() => selectMaarifView("rue")}>Rue · zoom</button>
+          <span role="status" data-l3-admin-unavailable>Limites administratives indisponibles · source non revue</span>
+        </div>
+      ) : null}
+
       <div className="maplibre-spike-map-chrome">
         <div className="maplibre-spike-brand"><b>AF</b><span>AkarFinder</span></div>
         <div className="maplibre-spike-search"><Search size={17} aria-hidden="true" /><strong>{cityLabel}</strong><span>Quartiers et adresses</span></div>
-        <div className="maplibre-spike-mode"><span>Satellite</span><strong>3D</strong></div>
-      </div>
 
-      <div className="maplibre-spike-view-chips" aria-label="Mode cartographique">
-        <span className="active">Satellite</span>
-        <span>Quartiers</span>
       </div>
 
       <div className="maplibre-spike-filters" aria-label={`Filtres des repères de ${districtLabel}`}>
@@ -355,7 +398,6 @@ export function MapLibreNeighborhood3D({
         <button type="button" className="maplibre-spike-control-primary" onClick={restoreCamera} aria-label="Recentrer sur le quartier"><LocateFixed size={18} /></button>
         <button type="button" onClick={() => changeZoom(0.75)} aria-label="Zoomer"><Plus size={19} /></button>
         <button type="button" onClick={() => changeZoom(-0.75)} aria-label="Dézoomer"><Minus size={19} /></button>
-        <span aria-hidden="true"><Layers3 size={18} /></span>
       </div>
 
       <div className="maplibre-spike-map-note">
