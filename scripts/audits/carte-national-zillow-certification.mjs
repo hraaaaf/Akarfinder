@@ -142,7 +142,7 @@ try {
       await selected.locator('[data-local-evidence="unavailable"]').waitFor({ state: "visible", timeout: 10000 });
       const districtText = await page.locator('[data-map-side-panel]').innerText();
       if (!districtText.includes("Aucune statistique non sourcée") ||
-          /DH\\/m²|repère vérifié|17\\s?600|15 repères/i.test(districtText)) {
+          districtText.includes("DH/m²") || /repère vérifié|17\\s?600|15 repères/i.test(districtText)) {
         throw new Error("Maârif still shows fabricated local figures or hides the unavailable-data message");
       }
       const searchLink = await selected.locator('[data-explorer-selected]').getAttribute("href");
