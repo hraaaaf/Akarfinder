@@ -14,7 +14,7 @@ const routes = [
 const viewports = [
   { width: 390, height: 844, label: "390" },
   { width: 430, height: 932, label: "430" },
-  { width: 768, height: 1024, label: "768" },
+  { width: 768, height: 900, label: "768" },
   { width: 1280, height: 900, label: "1280" },
 ] as const;
 
@@ -34,21 +34,18 @@ async function main() {
         const pageErrors: string[] = [];
         page.on("pageerror", (error) => pageErrors.push(String(error)));
 
-        let nationalResponseStatus: number | null = null;
-        page.on("response", (response) => {
-          const url = new URL(response.url());
-          if (url.pathname === "/api/geo/national-territories") nationalResponseStatus = response.status();
-        });
-
         const response = await page.goto(`${baseUrl}${route.path}`, { waitUntil: "domcontentloaded", timeout: 45_000 });
         if (!response || response.status() >= 500) {
           findings.push({ route: route.path, viewport: viewport.label, check: "http-status", detail: `Unexpected status ${response?.status() ?? "none"}` });
         }
 
-        try {
-          await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 20_000 });
-        } catch {
-          findings.push({ route: route.path, viewport: viewport.label, check: "map-canvas", detail: "MapLibre canvas missing" });
+        // /map is the premium national SVG, not the MapLibre city/district renderer.
+        if (route.experience !== "national") {
+          try {
+            await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 20_000 });
+          } catch {
+            findings.push({ route: route.path, viewport: viewport.label, check: "map-canvas", detail: "MapLibre canvas missing" });
+          }
         }
 
         const documentWidth = await page.locator("html").evaluate((element) => element.scrollWidth);
@@ -57,13 +54,26 @@ async function main() {
         }
 
         if (route.experience === "national") {
+          // PremiumInteractiveMap uses local TopoJSON (12 regions) and an SVG map;
+          // it intentionally does not call /api/geo/national-territories on initial /map.
+          const national = page.locator("[data-premium-map]");
           try {
-            await page.waitForFunction(() => Boolean((window as typeof window & { __AKARFINDER_NATIONAL_MAP__?: unknown }).__AKARFINDER_NATIONAL_MAP__), null, { timeout: 15_000 });
+            await national.waitFor({ state: "visible", timeout: 15_000 });
+            await page.waitForFunction(
+              () => document.querySelector("[data-premium-map]")?.getAttribute("data-topology-state") === "ready",
+              null,
+              { timeout: 20_000 },
+            );
           } catch {
-            findings.push({ route: route.path, viewport: viewport.label, check: "national-map", detail: "National map runtime marker missing" });
+            findings.push({ route: route.path, viewport: viewport.label, check: "premium-national", detail: "Premium SVG map missing or topology not ready" });
           }
-          if (nationalResponseStatus !== 200) {
-            findings.push({ route: route.path, viewport: viewport.label, check: "national-territories", detail: `National territories response ${nationalResponseStatus ?? "missing"}` });
+          const regionCount = await page.locator("[data-region-slug]").count();
+          if (regionCount !== 12) {
+            findings.push({ route: route.path, viewport: viewport.label, check: "national-regions", detail: `Expected 12 actual region paths, found ${regionCount}` });
+          }
+          const regionListCount = await page.locator("[data-region-list-slug]").count();
+          if (regionListCount !== 12) {
+            findings.push({ route: route.path, viewport: viewport.label, check: "national-region-list", detail: `Expected 12 region controls, found ${regionListCount}` });
           }
         } else if (route.experience === "intelligence") {
           const intelligenceMap = page.locator('[data-akarfinder-market-intelligence-map]');

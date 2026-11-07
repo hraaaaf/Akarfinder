@@ -13,7 +13,7 @@ describe("P1A.6 — Responsive hardening", () => {
     for (const expected of [
       '{ width: 390, height: 844, label: "390" }',
       '{ width: 430, height: 932, label: "430" }',
-      '{ width: 768, height: 1024, label: "768" }',
+      '{ width: 768, height: 900, label: "768" }',
       '{ width: 1280, height: 900, label: "1280" }',
     ]) assert.ok(audit.includes(expected));
   });
@@ -23,7 +23,9 @@ describe("P1A.6 — Responsive hardening", () => {
     assert.ok(audit.includes('{ path: "/map", slug: "map", experience: "national" }'));
     assert.ok(audit.includes('{ path: "/map?city=Rabat", slug: "map-rabat", experience: "intelligence" }'));
     assert.ok(audit.includes('{ path: "/map?city=Rabat&district=Agdal", slug: "map-rabat-agdal", experience: "maplibre", citySlug: "rabat", districtSlug: "agdal" }'));
-    assert.ok(audit.includes('/api/geo/national-territories'));
+    assert.ok(audit.includes('[data-premium-map]'));
+    assert.ok(audit.includes('[data-region-slug]'));
+    assert.ok(audit.includes('[data-region-list-slug]'));
     assert.ok(audit.includes('[data-akarfinder-market-intelligence-map]'));
     assert.ok(audit.includes('[data-maplibre-spike]'));
   });
@@ -33,12 +35,16 @@ describe("P1A.6 — Responsive hardening", () => {
     assert.ok(audit.includes("fullPage: false"));
     assert.ok(audit.includes("horizontal-overflow"));
     assert.ok(audit.includes("MapLibre canvas missing"));
+    assert.ok(audit.includes('route.experience !== "national"'));
     assert.equal(audit.includes('keyboard.press("Tab")'), false);
   });
 
-  it("uses the current national router for generic explore mode", () => {
+  it("uses the premium SVG on initial /map and the city map router on other routes", () => {
+    const page = source("app/map/page.tsx");
     const router = source("components/map/NationalMapRouter.tsx");
     const national = source("components/map/NationalTerritoryExperience.tsx");
+    assert.match(page, /usePremiumNationalExplore/);
+    assert.match(page, /PremiumInteractiveMapBridge/);
     assert.match(router, /NationalTerritoryExperienceDynamic/);
     assert.match(router, /useNationalExplore/);
     assert.match(national, /\/api\/geo\/national-territories/);

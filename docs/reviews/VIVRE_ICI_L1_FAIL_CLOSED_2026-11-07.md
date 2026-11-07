@@ -28,3 +28,11 @@ Files edited: `components/map/PremiumInteractiveMap.tsx`, `components/map/P4MapD
 ## Contrat de non-régression intégré au `gate` (07/11/2026)
 
 `scripts/ci/required-pr-gate.test.mjs` importe désormais `../audits/vivre-ici-l1-truth-contract.mjs`. Ce n'est **pas** une modification du workflow GitHub ni un allègement de son contrôle : le job requis `gate` exécute ses tests Node existants **plus** ce test source à chaque PR vers main. Le test empêche la réintroduction des champs `priceRepere`, `landmarksVerified`, vérifie la sortie « données indisponibles » et l'expiration de la seed POI avec TTL 30 jours. Le test est retenu uniquement si le run `gate` exact-head passe. Pas de fusion/Vercel.
+
+## P1A.6 false red corrigé sans affaiblir la couverture (07/11/2026)
+
+La CI HEAD `7034ccf` [P1A.6 #42357184686](https://github.com/hraaaaf/Akarfinder/actions/runs/42357184686) avait **12 findings**, exactement trois marqueurs obsolètes de `/map` × 4 viewports : canvas MapLibre absent, `__AKARFINDER_NATIONAL_MAP__` absent et HTTP `/api/geo/national-territories` non émis. Ces marqueurs appartiennent au moteur *ville* ; depuis `app/map/page.tsx`, `/map` initial utilise `PremiumInteractiveMapBridge` (SVG/TopoJSON), dont le run BEFORE #98 prouve 12 régions et `topologyState=ready`.
+
+**Correctif du harness**, pas du code produit : la route nationale exige désormais `[data-premium-map]` visible + `data-topology-state=ready` + **12** chemins SVG `[data-region-slug]` + **12** boutons région `[data-region-list-slug]`. La vérification MapLibre demeure obligatoire sur les routes ville/quartier ; les checks HTTP, débordement, page errors, screenshots et city/Agdal demeurent. Le viewport tablette devient **768×900** (même fixture que la baseline #98, au lieu de 768×1024). Tests structurels P1A.6 mis à jour pour rejeter le retour aux fausses attentes. Le résultat ne sera validé qu'après rerun exact HEAD et artifact réel.
+
+**Autre rouge non traité** : P1B.2 #42357184673 échoue sur l'API prix HTTP 503 / résolution DNS Supabase ENOTFOUND (voir ancien run #42356891977), indépendant du composant corrigé. Ne pas déclarer la CI intégrale verte.
