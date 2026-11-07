@@ -1,0 +1,40 @@
+{
+  "schema_version": "akarfinder-recovery-source-overlay-v1",
+  "generated_at": "2026-09-24T21:10:00Z",
+  "purpose": "Offline DB-recovery discovery only. Never grants production/publication authorization.",
+  "domains": [
+    {
+      "domain": "marocannonces.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/categorie/\\d+/[^/]+/annonce/\\d+/[^/]+\\.html$"
+      ],
+      "blocked_url_patterns": [
+        "^/maroc/.+-b\\d+-t\\d+\\.html(?:\\?.*)?$",
+        "^/categorie/\\d+/[^/]+(?:/[^/]+)?(?:/\\d+)?\\.html$"
+      ],
+      "source_type": "classifieds_marketplace",
+      "external_web_result": true,
+      "compliance_note": "2026-09-24 recovery review proved current individual listing detail shape /categorie/<categoryId>/<type>/annonce/<numericId>/<slug>.html against live indexed detail evidence. Category/search routes remain structurally excluded. External-index/search discovery only; no source-page bulk fetch is authorized by this registry entry.",
+      "reviewed_at": "2026-09-24",
+      "coverage_cities": null
+    },
+    {
+      "domain": "sarout.ma",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/fr/annonce/\\d+/[^/]+/?$",
+        "^/ar/annonce/\\d+/[^/]+/?$"
+      ],
+      "blocked_url_patterns": [
+        "^/(?:fr|ar)/annonces/?$",
+        "^/(?:fr|ar)/(?:vente|location)(?:/|$)"
+      ],
+      "source_type": "portal_aggregator",
+      "external_web_result": true,
+      "compliance_note": "2026-09-24 recovery review: current public index pages expose ~18k-22k verified Moroccan listings, and direct detail URLs use /{locale}/annonce/<numericId>/<slug>. Discovery is approved for external indexes/search. Any live sitemap/source fetch must still pass robots-based fail-closed gates.",
+      "reviewed_at": "2026-09-24",
+      "coverage_cities": null
+    }
+  ]
+}
