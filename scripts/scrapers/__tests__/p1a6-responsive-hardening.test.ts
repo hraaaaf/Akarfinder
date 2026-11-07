@@ -101,6 +101,23 @@ describe("P1A.6 — Responsive hardening", () => {
     assert.ok(audit.includes("map-casablanca-maarif-sheet-expanded-"));
   });
 
+  it("L2-D exposes real OSM/Esri map credits without hiding them under the mobile sheet", () => {
+    const maplibre = source("components/map/MapLibreNeighborhood3D.tsx");
+    const national = source("components/map/PremiumInteractiveMap.tsx");
+    const css = source("app/map/l2d-attribution.css");
+    const page = source("app/map/page.tsx");
+    const audit = source("scripts/audits/p1a6-map-responsive-smoke.ts");
+    assert.ok(maplibre.includes("attributionControl: { compact: false }"));
+    assert.equal(maplibre.includes("attributionControl: false"), false);
+    assert.ok(national.includes("data-premium-map-attribution"));
+    assert.ok(national.includes("https://www.openstreetmap.org/copyright"));
+    assert.ok(national.includes("https://www.geoboundaries.org/"));
+    assert.ok(css.includes("maplibregl-ctrl-bottom-right"));
+    assert.ok(page.includes('import "./l2d-attribution.css";'));
+    assert.ok(audit.includes("l2d-maplibre-attribution"));
+    assert.ok(audit.includes("l2d-national-attribution"));
+  });
+
   it("preserves Rabat intelligence for city-only while canonical district routing uses MapLibre", () => {
     const router = source("components/map/NationalMapRouter.tsx");
     assert.match(router, /rabat-market-intelligence/);
