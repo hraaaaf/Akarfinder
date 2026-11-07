@@ -470,7 +470,9 @@ export function PremiumInteractiveMap() {
     if (!projection) return;
     const point = projection(city.coordinates);
     if (!point) return;
-    const scale = 6.2;
+    // City view is an overview, not a street zoom: retain surrounding sourced regions.
+    // Fine-grained street zoom belongs to a separate sourced MapLibre district route.
+    const scale = 2.6;
     applyCamera(zoomIdentity.translate(MAP_WIDTH / 2 - point[0] * scale, MAP_HEIGHT / 2 - point[1] * scale).scale(scale));
   }, [applyCamera, projection]);
 
