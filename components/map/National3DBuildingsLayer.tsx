@@ -207,7 +207,9 @@ function selectedDistrictCenter(map: MapLibreMap, districtSlug: string | null): 
 }
 
 export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
-  const eligible = citySlug === "casablanca";
+  // L4-C: the Casablanca city focus is a regional 2D comparison, not a 3D
+  // street drill-down. Avoid automatically arming satellite/3D on city-only UX.
+  const eligible = citySlug === "casablanca" && Boolean(districtSlug);
   const [enabled, setEnabled] = useState(eligible);
 
   useEffect(() => {
