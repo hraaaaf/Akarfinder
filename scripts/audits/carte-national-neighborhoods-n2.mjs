@@ -54,10 +54,26 @@ for (const city of L4_SOURCE_CITIES) {
   }
   if (!response.ok) throw new Error(`L4 source API ${city} HTTP ${response.status}`);
   const payload = await response.json();
-  if (payload.status !== "ok" || payload.view !== "city" || payload.place?.slug !== city) {
-    throw new Error(`L4 wrong city payload for ${city}`);
+  // "mohammedia" is the public spelling; the sourced V5 place remains
+  // "mohammadia". Require that exact canonical record rather than fabricating
+  // an additional city or silently accepting another source.
+  const expectedCanonicalSlug = city === "mohammedia" ? "mohammadia" : city;
+  if (payload.status !== "ok" || payload.view !== "city" || payload.place?.slug !== expectedCanonicalSlug) {
+    throw new Error(`L4 wrong city payload for ${city}: ${payload.place?.slug}`);
   }
   if (!Array.isArray(payload.neighborhoods)) throw new Error(`L4 missing neighborhood catalog for ${city}`);
+  if (city === "mohammedia") {
+    if (payload.neighborhoods.length === 0) throw new Error("L4 Mohammedia alias has no sourced neighborhood inventory");
+    const canonicalResponse = await fetch(`${baseUrl}/api/geo/national-territories?city=mohammadia`);
+    if (!canonicalResponse.ok) throw new Error(`L4 canonical Mohammadia HTTP ${canonicalResponse.status}`);
+    const canonicalPayload = await canonicalResponse.json();
+    if (canonicalPayload.place?.slug !== "mohammadia" ||
+        JSON.stringify(canonicalPayload.place) !== JSON.stringify(payload.place) ||
+        JSON.stringify(canonicalPayload.neighborhoods) !== JSON.stringify(payload.neighborhoods) ||
+        JSON.stringify(canonicalPayload.boundary) !== JSON.stringify(payload.boundary)) {
+      throw new Error("L4 Mohammedia alias differs from canonical V5 source data");
+    }
+  }
   const seen = new Set();
   let validCenters = 0;
   let noCenterCount = 0;
