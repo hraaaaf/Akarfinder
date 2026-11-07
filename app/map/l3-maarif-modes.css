@@ -56,9 +56,9 @@
   }
 }
 
-// When the contextual sheet is open, the map is not the active interaction surface.
-// Credits remain visible above the sheet; hide the competing map-mode toolbar.
-// In compact state the toolbar returns with full 44px touch targets.
+/* When the contextual sheet is open, the map is not the active interaction surface.
+   Credits remain visible above the sheet; hide the competing map-mode toolbar.
+   In compact state the toolbar returns with full 44px touch targets. */
 @media (max-width: 1023px) {
   [data-vivre-ici-page] [data-p4-map-layout]:has([data-sheet-expanded="true"])
   [data-l3-maarif-pilot="true"] .l3-maarif-view-controls {
