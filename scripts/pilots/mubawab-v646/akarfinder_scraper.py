@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import hmac
 import urllib.request
 import urllib.error
 import asyncio
@@ -26,6 +27,8 @@ from pathlib import Path
 import random
 import re
 import sqlite3
+from contextlib import contextmanager
+from types import MappingProxyType
 import tempfile
 import uuid
 from statistics import median
@@ -43,6 +46,7 @@ ROBOTS_UA = "AkarFinder-public-index"
 MAX_ROBOTS_BYTES = 128 * 1024
 DB_NAME = "akarfinder.db"
 PUBLICATION_STATUS = "akarfinder_publication.json"
+PUBLICATION_HMAC_KEY_ENV = "AKAR_V646_PUBLICATION_HMAC_KEY_HEX"
 PUBLICATION_FILES = (
     "akarfinder_data.json", "akarfinder_report.md",
     "akarfinder_price_anomalies.json", "akarfinder_price_m2_flags.json",
@@ -418,13 +422,21 @@ def parse_listings_audited(html: str | None, *, baseline_eligible_cards: int | N
         link = canonical_url(raw_link)
         title_el = card.select_one(".listingTit, .listingTitle")
         title = title_el.get_text(" ", strip=True) if title_el else ""
-        if "adBoostBox" in classes and not title:
-            # Some promoted cards place an explicit property label in h2/h3.
-            # Ignore generic ad labels, but do not hide a named villa/office.
-            promo_title = card.select_one("h2, h3")
-            candidate = promo_title.get_text(" ", strip=True) if promo_title else ""
-            if classify_property_type(candidate) in ("apartment", "villa", "land", "office", "shop", "mixed_ambiguous"):
-                title = candidate
+        if "adBoostBox" in classes:
+            # Every headline is evidence. A neutral h2 MUST NOT hide a
+            # contradictory villa/office in a later h3 (or vice versa).
+            headings = [node.get_text(" ", strip=True) for node in card.select("h2, h3")]
+            conflicts = [candidate for candidate in headings if candidate and
+                         classify_property_type(candidate) in
+                         ("villa", "land", "office", "shop", "mixed_ambiguous")]
+            # Use the strongest contradictory title when there are several
+            # headings. The normal city-first gate below determines the reason.
+            if conflicts:
+                title = conflicts[0]
+            elif not title:
+                typed = next((candidate for candidate in headings
+                              if classify_property_type(candidate) == "apartment"), "")
+                title = typed
         district_el = card.select_one(".listingH3")
         location_text = district_el.get_text(" ", strip=True) if district_el else ""
         locality = [part.strip() for part in location_text.split(",") if part.strip()]
@@ -932,59 +944,175 @@ def _write_atomic(path: str, contents: str) -> None:
             tmp.unlink()
 
 
+def _publication_key() -> bytes | None:
+    """Secret supplied out of band; never stored inside the publication tree."""
+    raw = os.environ.get(PUBLICATION_HMAC_KEY_ENV, "")
+    if len(raw) != 64:
+        return None
+    try:
+        key = bytes.fromhex(raw)
+    except ValueError:
+        return None
+    return key if len(key) == 32 else None
+
+
+def _signed_payload(marker: dict[str, Any]) -> bytes:
+    return json.dumps({k: v for k, v in marker.items() if k != "hmac_sha256"},
+                      ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+
+
+def _sqlite_snapshot(path: Path) -> sqlite3.Connection:
+    """SQLite backup includes committed WAL pages and captures a coherent snapshot."""
+    source = sqlite3.connect(f"file:{path.resolve()}?mode=ro", uri=True, timeout=2.0)
+    target = sqlite3.connect(":memory:")
+    try:
+        source.backup(target)
+        return target
+    except BaseException:
+        target.close()
+        raise
+    finally:
+        source.close()
+
+
+def _db_logical_sha256(conn: sqlite3.Connection) -> str:
+    """Hash a consistent *logical* SQLite snapshot, never only .db file bytes."""
+    digest = hashlib.sha256()
+    for statement in conn.iterdump():
+        digest.update(statement.encode("utf-8"))
+        digest.update(b"\n")
+    return digest.hexdigest()
+
+
 def _write_publication_status(run_id: str, status: str, *,
                               failure_code: int | None = None) -> None:
-    """One atomic, fail-closed publication marker for consumers.
+    """Signed manifest; absent secret gives an explicit UNAUTHENTICATED result.
 
-    Legacy top-level outputs are NEVER a coherent snapshot by themselves.
-    Readers must verify both this marker's state and the listed file hashes.
+    Only verified-reader consumers may claim publication authenticity. Without
+    an external secret, a successful offline batch remains *uncertified*.
     """
     marker: dict[str, Any] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "run_id": run_id,
         "status": status,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "consumer_contract": "verify_all_hashes_before_reading_any_export",
+        "consumer_contract": "read_verified_publication_only",
     }
     if failure_code is not None:
         marker["failure_exit_code"] = failure_code
         marker["previous_exports_may_be_stale_or_mixed"] = True
         marker["db_committed_before_failure"] = failure_code == 5
     if status == "complete":
-        # Inspect every file after the last replacement, never from staging.
         marker["sha256"] = {
             name: hashlib.sha256(Path(name).read_bytes()).hexdigest()
             for name in (*PUBLICATION_FILES, DB_NAME)
         }
+        with _sqlite_snapshot(Path(DB_NAME)) as snapshot:
+            marker["db_logical_sha256"] = _db_logical_sha256(snapshot)
+        key = _publication_key()
+        marker["authentication"] = "hmac_sha256" if key else "unsigned_untrusted"
+        if key:
+            marker["hmac_sha256"] = hmac.new(key, _signed_payload(marker), hashlib.sha256).hexdigest()
     _write_atomic(PUBLICATION_STATUS, json.dumps(marker, ensure_ascii=False,
                                                  sort_keys=True, indent=2) + "\n")
 
 
-def verify_publication(root: Path | str = ".") -> dict[str, Any]:
-    """Return fail-closed proof that all exports match one completed run.
+class PublicationVerificationError(ValueError):
+    def __init__(self, reason: str):
+        super().__init__(reason)
+        self.reason = reason
 
-    A legacy SQLite export or a previous run left on disk is not trustworthy
-    without a current matching publication marker.
+
+class VerifiedPublication:
+    """Immutable verified export bytes + coherent in-memory SQLite snapshot.
+
+    Do not open top-level files after verification; use read_export() and db.
+    """
+    def __init__(self, run_id: str, exports: dict[str, bytes], db: sqlite3.Connection):
+        self.run_id = run_id
+        self.exports = MappingProxyType(exports)
+        self.db = db
+
+    def read_export(self, filename: str) -> bytes:
+        return self.exports[filename]
+
+    def close(self) -> None:
+        self.db.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+
+
+def read_verified_publication(root: Path | str = ".") -> VerifiedPublication:
+    """Authenticate a publication and return only the bytes/snapshot verified.
+
+    Captures all files before hashing; a subsequent mutation cannot change the
+    returned immutable bytes. A SQLite backup includes WAL commits and fixes
+    the snapshot used for the digest and subsequent SQL consumer queries.
     """
     root = Path(root)
+    raw_marker = (root / PUBLICATION_STATUS).read_bytes()
+    proof = json.loads(raw_marker)
+    if proof.get("schema_version") != 2 or proof.get("status") != "complete":
+        raise PublicationVerificationError("run_not_complete")
+    key = _publication_key()
+    if key is None:
+        raise PublicationVerificationError("authentication_key_unavailable")
+    if proof.get("authentication") != "hmac_sha256":
+        raise PublicationVerificationError("publication_unsigned")
+    auth = proof.get("hmac_sha256")
+    if not isinstance(auth, str) or not hmac.compare_digest(
+        hmac.new(key, _signed_payload(proof), hashlib.sha256).hexdigest(), auth
+    ):
+        raise PublicationVerificationError("authentication_mismatch")
+    digests = proof.get("sha256")
+    expected_names = set((*PUBLICATION_FILES, DB_NAME))
+    if not isinstance(digests, dict) or set(digests) != expected_names:
+        raise PublicationVerificationError("manifest_incomplete")
+    exports: dict[str, bytes] = {}
+    for filename in PUBLICATION_FILES:
+        data = (root / filename).read_bytes()
+        expected = digests.get(filename)
+        if not isinstance(expected, str) or hashlib.sha256(data).hexdigest() != expected:
+            raise PublicationVerificationError("digest_mismatch:" + filename)
+        exports[filename] = data
+    db_file = root / DB_NAME
+    db_bytes = db_file.read_bytes()
+    if hashlib.sha256(db_bytes).hexdigest() != digests[DB_NAME]:
+        raise PublicationVerificationError("digest_mismatch:" + DB_NAME)
+    db_snapshot = _sqlite_snapshot(db_file)
     try:
-        proof = json.loads((root / PUBLICATION_STATUS).read_text(encoding="utf-8"))
-        if proof.get("schema_version") != 1 or proof.get("status") != "complete":
-            return {"valid": False, "reason": "run_not_complete",
-                    "run_id": proof.get("run_id"), "status": proof.get("status")}
-        digest_map = proof.get("sha256")
-        if not isinstance(digest_map, dict) or set(digest_map) != set((*PUBLICATION_FILES, DB_NAME)):
-            return {"valid": False, "reason": "manifest_incomplete"}
-        for name, expected in digest_map.items():
-            if not isinstance(expected, str) or len(expected) != 64:
-                return {"valid": False, "reason": "invalid_digest", "file": name}
-            if hashlib.sha256((root / name).read_bytes()).hexdigest() != expected:
-                return {"valid": False, "reason": "digest_mismatch", "file": name}
-        return {"valid": True, "status": "complete", "run_id": proof.get("run_id"),
-                "files_checked": len(digest_map)}
-    except (OSError, ValueError, TypeError, AttributeError) as exc:
-        return {"valid": False, "reason": "proof_unavailable", "detail": type(exc).__name__}
+        # This detects committed WAL changes even if .db bytes are unchanged.
+        if _db_logical_sha256(db_snapshot) != proof.get("db_logical_sha256"):
+            raise PublicationVerificationError("db_logical_digest_mismatch")
+        if (root / PUBLICATION_STATUS).read_bytes() != raw_marker:
+            raise PublicationVerificationError("publication_changed_during_read")
+        return VerifiedPublication(str(proof["run_id"]), exports, db_snapshot)
+    except BaseException:
+        db_snapshot.close()
+        raise
 
+
+def verify_publication(root: Path | str = ".") -> dict[str, Any]:
+    """Point-in-time check ONLY; consumers must use read_verified_publication.
+
+    Never verify and subsequently reopen files: that is a TOCTOU vulnerability.
+    """
+    try:
+        with read_verified_publication(root) as publication:
+            return {"valid": True, "status": "complete", "run_id": publication.run_id,
+                    "files_checked": len(PUBLICATION_FILES) + 1, "authenticated": True,
+                    "read_contract": "use_read_verified_publication_snapshot"}
+    except PublicationVerificationError as exc:
+        if exc.reason.startswith("digest_mismatch:"):
+            return {"valid": False, "reason": "digest_mismatch",
+                    "file": exc.reason.split(":", 1)[1]}
+        return {"valid": False, "reason": exc.reason}
+    except (OSError, ValueError, TypeError, AttributeError, sqlite3.Error) as exc:
+        return {"valid": False, "reason": "proof_unavailable", "detail": type(exc).__name__}
 
 def export_reports(conn: sqlite3.Connection, cycle_ids: list[str], stats: ImportStats,
                    page_stats: dict[str, int], json_path: str = "akarfinder_data.json",
@@ -1320,8 +1448,15 @@ async def main(engine: str = "auto", pages: int = MAX_PAGES,
     try:
         _write_publication_status(run_id, "running")
     except OSError as exc:
+        # If replacing the initial marker fails, best-effort revocation of
+        # the previous signed state. If even unlink is prohibited, a previous
+        # publication cannot be forcibly revoked on a read-only filesystem.
+        try:
+            Path(PUBLICATION_STATUS).unlink(missing_ok=True)
+        except OSError:
+            pass
         print(f"[ERREUR PUBLICATION] Impossible d'invalider exports existants: {exc}")
-        return 3  # refuse to start without invalidating old publication proof
+        return 3  # never fetch or write SQLite after invalidation failed
     try:
         code = await _main(engine, pages, headed, browser_path, urls_file, diagnostics)
     except Exception as exc:  # an uncaught traceback would also exit 1 == "partial"
