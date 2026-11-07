@@ -1,6 +1,6 @@
 # Vivre Ici — L6-A : lisibilité réelle des villes secondaires et détails de rue
 
-**07/11/2026 — CANDIDAT, non certifié.** Étape après le closeout L4-D, sur branche enfant de [PR #1191](https://github.com/hraaaaf/Akarfinder/pull/1191). Aucun merge/DB/Vercel.
+**07/11/2026 — L6-A GREEN TECHNIQUE sur SHA code `44e2fd699726c24cb61d286b255824cc38eb36ec` ; QA visuelle globale encore ouverte.** Étape après le closeout L4-D, sur branche enfant de [PR #1191](https://github.com/hraaaaf/Akarfinder/pull/1191). Aucun merge/DB/Vercel.
 
 ## GOAL / SUCCESS / PROOF
 
@@ -22,4 +22,14 @@
 - L6 global : a11y/smartphones, droits tuiles et score visuel ≥9.5/10 **restent ouverts**. L3 frontières quartiers/POI, L5 inventaire SQL/prix restent ouverts.
 - Aucun merge / aucune mutation DB / aucun déploiement Vercel.
 
-**Next exact :** créer PR Draft, N2/N3 automatiques (ne pas relancer N3 manuellement), inspecter les rapports et **12 captures** à 4 formats, corriger si rouge ; closeout canonique et Notion si la preuve est conforme.
+## CLOSEOUT — preuves réellement inspectées le 07/11/2026
+
+- **Code certifié (avant mise à jour documentaire)** : `44e2fd699726c24cb61d286b255824cc38eb36ec`. [PR #1192](https://github.com/hraaaaf/Akarfinder/pull/1192) **Draft**, enfant de la branche L4-D, non fusionnée.
+- **N2** [run #42424829540](https://github.com/hraaaaf/Akarfinder/actions/runs/42424829540) **SUCCESS** avec artefact [#13594439946](https://github.com/hraaaaf/Akarfinder/actions/runs/42424829540/artifacts/13594439946) réellement téléchargé, extrait, JSON ouverts et **12 PNG L6-A examinés**. Six rapports indépendants `ok=true`, `failure=null` : N2 historique **4/4**, L4-B1 **4/4**, L4-B huit villes **32/32** (17 choix), L4-C **4/4**, L4-D **4/4**, **L6-A 4/4**.
+- **L6-A 390/430/768/1280** : `l6a-regional/report.json` `ok=true` ; 4 cas `passed`. V5 Kénitra `center={lng:-6.570169,lat:34.26457}`, `zoom=8.6`, `queryRenderedFeatures` trouve le **label kenitra dans le viewport** (1 feature à chaque largeur), **un seul canvas**, **overflow=0**. À Mohammedia `zoom=12.2` les quatre familles de contours municipaux passent le contrôle `municipalOutlinesFade=true`.
+- **N3** [run #42424829523](https://github.com/hraaaaf/Akarfinder/actions/runs/42424829523) **SUCCESS**, [artefact #13594898192](https://github.com/hraaaaf/Akarfinder/actions/runs/42424829523/artifacts/13594898192) lu : `ok=true`, `failure=null` ; 390/1280, `maplibreReady=true`, navigation Casablanca→Maârif→`/search?city=Casablanca&district=Ma%C3%A2rif`, `searchRendered=true`, `overflow=0`. Même SHA code N2 et N3.
+- **Revue visuelle humaine des 12 captures** : recadrage Kénitra nettement plus pertinent que BEFORE (ville source et son nom visibles) ; les forts contours municipaux bleus ne dominent plus le zoom rue. **Réserves** : fond de carte pâle, lecture des toponymes encore faible, vue Mohammedia rue 430 px particulièrement peu détaillée. **Score local indicatif ~8/10**, non égal à l'objectif global **≥9.5/10**. Aucun utilisateur réel ni conformité fournisseur certifiés par ces tests.
+- **Périmètre / risque** : aucun changement de la base, des coordonnées, des annonces, de l'attribution ou des droits de tiers. Le test repositionne directement la caméra par `jumpTo` ; cela prouve le rendu de la couche, pas la découverte de cette ville par un utilisateur dans tous les parcours.
+- **Statut L6-A : GREEN technique / conformité visuelle globale NON certifiée**. **Rester Draft et non mergé** ; aucun DB/Vercel. Toute modification documentaire postérieure au SHA certifié est **docs-only**, ne pas la confondre avec une nouvelle preuve N2/N3.
+
+**NEXT EXACT :** L6-B — documenter ou obtenir clé CARTO et droits Esri applicables à l'usage commercial, puis audit attrib./a11y ; poursuivre l'amélioration de contraste du fond/labels et la lisibilité 430 px pour le seuil visuel final. L3 frontières/POI sourcés et L5 annonces SQL/prix continuent d'être des gates ; aucun merge ni déploiement.
