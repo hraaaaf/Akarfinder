@@ -23,6 +23,10 @@ describe("P1A.6 — Responsive hardening", () => {
     assert.ok(audit.includes('{ path: "/map", slug: "map", experience: "national" }'));
     assert.ok(audit.includes('{ path: "/map?city=Rabat", slug: "map-rabat", experience: "intelligence" }'));
     assert.ok(audit.includes('{ path: "/map?city=Rabat&district=Agdal", slug: "map-rabat-agdal", experience: "maplibre", citySlug: "rabat", districtSlug: "agdal" }'));
+    assert.ok(audit.includes('{ path: "/map?city=casablanca&district=maarif&layer=explore", slug: "map-casablanca-maarif", experience: "maplibre", citySlug: "casablanca", districtSlug: "maarif" }'));
+    assert.ok(audit.includes('data-selected-quartier="maarif"'));
+    assert.ok(audit.includes('data-local-evidence="unavailable"'));
+    assert.ok(audit.includes("fresh-poi-empty-state"));
     assert.ok(audit.includes('[data-premium-map]'));
     assert.ok(audit.includes('[data-region-slug]'));
     assert.ok(audit.includes('[data-region-list-slug]'));
@@ -33,6 +37,7 @@ describe("P1A.6 — Responsive hardening", () => {
   it("certifies real viewport composition rather than full-page screenshots", () => {
     const audit = source("scripts/audits/p1a6-map-responsive-smoke.ts");
     assert.ok(audit.includes("fullPage: false"));
+    assert.ok(audit.includes("screenshotsCaptured += 1"));
     assert.ok(audit.includes("horizontal-overflow"));
     assert.ok(audit.includes("MapLibre canvas missing"));
     assert.ok(audit.includes('route.experience !== "national"'));

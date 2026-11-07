@@ -36,3 +36,15 @@ La CI HEAD `7034ccf` [P1A.6 #42357184686](https://github.com/hraaaaf/Akarfinder/
 **Correctif du harness**, pas du code produit : la route nationale exige désormais `[data-premium-map]` visible + `data-topology-state=ready` + **12** chemins SVG `[data-region-slug]` + **12** boutons région `[data-region-list-slug]`. La vérification MapLibre demeure obligatoire sur les routes ville/quartier ; les checks HTTP, débordement, page errors, screenshots et city/Agdal demeurent. Le viewport tablette devient **768×900** (même fixture que la baseline #98, au lieu de 768×1024). Tests structurels P1A.6 mis à jour pour rejeter le retour aux fausses attentes. Le résultat ne sera validé qu'après rerun exact HEAD et artifact réel.
 
 **Autre rouge non traité** : P1B.2 #42357184673 échoue sur l'API prix HTTP 503 / résolution DNS Supabase ENOTFOUND (voir ancien run #42356891977), indépendant du composant corrigé. Ne pas déclarer la CI intégrale verte.
+
+## P1A.6 : contrôle E2E national→Maârif et fallback du rail (07/11/2026)
+
+Le test révisé P1A.6 sur HEAD précédent [#42357749536](https://github.com/hraaaaf/Akarfinder/actions/runs/42357749536) est **SUCCESS**, mettant fin au faux rouge des 12 attentes MapLibre/API obsolètes.
+
+**Nouvelle extension contrôlée du même harness**, sans modifier le code produit :
+- Route supplémentaire `/map?city=casablanca&district=maarif&layer=explore` pour vérifier la carte Maârif et la mention de **repères récents non disponibles** aux **390/430/768×900/1280**.
+- Après la capture nationale initiale, interactions réelles `Casablanca-Settat → Casablanca → Maârif` dans la carte SVG ; exige `data-selected-quartier="maarif"` et `data-local-evidence="unavailable"`, refuse texte prix `DH/m²` ou « repère vérifié » dans le panneau.
+- **20 captures** attendues si tous les cas passent : 4 routes × 4 viewports et 4 supplémentaires du drilldown interne national. `screenshotsCaptured` décompte les fichiers réellement produits au lieu d'inventer un total.
+- Ne teste pas la promesse de **3 vues Maârif** de #1108 : celles-ci ne sont pas présentes sur `main` et restent L3. La baseline BEFORE de la sélection nationale n'existe pas, donc comparaison visuelle de ce sous-écran non complète ; le test prouve le nouvel état mais pas une note UX.
+
+**Next exact** : exécution complète sur SHA candidat puis ouverture/affichage des captures, vérification de l'absence de nouveaux findings ; si sélecteurs E2E inadéquats, diagnostiquer sans réduire les critères métier. Aucune fusion ni Vercel.
