@@ -131,7 +131,8 @@ export function MapLibreNeighborhood3D({
           zoom: desktop ? 14.05 : 14.45,
           pitch: desktop ? 52 : 44,
           bearing: desktop ? -27 : -18,
-          // Provider/OSM attributions must remain legible during map use.\n          attributionControl: { compact: false },
+          // Provider/OSM attributions must remain legible during map use.
+          attributionControl: { compact: false },
           canvasContextAttributes: { antialias: true },
           style: {
             version: 8,
