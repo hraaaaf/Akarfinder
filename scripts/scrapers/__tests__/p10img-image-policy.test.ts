@@ -219,6 +219,60 @@ describe("P10IMG — missing image URL falls back safely", () => {
   });
 });
 
+// ─── Provider thumbnail: rights > risk-accepted flag ─────────────────────────
+
+describe("P10IMG — DB provider thumbnail rights gate", () => {
+  test("denies unknown, forbidden, link-only and unlicensed indexed sources", () => {
+    const old = process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED;
+    process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED = "true";
+    try {
+      const fixed = {
+        ...base(),
+        thumbnail_url: "https://provider.example/preview.jpg",
+        can_show_thumbnail: true,
+        source_access_level: "indexed_only" as const,
+      };
+      for (const permission of ["unknown", "forbidden", "source_link_only"] as const) {
+        assert.equal(
+          getListingImageMode({ ...fixed, image_permission_status: permission } as Listing),
+          "fallback_visual",
+          permission,
+        );
+      }
+      assert.equal(
+        getListingImageMode({ ...fixed, image_permission_status: "allowed" } as Listing),
+        "fallback_visual",
+        "Indexed-only does not imply publication rights even with a permissive row flag",
+      );
+    } finally {
+      if (old == null) delete process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED;
+      else process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED = old;
+    }
+  });
+
+  test("permits explicitly allowed partner preview only when kill switch and row flag permit", () => {
+    const old = process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED;
+    const authorized = {
+      ...base(),
+      thumbnail_url: "https://partner.example/preview.jpg",
+      image_permission_status: "allowed" as const,
+      source_access_level: "preview_allowed" as const,
+      can_show_thumbnail: true,
+    } as Listing;
+    try {
+      process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED = "true";
+      assert.equal(getListingImageMode(authorized), "db_provider_thumbnail");
+      assert.equal(getListingImageMode({ ...authorized, can_show_thumbnail: false }), "fallback_visual");
+      assert.equal(getListingImageMode({ ...authorized, image_permission_status: "forbidden" }), "fallback_visual");
+      process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED = "false";
+      assert.equal(getListingImageMode(authorized), "fallback_visual");
+    } finally {
+      if (old == null) delete process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED;
+      else process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED = old;
+    }
+  });
+});
+
 // ─── getImageAttribution ──────────────────────────────────────────────────
 
 describe("P10IMG — getImageAttribution", () => {

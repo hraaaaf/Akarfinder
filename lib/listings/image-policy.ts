@@ -59,12 +59,22 @@ export function getListingImageMode(listing: Listing): ListingImageMode {
     if (access === "preview_allowed" && hasUrl) return "preview_image";
   }
 
-  // MUBAWAB-DB-THUMBNAILS-RISK-ACCEPTED-1 — separate, explicit "risk accepted"
-  // lane. Never implies partner rights; gated by kill switch + policy flag +
-  // presence of a real thumbnail URL.
+  // Legacy DB-provider preview lane, now explicitly gated by documented image
+  // permissions in addition to the feature kill switch and listing policy flag.
   const hasThumbnail =
     typeof listing.thumbnail_url === "string" && listing.thumbnail_url.length > 0;
-  if (listing.can_show_thumbnail === true && hasThumbnail && isDbProviderThumbnailsEnabled()) {
+  // A risk-accepted switch is NOT evidence of permission to republish images.
+  // This lane must meet the same explicit media-rights boundary as other real photos.
+  // Unknown, forbidden, source-link-only and indexed-only sources fail closed.
+  const thumbnailAuthorized =
+    listing.image_permission_status === "allowed" &&
+    (access === "partner_full" || access === "preview_allowed");
+  if (
+    thumbnailAuthorized &&
+    listing.can_show_thumbnail === true &&
+    hasThumbnail &&
+    isDbProviderThumbnailsEnabled()
+  ) {
     return "db_provider_thumbnail";
   }
 
