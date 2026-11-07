@@ -1,0 +1,30 @@
+name: AKAR 200K Feed Truth Gate (offline)
+on:
+  pull_request:
+    paths:
+      - 'lib/feeds/partner-v2-bridge.ts'
+      - 'scripts/scrapers/__tests__/partner-feed-v2-bridge.test.ts'
+      - '.github/workflows/akar-200k-feed-truth-gate.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  feed-truth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Verify evidence gate against synthetic partner fixtures
+        run: npx tsx --test scripts/scrapers/__tests__/partner-feed-v2-bridge.test.ts
+      - name: Type-check without network or DB writes
+        run: npx tsc --noEmit
