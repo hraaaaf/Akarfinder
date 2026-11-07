@@ -76,6 +76,17 @@ jobs:
               for k in ("cloud_writes", "production_writes", "publication_allowed",
                         "new_detailed_observations_certified"):
                   assert report["invariants"][k] == 0, (label, k)
+              if label.startswith("openserp-"):
+                  statuses = report["parser"]["status_counts"]
+                  issues = report["parser"]["issues"]
+                  assert statuses.get("ready_internal", 0) == 0, label
+                  assert statuses.get("complete_candidate", 0) == 0, label
+                  assert issues.get("serp_snippet_not_detail_observation") == count, label
+                  # Fixed benchmark cohorts: guard against dropping real
+                  # nested/flat SERP hints while still blocking promotion.
+                  minimum_core_hints = {"openserp-discovery": 71, "openserp-quality": 30}[label]
+                  core_hints = count - issues.get("required_core_fields_missing", 0)
+                  assert core_hints >= minimum_core_hints, (label, core_hints)
               print(json.dumps({
                   "cohort": label, "input_rows": count,
                   "statuses": report["parser"]["status_counts"],
