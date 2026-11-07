@@ -20,6 +20,9 @@ const BOUNDARY_FILL = "akarfinder-national-city-fill";
 const BOUNDARY_LINE = "akarfinder-national-city-line";
 const ACTIVE_FILL = "akarfinder-national-city-active-fill";
 const ACTIVE_LINE = "akarfinder-national-city-active-line";
+const ACTIVE_HALO = "akarfinder-national-city-focus-halo";
+// These eight options are looked up in V5; no city or geometry is synthesized.
+const COMPARISON_CITY_SLUGS = ["casablanca", "rabat", "marrakech", "tanger", "agadir", "fes", "kenitra", "mohammadia"] as const;
 const CITY_HITS = "akarfinder-national-city-hits";
 const CITY_LABELS = "akarfinder-national-city-labels";
 const ACTIVE_POINT = "akarfinder-national-city-active-point";
@@ -54,6 +57,7 @@ type Payload = MoroccoPayload | CityPayload;
 
 type Props = {
   selectedCitySlug: string | null;
+  selectedDistrictSlug?: string | null;
   onSelectCity: (slug: string) => void;
   onBackToMorocco: () => void;
 };
@@ -64,29 +68,6 @@ function styleForTheme(theme: string | undefined) {
 
 function emptyFilter(): unknown[] {
   return ["==", ["get", "slug"], "__none__"];
-}
-
-function boundsForGeoJSON(collection: GeoJSON.FeatureCollection): [[number, number], [number, number]] | null {
-  let minLng = Infinity;
-  let minLat = Infinity;
-  let maxLng = -Infinity;
-  let maxLat = -Infinity;
-  const walk = (value: unknown) => {
-    if (!Array.isArray(value)) return;
-    if (value.length >= 2 && typeof value[0] === "number" && typeof value[1] === "number") {
-      minLng = Math.min(minLng, value[0]);
-      maxLng = Math.max(maxLng, value[0]);
-      minLat = Math.min(minLat, value[1]);
-      maxLat = Math.max(maxLat, value[1]);
-      return;
-    }
-    for (const item of value) walk(item);
-  };
-  for (const feature of collection.features) {
-    const geometry = feature.geometry as (GeoJSON.Geometry & { coordinates?: unknown }) | null;
-    walk(geometry?.coordinates);
-  }
-  return Number.isFinite(minLng) ? [[minLng, minLat], [maxLng, maxLat]] : null;
 }
 
 function cityPoints(places: NationalCity[]): GeoJSON.FeatureCollection {
@@ -108,7 +89,7 @@ function cityPoints(places: NationalCity[]): GeoJSON.FeatureCollection {
 }
 
 function removeNationalLayers(map: MapLibreMap) {
-  for (const id of [ACTIVE_POINT, CITY_LABELS, CITY_HITS, ACTIVE_LINE, ACTIVE_FILL, BOUNDARY_LINE, BOUNDARY_FILL]) {
+  for (const id of [ACTIVE_POINT, CITY_LABELS, CITY_HITS, ACTIVE_LINE, ACTIVE_FILL, ACTIVE_HALO, BOUNDARY_LINE, BOUNDARY_FILL]) {
     if (map.getLayer(id)) map.removeLayer(id);
   }
   for (const id of [CITY_SOURCE, BOUNDARY_SOURCE]) {
@@ -116,11 +97,12 @@ function removeNationalLayers(map: MapLibreMap) {
   }
 }
 
-export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, onBackToMorocco }: Props) {
+export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrictSlug, onSelectCity, onBackToMorocco }: Props) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [payload, setPayload] = useState<Payload | null>(null);
+  const [nationalContext, setNationalContext] = useState<MoroccoPayload | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [previewSlug, setPreviewSlug] = useState<string | null>(null);
   const previewSlugRef = useRef<string | null>(null);
@@ -130,16 +112,29 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
   useEffect(() => {
     const controller = new AbortController();
     setLoadError(false);
+    setPayload(null);
+    setNationalContext(null);
+    const load = async (url: string): Promise<Payload> => {
+      const response = await fetch(url, { cache: "no-store", signal: controller.signal });
+      if (!response.ok) throw new Error(`territory ${response.status}`);
+      return response.json() as Promise<Payload>;
+    };
     const query = selectedCitySlug ? `?city=${encodeURIComponent(selectedCitySlug)}` : "";
-    void fetch(`/api/geo/national-territories${query}`, { cache: "no-store", signal: controller.signal })
-      .then(async (response) => {
-        if (!response.ok) throw new Error(`territory ${response.status}`);
-        return response.json() as Promise<Payload>;
-      })
-      .then(setPayload)
-      .catch((error) => {
-        if (error?.name !== "AbortError") setLoadError(true);
-      });
+    // Keep the V5 national registry alongside the selected city. A city must
+    // remain among its neighbors; never replace the background with one city.
+    void Promise.all([
+      load(`/api/geo/national-territories${query}`),
+      selectedCitySlug ? load("/api/geo/national-territories") : Promise.resolve(null),
+    ]).then(([current, context]) => {
+      if (controller.signal.aborted) return;
+      if (selectedCitySlug && (current.view !== "city" || context?.view !== "morocco")) {
+        throw new Error("selected city has no sourced national context");
+      }
+      setNationalContext(context?.view === "morocco" ? context : null);
+      setPayload(current);
+    }).catch((error) => {
+      if (error?.name !== "AbortError" && !controller.signal.aborted) setLoadError(true);
+    });
     return () => controller.abort();
   }, [selectedCitySlug]);
 
@@ -194,16 +189,20 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
   const enterCity = useCallback((slug: string) => {
     previewSlugRef.current = null;
     setPreviewSlug(null);
-    onSelectCity(slug);
+    // V5 keeps "mohammadia"; the public URL and Search use "mohammedia".
+    onSelectCity(slug === "mohammadia" ? "mohammedia" : slug);
   }, [onSelectCity]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady || !payload) return;
+    // City view retains EVERY V5 city/territory layer, not only the target.
+    const context = payload.view === "morocco" ? payload : nationalContext;
+    if (!context) return;
     removeNationalLayers(map);
 
-    const boundaries = payload.view === "morocco" ? payload.boundaries : payload.boundary;
-    const places = payload.view === "morocco" ? payload.places : [payload.place];
+    const boundaries = context.boundaries;
+    const places = context.places;
     const points = cityPoints(places);
 
     map.addSource(BOUNDARY_SOURCE, { type: "geojson", data: boundaries });
@@ -213,13 +212,22 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       id: BOUNDARY_FILL,
       type: "fill",
       source: BOUNDARY_SOURCE,
-      paint: { "fill-color": ACCENT, "fill-opacity": payload.view === "city" ? 0.13 : 0.018 },
+      paint: { "fill-color": ACCENT, "fill-opacity": 0.018 },
     });
     map.addLayer({
       id: BOUNDARY_LINE,
       type: "line",
       source: BOUNDARY_SOURCE,
-      paint: { "line-color": ACCENT, "line-opacity": payload.view === "city" ? 0.9 : 0.22, "line-width": payload.view === "city" ? 2.4 : 0.7 },
+      paint: { "line-color": ACCENT, "line-opacity": 0.22, "line-width": 0.7 },
+    });
+    // Soft halo plus crisp border only where the existing OSM candidate
+    // city boundary is available. The user-facing copy never calls it official.
+    map.addLayer({
+      id: ACTIVE_HALO,
+      type: "line",
+      source: BOUNDARY_SOURCE,
+      filter: emptyFilter() as never,
+      paint: { "line-color": ACCENT, "line-opacity": 0.48, "line-width": 10, "line-blur": 3.5 },
     });
     map.addLayer({
       id: ACTIVE_FILL,
@@ -246,7 +254,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       type: "circle",
       source: CITY_SOURCE,
       filter: emptyFilter() as never,
-      paint: { "circle-radius": 8, "circle-color": ACCENT, "circle-opacity": 0.2, "circle-stroke-color": ACCENT, "circle-stroke-width": 2 },
+      paint: { "circle-radius": 12, "circle-color": ACCENT, "circle-opacity": 0.27, "circle-stroke-color": ACCENT, "circle-stroke-width": 3 },
     });
     map.addLayer({
       id: CITY_LABELS,
@@ -268,6 +276,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       const filter = slug ? ["==", ["get", "slug"], slug] : emptyFilter();
       if (map.getLayer(ACTIVE_FILL)) map.setFilter(ACTIVE_FILL, filter as never);
       if (map.getLayer(ACTIVE_LINE)) map.setFilter(ACTIVE_LINE, filter as never);
+      if (map.getLayer(ACTIVE_HALO)) map.setFilter(ACTIVE_HALO, filter as never);
       if (map.getLayer(ACTIVE_POINT)) map.setFilter(ACTIVE_POINT, filter as never);
     };
 
@@ -328,11 +337,16 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       map.easeTo({ center: MOROCCO_CENTER, zoom: MOROCCO_ZOOM, duration: 650 });
     } else {
       setActive(payload.place.slug);
-      const bounds = boundsForGeoJSON(payload.boundary);
-      if (bounds) {
-        map.fitBounds(bounds, { padding: { top: 125, right: 40, bottom: 135, left: 40 }, duration: 750, maxZoom: 10.5 });
-      } else if (payload.place.center) {
-        map.flyTo({ center: [payload.place.center.lng, payload.place.center.lat], zoom: 10, duration: 750 });
+      // A modest regional zoom keeps nearby cities visible. Do not fit
+      // tightly to city bounds or pretend there is a certified district border.
+      if (payload.place.center) {
+        map.easeTo({
+          center: [payload.place.center.lng, payload.place.center.lat],
+          zoom: window.innerWidth <= 430 ? 6.15 : 6.65,
+          duration: 650,
+        });
+      } else {
+        map.easeTo({ center: MOROCCO_CENTER, zoom: MOROCCO_ZOOM, duration: 650 });
       }
     }
 
@@ -341,14 +355,14 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       map.off("click", handleClick);
       map.getCanvas().removeEventListener("mouseleave", handleMapLeave);
     };
-  }, [enterCity, mapReady, payload, theme]);
+  }, [enterCity, mapReady, payload, nationalContext, theme]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady || !payload || payload.view !== "morocco") return;
     const active = previewSlug ?? hoverSlug;
     const filter = active ? ["==", ["get", "slug"], active] : emptyFilter();
-    for (const layer of [ACTIVE_FILL, ACTIVE_LINE, ACTIVE_POINT]) {
+    for (const layer of [ACTIVE_FILL, ACTIVE_LINE, ACTIVE_HALO, ACTIVE_POINT]) {
       if (map.getLayer(layer)) map.setFilter(layer, filter as never);
     }
   }, [hoverSlug, mapReady, payload, previewSlug]);
@@ -359,6 +373,15 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
     return slug ? payload.places.find((place) => place.slug === slug) ?? null : null;
   }, [hoverSlug, payload, previewSlug]);
 
+  const comparisonCities = useMemo(() => {
+    const places = payload?.view === "morocco" ? payload.places : nationalContext?.places;
+    return COMPARISON_CITY_SLUGS.flatMap((slug) => {
+      const found = places?.find((place) => place.slug === slug);
+      return found ? [found] : [];
+    });
+  }, [nationalContext, payload]);
+
+  const focusedCitySlug = payload?.view === "city" ? payload.place.slug : null;
   const publicCityName = payload?.view === "city" ? publicNationalCityLabel(payload.place.slug, payload.place.name) : null;
   const searchHref = publicCityName ? `/search?city=${encodeURIComponent(publicCityName)}` : "/search";
 
@@ -398,6 +421,45 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
           </p>
         )}
       </section>
+
+      {payload?.view === "city" && !selectedDistrictSlug && comparisonCities.length === 8 ? (
+        <section
+          className="pointer-events-auto absolute inset-x-3 bottom-[166px] z-20 rounded-[18px] border border-white/85 bg-white/94 p-2.5 shadow-[0_15px_42px_rgba(15,35,66,0.17)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/95 md:bottom-[258px] lg:inset-x-auto lg:bottom-5 lg:left-4 lg:w-[440px]"
+          aria-label="Comparer les huit villes"
+          data-akarfinder-city-comparison
+          data-akarfinder-city-focus={focusedCitySlug ?? ""}
+        >
+          <div className="mb-2 flex items-center justify-between gap-2 px-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-200">8 villes · même carte</span>
+            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-300">Ville cible en bleu</span>
+          </div>
+          <div className="grid grid-cols-4 gap-1.5">
+            {comparisonCities.map((city) => {
+              const selected = city.slug === focusedCitySlug;
+              const label = publicNationalCityLabel(city.slug, city.name);
+              return (
+                <button
+                  key={city.slug}
+                  type="button"
+                  onClick={() => enterCity(city.slug)}
+                  aria-pressed={selected}
+                  aria-label={`Explorer ${label}${selected ? " — ville cible" : ""}`}
+                  data-akarfinder-city-option={city.slug}
+                  className={`relative flex min-h-11 min-w-0 flex-col items-center justify-center rounded-xl border px-1.5 py-1.5 text-center text-[10px] font-extrabold leading-tight transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${selected
+                    ? "border-[3px] border-[#0B63CE] bg-blue-50 text-blue-800 shadow-[0_0_0_3px_rgba(11,99,206,0.13),0_6px_15px_rgba(11,99,206,0.18)] dark:bg-blue-950 dark:text-blue-100"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50/70 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"}`}
+                >
+                  <span className="max-w-full truncate">{label}</span>
+                  {selected ? <span className="mt-0.5 text-[8px] font-bold uppercase tracking-wide text-[#0B63CE] dark:text-blue-300">Ville cible</span> : null}
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-1.5 px-1 text-[9px] leading-3.5 text-slate-500 dark:text-slate-300">
+            Contour de ville candidat OpenStreetMap · quartier sans limite certifiée
+          </p>
+        </section>
+      ) : null}
 
       {previewPlace && payload?.view === "morocco" ? (
         <aside className="absolute inset-x-3 bottom-[84px] z-20 rounded-[22px] border border-white/[0.85] bg-white/[0.96] p-3.5 shadow-[0_18px_48px_rgba(15,35,66,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/[0.96] sm:inset-x-auto sm:bottom-5 sm:left-4 sm:w-[330px]" aria-label={`Ville sélectionnée ${publicNationalCityLabel(previewPlace.slug, previewPlace.name)}`} data-akarfinder-city-preview={previewPlace.slug}>

@@ -247,3 +247,6 @@ try {
 
 // L4-B Mohammedia: read-only visual certification on the existing authorized N2 job.
 await import("./vivre-ici-l4b-mohammedia-smoke.mjs");
+
+// L4-C: source-backed national city focus + eight comparable choices, four viewports.
+await import("./vivre-ici-l4c-city-focus.mjs");
