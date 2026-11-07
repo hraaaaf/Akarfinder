@@ -59,6 +59,11 @@ Les lots ne sont **pas considérés terminés** par leur simple existence en cod
 
 ### L0 — BASELINE réelle et inventaire, avant toute modification produit — P0
 
+#### L0 checkpoint 07/11/2026 — PREUVE FONCTIONNELLE PARTIELLE
+
+Les 8 blobs Git comparés entre `main@c0f172bc6755d769a3103051d90c2953f3215de2` et candidat PR #1147 `9e1bb3906cc4b60c4c67c6a42ad6256776fe8402` sont strictement identiques. Le [run N3 #42305126064](https://github.com/hraaaaf/Akarfinder/actions/runs/42305126064) est SUCCESS, artefact #13546331975 inspecté : `report.json` `ok=true`, 390/1280 Maroc→Casablanca→Maârif→Search, `overflow=0`. **Pas une seule image dans l'artefact.** Revue `main` 430/768, 3 vues et captures visuelles **restent à faire**. Détails, preuves et blocage workflow_dispatch dans `docs/reviews/VIVRE_ICI_L0_BASELINE_2026-11-07.md`. Aucun contournement CI, aucun Vercel. **L0 NON CLOS**.
+
+
 - **Goal :** capturer et inventorier le Vivre Ici de `main` aux états national, région, ville, Maârif, retour et Search.
 - **Success :** 4 viewports **390×844 / 430×932 / 768×900 / 1280×900**, captures visuelles **BEFORE affichées au propriétaire**, bilan console/HTTP, contrôles carte, interaction clavier/touch, historique CSS et PR #1090/#1108 catalogués sans remerge.
 - **Proof :** URL run GitHub + HEAD exact + screenshot(s) inspectés + rapport JSON + liste écarts; comparer au mockup Notion 3 écrans. **Aucun screenshot current-main encore produit dans cet onboarding.**
