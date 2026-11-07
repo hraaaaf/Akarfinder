@@ -6,7 +6,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 // Only the V5 catalog determines selectable districts. No invented pin/geometry.
 const baseUrl = process.env.BASE_URL || "http://127.0.0.1:3213";
 const outDir = process.env.L4B_AUDIT_OUTPUT_DIR ||
-  (process.env.AUDIT_OUTPUT_DIR || "data/audits/carte-national-neighborhoods-n2-after") + "/l4b";
+  (process.env.AUDIT_OUTPUT_DIR || "data/audits/carte-national-neighborhoods-n2-after") + "/l4b-eightcity";
 await mkdir(outDir, { recursive: true });
 
 const cities = ["casablanca", "rabat", "marrakech", "tanger", "agadir", "fes", "kenitra", "mohammedia"];
