@@ -116,6 +116,43 @@ async function main() {
               findings.push({ route: route.path, viewport: viewport.label, check: "fresh-poi-empty-state", detail: "Maârif has no sourced recent POIs but empty-state disclosure was not visible" });
             }
           }
+          if (route.citySlug === "casablanca" && route.districtSlug === "maarif" && viewport.width <= 430) {
+            // Real mobile sheet behavior: compact 160px, 44px toggle, visible Search CTA,
+            // expanded scrollable context, then collapse again without hiding the CTA.
+            const sheet = page.locator('[data-p4-map-decision-rail]');
+            const toggle = sheet.locator('.p4-sheet-toggle');
+            const cta = sheet.locator('.p4-premium-primary-action');
+            try {
+              await toggle.waitFor({ state: "visible", timeout: 12_000 });
+              const compact = await sheet.boundingBox();
+              const toggleBox = await toggle.boundingBox();
+              const compactCta = await cta.boundingBox();
+              if (!compact || compact.height > 160 || !toggleBox || toggleBox.width < 44 || toggleBox.height < 44 ||
+                  !compactCta || compactCta.y + compactCta.height > compact.y + compact.height + 1) {
+                throw new Error(`compact dimensions wrong: ${JSON.stringify({ compact, toggleBox, compactCta })}`);
+              }
+              if ((await toggle.getAttribute('aria-expanded')) !== 'false') throw new Error("collapsed aria-expanded missing");
+              await toggle.click();
+              await sheet.locator('[data-l2c-extra]').waitFor({ state: "visible", timeout: 12_000 });
+              await sheet.locator('[data-l2b-daily-context]').waitFor({ state: "visible", timeout: 12_000 });
+              await sheet.locator('[data-l2b-living-context]').waitFor({ state: "visible", timeout: 12_000 });
+              if ((await toggle.getAttribute('aria-expanded')) !== 'true') throw new Error("expanded aria-expanded missing");
+              const expanded = await sheet.boundingBox();
+              const expandedCta = await cta.boundingBox();
+              if (!expanded || expanded.height <= compact.height + 60 || !expandedCta ||
+                  expandedCta.y + expandedCta.height > expanded.y + expanded.height + 1) {
+                throw new Error(`expanded CTA not visible: ${JSON.stringify({ expanded, expandedCta })}`);
+              }
+              await page.screenshot({ path: join(outputDir, `map-casablanca-maarif-sheet-expanded-${viewport.label}.png`), fullPage: false });
+              screenshotsCaptured += 1;
+              await toggle.click();
+              if ((await toggle.getAttribute('aria-expanded')) !== 'false') throw new Error("collapsing does not update aria-expanded");
+              const recompact = await sheet.boundingBox();
+              if (!recompact || recompact.height > 160) throw new Error(`sheet cannot return to compact state: ${recompact?.height}`);
+            } catch (error) {
+              findings.push({ route: route.path, viewport: viewport.label, check: "l2c-sheet-expand-collapse", detail: String(error).slice(0, 550) });
+            }
+          }
         }
 
         if (pageErrors.length > 0) {
