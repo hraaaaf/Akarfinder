@@ -1,0 +1,55 @@
+name: DATA-MASS Privileged Audit Read-only Build AFTER
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/data-mass-3a/**"
+      - "data/data-mass-3b/**"
+      - "data/data-mass-3c/**"
+      - "data/data-mass-4/**"
+      - "data/data-mass-2b/high-yield-source-review.json"
+      - "scripts/data-mass/minimal-listing-index-policy.ts"
+      - "scripts/data-mass/minimal-listing-projection.ts"
+      - "scripts/data-mass/minimal-listing-canary-readiness.ts"
+      - "scripts/data-mass/mass-reclassification*.ts"
+      - "scripts/data-mass/source-factory-high-yield-review.ts"
+      - "scripts/data-mass/__tests__/minimal-listing-index-policy.test.ts"
+      - "scripts/data-mass/__tests__/minimal-listing-projection.test.ts"
+      - "scripts/data-mass/__tests__/minimal-listing-canary-readiness.test.ts"
+      - "scripts/data-mass/__tests__/mass-reclassification.test.ts"
+      - "scripts/data-mass/__tests__/source-factory-high-yield-review.test.ts"
+      - "scripts/audits/data-mass-3a-minimal-listing-shadow.ts"
+      - "scripts/audits/data-mass-3b-minimal-listing-projection-shadow.ts"
+      - "scripts/audits/data-mass-3c-canary-readiness-shadow.ts"
+      - "scripts/audits/data-mass-2b-high-yield-sources.ts"
+      - "scripts/ci/__tests__/data-mass-privileged-workflow-boundaries.test.mjs"
+      - ".github/workflows/data-mass-3a-minimal-listing-shadow.yml"
+      - ".github/workflows/data-mass-3b-minimal-listing-projection-shadow.yml"
+      - ".github/workflows/data-mass-3c-canary-readiness-shadow.yml"
+      - ".github/workflows/data-mass-4-reclassification-shadow.yml"
+      - ".github/workflows/data-mass-2b-high-yield-sources.yml"
+      - ".github/workflows/data-mass-privileged-readonly-after.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Shared production compile without service-role secrets
+        run: npm run build
