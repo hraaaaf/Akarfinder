@@ -7,6 +7,8 @@ await mkdir(outDir, { recursive: true });
 
 const viewports = [
   { name: "390", width: 390, height: 844, mobile: true },
+  { name: "430", width: 430, height: 932, mobile: true },
+  { name: "768", width: 768, height: 900, mobile: false },
   { name: "1280", width: 1280, height: 900, mobile: false },
 ];
 const expectedDistrictHref = "/map?city=casablanca&district=maarif&layer=explore";
@@ -155,8 +157,43 @@ try {
       await page.locator("[data-search-results-section]").waitFor({ state: "visible", timeout: 30000 });
       await page.locator("[data-search-controls-section]").waitFor({ state: "visible", timeout: 30000 });
 
+      // L5-A: assert visible Search filters, not only navigation URL.
+      const cityChip = page.locator('[data-search-active-filter="city"]');
+      const districtChip = page.locator('[data-search-active-filter="district"]');
+      await cityChip.waitFor({ state: "visible", timeout: 15000 });
+      await districtChip.waitFor({ state: "visible", timeout: 15000 });
+      if (!(await cityChip.innerText()).includes("Casablanca") || !(await districtChip.innerText()).includes("Maârif")) {
+        throw new Error("Search location filter chips do not match Maârif navigation");
+      }
+
+      // Screenshots must represent a settled Search, not stale SSR counts or loading skeletons.
+      await page.waitForFunction(() => {
+        const toolbar = document.querySelector("[data-search-results-toolbar]");
+        const results = document.querySelector("[data-search-results-section]");
+        return Boolean(toolbar && results &&
+          !toolbar.querySelector(".animate-spin") &&
+          !results.querySelector(".animate-pulse"));
+      }, null, { timeout: 30000 });
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (overflow > 1) throw new Error(`search horizontal overflow ${overflow}`);
+      await page.screenshot({ path: `${outDir}/search-maarif-${viewport.name}-after.png`, fullPage: false });
+
+      // Browser back is the expected real action restoring the same map context.
+      await page.goBack({ waitUntil: "domcontentloaded", timeout: 30000 });
+      await page.waitForURL((url) => url.pathname === "/map" &&
+        url.searchParams.get("city") === "casablanca" &&
+        url.searchParams.get("district") === "maarif", { timeout: 20000 });
+      await page.locator('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]')
+        .waitFor({ state: "visible", timeout: 20000 });
+      // A mounted canvas is NOT enough. Require real source-backed building features
+      // before claiming visually successful map restoration (no blank raster screenshots).
+      await page.waitForFunction(() => {
+        const map = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
+        return map?.getAttribute("data-maplibre-render-state") === "ready" &&
+          map?.getAttribute("data-maplibre-source-state") === "available" &&
+          Number(map.getAttribute("data-maplibre-building-count")) > 0;
+      }, null, { timeout: 35000 });
+      await page.screenshot({ path: `${outDir}/return-map-maarif-${viewport.name}-after.png`, fullPage: false });
       if (pageErrors.length) throw new Error(`browser page errors ${JSON.stringify(pageErrors)}`);
 
       report.cases.push({
@@ -167,6 +204,8 @@ try {
         maplibreReady: true,
         searchHandoff: handoffUrl.pathname + handoffUrl.search,
         searchRendered: true,
+        searchLocationChips: ["Casablanca", "Maârif"],
+        browserBackToMap: true,
         overflow,
       });
     } catch (error) {

@@ -587,6 +587,7 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
               <button
                 key={chip.key}
                 type="button"
+                data-search-active-filter={chip.key}
                 onClick={() => handleFilterChange({ ...filters, ...chip.clear })}
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/20 bg-surface px-2.5 py-1 text-[11px] font-bold text-foreground/75 transition hover:border-bronze-500/35 hover:text-foreground"
               >
