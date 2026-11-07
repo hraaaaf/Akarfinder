@@ -12,9 +12,17 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import hmac
+import stat
+from contextlib import contextmanager
+try:
+    import fcntl  # OS-level advisory producer lock, Unix runner only
+except ImportError:
+    fcntl = None
 import urllib.request
 import urllib.error
 import asyncio
+import unicodedata
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
@@ -25,6 +33,10 @@ from pathlib import Path
 import random
 import re
 import sqlite3
+from contextlib import closing
+from types import MappingProxyType
+import tempfile
+import uuid
 from statistics import median
 from typing import Any
 from urllib.parse import urljoin, urlsplit, urlunsplit, unquote
@@ -39,6 +51,14 @@ ROBOTS_URL = "https://www.mubawab.ma/robots.txt"
 ROBOTS_UA = "AkarFinder-public-index"
 MAX_ROBOTS_BYTES = 128 * 1024
 DB_NAME = "akarfinder.db"
+PUBLICATION_STATUS = "akarfinder_publication.json"
+PUBLICATION_HMAC_KEY_ENV = "AKAR_V646_PUBLICATION_HMAC_KEY_HEX"
+TRUSTED_HEAD_ENV = "AKAR_V646_TRUSTED_HEAD_PATH"  # absolute, outside publication root
+PUBLICATION_FILES = (
+    "akarfinder_data.json", "akarfinder_report.md",
+    "akarfinder_price_anomalies.json", "akarfinder_price_m2_flags.json",
+    "akarfinder_quality_signals.json", "akarfinder_diagnostics.json",
+)
 CONCURRENCY_LIMIT = 2
 MAX_RETRIES = 3
 MIN_ACCEPTANCE_RATE = 0.90  # Reject weak cards, ignoring proven promo/empty slots.
@@ -126,6 +146,7 @@ class ParseAudit:
     modern_locality_expected: int = 0
     modern_locality_valid: int = 0
     baseline_eligible_cards: int | None = None
+    shard_context_violations: int = 0
     ignored: dict[str, int] = field(default_factory=dict)
     rejected: dict[str, int] = field(default_factory=dict)
 
@@ -181,7 +202,8 @@ class ParseAudit:
             self.price_on_request_ratio <= MAX_PRICE_ON_REQUEST_RATIO and
             self.surface_coverage >= MIN_SURFACE_COVERAGE and
             self.locality_coverage >= MIN_LOCALITY_COVERAGE and
-            (self.coverage_vs_baseline is None or self.coverage_vs_baseline >= MIN_BASELINE_COVERAGE)
+            (self.coverage_vs_baseline is None or self.coverage_vs_baseline >= MIN_BASELINE_COVERAGE) and
+            self.shard_context_violations == 0
         )
 
     @property
@@ -201,6 +223,8 @@ class ParseAudit:
             reasons.append("locality_coverage_below_threshold")
         if self.coverage_vs_baseline is not None and self.coverage_vs_baseline < MIN_BASELINE_COVERAGE:
             reasons.append("below_shard_baseline_provisional")
+        if self.shard_context_violations:
+            reasons.append("shard_context_violation")
         return reasons
 
 
@@ -363,8 +387,24 @@ def looks_like_block_page(html: str) -> bool:
     return any(phrase in body for phrase in strong)
 
 
+def _normalise_city(value: str | None) -> str:
+    """Conservative city normalization (case, spaces, accents); never infer city."""
+    folded = unicodedata.normalize("NFKD", value or "").casefold()
+    return "".join(ch for ch in folded if ch.isalnum() and not unicodedata.combining(ch))
+
+
+def expected_city_for_shard(source_url: str) -> str:
+    """Only the three explicitly piloted apartment-sale cities."""
+    parts = urlsplit(source_url).path.strip("/").split("/")
+    cities = {"rabat": "Rabat", "casablanca": "Casablanca", "agadir": "Agadir"}
+    if len(parts) not in (4, 5) or len(parts) < 3 or parts[2] not in cities:
+        raise ValueError("City not supported by the bounded V646 shard pilot")
+    return cities[parts[2]]
+
+
 def parse_listings_audited(html: str | None, *, baseline_eligible_cards: int | None = None,
-                          require_locality: bool = False) -> ParseAudit:
+                          require_locality: bool = False, expected_city: str | None = None,
+                          require_apartment: bool = False) -> ParseAudit:
     """Classify cards. Source-specific quality gates are opt-in for verified shards."""
     if baseline_eligible_cards is not None and (isinstance(baseline_eligible_cards, bool)
                                                or not isinstance(baseline_eligible_cards, int)
@@ -387,14 +427,53 @@ def parse_listings_audited(html: str | None, *, baseline_eligible_cards: int | N
         link_el = card.select_one("a[href*='/a/']") or card.select_one("a[href]")
         raw_link = card.get("linkref") or (link_el.get("href") if link_el else None)
         link = canonical_url(raw_link)
-        if not link or not _ID_RE.search(urlsplit(link).path):
-            if "adBoostBox" in classes:
-                audit.mark("promotion_without_detail_link", ignored=True)
-            else:
-                audit.mark("missing_detail_link")
-            continue
         title_el = card.select_one(".listingTit, .listingTitle")
-        if not title_el or not title_el.get_text(" ", strip=True):
+        title = title_el.get_text(" ", strip=True) if title_el else ""
+        if "adBoostBox" in classes:
+            # Every headline is evidence. A neutral h2 MUST NOT hide a
+            # contradictory villa/office in a later h3 (or vice versa).
+            headings = [node.get_text(" ", strip=True) for node in card.select("h2, h3")]
+            conflicts = [candidate for candidate in headings if candidate and
+                         classify_property_type(candidate) in
+                         ("villa", "land", "office", "shop", "mixed_ambiguous")]
+            # Use the strongest contradictory title when there are several
+            # headings. The normal city-first gate below determines the reason.
+            if conflicts:
+                title = conflicts[0]
+            elif not title:
+                typed = next((candidate for candidate in headings
+                              if classify_property_type(candidate) == "apartment"), "")
+                title = typed
+        district_el = card.select_one(".listingH3")
+        location_text = district_el.get_text(" ", strip=True) if district_el else ""
+        locality = [part.strip() for part in location_text.split(",") if part.strip()]
+        district = locality[0] if len(locality) >= 2 else None
+        city = locality[-1] if len(locality) >= 2 else None
+        if district and district.casefold() == city.casefold():
+            district = None
+        observed_type = classify_property_type(title) if title else "unknown"
+        # Check observed contradictory context BEFORE missing link/features.
+        # Otherwise a villa from another city can disappear from the denominator
+        # and let a wrong shard pass the coverage ratio.
+        context_error = None
+        if expected_city is not None and city is not None and _normalise_city(city) != _normalise_city(expected_city):
+            context_error = "shard_city_mismatch"
+        elif require_apartment and title and observed_type != "apartment":
+            context_error = "shard_non_apartment_or_unconfirmed_type"
+        if context_error:
+            audit.mark(context_error)
+            audit.shard_context_violations += 1
+            continue
+        # A promotion is ignorable only AFTER explicit type/city conflicts
+        # have been examined. In strict shards, contradictory promotional cards
+        # must fail the entire page, even without an ID, link or numeric data.
+        if "adBoostBox" in classes and (not link or not _ID_RE.search(urlsplit(link).path)):
+            audit.mark("promotion_without_detail_link", ignored=True)
+            continue
+        if not link or not _ID_RE.search(urlsplit(link).path):
+            audit.mark("missing_detail_link")
+            continue
+        if not title:
             audit.mark("missing_title")
             continue
         price_el = card.select_one(".priceTag, .hardPrice")
@@ -402,7 +481,6 @@ def parse_listings_audited(html: str | None, *, baseline_eligible_cards: int | N
         detail_features = [node.get_text(" ", strip=True) for node in details_nodes]
         details_text = " ".join(detail_features)
         rooms, bedrooms = parse_counts(details_text)
-        title = title_el.get_text(" ", strip=True)
         price_raw = price_el.get_text(" ", strip=True) if price_el else None
         price = parse_price(price_raw)
         source_status = price_source_status(price_raw, price)
@@ -412,23 +490,24 @@ def parse_listings_audited(html: str | None, *, baseline_eligible_cards: int | N
         if all(v is None for v in (price, surface, rooms, bedrooms)):
             audit.mark("missing_numeric_features")
             continue
-        district_el = card.select_one(".listingH3")
-        location_text = district_el.get_text(" ", strip=True) if district_el else ""
-        locality = [part.strip() for part in location_text.split(",") if part.strip()]
-        district = locality[0] if len(locality) >= 2 else None
-        city = locality[-1] if len(locality) >= 2 else None
-        if district and district.casefold() == city.casefold():
-            district = None
         if require_locality or card.select_one(".listingTit"):
             audit.modern_locality_expected += 1
             if district and city:
                 audit.modern_locality_valid += 1
+        if expected_city is not None and city is None:
+            audit.mark("shard_city_missing")
+            audit.shard_context_violations += 1
+            continue
+        if require_apartment and observed_type != "apartment":
+            audit.mark("shard_non_apartment_or_unconfirmed_type")
+            audit.shard_context_violations += 1
+            continue
         bath_match = re.search(r"(?<!\d)(\d+)\s*salles?\s+de\s+bains?\b", details_text, re.I)
         bathrooms = int(bath_match.group(1)) if bath_match else None
         audit.listings.append({
             "id": listing_id_from_url(link),
             "title": title,
-            "property_type_observed": classify_property_type(title),
+            "property_type_observed": observed_type,
             "price_mad": price,
             "price_source_status": source_status,
             "surface_m2": surface,
@@ -545,7 +624,8 @@ def init_db(path: str = DB_NAME) -> sqlite3.Connection:
             quality_signals_json TEXT,
             quality_signals_reviewed_at TEXT,
             source_search_url TEXT,
-            transaction_type TEXT
+            transaction_type TEXT,
+            last_source_observation_json TEXT
         )
     """)
     existing = {r[1] for r in conn.execute("PRAGMA table_info(listings)")}
@@ -566,7 +646,8 @@ def init_db(path: str = DB_NAME) -> sqlite3.Connection:
                          ("quality_signals_json", "TEXT"),
                          ("quality_signals_reviewed_at", "TEXT"),
                          ("source_search_url", "TEXT"),
-                         ("transaction_type", "TEXT")):
+                         ("transaction_type", "TEXT"),
+                         ("last_source_observation_json", "TEXT")):
         if column not in existing:
             conn.execute(f"ALTER TABLE listings ADD COLUMN {column} {kind}")
     conn.commit()
@@ -582,7 +663,7 @@ def _log_field_change(conn: sqlite3.Connection, stats: "ImportStats", listing_id
 
 
 def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
-                    observed_at: datetime | None = None) -> tuple[ImportStats, list[str]]:
+                    observed_at: datetime | None = None, commit: bool = True) -> tuple[ImportStats, list[str]]:
     stats = ImportStats()
     ordered_ids: list[str] = []
     utc_now = observed_at if observed_at is not None else datetime.now(timezone.utc)
@@ -590,8 +671,20 @@ def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
         raise ValueError("observed_at must be timezone-aware")
     utc_now = utc_now.astimezone(timezone.utc)
     now = utc_now.isoformat(timespec="seconds")
-    # Merge duplicate cards before import: later non-empty fields may complete
-    # earlier, partial cards of the same listing.
+    # A source ID may appear in several cards. Choose the best single observed
+    # card; never synthesize a "complete" record from mutually incomplete cards.
+    # This is separate from field-change history across distinct import cycles.
+    def _observation_score(item: dict[str, Any]) -> tuple[int, int, int]:
+        has_price = (item.get("price_mad") is not None or
+                     item.get("price_source_status") == "on_request")
+        core_fields = (bool(item.get("title")), has_price,
+                       item.get("surface_m2") is not None,
+                       bool(item.get("location")), bool(item.get("link")))
+        strict_fields = (*core_fields, bool(item.get("district")))
+        extra_count = sum(item.get(k) is not None for k in
+                          ("rooms", "bedrooms", "bathrooms", "property_type_observed"))
+        return int(all(strict_fields)), sum(strict_fields), extra_count
+
     merged: dict[str, dict[str, Any]] = {}
     for item in listings:
         listing_id = item["id"]
@@ -599,12 +692,17 @@ def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
             raise ValueError("non-sale listing rejected; do not mix rents and sales")
         if listing_id in merged:
             stats.duplicates += 1
-            for key, value in item.items():
-                if merged[listing_id].get(key) is None and value is not None:
-                    merged[listing_id][key] = value
+            if _observation_score(item) > _observation_score(merged[listing_id]):
+                merged[listing_id] = item.copy()
         else:
             merged[listing_id] = item.copy()
     for item in merged.values():
+        # Preserve the exact source observation independently of the enriched
+        # historical row. Never certify a core assembled across cycles.
+        snapshot = json.dumps({k: item.get(k) for k in (
+            "id", "title", "price_mad", "price_source_status", "surface_m2",
+            "location", "district", "link", "property_type_observed")},
+            ensure_ascii=False, sort_keys=True)
         listing_id = item["id"]
         ordered_ids.append(listing_id)
         old = conn.execute("SELECT * FROM listings WHERE id = ?", (listing_id,)).fetchone()
@@ -612,14 +710,14 @@ def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
             raise ValueError("conflicting transaction for same listing ID")
         if old is None:
             conn.execute("""INSERT INTO listings
-                (id,title,property_type_observed,price_mad,surface_m2,rooms,bedrooms,bathrooms,district,location,link,first_seen,last_seen,price_source_status,source_search_url,transaction_type)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (id,title,property_type_observed,price_mad,surface_m2,rooms,bedrooms,bathrooms,district,location,link,first_seen,last_seen,price_source_status,source_search_url,transaction_type,last_source_observation_json)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (listing_id, item["title"], item.get("property_type_observed"), item["price_mad"], item["surface_m2"],
                  item["rooms"], item["bedrooms"], item.get("bathrooms"), item.get("district"), item["location"], item["link"],now,now,item.get("price_source_status"),
-                 item.get("source_search_url"),item.get("transaction_type")))
+                 item.get("source_search_url"),item.get("transaction_type"),snapshot))
             stats.inserted += 1
             continue
-        changes: dict[str, Any] = {}
+        changes: dict[str, Any] = {"last_source_observation_json": snapshot}
         incoming_price = item.get("price_mad")
         # Suspicious prices remain quarantined until THREE qualified observations,
         # spaced by >= 24 elapsed hours each. Immediate reruns earn no credit.
@@ -695,7 +793,8 @@ def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
                     _log_field_change(conn, stats, listing_id, col, old[col], new, now)
         if changes:
             metadata_only = set(changes) <= {"price_status", "pending_price_mad", "pending_price_count",
-                                            "pending_price_qualified_at", "pending_price_fluctuations"}
+                                            "pending_price_qualified_at", "pending_price_fluctuations",
+                                            "last_source_observation_json"}
             assignments = ", ".join(f"{col} = ?" for col in changes)
             conn.execute(f"UPDATE listings SET {assignments}, last_seen = ? WHERE id = ?",
                          (*changes.values(), now, listing_id))
@@ -706,7 +805,8 @@ def import_listings(conn: sqlite3.Connection, listings: list[dict[str, Any]], *,
         else:
             conn.execute("UPDATE listings SET last_seen = ? WHERE id = ?", (now, listing_id))
             stats.unchanged += 1
-    conn.commit()
+    if commit:
+        conn.commit()
     return stats, ordered_ids
 
 
@@ -764,7 +864,7 @@ def review_price_per_m2(listings: list[dict[str, Any]]) -> dict[str, dict[str, A
 
 
 def persist_price_reviews(conn: sqlite3.Connection, reviews: dict[str, dict[str, Any]],
-                          *, reviewed_at: datetime | None = None) -> None:
+                          *, reviewed_at: datetime | None = None, commit: bool = True) -> None:
     """Keep human-review flags between cycles; clear only after new evidence.
 
     The status is statistical, not a verification of the price or a human signoff.
@@ -794,12 +894,13 @@ def persist_price_reviews(conn: sqlite3.Connection, reviews: dict[str, dict[str,
             continue
         conn.execute("UPDATE listings SET price_review_status=?, price_reviewed_at=?, price_review_payload=? WHERE id=?",
                      (effective,when,json.dumps(review,ensure_ascii=False),ident))
-    conn.commit()
+    if commit:
+        conn.commit()
 
 
 def persist_quality_signals(conn: sqlite3.Connection, listings: list[dict[str, Any]],
                             duplicate_candidates: dict[str, list[str]], *,
-                            observed_at: datetime | None = None) -> None:
+                            observed_at: datetime | None = None, commit: bool = True) -> None:
     """Persist review-only findings; absence of an item from the next page does not clear it.
 
     Signals are snapshots for manual review, not a claim of confirmed duplication.
@@ -819,7 +920,8 @@ def persist_quality_signals(conn: sqlite3.Connection, listings: list[dict[str, A
         conn.execute("""UPDATE listings SET quality_signals_json=?,
                        quality_signals_reviewed_at=? WHERE id=?""",
                      (json.dumps(record, ensure_ascii=False), timestamp, item["id"]))
-    conn.commit()
+    if commit:
+        conn.commit()
 
 
 def persistent_quality_signals(conn: sqlite3.Connection) -> dict[str, dict[str, Any]]:
@@ -847,6 +949,431 @@ def _write_atomic(path: str, contents: str) -> None:
     finally:
         if tmp.exists():
             tmp.unlink()
+
+
+def _publication_key() -> bytes | None:
+    """Secret supplied out of band; never stored inside the publication tree."""
+    raw = os.environ.get(PUBLICATION_HMAC_KEY_ENV, "")
+    if len(raw) != 64:
+        return None
+    try:
+        key = bytes.fromhex(raw)
+    except ValueError:
+        return None
+    return key if len(key) == 32 else None
+
+
+def _signed_payload(marker: dict[str, Any]) -> bytes:
+    return json.dumps({k: v for k, v in marker.items() if k != "hmac_sha256"},
+                      ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+
+
+def _sqlite_snapshot(path: Path) -> sqlite3.Connection:
+    """SQLite backup includes committed WAL pages and captures a coherent snapshot."""
+    source = sqlite3.connect(f"file:{path.resolve()}?mode=ro", uri=True, timeout=2.0)
+    target = sqlite3.connect(":memory:")
+    try:
+        source.backup(target)
+        return target
+    except BaseException:
+        target.close()
+        raise
+    finally:
+        source.close()
+
+
+def _db_logical_sha256(conn: sqlite3.Connection) -> str:
+    """Hash a consistent *logical* SQLite snapshot, never only .db file bytes."""
+    digest = hashlib.sha256()
+    for statement in conn.iterdump():
+        digest.update(statement.encode("utf-8"))
+        digest.update(b"\n")
+    return digest.hexdigest()
+
+
+def _assert_export_matches_snapshot(db: sqlite3.Connection, data_json: bytes) -> None:
+    """Prove exported data and immutable SQL snapshot have identical stored rows.
+
+    The JSON may add two *derived* review fields, but every SQLite listing
+    column, row ID and value must match exactly. No sample-based checks.
+    """
+    try:
+        records = json.loads(data_json)
+    except (UnicodeError, ValueError, TypeError) as exc:
+        raise PublicationVerificationError("json_export_unreadable") from exc
+    if not isinstance(records, list):
+        raise PublicationVerificationError("json_export_not_list")
+    cursor = db.execute("SELECT * FROM listings")
+    columns = tuple(column[0] for column in cursor.description)
+    expected: dict[str, dict[str, Any]] = {}
+    for row in cursor:
+        obj = dict(zip(columns, row))
+        identifier = obj["id"]
+        if identifier is None or identifier in expected:
+            raise PublicationVerificationError("sqlite_export_duplicate_id")
+        expected[identifier] = obj
+    if len(records) != len(expected):
+        raise PublicationVerificationError("database_export_mismatch")
+    seen = set()
+    for record in records:
+        if not isinstance(record, dict):
+            raise PublicationVerificationError("json_export_invalid_row")
+        identifier = record.get("id")
+        if identifier not in expected or identifier in seen:
+            raise PublicationVerificationError("database_export_mismatch")
+        seen.add(identifier)
+        stored = expected[identifier]
+        if any(col not in record or record[col] != value
+               for col, value in stored.items()):
+            raise PublicationVerificationError("database_export_mismatch")
+
+
+def _trusted_head_path(root: Path | str = ".") -> Path:
+    """Trust anchor location must not be under files an attacker can restore.
+
+    A file is a testable local implementation, NOT a non-rollbackable service.
+    The operator must protect this file/parent directory against rollback.
+    """
+    raw = os.environ.get(TRUSTED_HEAD_ENV, "")
+    if not raw or not Path(raw).is_absolute():
+        raise PublicationVerificationError("trusted_head_unconfigured")
+    trusted = Path(raw).resolve()
+    if trusted.is_relative_to(Path(root).resolve()):
+        raise PublicationVerificationError("trusted_head_inside_publication")
+    if not trusted.parent.is_dir():
+        raise PublicationVerificationError("trusted_head_parent_missing")
+    return trusted
+
+
+def _read_trusted_head(root: Path | str = ".") -> dict[str, Any] | None:
+    path = _trusted_head_path(root)
+    if not path.exists():
+        return None
+    try:
+        doc = json.loads(path.read_bytes())
+    except (OSError, ValueError, TypeError) as exc:
+        raise PublicationVerificationError("trusted_head_unreadable") from exc
+    key = _publication_key()
+    if key is None:
+        raise PublicationVerificationError("authentication_key_unavailable")
+    if not isinstance(doc, dict) or doc.get("schema_version") != 1:
+        raise PublicationVerificationError("trusted_head_untrusted")
+    signature = doc.get("hmac_sha256")
+    if not isinstance(signature, str) or not hmac.compare_digest(
+        hmac.new(key, _signed_payload(doc), hashlib.sha256).hexdigest(), signature
+    ):
+        raise PublicationVerificationError("trusted_head_authentication_mismatch")
+    if not isinstance(doc.get("generation"), int) or doc["generation"] < 1:
+        raise PublicationVerificationError("trusted_head_invalid_generation")
+    return doc
+
+
+def _write_trusted_head(run_id: str, status: str, generation: int, *,
+                        root: Path | str = ".") -> None:
+    """Atomic signed trust marker, separate from the replaceable export set.
+
+    Security contract: operator enforces monotonic/rollback-resistant storage.
+    A plain replaceable local file is insufficient against full-system rollback.
+    """
+    key = _publication_key()
+    if key is None:
+        raise PublicationVerificationError("authentication_key_unavailable")
+    path = _trusted_head_path(root)
+    doc: dict[str, Any] = {"schema_version": 1, "generation": generation,
+                            "run_id": run_id, "status": status}
+    doc["hmac_sha256"] = hmac.new(key, _signed_payload(doc), hashlib.sha256).hexdigest()
+    temp = path.with_name(path.name + ".tmp")
+    try:
+        with temp.open("w", encoding="utf-8") as fp:
+            json.dump(doc, fp, sort_keys=True)
+            fp.flush()
+            os.fsync(fp.fileno())
+        os.replace(temp, path)
+    finally:
+        temp.unlink(missing_ok=True)
+
+
+class ProducerLockBusy(RuntimeError):
+    pass
+
+
+@contextmanager
+def _exclusive_producer_lock():
+    """Serialize every producer across processes on the SAME filesystem.
+
+    The lock is held from before reading generation through the final status
+    write. Fail closed rather than waiting or blocking an event loop. Deployers
+    running on different hosts MUST use a real distributed lock instead.
+    """
+    if fcntl is None:
+        raise PublicationVerificationError("producer_lock_unsupported_platform")
+    # Two scopes: every producer of the same export directory shares its
+    # output lock, even if a process omitted its HMAC environment; producers
+    # targeting the same signed generation share one external trust lock.
+    locks = [Path(PUBLICATION_STATUS + ".producer.lock").resolve()]
+    if _publication_key() is not None:
+        trust = _trusted_head_path()
+        locks.append(trust.with_name(trust.name + ".producer.lock"))
+    flags = os.O_CREAT | os.O_RDWR | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    locked: list[int] = []
+    try:
+        for path in sorted(set(locks), key=str):
+            fd = os.open(path, flags, 0o600)
+            locked.append(fd)
+            if not stat.S_ISREG(os.fstat(fd).st_mode):
+                raise PublicationVerificationError("producer_lock_not_regular_file")
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as exc:
+                raise ProducerLockBusy("producer_already_running") from exc
+        yield
+    finally:
+        for fd in reversed(locked):
+            try:
+                fcntl.flock(fd, fcntl.LOCK_UN)
+            finally:
+                os.close(fd)
+
+
+def _write_publication_status(run_id: str, status: str, *,
+                              failure_code: int | None = None,
+                              generation: int | None = None) -> None:
+    """Signed manifest; absent secret gives an explicit UNAUTHENTICATED result.
+
+    Only verified-reader consumers may claim publication authenticity. Without
+    an external secret, a successful offline batch remains *uncertified*.
+    """
+    marker: dict[str, Any] = {
+        "schema_version": 2,
+        "run_id": run_id,
+        "status": status,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "consumer_contract": "read_verified_publication_only",
+        "generation": generation,
+    }
+    if failure_code is not None:
+        marker["failure_exit_code"] = failure_code
+        marker["previous_exports_may_be_stale_or_mixed"] = True
+        marker["db_committed_before_failure"] = failure_code == 5
+    if status == "complete":
+        marker["sha256"] = {
+            name: hashlib.sha256(Path(name).read_bytes()).hexdigest()
+            for name in (*PUBLICATION_FILES, DB_NAME)
+        }
+        with closing(_sqlite_snapshot(Path(DB_NAME))) as snapshot:
+            marker["db_logical_sha256"] = _db_logical_sha256(snapshot)
+            data_bytes = Path("akarfinder_data.json").read_bytes()
+            _assert_export_matches_snapshot(snapshot, data_bytes)
+            _assert_markdown_matches_export(Path("akarfinder_report.md").read_bytes(), data_bytes)
+        key = _publication_key()
+        marker["authentication"] = "hmac_sha256" if key else "unsigned_untrusted"
+        if key:
+            marker["hmac_sha256"] = hmac.new(key, _signed_payload(marker), hashlib.sha256).hexdigest()
+    _write_atomic(PUBLICATION_STATUS, json.dumps(marker, ensure_ascii=False,
+                                                 sort_keys=True, indent=2) + "\n")
+
+
+class PublicationVerificationError(ValueError):
+    def __init__(self, reason: str):
+        super().__init__(reason)
+        self.reason = reason
+
+
+class ReadOnlySqliteSnapshot:
+    """Restrict verified in-memory SQL snapshot to read-only queries.
+
+    Not a hostile-code sandbox; prevents accidental writes through public API.
+    """
+    __slots__ = ("_conn", "_authorizer")
+
+    def __init__(self, conn: sqlite3.Connection):
+        self._conn = conn
+        permitted = {sqlite3.SQLITE_SELECT, sqlite3.SQLITE_READ, sqlite3.SQLITE_FUNCTION,
+                     sqlite3.SQLITE_RECURSIVE}
+        def authorizer(action, arg1, arg2, db_name, source):
+            return sqlite3.SQLITE_OK if action in permitted else sqlite3.SQLITE_DENY
+        self._authorizer = authorizer
+        conn.set_authorizer(authorizer)
+
+    def execute(self, sql: str, parameters: tuple | list = ()):
+        return self._conn.execute(sql, parameters)
+
+    def close(self) -> None:
+        self._conn.close()
+
+
+class VerifiedPublication:
+    """Immutable verified export bytes + coherent in-memory SQLite snapshot.
+
+    Do not open top-level files after verification; use read_export() and db.
+    """
+    def __init__(self, run_id: str, exports: dict[str, bytes], db: sqlite3.Connection):
+        self.run_id = run_id
+        self.exports = MappingProxyType(exports)
+        self.db = ReadOnlySqliteSnapshot(db)
+
+    def read_export(self, filename: str) -> bytes:
+        return self.exports[filename]
+
+    def close(self) -> None:
+        self.db.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+
+
+def read_verified_publication(root: Path | str = ".") -> VerifiedPublication:
+    """Authenticate a publication and return only the bytes/snapshot verified.
+
+    Captures all files before hashing; a subsequent mutation cannot change the
+    returned immutable bytes. A SQLite backup includes WAL commits and fixes
+    the snapshot used for the digest and subsequent SQL consumer queries.
+    """
+    root = Path(root)
+    raw_marker = (root / PUBLICATION_STATUS).read_bytes()
+    proof = json.loads(raw_marker)
+    if proof.get("schema_version") != 2 or proof.get("status") != "complete":
+        raise PublicationVerificationError("run_not_complete")
+    key = _publication_key()
+    if key is None:
+        raise PublicationVerificationError("authentication_key_unavailable")
+    if proof.get("authentication") != "hmac_sha256":
+        raise PublicationVerificationError("publication_unsigned")
+    auth = proof.get("hmac_sha256")
+    if not isinstance(auth, str) or not hmac.compare_digest(
+        hmac.new(key, _signed_payload(proof), hashlib.sha256).hexdigest(), auth
+    ):
+        raise PublicationVerificationError("authentication_mismatch")
+    trusted = _read_trusted_head(root)
+    if trusted is None or trusted.get("status") != "complete" or (
+        trusted.get("run_id") != proof.get("run_id") or
+        trusted.get("generation") != proof.get("generation")
+    ):
+        raise PublicationVerificationError("publication_superseded_or_revoked")
+    digests = proof.get("sha256")
+    expected_names = set((*PUBLICATION_FILES, DB_NAME))
+    if not isinstance(digests, dict) or set(digests) != expected_names:
+        raise PublicationVerificationError("manifest_incomplete")
+    exports: dict[str, bytes] = {}
+    for filename in PUBLICATION_FILES:
+        data = (root / filename).read_bytes()
+        expected = digests.get(filename)
+        if not isinstance(expected, str) or hashlib.sha256(data).hexdigest() != expected:
+            raise PublicationVerificationError("digest_mismatch:" + filename)
+        exports[filename] = data
+    db_file = root / DB_NAME
+    db_bytes = db_file.read_bytes()
+    if hashlib.sha256(db_bytes).hexdigest() != digests[DB_NAME]:
+        raise PublicationVerificationError("digest_mismatch:" + DB_NAME)
+    db_snapshot = _sqlite_snapshot(db_file)
+    try:
+        # This detects committed WAL changes even if .db bytes are unchanged.
+        if _db_logical_sha256(db_snapshot) != proof.get("db_logical_sha256"):
+            raise PublicationVerificationError("db_logical_digest_mismatch")
+        _assert_export_matches_snapshot(db_snapshot, exports["akarfinder_data.json"])
+        _assert_markdown_matches_export(exports["akarfinder_report.md"], exports["akarfinder_data.json"])
+        if (root / PUBLICATION_STATUS).read_bytes() != raw_marker:
+            raise PublicationVerificationError("publication_changed_during_read")
+        current_head = _read_trusted_head(root)
+        if current_head != trusted:
+            raise PublicationVerificationError("trusted_head_changed_during_read")
+        return VerifiedPublication(str(proof["run_id"]), exports, db_snapshot)
+    except BaseException:
+        db_snapshot.close()
+        raise
+
+
+def verify_publication(root: Path | str = ".") -> dict[str, Any]:
+    """Point-in-time check ONLY; consumers must use read_verified_publication.
+
+    Never verify and subsequently reopen files: that is a TOCTOU vulnerability.
+    """
+    try:
+        with read_verified_publication(root) as publication:
+            return {"valid": True, "status": "complete", "run_id": publication.run_id,
+                    "files_checked": len(PUBLICATION_FILES) + 1, "authenticated": True,
+                    "read_contract": "use_read_verified_publication_snapshot"}
+    except PublicationVerificationError as exc:
+        if exc.reason.startswith("digest_mismatch:"):
+            return {"valid": False, "reason": "digest_mismatch",
+                    "file": exc.reason.split(":", 1)[1]}
+        return {"valid": False, "reason": exc.reason}
+    except (OSError, ValueError, TypeError, AttributeError, sqlite3.Error) as exc:
+        return {"valid": False, "reason": "proof_unavailable", "detail": type(exc).__name__}
+
+
+def _render_markdown_listing(item: dict[str, Any], index: int) -> list[str]:
+    """One canonical renderer used by both writer and semantic verifier."""
+    title = (item.get("title") or "Sans titre").replace("\n", " ")
+    price = f"{item['price_mad']:,} MAD".replace(",", " ") if item["price_mad"] is not None else "Non communiqué"
+    surface = f"{item['surface_m2']:g} m²" if item["surface_m2"] is not None else "Non communiquée"
+    rooms = str(item["rooms"]) if item["rooms"] is not None else "N/D"
+    bedrooms = str(item["bedrooms"]) if item["bedrooms"] is not None else "N/D"
+    return [f"### {index}. {title}", f"- Prix : {price}",
+            f"- Secteur : {item.get('district') or 'N/D'} | Salles de bains : {item.get('bathrooms') if item.get('bathrooms') is not None else 'N/D'}",
+            f"- Surface : {surface} | Pièces : {rooms} | Chambres : {bedrooms}",
+            f"- Prix : statut={item.get('price_status')} | candidat={item.get('pending_price_mad')} | observations={item.get('pending_price_count')}",
+            f"- Revue prix/m² : {(item.get('price_m2_review') or {}).get('status', 'non évalué ce cycle')} "
+            f"| taux source={(item.get('price_m2_review') or {}).get('source_price_per_m2_mad')}",
+            f"- Dernière vue : {item['last_seen']}",
+            f"- Lien : {item['link']}"]
+
+
+def _assert_markdown_matches_export(markdown: bytes, data_json: bytes) -> None:
+    """Match ALL advertised listings to authenticated JSON/SQLite data.
+
+    Header counters without independent business evidence remain descriptive;
+    this detects contradictory prices, surfaces, titles, and details on every
+    advertised Markdown listing, even in a freshly re-signed publication.
+    """
+    try:
+        body = markdown.decode("utf-8")
+        data = json.loads(data_json)
+    except (UnicodeError, ValueError, TypeError) as exc:
+        raise PublicationVerificationError("markdown_unreadable") from exc
+    if not isinstance(data, list) or any(not isinstance(row, dict) for row in data):
+        raise PublicationVerificationError("markdown_source_invalid")
+    marker = "## Annonces observées durant cette session (maximum 50)"
+    if body.count(marker) != 1 or not body.startswith("# Rapport d'extraction Akarfinder V6.4.6\n"):
+        raise PublicationVerificationError("markdown_structure_invalid")
+    head, listings = body.split(marker, 1)
+    totals = re.findall(r"(?m)^- Total cumulé : (\d+)\s*$", head)
+    cycles = re.findall(r"(?m)^- Annonces uniques observées ce cycle : (\d+)\s*$", head)
+    if len(totals) != 1 or len(cycles) != 1 or int(totals[0]) != len(data):
+        raise PublicationVerificationError("markdown_header_mismatch")
+    advertised = int(cycles[0])
+    if advertised > len(data) or advertised < 0:
+        raise PublicationVerificationError("markdown_header_mismatch")
+    sections = re.split(r"(?m)^### (?=\d+\. )", listings)
+    if sections[0].strip():
+        raise PublicationVerificationError("markdown_structure_invalid")
+    entries = [section for section in sections[1:]]
+    if len(entries) != min(advertised, 50):
+        raise PublicationVerificationError("markdown_listing_count_mismatch")
+    by_link = {}
+    for row in data:
+        link = row.get("link")
+        if not isinstance(link, str) or link in by_link:
+            raise PublicationVerificationError("markdown_ambiguous_listing_link")
+        by_link[link] = row
+    used = set()
+    for index, section in enumerate(entries, 1):
+        content = section.strip("\n").split("\n")
+        if not content or not re.fullmatch(r"\d+\. .+", content[0]):
+            raise PublicationVerificationError("markdown_structure_invalid")
+        content[0] = "### " + content[0]
+        last = content[-1]
+        if not last.startswith("- Lien : "):
+            raise PublicationVerificationError("markdown_structure_invalid")
+        link = last[len("- Lien : "):]
+        if link in used or link not in by_link:
+            raise PublicationVerificationError("markdown_unknown_or_duplicate_listing")
+        used.add(link)
+        if content != _render_markdown_listing(by_link[link], index):
+            raise PublicationVerificationError("markdown_database_mismatch")
 
 
 def export_reports(conn: sqlite3.Connection, cycle_ids: list[str], stats: ImportStats,
@@ -886,19 +1413,7 @@ def export_reports(conn: sqlite3.Connection, cycle_ids: list[str], stats: Import
         "## Annonces observées durant cette session (maximum 50)", "",
     ]
     for idx, item in enumerate(observed[:50], 1):
-        title = (item.get("title") or "Sans titre").replace("\n", " ")
-        price = f"{item['price_mad']:,} MAD".replace(",", " ") if item["price_mad"] is not None else "Non communiqué"
-        surface = f"{item['surface_m2']:g} m²" if item["surface_m2"] is not None else "Non communiquée"
-        rooms = str(item["rooms"]) if item["rooms"] is not None else "N/D"
-        bedrooms = str(item["bedrooms"]) if item["bedrooms"] is not None else "N/D"
-        lines.extend([f"### {idx}. {title}", f"- Prix : {price}",
-                      f"- Secteur : {item.get('district') or 'N/D'} | Salles de bains : {item.get('bathrooms') if item.get('bathrooms') is not None else 'N/D'}",
-                      f"- Surface : {surface} | Pièces : {rooms} | Chambres : {bedrooms}",
-                      f"- Prix : statut={item.get('price_status')} | candidat={item.get('pending_price_mad')} | observations={item.get('pending_price_count')}",
-                      f"- Revue prix/m² : {(item.get('price_m2_review') or {}).get('status', 'non évalué ce cycle')} "
-                      f"| taux source={(item.get('price_m2_review') or {}).get('source_price_per_m2_mad')}",
-                      f"- Dernière vue : {item['last_seen']}",
-                      f"- Lien : {item['link']}", ""])
+        lines.extend(_render_markdown_listing(item, idx) + [""])
     _write_atomic(md_path, "\n".join(lines))
 
 
@@ -1169,13 +1684,53 @@ def fetch_and_check_robots(urls: list[str]) -> dict[str, Any]:
 
 
 async def main(engine: str = "auto", pages: int = MAX_PAGES,
+               headed: bool = False, browser_path: str | None = None,
+               urls_file: str | None = None) -> int:
+    """Only one producer may execute per trusted head/output lock scope.
+
+    Lock contention fails immediately with code 3. No second producer may
+    read generation or touch publication files while the first is active.
+    """
+    try:
+        with _exclusive_producer_lock():
+            return await _main_with_exclusive_lock(engine, pages, headed, browser_path, urls_file)
+    except (ProducerLockBusy, PublicationVerificationError, OSError) as exc:
+        print(f"[ERREUR PRODUCTEUR] Verrou exclusif indisponible: {exc}")
+        return 3
+
+
+async def _main_with_exclusive_lock(engine: str = "auto", pages: int = MAX_PAGES,
                 headed: bool = False,
                 browser_path: str | None = None,
                 urls_file: str | None = None) -> int:
-    """Exit codes: 0 complete, 1 partial, 2 nothing usable, 3 config/robots, 4 unexpected crash."""
+    """Exit: 0 complete, 1 partial, 2 empty, 3 admission, 4 pre-commit crash,
+    5 DB committed but artifact publication failed (requires reconciliation).
+
+    A new run invalidates all previous exported files via an atomic state
+    marker, even when it terminates before writing a single current row.
+    """
     diagnostics: list[dict[str, Any]] = []
+    run_id = uuid.uuid4().hex
+    generation = None
+    key = _publication_key()
     try:
-        return await _main(engine, pages, headed, browser_path, urls_file, diagnostics)
+        if key is not None:
+            old_head = _read_trusted_head()
+            generation = 1 if old_head is None else old_head["generation"] + 1
+            _write_trusted_head(run_id, "running", generation)
+        _write_publication_status(run_id, "running", generation=generation)
+    except (OSError, PublicationVerificationError) as exc:
+        # If replacing the initial marker fails, best-effort revocation of
+        # the previous signed state. If even unlink is prohibited, a previous
+        # publication cannot be forcibly revoked on a read-only filesystem.
+        try:
+            Path(PUBLICATION_STATUS).unlink(missing_ok=True)
+        except OSError:
+            pass
+        print(f"[ERREUR PUBLICATION] Impossible d'invalider exports existants: {exc}")
+        return 3  # never fetch or write SQLite after invalidation failed
+    try:
+        code = await _main(engine, pages, headed, browser_path, urls_file, diagnostics)
     except Exception as exc:  # an uncaught traceback would also exit 1 == "partial"
         message = f"{type(exc).__name__}: {exc}"
         print(f"[ERREUR INATTENDUE] {message}")
@@ -1183,8 +1738,26 @@ async def main(engine: str = "auto", pages: int = MAX_PAGES,
             export_diagnostics(diagnostics, fatal_error=message)
         except Exception:
             pass
-        return 4
-
+        code = 4
+    try:
+        _write_publication_status(run_id, "complete" if code == 0 else "failed",
+                                  failure_code=code if code else None, generation=generation)
+        if generation is not None:
+            _write_trusted_head(run_id, "complete" if code == 0 else "failed", generation)
+    except (OSError, ValueError, TypeError) as exc:
+        # Never report success without a published and hash-verifiable marker.
+        print(f"[ERREUR PUBLICATION] Marqueur non vérifiable: {exc}")
+        # Mark failure explicitly if the filesystem still permits writes. If
+        # not, the trusted head remains "running", already fail-closed.
+        try:
+            _write_publication_status(run_id, "failed", failure_code=5,
+                                      generation=generation)
+            if generation is not None:
+                _write_trusted_head(run_id, "failed", generation)
+        except (OSError, ValueError, TypeError):
+            pass
+        return 5 if code == 0 else code
+    return code
 
 async def _main(engine: str, pages: int, headed: bool, browser_path: str | None,
                 urls_file: str | None, diagnostics: list[dict[str, Any]]) -> int:
@@ -1228,7 +1801,9 @@ async def _main(engine: str, pages: int, headed: bool, browser_path: str | None,
             continue
         baseline = approved_shard_baseline(urls[index - 1])
         audit = parse_listings_audited(result.html, require_locality=True,
-                                      baseline_eligible_cards=baseline)
+                                      baseline_eligible_cards=baseline,
+                                      expected_city=expected_city_for_shard(urls[index - 1]),
+                                      require_apartment=True)
         listings = audit.listings
         if not audit.passes_quality:
             print(f"[!] Page {index}: qualité insuffisante "
@@ -1236,6 +1811,9 @@ async def _main(engine: str, pages: int, headed: bool, browser_path: str | None,
                   f"surface={audit.surface_coverage:.1%}, motifs={audit.quality_reasons}). Page exclue.")
             diagnostics[index - 1]["final_status"] = "excluded_quality" if listings else "empty"
             diagnostics[index - 1]["quality_accepted"] = False
+            diagnostics[index - 1]["quality_reasons"] = audit.quality_reasons
+            diagnostics[index - 1]["rejected_cards"] = audit.rejected
+            diagnostics[index - 1]["shard_context_violations"] = audit.shard_context_violations
             continue
         if not listings:
             print(f"[!] Page {index}: HTTP 200 mais aucune annonce valide.")
@@ -1251,37 +1829,74 @@ async def _main(engine: str, pages: int, headed: bool, browser_path: str | None,
         print("Diagnostic généré : akarfinder_diagnostics.json")
         return 2
 
-    conn = init_db()
-    try:
-        price_m2_reviews = review_price_per_m2(collected)
-        stats, cycle_ids = import_listings(conn, collected)
-        persist_price_reviews(conn, price_m2_reviews)
-        duplicate_candidates = flag_possible_duplicates(collected)
-        persist_quality_signals(conn, collected, duplicate_candidates)
-        stored_flags = persistent_review_flags(conn)
-        stored_quality = persistent_quality_signals(conn)
-        export_reports(conn, cycle_ids, stats, page_stats, price_m2_reviews=price_m2_reviews)
-    finally:
-        conn.close()
-    _write_atomic("akarfinder_price_anomalies.json",
-                  json.dumps(stats.anomalies, indent=2, ensure_ascii=False) + "\n")
-    _write_atomic("akarfinder_price_m2_flags.json", json.dumps(
-        {"generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-         "page_scope": "current_cycle_plus_persisted_history", "observations": len(price_m2_reviews),
-         "heuristic_ratio_limits": [PRICE_M2_LOW_RATIO, PRICE_M2_HIGH_RATIO],
-         "flags": stored_flags,
-         "current_cycle_flags": [x for x in price_m2_reviews.values() if x["status"].startswith("review_")]},
-        ensure_ascii=False, indent=2) + "\n")
-    _write_atomic("akarfinder_quality_signals.json", json.dumps({
-        "flags_by_listing": stored_quality,
-        "page_scope": "current_cycle_plus_persisted_history",
-        "signals_are_review_only": True}, ensure_ascii=False, indent=2) + "\n")
+    # Fail closed at the batch boundary: no partial SQLite ingestion when any
+    # requested shard failed fetch/quality. Diagnostics remain available.
+    if page_stats["with_listings"] != page_stats["requested"]:
+        export_diagnostics(diagnostics)
+        print("[ERREUR] Lot incomplet : import SQLite annulé ; corriger les shards en échec.")
+        return 1
+
+    # Reports are staged (not published) until every SQL write and report
+    # serializer has succeeded. Only then is the SQLite transaction committed.
+    # No cross-resource (SQLite + filesystem) ACID guarantee is claimed.
+    with tempfile.TemporaryDirectory(prefix=".akar-v646-stage-", dir=".") as staging:
+        files = PUBLICATION_FILES
+        path = lambda name: str(Path(staging) / name)
+        conn = init_db()
+        try:
+            # SQLite changes are atomic across importer, field-change journal,
+            # price and quality reviews, and all serializers. A pre-commit crash
+            # must leave no new listing rows committed.
+            conn.execute("BEGIN")
+            try:
+                price_m2_reviews = review_price_per_m2(collected)
+                stats, cycle_ids = import_listings(conn, collected, commit=False)
+                persist_price_reviews(conn, price_m2_reviews, commit=False)
+                duplicate_candidates = flag_possible_duplicates(collected)
+                persist_quality_signals(conn, collected, duplicate_candidates, commit=False)
+                stored_flags = persistent_review_flags(conn)
+                stored_quality = persistent_quality_signals(conn)
+                export_reports(conn, cycle_ids, stats, page_stats,
+                               json_path=path("akarfinder_data.json"),
+                               md_path=path("akarfinder_report.md"),
+                               price_m2_reviews=price_m2_reviews)
+                _write_atomic(path("akarfinder_price_anomalies.json"),
+                              json.dumps(stats.anomalies, indent=2, ensure_ascii=False) + "\n")
+                _write_atomic(path("akarfinder_price_m2_flags.json"), json.dumps(
+                    {"generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                     "page_scope": "current_cycle_plus_persisted_history",
+                     "observations": len(price_m2_reviews),
+                     "heuristic_ratio_limits": [PRICE_M2_LOW_RATIO, PRICE_M2_HIGH_RATIO],
+                     "flags": stored_flags,
+                     "current_cycle_flags": [x for x in price_m2_reviews.values()
+                                             if x["status"].startswith("review_")]},
+                    ensure_ascii=False, indent=2) + "\n")
+                _write_atomic(path("akarfinder_quality_signals.json"), json.dumps({
+                    "flags_by_listing": stored_quality,
+                    "page_scope": "current_cycle_plus_persisted_history",
+                    "signals_are_review_only": True},
+                    ensure_ascii=False, indent=2) + "\n")
+                export_diagnostics(diagnostics, path=path("akarfinder_diagnostics.json"))
+                conn.commit()
+            except BaseException:
+                conn.rollback()
+                raise
+        finally:
+            conn.close()
+        # SQLite is now committed. If an OS failure prevents publishing staged
+        # reports, report a DISTINCT exit code 5 (committed / reports failed),
+        # never the pre-commit crash code 4.
+        try:
+            for name in files:
+                os.replace(path(name), name)
+        except OSError as exc:
+            print(f"[ERREUR PUBLICATION] SQLite commitée, export incomplet: {exc}")
+            return 5
     incomplete = page_stats["with_listings"] < page_stats["requested"]
     print(f"Pages avec annonces: {page_stats['with_listings']}/{page_stats['requested']}; "
           f"annonces uniques: {len(cycle_ids)}; nouvelles: {stats.inserted}; "
           f"modifiées: {stats.updated}; doublons: {stats.duplicates}; "
           f"statut: {'PARTIEL' if incomplete else 'COMPLET (sur pages demandées)'}")
-    export_diagnostics(diagnostics)
     print("Exports générés: akarfinder_data.json, akarfinder_report.md, akarfinder_diagnostics.json")
     return 0 if not incomplete else 1
 
