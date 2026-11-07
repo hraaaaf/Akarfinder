@@ -257,3 +257,20 @@ Cette section **complète** le closeout L4-B ci-dessus ; les parties antérieure
 - **Doc canonique L4-C** : `docs/reviews/VIVRE_ICI_L4C_CITY_FOCUS_CONTEXT_2026-11-07.md` sur la branche #1190 (commit documentaire après le SHA certifié). **Aucun merge, DB ou déploiement Vercel**.
 
 **NEXT EXACT :** L6 audit source/legal des tuiles Esri et attribution OSM/OpenMapTiles + QA clavier/touch/mobile et grille 8 villes (sans inventer SLA/licence), améliorer la lisibilité mobile si le score reste sous le seuil, puis réviser les gates L3/L5 pour produit réel. Ne jamais annoncer le projet terminé ou prêt production sans preuve. Pas de pourcentage global vérifiable.
+
+
+## 07/11/2026 — L4-D GREEN technique : zoom progressif et route publique Maroc
+
+**État réellement certifié au code SHA `59c263953081886c62db83c4b9bf0f7fa033b074` :** [N2 #42423728463](https://github.com/hraaaaf/Akarfinder/actions/runs/42423728463) **SUCCESS**, [N3 #42423728405](https://github.com/hraaaaf/Akarfinder/actions/runs/42423728405) **SUCCESS** sur ce même commit. PR [#1191](https://github.com/hraaaaf/Akarfinder/pull/1191) **Draft, non mergée**, empilée sur L4-C #1190 (elle-même empilée sur L4-B #1187 / B1 #1186). Ne pas confondre cette certification avec une PROD effectivement mise à jour.
+
+**But :** « plus on zoome, plus on choisit quoi montrer ET comment ». Route publique `/map?layer=explore` utilise maintenant la carte V5 MapLibre et non le SVG historique (accessible explicitement sur `?layer=premium`). **Villes principales visibles au zoom national :** Casablanca, Rabat, Marrakech, Tanger, Fès, Agadir, Meknès, Oujda ; 341 villes V5 restent dans la source pour recherche et zoom. Villes secondaires à partir de z8.25, points/clics/labels de quartiers sourcés après z9.5 quand une ville est sélectionnée, niveau rue et POI sourcés selon disponibilité après z12. Pas de contours quartier inventés ni de suppression d'attribution.
+
+**Preuves téléchargées et inspectées :** artefact [N2 #13594501766](https://github.com/hraaaaf/Akarfinder/actions/runs/42423728463/artifacts/13594501766), **134 fichiers**, **129 PNG**, **5 rapports `ok=true`, `failure=null`** : N2 historique 4/4, L4-B1 Mohammedia 4/4, L4-B huit villes 32/32 et 17 sélections, L4-C 4/4, L4-D 4/4. L4-D contient **16 PNG** = Maroc 8 villes, villes secondaires, quartiers, niveau rue × **390/430/768/1280**. Tous `overflow=0`, 1 seule canvas et 341 centres-ville sources V5 ; affichage basemap de noms secondaires contrôlé. Le N3 a aussi été vérifié en 390/1280 sur le parcours Maroc→Casablanca→Maârif→Search.
+
+**Lecture critique des 16 screenshots : L4-D ~7/10 visuel indicatif**, donc en-dessous du seuil release 9.5/10. Le zoom `regional-secondary` à 8.6 garde le centre national, provoquant une **zone quasi vide** (couches présentes, mais pas preuve de communes secondaires visibles localement). À zoom rue de Mohammedia, la **frontière municipale OSM devient très dominante** ; ce n'est pas une limite de quartier. La carte et ses noms mobiles restent compacts. **L4-D GREEN technique, UX globale non certifiée**.
+
+**Review canonique du lot :** `docs/reviews/VIVRE_ICI_L4D_MAJOR_CITIES_VISIBILITY_2026-11-07.md`, branche PR #1191, closeout documentaire commit `51fb9a70ecf0284055e927943d95467bb65dcde3`, distinct du SHA code testé. Les précédents RED N2/N3 et les corrections de route, timing/audit et aperçu persistent expliqués dans ce fichier.
+
+**NEXT EXACT :** L6-A audit de lisibilité mobile et cadrage régional à mêmes 390/430/768/1280 : recentrer sur une ville secondaire sourcée, prouver au moins une étiquette réellement visible après zoom (pas seulement couche disponible), alléger l'emphase des limites municipales au zoom 12, vérifier les actions tactiles/clavier sans régression ; puis L6-B sources et droits des tuiles / logos / attribution (OpenFreeMap/OSM, CARTO, Esri si utilisé), L3 frontières réelles des quartiers / POI frais, L5 vérité SQL/prix. Ne pas inventer taux global d'avancement ni prétendre score final 9.5/10.
+
+**Aucun merge, aucune mutation DB ni déploiement Vercel.**
