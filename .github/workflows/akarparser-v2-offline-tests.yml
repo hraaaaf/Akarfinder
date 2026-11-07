@@ -1,6 +1,6 @@
 name: AkarParser V2 Offline Regression
 concurrency:
-  group: akarparser-v2-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref }}
   cancel-in-progress: true
 on:
   pull_request:
