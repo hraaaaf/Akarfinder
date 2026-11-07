@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { buildSearchPageQuery } from "../../../lib/search/search-page-query.js";
+import { buildSearchStableKey } from "../../../lib/search/search-request-query.js";
 
 describe("search page query builder", () => {
   it("maps search params to the DB search query", () => {
@@ -100,5 +101,23 @@ describe("search page query builder", () => {
     assert.equal(query.min_price, 1000000);
     assert.equal(query.max_price, 5000000);
     assert.equal(query.min_surface, 200);
+  });
+});
+
+describe("Vivre Ici L5-B — geographic Search source and cache truth", () => {
+  it("preserves Casablanca/Maârif through the shared DB Search query", () => {
+    const query = buildSearchPageQuery({ city: "Casablanca", district: "Maârif", limit: "24", offset: "0" });
+    assert.equal(query.city, "Casablanca");
+    assert.equal(query.district, "Maârif");
+    assert.equal(query.limit, 24);
+    assert.equal(query.offset, 0);
+  });
+
+  it("does not share cache identity between Maârif, Anfa and unscoped Casablanca", () => {
+    const maarif = buildSearchPageQuery({ city: "Casablanca", district: "Maârif", limit: "24", offset: "0" });
+    const anfa = buildSearchPageQuery({ city: "Casablanca", district: "Anfa", limit: "24", offset: "0" });
+    const cityOnly = buildSearchPageQuery({ city: "Casablanca", limit: "24", offset: "0" });
+    assert.notEqual(buildSearchStableKey(maarif), buildSearchStableKey(anfa));
+    assert.notEqual(buildSearchStableKey(maarif), buildSearchStableKey(cityOnly));
   });
 });
