@@ -224,7 +224,7 @@ export function P4MapDecisionRail() {
         <p className="p4-premium-market-copy">
           {districtEntity && localContext?.coverage_status === "covered"
             ? "Des repères locaux récents et documentés sont disponibles, avec leur provenance."
-            : districtEntity && localContext?.coverage_status === "partial"
+            : districtEntity && localContext?.coverage_status === "partial" && localContext.anchor_count > 0
               ? "La couverture locale est partielle. Les informations manquantes ne sont pas extrapolées."
               : "Les éléments de cadre de vie sont insuffisamment documentés ou indisponibles dans cette vue."}
         </p>
