@@ -147,5 +147,46 @@ class TestAkarParserV2(unittest.TestCase):
                 run(source, root / "out1")
 
 
+    def test_openserp_discovery_nested_facts_are_preserved_not_promoted(self):
+        row = {
+            "query_id": "oqv2-test", "source_domain": "mubawab.ma",
+            "canonical_source_url": "https://www.mubawab.ma/fr/a/12345678/sample",
+            "title": "Appartement 3 chambres Rabat", "snippet": "Appartement Rabat 120 m2",
+            "discovered_at": "2026-11-07T08:00:00Z",
+            "extracted": {"city": "Rabat", "property_type": "apartment", "transaction_type": "sale",
+                          "surface_m2": 120, "price_mad": 1450000, "currency": "MAD",
+                          "bedrooms_count": 3},
+        }
+        result = parse_record(row, generated_at="2026-11-07T12:00:00Z")
+        self.assertEqual(result["status"], "partial")
+        self.assertEqual(result["extracted"]["city"], "Rabat")
+        self.assertEqual(result["extracted"]["price_mad"], 1450000)
+        self.assertEqual(result["extracted"]["surface_total_m2"], 120)
+        self.assertEqual(result["extracted"]["bedrooms_count"], 3)
+        self.assertIsNone(result["extracted"]["observed_at"])
+        self.assertIsNone(result["canonical_property_v1"])
+        self.assertEqual(result["evidence"]["price"]["confidence"], "low")
+        self.assertTrue(result["evidence"]["price"]["origin"].startswith("serp:"))
+        self.assertIn("serp_snippet_not_detail_observation", result["quality"]["issues"])
+        self.assertFalse(result["quality"]["publication_allowed"])
+
+    def test_openserp_quality_flat_extracted_fields_are_hints_not_offers(self):
+        row = {"query_id": "oqv2-quality", "source_domain": "agenz.ma",
+               "canonical_source_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartement/agdal/987654",
+               "title": "Appartement Agdal", "snippet": "Vente 90 m2",
+               "extracted_city": "Rabat", "extracted_district": "Agdal",
+               "extracted_property_type": "apartment", "extracted_transaction": "sale",
+               "extracted_price_mad": 1200000, "extracted_surface_m2": 90,
+               "expected_label": "individual_listing"}
+        result = parse_record(row, generated_at="2026-11-07T12:00:00Z")
+        self.assertEqual(result["status"], "partial")
+        self.assertEqual(result["extracted"]["district"], "Agdal")
+        self.assertEqual(result["extracted"]["price_mad"], 1200000)
+        self.assertEqual(result["extracted"]["surface_total_m2"], 90)
+        self.assertIsNone(result["canonical_property_v1"])
+        self.assertEqual(result["evidence"]["city"]["confidence"], "low")
+        self.assertIn("serp_snippet_not_detail_observation", result["quality"]["issues"])
+
+
 if __name__ == "__main__":
     unittest.main()

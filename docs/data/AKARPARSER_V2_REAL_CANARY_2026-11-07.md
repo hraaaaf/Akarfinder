@@ -50,3 +50,11 @@ La commande échoue si l'entrée contient moins de 1 000 lignes ou si le dossier
 4. Passer à 10k puis 151 900 par lots privés seulement si les seuils sont atteints, avec frais et droits d'exploitation toujours séparés.
 
 **Aucune écriture Neon/Supabase, merge, publication ni déploiement Vercel n'est autorisée par cette étape.**
+
+## Q1E — enrichissement OpenSerp hors ligne (07/11/2026)
+
+Le canary GitHub Actions à quatre cohortes versionnées a été exécuté (run [42412143865](https://github.com/hraaaaf/Akarfinder/actions/runs/42412143865), quatre checks SUCCESS) : **885 représentations historiques** traitées, dont 300 Mubawab structurées (280 `complete_candidate`, 20 `partial`), 305 découvertes OpenSerp (305 `partial`), 250 fiches du corpus qualité OpenSerp (250 `partial`), 30 P0 structurées (23 `complete_candidate`, 7 `partial`). Ces représentations ne sont pas 885 biens physiques uniques ni 885 offres publiables.
+
+L'audit hors ligne des archives JSONL a confirmé une lacune de lecture : les 305 enregistrements OpenSerp contiennent un objet `extracted` avec ville/type/transaction, **86** avec prix et **202** avec surface, et le corpus qualité utilise des colonnes `extracted_*`. Correctif V2 : lire ces indices comme **données SERP de confiance faible**, sans les assimiler à l'HTML de l'annonce originale ; conserver URL canonique et snippet comme preuves de découverte, sans forcer de pays, date d'observation, identité vérifiée, activité ou droit. Les éléments de cette provenance restent `partial` (jamais `ready_internal` ni `complete_candidate`) et ne créent pas de `CanonicalPropertyV1` publiable. Deux tests de non-promotion SERP et de récupération des champs imbriqués ont été ajoutés. **20 tests locaux PASS** avant commit. Le nouveau HEAD devra subir sa propre CI.
+
+**Gate ouvert :** le vrai export privé de 151 900 fiches n'est pas sur GitHub Actions ; source Neon read-only limitée à mettre en place sur workflow de confiance avant 1 000 vraies fiches privées et revue humaine de 100 cas. Les URL candidates ne s'ajoutent pas aux **9 990 observations détaillées certifiées**. Aucun fichier privé, secret ou PII n'est uploadé dans la PR, aucun merge / Vercel / write cloud.

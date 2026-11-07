@@ -25,18 +25,18 @@ from urllib.parse import urlparse, quote
 
 VERSION = "akarparser-v2.0.0"
 FIELD_ALIASES = {
-    "source_url": ("listing_url", "source_url", "canonical_url", "url", "link"),
+    "source_url": ("listing_url", "source_url", "canonical_source_url", "canonical_url", "original_url", "url", "link"),
     "source_name": ("source_name", "source_domain", "source", "portal"),
     "source_offer_id": ("source_offer_key", "source_offer_id", "external_offer_id", "listing_id"),
     "title": ("title", "headline", "subject", "name", "adTitle"),
-    "description": ("description_snippet", "description", "body", "text", "adDescription"),
-    "city": ("city", "ville", "location_city", "cityName"),
-    "district": ("district", "neighborhood", "quartier", "areaName"),
+    "description": ("description_snippet", "description", "short_description", "snippet", "body", "text", "adDescription"),
+    "city": ("city", "ville", "location_city", "cityName", "extracted_city"),
+    "district": ("district", "neighborhood", "quartier", "areaName", "extracted_district"),
     "country": ("country", "pays", "addressCountry"),
-    "property_type": ("property_type", "propertyType", "type_bien", "category"),
-    "transaction_type": ("transaction_type", "transactionType", "offer_type", "operation"),
-    "price": ("price_mad", "price_amount", "price", "prix", "priceValue"),
-    "surface": ("surface_m2", "surface_total_m2", "area_m2", "surface", "superficie", "floorSize"),
+    "property_type": ("property_type", "propertyType", "type_bien", "category", "extracted_property_type"),
+    "transaction_type": ("transaction_type", "transactionType", "offer_type", "operation", "extracted_transaction"),
+    "price": ("price_mad", "extracted_price_mad", "price_amount", "price", "prix", "priceValue"),
+    "surface": ("surface_m2", "extracted_surface_m2", "surface_total_m2", "area_m2", "surface", "superficie", "floorSize"),
     "bedrooms": ("bedrooms_count", "bedrooms", "nbBedrooms", "chambres"),
     "bathrooms": ("bathrooms_count", "bathrooms", "nbBathrooms", "sdb"),
     "rooms": ("rooms_count", "rooms", "pieces", "nbRooms"),
@@ -217,6 +217,11 @@ class HTMLFacts(HTMLParser):
 
 def raw_layers(row: dict) -> list[tuple[str, dict]]:
     layers = [("row", row)]
+    # OpenSerp discovery metadata is not first-party listing evidence.
+    # Preserve the extracted hints for internal analysis, but never promote
+    # these search snippets into verified observations or listings.
+    if isinstance(row.get("extracted"), dict):
+        layers.append(("serp.extracted", row["extracted"]))
     for key in ("raw_json", "payload", "raw_payload", "listing_data", "structured_data"):
         obj = as_mapping(row.get(key))
         if obj:
@@ -335,6 +340,9 @@ def media_items(raw: Any) -> list[str]:
 
 
 def parse_record(row: dict, *, generated_at: str) -> dict:
+    # SERP results/quality fixtures can be information-rich but do not prove
+    # that the underlying listing page has ever been collected or dated.
+    serp_only = bool(row.get("query_id") and row.get("source_domain"))
     layers = raw_layers(row)
     values = {}
     evidence = {}
@@ -342,7 +350,7 @@ def parse_record(row: dict, *, generated_at: str) -> dict:
         raw, origin = lookup(layers, key)
         values[key] = raw
         if origin:
-            evidence[key] = {"origin": origin, "raw": redact(clean(raw)) if not isinstance(raw, (dict, list)) else "[STRUCTURED]", "confidence": "high" if origin.startswith("row.") else "medium"}
+            evidence[key] = {"origin": "serp:" + origin if serp_only else origin, "raw": redact(clean(raw)) if not isinstance(raw, (dict, list)) else "[STRUCTURED]", "confidence": "low" if serp_only else "high" if origin.startswith("row.") else "medium"}
 
     url = clean(values["source_url"])
     domain_from_url, url_id = extract_identity(url)
@@ -374,7 +382,7 @@ def parse_record(row: dict, *, generated_at: str) -> dict:
     # Only convert to MAD when unit is explicit or the input column states MAD.
     price_origin = (evidence.get("price") or {}).get("origin", "")
     source_currency = clean(values["price_currency"]) or clean(as_mapping(row.get("raw_json")).get("priceCurrency"))
-    currency = "MAD" if price_origin.endswith(".price_mad") else (source_currency.upper() if source_currency else None)
+    currency = "MAD" if price_origin.endswith((".price_mad", ".extracted_price_mad")) else (source_currency.upper() if source_currency else None)
     if not price and searchable:
         m = PRICE_RX.search(searchable)
         if m:
@@ -414,18 +422,20 @@ def parse_record(row: dict, *, generated_at: str) -> dict:
     images = media_items(values["images"])
     price_period = clean(values["price_period"])
     price_period = {"monthly": "month", "mois": "month", "month": "month", "day": "day", "jour": "day", "daily": "day", "total": "total"}.get((price_period or "").lower(), "unknown")
-    currency_mismatch = bool(price_origin.endswith(".price_mad") and source_currency and source_currency.upper() not in ("MAD", "DH", "DHS"))
+    currency_mismatch = bool(price_origin.endswith((".price_mad", ".extracted_price_mad")) and source_currency and source_currency.upper() not in ("MAD", "DH", "DHS"))
     identity_key = f"{domain}|{source_id}" if domain and source_id else None
     stable_basis = f"{identity_key}|{observed_at}" if identity_key and observed_at else f"{url or ''}|{json.dumps(row,sort_keys=True,default=str,ensure_ascii=False)}"
     record_id = "observation-" + digest(stable_basis.encode("utf-8"))[:24]
 
     core = bool(title and city and ptype and tx and price_mad and area)
-    status = "quarantine" if conflict or currency_mismatch else ("ready_internal" if core and identity_state == "explicit" and observed_at else "complete_candidate" if core else "candidate_url" if url and not any((title, city, price_mad, area)) else "partial")
+    status = "quarantine" if conflict or currency_mismatch else ("partial" if serp_only and any((title, city, price_mad, area)) else "candidate_url" if serp_only else "ready_internal" if core and identity_state == "explicit" and observed_at else "complete_candidate" if core else "candidate_url" if url and not any((title, city, price_mad, area)) else "partial")
     issues = []
     if conflict:
         issues.append("source_id_conflicts_with_url")
     if currency_mismatch:
         issues.append("price_currency_conflicts_with_mad_field")
+    if serp_only:
+        issues.append("serp_snippet_not_detail_observation")
     if not observed_at:
         issues.append("no_proven_observation_timestamp")
     if identity_state != "explicit":
@@ -437,10 +447,10 @@ def parse_record(row: dict, *, generated_at: str) -> dict:
 
     def fact(value: Any, key: str | None = None) -> dict:
         e = evidence.get(key or "", {})
-        return {"value": value, "provenance": "DECLARED" if e.get("origin") and not e["origin"].startswith("text:") else "INFERRED", "confidence": e.get("confidence", "unknown") if value is not None else "unknown", "observed_at": observed_at, "source_ref": url, "verification_status": "unverified", "visibility": "INTERNAL"}
+        return {"value": value, "provenance": "DECLARED" if e.get("origin") and not e["origin"].startswith(("text:", "serp:")) else "INFERRED", "confidence": e.get("confidence", "unknown") if value is not None else "unknown", "observed_at": observed_at, "source_ref": url, "verification_status": "unverified", "visibility": "INTERNAL"}
 
     canonical = None
-    if observed_at and tx and title and city and ptype:
+    if not serp_only and observed_at and tx and title and city and ptype:
         canonical = {
             "property_id": record_id,
             "schema_version": "1.0",
