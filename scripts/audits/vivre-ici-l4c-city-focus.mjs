@@ -14,7 +14,9 @@ const viewports = [
   { name: "768", width: 768, height: 900, mobile: false },
   { name: "1280", width: 1280, height: 900, mobile: false },
 ];
-const cities = ["casablanca", "rabat", "marrakech", "tanger", "agadir", "fes", "kenitra", "mohammadia"];
+const cities = ["casablanca", "rabat", "marrakech", "tanger", "fes", "agadir", "meknes", "oujda"];
+const expectedChoices = (target) => target === "mohammadia"
+  ? [...cities.slice(0, 7), "mohammadia"] : cities;
 const report = { ok: false, cases: [], failure: null };
 
 async function verifyFocus(page, citySlug, viewportName) {
@@ -28,7 +30,7 @@ async function verifyFocus(page, citySlug, viewportName) {
     items.map(item => ({ slug: item.getAttribute("data-akarfinder-city-option"), pressed: item.getAttribute("aria-pressed") })));
   if (buttons.filter(item => item.pressed === "true").length !== 1 ||
       !buttons.some(item => item.slug === citySlug && item.pressed === "true") ||
-      cities.some(slug => !buttons.some(item => item.slug === slug))) {
+      expectedChoices(citySlug).some(slug => !buttons.some(item => item.slug === slug))) {
     throw new Error("city focus buttons have incorrect selection state " + JSON.stringify(buttons));
   }
   await page.waitForFunction((slug) => {
