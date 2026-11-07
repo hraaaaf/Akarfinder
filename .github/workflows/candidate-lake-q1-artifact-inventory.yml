@@ -27,6 +27,7 @@ jobs:
     env:
       Q1_ARTIFACT_ROOT: .tmp/q1-artifacts
       Q1_INVENTORY_OUT: .tmp/q1-artifact-inventory
+      Q1_MIRROR_OUT: .tmp/q1-original-archives
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -39,7 +40,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          mkdir -p "$Q1_ARTIFACT_ROOT" "$Q1_INVENTORY_OUT" .tmp
+          mkdir -p "$Q1_ARTIFACT_ROOT" "$Q1_INVENTORY_OUT" "$Q1_MIRROR_OUT" .tmp
           : > "$Q1_INVENTORY_OUT/download-status.tsv"
           python - <<'PY' > .tmp/q1-expected.tsv
           import json
@@ -59,6 +60,7 @@ jobs:
               "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${id}/zip" || true)
             if [[ "$code" == "200" ]] && unzip -tq "$zip" >/dev/null 2>&1 && unzip -q "$zip" -d "$dir"; then
               status=OK
+              cp "$zip" "$Q1_MIRROR_OUT/${id}.zip"
             else
               status="HTTP_${code:-NETWORK_ERROR}"
               rm -rf "$dir"/*
@@ -84,5 +86,12 @@ jobs:
         with:
           name: candidate-lake-q1-recovery-availability
           path: .tmp/q1-artifact-inventory/
+          retention-days: 90
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: candidate-lake-q1-recovered-source-proof-mirror
+          path: .tmp/q1-original-archives/*.zip
           retention-days: 90
           if-no-files-found: warn
