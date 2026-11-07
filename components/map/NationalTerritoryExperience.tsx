@@ -22,9 +22,25 @@ const ACTIVE_FILL = "akarfinder-national-city-active-fill";
 const ACTIVE_LINE = "akarfinder-national-city-active-line";
 const ACTIVE_HALO = "akarfinder-national-city-focus-halo";
 // These eight options are looked up in V5; no city or geometry is synthesized.
-const COMPARISON_CITY_SLUGS = ["casablanca", "rabat", "marrakech", "tanger", "agadir", "fes", "kenitra", "mohammadia"] as const;
+// The eight featured cities are selected for national display, not as the
+// complete list of searchable Moroccan cities.
 const CITY_HITS = "akarfinder-national-city-hits";
 const CITY_LABELS = "akarfinder-national-city-labels";
+const SECONDARY_CITY_HITS = "akarfinder-national-secondary-city-hits";
+const SECONDARY_CITY_LABELS = "akarfinder-national-secondary-city-labels";
+const SECONDARY_BOUNDARY_FILL = "akarfinder-national-secondary-city-fill";
+const SECONDARY_BOUNDARY_LINE = "akarfinder-national-secondary-city-line";
+// L4-D: show only eight verified major cities at national/regional zoom.
+// All 341 V5 places remain present in the source and available to Search.
+// Smaller cities become labelled and clickable only when zooming locally.
+const MAJOR_CITY_SLUGS = ["casablanca", "rabat", "marrakech", "tanger", "fes", "agadir", "meknes", "oujda"] as const;
+const SECONDARY_CITY_MIN_ZOOM = 8.25;
+function majorCityFilter(): unknown[] {
+  return ["in", ["get", "slug"], ["literal", MAJOR_CITY_SLUGS]];
+}
+function secondaryCityFilter(): unknown[] {
+  return ["!", majorCityFilter()];
+}
 const ACTIVE_POINT = "akarfinder-national-city-active-point";
 
 type NationalCity = {
@@ -89,7 +105,7 @@ function cityPoints(places: NationalCity[]): GeoJSON.FeatureCollection {
 }
 
 function removeNationalLayers(map: MapLibreMap) {
-  for (const id of [ACTIVE_POINT, CITY_LABELS, CITY_HITS, ACTIVE_LINE, ACTIVE_FILL, ACTIVE_HALO, BOUNDARY_LINE, BOUNDARY_FILL]) {
+  for (const id of [ACTIVE_POINT, SECONDARY_CITY_LABELS, CITY_LABELS, SECONDARY_CITY_HITS, CITY_HITS, ACTIVE_LINE, ACTIVE_FILL, ACTIVE_HALO, SECONDARY_BOUNDARY_LINE, SECONDARY_BOUNDARY_FILL, BOUNDARY_LINE, BOUNDARY_FILL]) {
     if (map.getLayer(id)) map.removeLayer(id);
   }
   for (const id of [CITY_SOURCE, BOUNDARY_SOURCE]) {
@@ -212,13 +228,32 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
       id: BOUNDARY_FILL,
       type: "fill",
       source: BOUNDARY_SOURCE,
+      filter: majorCityFilter() as never,
       paint: { "fill-color": ACCENT, "fill-opacity": 0.018 },
     });
     map.addLayer({
       id: BOUNDARY_LINE,
       type: "line",
       source: BOUNDARY_SOURCE,
+      filter: majorCityFilter() as never,
       paint: { "line-color": ACCENT, "line-opacity": 0.22, "line-width": 0.7 },
+    });
+    // Source-backed secondary boundaries are available only at street/local zoom.
+    map.addLayer({
+      id: SECONDARY_BOUNDARY_FILL,
+      type: "fill",
+      source: BOUNDARY_SOURCE,
+      minzoom: SECONDARY_CITY_MIN_ZOOM,
+      filter: secondaryCityFilter() as never,
+      paint: { "fill-color": ACCENT, "fill-opacity": 0.014 },
+    });
+    map.addLayer({
+      id: SECONDARY_BOUNDARY_LINE,
+      type: "line",
+      source: BOUNDARY_SOURCE,
+      minzoom: SECONDARY_CITY_MIN_ZOOM,
+      filter: secondaryCityFilter() as never,
+      paint: { "line-color": ACCENT, "line-opacity": 0.17, "line-width": 0.6 },
     });
     // Soft halo plus crisp border only where the existing OSM candidate
     // city boundary is available. The user-facing copy never calls it official.
@@ -247,7 +282,16 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
       id: CITY_HITS,
       type: "circle",
       source: CITY_SOURCE,
+      filter: majorCityFilter() as never,
       paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 4.5, 11, 7, 16], "circle-color": ACCENT, "circle-opacity": 0.01 },
+    });
+    map.addLayer({
+      id: SECONDARY_CITY_HITS,
+      type: "circle",
+      source: CITY_SOURCE,
+      minzoom: SECONDARY_CITY_MIN_ZOOM,
+      filter: secondaryCityFilter() as never,
+      paint: { "circle-radius": 12, "circle-color": ACCENT, "circle-opacity": 0.01 },
     });
     map.addLayer({
       id: ACTIVE_POINT,
@@ -260,6 +304,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
       id: CITY_LABELS,
       type: "symbol",
       source: CITY_SOURCE,
+      filter: majorCityFilter() as never,
       layout: {
         "text-field": ["get", "name"],
         "text-size": ["interpolate", ["linear"], ["zoom"], 4.5, 9.5, 7, 12.5, 10, 14],
@@ -270,6 +315,22 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
         "symbol-sort-key": ["-", 0, ["coalesce", ["get", "population"], 0]],
       },
       paint: { "text-color": theme === "dark" ? "#E8F2FF" : "#123250", "text-halo-color": theme === "dark" ? "#071426" : "#FFFFFF", "text-halo-width": 1.7 },
+    });
+    map.addLayer({
+      id: SECONDARY_CITY_LABELS,
+      type: "symbol",
+      source: CITY_SOURCE,
+      minzoom: SECONDARY_CITY_MIN_ZOOM,
+      filter: secondaryCityFilter() as never,
+      layout: {
+        "text-field": ["get", "name"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 8.25, 10, 11, 13],
+        "text-offset": [0, 1.05],
+        "text-anchor": "top",
+        "text-allow-overlap": false,
+        "text-ignore-placement": false,
+      },
+      paint: { "text-color": theme === "dark" ? "#C8D9ED" : "#53687C", "text-halo-color": theme === "dark" ? "#071426" : "#FFFFFF", "text-halo-width": 1.1 },
     });
 
     const setActive = (slug: string | null) => {
@@ -285,7 +346,8 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
         let nearestSlug: string | null = null;
         let nearestDistance = Infinity;
         for (const place of payload.places) {
-          if (!place.center) continue;
+          if (!place.center || (map.getZoom() < SECONDARY_CITY_MIN_ZOOM &&
+              !MAJOR_CITY_SLUGS.includes(place.slug as typeof MAJOR_CITY_SLUGS[number]))) continue;
           const projected = map.project([place.center.lng, place.center.lat]);
           const distance = Math.hypot(projected.x - event.point.x, projected.y - event.point.y);
           if (distance < nearestDistance) {
@@ -297,7 +359,11 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
         const maxCenterDistance = touchLike ? 24 : 18;
         if (nearestSlug && nearestDistance <= maxCenterDistance) return nearestSlug;
       }
-      const boundaryFeature = map.queryRenderedFeatures(event.point, { layers: [BOUNDARY_FILL] })[0];
+      const boundaryFeature = map.queryRenderedFeatures(event.point, {
+        layers: map.getZoom() >= SECONDARY_CITY_MIN_ZOOM
+          ? [BOUNDARY_FILL, SECONDARY_BOUNDARY_FILL]
+          : [BOUNDARY_FILL],
+      })[0];
       const boundarySlug = boundaryFeature?.properties?.slug;
       return typeof boundarySlug === "string" ? boundarySlug : null;
     };
@@ -375,9 +441,16 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
 
   const comparisonCities = useMemo(() => {
     const places = payload?.view === "morocco" ? payload.places : nationalContext?.places;
-    return COMPARISON_CITY_SLUGS.flatMap((slug) => {
+    // If a smaller city is selected explicitly, keep it in the eight choices
+    // as the focused target. Replace the last featured item, not the source data.
+    const featuredSlugs: string[] = [...MAJOR_CITY_SLUGS];
+    const focused = payload?.view === "city" ? payload.place.slug : null;
+    if (focused && !featuredSlugs.includes(focused)) {
+      featuredSlugs[featuredSlugs.length - 1] = focused;
+    }
+    return featuredSlugs.flatMap((slug) => {
       const found = places?.find((place) => place.slug === slug);
-      return found ? [found] : [];
+      return found?.center ? [found] : [];
     });
   }, [nationalContext, payload]);
 
@@ -430,7 +503,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
           data-akarfinder-city-focus={focusedCitySlug ?? ""}
         >
           <div className="mb-2 flex items-center justify-between gap-2 px-1">
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-200">8 villes · même carte</span>
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-200">8 grandes villes · même carte</span>
             <span className="text-[9px] font-bold text-slate-500 dark:text-slate-300">Ville cible en bleu</span>
           </div>
           <div className="grid grid-cols-4 gap-1.5">
@@ -456,7 +529,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
             })}
           </div>
           <p className="mt-1.5 px-1 text-[9px] leading-3.5 text-slate-500 dark:text-slate-300">
-            Contour de ville candidat OpenStreetMap · quartier sans limite certifiée
+            Villes secondaires au zoom · contours candidats OSM, pas limites de quartier
           </p>
         </section>
       ) : null}
