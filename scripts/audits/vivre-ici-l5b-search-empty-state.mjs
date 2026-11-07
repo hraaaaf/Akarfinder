@@ -43,7 +43,8 @@ try {
     const page = await context.newPage();
     const pageErrors = [];
     const scopedRequests = [];
-    page.on("pageerror", error => pageErrors.push(String(error)));
+    page.on("pageerror", error => pageErrors.push({ message: String(error), stack: error?.stack ?? null }));
+    page.on("console", message => { if (message.type() === "error") pageErrors.push({ console: message.text(), location: message.location() }); });
     try {
       // Browser-only fixtures: never write to the database or invent listing cards.
       await page.route(/\/api\/search(?:\?|$)/, async route => {
