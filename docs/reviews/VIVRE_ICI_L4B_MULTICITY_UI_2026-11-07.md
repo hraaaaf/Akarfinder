@@ -31,3 +31,11 @@
 ## Next exact
 
 Sur la PR enfant L4-B : lancer N2/N3 après le correctif candidat ; lire `l4b/report.json`, récupérer et montrer les 32 captures AFTER aux mêmes 4 formats et les captures de sélections ; corriger toute régression ; documenter le résultat et mettre à jour la roadmap/Notion. **GREEN seulement après preuve, sinon conserver ROUGE.**
+
+
+## Checkpoint AFTER candidat (avant vérification finale)
+
+- **Code soumis :** `c92edfe2adcc07a9e9c0a06dda169e4f0db37f89`. [N2 #42407340504](https://github.com/hraaaaf/Akarfinder/actions/runs/42407340504) **SUCCESS** et [N3 #42407340525](https://github.com/hraaaaf/Akarfinder/actions/runs/42407340525) **SUCCESS**. Artefact N2 #13587443998 téléchargé et captures contrôlées : **32 images city-before + 32 city-ready + 17 selected + 8 smoke Mohammedia + 12 N2 Casablanca = 101 PNG**. MapLibre source V5 évite le centre Kénitra hérité ; Rabat voit désormais une carte nationale sourcée et l'overlay quartier.
+- **Défaut d'artefact découvert :** le script 8 villes et le smoke Mohammedia utilisaient tous deux `l4b/report.json` ; le smoke final écrasait le rapport 32/17 bien que la CI ait exécuté et réussi les deux audits. Aucune certification d'un rapport 8-city non conservé ne sera inventée.
+- **Correctif candidat en staging :** le rapport huit villes est séparé sous `l4b-eightcity/report.json`, le smoke parent conserve `l4b/report.json`. L'alias d'affichage public `Mohammedia` est désormais distinct de la clé source V5 `mohammadia`, et les CTA Search sont testés sur `city=Mohammedia`. Aucun changement des blobs V5 ni invention de point.
+- **Next :** exécuter une dernière N2/N3 sur le HEAD contenant ces corrections ; vérifier la présence de **trois rapports** (`report.json`, `l4b/report.json`, `l4b-eightcity/report.json`), les 32/17 entrées et les captures. Alors seulement déclarer la certification technique L4-B. L6 reste indépendant.
