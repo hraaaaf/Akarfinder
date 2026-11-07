@@ -46,7 +46,7 @@
 }
 @media (max-width: 1023px) {
   [data-vivre-ici-page] [data-l3-maarif-pilot="true"] .l3-maarif-view-controls {
-    top: 148px;
+    top: 186px;
     left: 12px;
     max-width: calc(100% - 24px);
   }
