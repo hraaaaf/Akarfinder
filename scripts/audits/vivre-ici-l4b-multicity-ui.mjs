@@ -91,8 +91,14 @@ try {
 
           const overlay = page.locator('[data-akarfinder-national-neighborhood-overlay][data-city="' + payload.place.slug + '"]');
           await overlay.waitFor({ state: "visible", timeout: 11000 });
-          const input = page.getByRole("textbox", { name: "Rechercher un quartier à " + payload.place.name });
+          const publicCityLabel = city === "mohammedia" ? "Mohammedia" : payload.place.name;
+          const input = page.getByRole("textbox", { name: "Rechercher un quartier à " + publicCityLabel });
           await input.waitFor({ state: "visible", timeout: 5000 });
+          if (city === "mohammedia") {
+            await page.getByRole("heading", { name: "Vivre à Mohammedia" }).waitFor({ state: "visible", timeout: 5000 });
+            const citySearchHref = await page.getByRole("link", { name: "Voir les biens à Mohammedia" }).getAttribute("href");
+            if (!citySearchHref?.includes("city=Mohammedia")) throw new Error("public Mohammedia search link is not canonical: " + citySearchHref);
+          }
           await page.waitForFunction(() => {
             const map = window.__AKARFINDER_NATIONAL_MAP__;
             return Boolean(map?.isStyleLoaded() &&
@@ -141,6 +147,13 @@ try {
               document.documentElement.scrollWidth - document.documentElement.clientWidth);
             if (afterOverflow > 1) throw new Error("district horizontal overflow " + afterOverflow);
             await page.screenshot({ path: prefix + "-selected-" + candidate.slug + ".png", fullPage: false });
+            if (city === "mohammedia" && mode === "preview") {
+              const target = page.locator('[data-akarfinder-neighborhood-preview="' + candidate.slug + '"]');
+              const href = await target.getByRole("link", { name: "Voir les biens à " + candidate.name }).getAttribute("href");
+              if (!href?.includes("city=Mohammedia") || !href?.includes("district=")) {
+                throw new Error("Mohammedia district search loses its public city identity: " + href);
+              }
+            }
             row.selection = { slug: candidate.slug, name: candidate.name, mode, hasCenter: Boolean(candidate.center), overflow: afterOverflow };
             report.selections.push({ city, viewport: viewport.name, ...row.selection });
           }
