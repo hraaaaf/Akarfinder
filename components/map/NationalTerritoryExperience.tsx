@@ -273,7 +273,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
       type: "line",
       source: BOUNDARY_SOURCE,
       filter: majorCityFilter() as never,
-      paint: { "line-color": ACCENT, "line-opacity": 0.22, "line-width": 0.7 },
+      paint: { "line-color": ACCENT, "line-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.22, 9.5, 0.08, 11, 0], "line-width": 0.7 },
     });
     // Source-backed secondary boundaries are available only at street/local zoom.
     map.addLayer({
@@ -290,8 +290,12 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
       source: BOUNDARY_SOURCE,
       minzoom: SECONDARY_CITY_MIN_ZOOM,
       filter: secondaryCityFilter() as never,
-      paint: { "line-color": ACCENT, "line-opacity": 0.17, "line-width": 0.6 },
+      paint: { "line-color": ACCENT, "line-opacity": ["interpolate", ["linear"], ["zoom"], 8.25, 0.17, 9.5, 0.07, 11, 0], "line-width": 0.6 },
     });
+    // L6-A semantic zoom: city/municipal OSM outlines remain visible for
+    // regional orientation but fade before street-level detail. Their shapes
+    // are NOT certified neighborhood polygons. The selected city stays
+    // identifiable by the active-point marker, header and selected button.
     // Soft halo plus crisp border only where the existing OSM candidate
     // city boundary is available. The user-facing copy never calls it official.
     map.addLayer({
@@ -299,21 +303,21 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
       type: "line",
       source: BOUNDARY_SOURCE,
       filter: emptyFilter() as never,
-      paint: { "line-color": ACCENT, "line-opacity": 0.48, "line-width": 10, "line-blur": 3.5 },
+      paint: { "line-color": ACCENT, "line-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.48, 8, 0.32, 9.5, 0.06, 11, 0], "line-width": ["interpolate", ["linear"], ["zoom"], 6, 10, 9.5, 4, 11, 0], "line-blur": 3.5 },
     });
     map.addLayer({
       id: ACTIVE_FILL,
       type: "fill",
       source: BOUNDARY_SOURCE,
       filter: emptyFilter() as never,
-      paint: { "fill-color": ACCENT, "fill-opacity": 0.2 },
+      paint: { "fill-color": ACCENT, "fill-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.2, 9, 0.06, 10.5, 0] },
     });
     map.addLayer({
       id: ACTIVE_LINE,
       type: "line",
       source: BOUNDARY_SOURCE,
       filter: emptyFilter() as never,
-      paint: { "line-color": ACCENT, "line-opacity": 1, "line-width": 2.8 },
+      paint: { "line-color": ACCENT, "line-opacity": ["interpolate", ["linear"], ["zoom"], 6, 1, 9, 0.5, 10.5, 0], "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2.8, 9, 1.2, 10.5, 0] },
     });
     map.addLayer({
       id: CITY_HITS,
