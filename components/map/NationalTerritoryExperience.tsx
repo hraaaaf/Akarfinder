@@ -423,7 +423,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
 
       {payload?.view === "city" && !selectedDistrictSlug && comparisonCities.length === 8 ? (
         <section
-          className="pointer-events-auto absolute inset-x-3 bottom-[110px] z-20 rounded-[18px] border border-white/85 bg-white/94 p-2.5 shadow-[0_15px_42px_rgba(15,35,66,0.17)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/95 sm:inset-x-auto sm:bottom-5 sm:left-4 sm:w-[440px]"
+          className="pointer-events-auto absolute inset-x-3 bottom-[166px] z-20 rounded-[18px] border border-white/85 bg-white/94 p-2.5 shadow-[0_15px_42px_rgba(15,35,66,0.17)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/95 sm:inset-x-auto sm:bottom-5 sm:left-4 sm:w-[440px]"
           aria-label="Comparer les huit villes"
           data-akarfinder-city-comparison
           data-akarfinder-city-focus={focusedCitySlug ?? ""}
