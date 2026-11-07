@@ -42,9 +42,20 @@ try {
     });
     const page = await context.newPage();
     const pageErrors = [];
+    const knownSourceWarnings = [];
     const scopedRequests = [];
     page.on("pageerror", error => pageErrors.push({ message: String(error), stack: error?.stack ?? null }));
-    page.on("console", message => { if (message.type() === "error") pageErrors.push({ console: message.text(), location: message.location() }); });
+    page.on("console", message => {
+      if (message.type() !== "error") return;
+      const location = message.location();
+      const diagnostic = { console: message.text(), location };
+      // This read-only geometry canary is known absent (404): never synthesize
+      // polygons, but don't confuse a source-coverage warning with React failure.
+      const knownGeoCanary404 = /\/api\/geo\/casablanca-arrondissements(?:\?|$)/.test(location.url ?? "") &&
+        /404/.test(message.text());
+      if (knownGeoCanary404) knownSourceWarnings.push(diagnostic);
+      else pageErrors.push(diagnostic);
+    });
     try {
       // Browser-only fixtures: never write to the database or invent listing cards.
       await page.route(/\/api\/search(?:\?|$)/, async route => {
@@ -102,6 +113,7 @@ try {
       report.cases.push({
         viewport: viewport.name, scopedRequests: scopedRequests.length,
         propertyCards, emptyState: true, resetClearsGeo: true, overflow,
+        knownSourceWarnings,
       });
     } catch (error) {
       report.failure = { viewport: viewport.name, error: String(error), url: page.url(), pageErrors };
