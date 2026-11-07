@@ -11,7 +11,11 @@ const viewports = [
   { name: "768", width: 768, height: 900 },
   { name: "1280", width: 1280, height: 900 },
 ];
-const report = { ok: false, api: null, cases: [], failure: null };
+const report = { ok: false, api: null, multicityApi: [], cases: [], failure: null };
+
+// L4-A: read-only national source contract. This does NOT certify browser UX in all 8 cities.
+const L4_SOURCE_CITIES = ["casablanca", "rabat", "marrakech", "tanger", "agadir", "fes", "kenitra", "mohammedia"];
+const unavailableCities = [];
 
 function isValidCenter(center) {
   return Boolean(center) && Number.isFinite(center.lng) && Number.isFinite(center.lat) && center.lng >= -180 && center.lng <= 180 && center.lat >= -90 && center.lat <= 90;
@@ -34,6 +38,62 @@ async function waitForNationalOverlay(page) {
     const renderedDots = map.queryRenderedFeatures().filter((feature) => feature.layer.id === "akarfinder-national-neighborhood-dots");
     return baseLayers.length >= 20 && renderedBaseFeatures.length >= 20 && renderedDots.length >= 1;
   }, null, { timeout: 15000 });
+}
+
+// Eight-city API inventory; source-backed coordinates only, no inferred pins.
+for (const city of L4_SOURCE_CITIES) {
+  const response = await fetch(`${baseUrl}/api/geo/national-territories?city=${encodeURIComponent(city)}`);
+  if (response.status === 404) {
+    // Missing source is a product coverage gap, never an excuse for an invented pin.
+    unavailableCities.push(city);
+    report.multicityApi.push({
+      city, status: "unavailable", httpStatus: 404,
+      neighborhoods: null, validCenters: null, noCenterCount: null, publishedBoundaries: null,
+    });
+    continue;
+  }
+  if (!response.ok) throw new Error(`L4 source API ${city} HTTP ${response.status}`);
+  const payload = await response.json();
+  if (payload.status !== "ok" || payload.view !== "city" || payload.place?.slug !== city) {
+    throw new Error(`L4 wrong city payload for ${city}`);
+  }
+  if (!Array.isArray(payload.neighborhoods)) throw new Error(`L4 missing neighborhood catalog for ${city}`);
+  const seen = new Set();
+  let validCenters = 0;
+  let noCenterCount = 0;
+  for (const neighborhood of payload.neighborhoods) {
+    if (!neighborhood.slug || seen.has(neighborhood.slug)) throw new Error(`L4 duplicate/missing slug in ${city}: ${neighborhood.slug}`);
+    seen.add(neighborhood.slug);
+    if (!Array.isArray(neighborhood.sourceKinds) || neighborhood.sourceKinds.length === 0) {
+      throw new Error(`L4 neighborhood lacks explicit source in ${city}/${neighborhood.slug}`);
+    }
+    if (neighborhood.center === null) {
+      noCenterCount += 1;
+    } else if (isValidCenter(neighborhood.center)) {
+      validCenters += 1;
+    } else {
+      throw new Error(`L4 invalid center (possible invented pin) in ${city}/${neighborhood.slug}`);
+    }
+    if (neighborhood.boundaryStatus !== "not_claimed") {
+      throw new Error(`L4 cannot claim neighborhood boundary ${city}/${neighborhood.slug}`);
+    }
+  }
+  if (payload.meta?.neighborhoodCount !== payload.neighborhoods.length ||
+      payload.meta?.centeredNeighborhoodCount !== validCenters) {
+    throw new Error(`L4 source counts inconsistent for ${city}`);
+  }
+  if (payload.meta?.certifiedNeighborhoodBoundaryCount !== 0 ||
+      payload.certifiedNeighborhoodBoundaries?.features?.length !== 0) {
+    throw new Error(`L4 uncertified geometry was exposed for ${city}`);
+  }
+  report.multicityApi.push({
+    city,
+    status: "covered",
+    neighborhoods: payload.neighborhoods.length,
+    validCenters,
+    noCenterCount,
+    publishedBoundaries: payload.meta.certifiedNeighborhoodBoundaryCount,
+  });
 }
 
 const apiResponse = await fetch(`${baseUrl}/api/geo/national-territories?city=casablanca`);
@@ -150,7 +210,12 @@ try {
       await context.close();
     }
   }
-  report.ok = true;
+  report.ok = unavailableCities.length === 0;
+  if (!report.ok) {
+    // Keep CI red while still saving valid Casablanca screenshots and all 8 API findings.
+    report.failure = { check: "l4a-national-source-coverage", unavailableCities };
+    throw new Error(`L4-A unverified city coverage: ${unavailableCities.join(", ")}`);
+  }
 } finally {
   await browser.close();
   await writeFile(`${outDir}/report.json`, JSON.stringify(report, null, 2));
