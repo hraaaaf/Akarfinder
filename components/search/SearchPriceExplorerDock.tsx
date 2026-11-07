@@ -20,7 +20,9 @@ function readCanonicalSearch(): string {
 }
 
 export function SearchPriceExplorerDock() {
-  const [search, setSearch] = useState(readCanonicalSearch);
+  // Keep the server render and first client render identical; sync the URL after hydration.
+  // Reading window.location during useState initialization causes React #418 on scoped searches.
+  const [search, setSearch] = useState("");
   const { visibleListings } = usePropertySelection();
 
   useEffect(() => {
