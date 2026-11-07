@@ -172,7 +172,7 @@ export function MapLibreNeighborhood3D({
               openfreemap: {
                 type: "vector",
                 url: OPENFREEMAP_VECTOR,
-                attribution: "© OpenStreetMap contributors · OpenFreeMap",
+                attribution: "© OpenMapTiles · © OpenStreetMap contributors · OpenFreeMap",
               },
             },
             layers: [
