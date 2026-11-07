@@ -157,6 +157,38 @@ async function main() {
               findings.push({ route: route.path, viewport: viewport.label, check: "fresh-poi-empty-state", detail: "Maârif has no sourced recent POIs but empty-state disclosure was not visible" });
             }
           }
+          if (route.citySlug === "casablanca" && route.districtSlug === "maarif") {
+            // L3-A: genuine north-up 2D default, real street zoom, non-published admin bounds.
+            const controls = page.locator("[data-l3-map-modes]");
+            const shell = page.locator('[data-l3-maarif-pilot="true"]');
+            try {
+              await controls.waitFor({ state: "visible", timeout: 12_000 });
+              await page.waitForFunction(() => {
+                const map = document.querySelector('[data-l3-maarif-pilot="true"]');
+                return map?.getAttribute("data-l3-camera-pitch") === "0"
+                  && map?.getAttribute("data-l3-camera-bearing") === "0";
+              }, null, { timeout: 12_000 });
+              if ((await shell.getAttribute("data-l3-admin-boundary")) !== "unavailable") {
+                throw new Error("Unreviewed Maârif administrative bounds must remain unavailable");
+              }
+              await controls.locator("[data-l3-go-street]").click();
+              await page.waitForFunction(() => {
+                const map = document.querySelector('[data-l3-maarif-pilot="true"]');
+                return map?.getAttribute("data-l3-maarif-view") === "rue"
+                  && Number(map?.getAttribute("data-l3-camera-zoom")) >= 16.8;
+              }, null, { timeout: 12_000 });
+              await page.screenshot({ path: join(outputDir, `map-casablanca-maarif-street-${viewport.label}.png`), fullPage: false });
+              screenshotsCaptured += 1;
+              await controls.locator("[data-l3-go-quarter]").click();
+              await page.waitForFunction(() => {
+                const map = document.querySelector('[data-l3-maarif-pilot="true"]');
+                return map?.getAttribute("data-l3-maarif-view") === "quartier"
+                  && Number(map?.getAttribute("data-l3-camera-zoom")) <= 15.2;
+              }, null, { timeout: 12_000 });
+            } catch (error) {
+              findings.push({ route: route.path, viewport: viewport.label, check: "l3a-maarif-real-camera-modes", detail: String(error).slice(0, 550) });
+            }
+          }
           if (route.citySlug === "casablanca" && route.districtSlug === "maarif" && viewport.width <= 768) {
             // Real mobile sheet behavior: compact 160px, 44px toggle, visible Search CTA,
             // expanded scrollable context, then collapse again without hiding the CTA.

@@ -1,0 +1,26 @@
+# Vivre Ici — L3-A Maârif : modes réels, caméra 2D, zoom rue
+
+**07/11/2026 · DRAFT · Prérequis L2-D #1180 HEAD `e752e793`, sans fusion ou déploiement.**
+
+## BEFORE → Goal → Mockup
+- **BEFORE vérifiable :** [P1A.6 L2-D #42375209714](https://github.com/hraaaaf/Akarfinder/actions/runs/42375209714), 27 PNG (390/430/768/1280), écran Maârif avec caméra 3D oblique, faux switch visuel 2D/3D et pseudo-couches ; les données de POI récentes manquent et sont affichées comme indisponibles. Le statut des limites est `center-only` (aucune frontière administrative vérifiée passée par le routeur).
+- **GOAL de ce sous-lot :** Maârif en 2D, nord en haut, par défaut ; vrai passage **Quartier → Rue → Quartier** avec caméra mesurée ; aucun contrôle décoratif ni géométrie publiée sans source revue ; respect de la sheet L2-C et des crédits L2-D.
+- **SUCCESS :** caméra effective `pitch=0`, `bearing=0` sur Maârif ; bouton Rue zoom réel `≥16.8`, retour Quartier `≤15.2` ; contrôles clavier/touch ≥44px ; 390/430/768/1280 screenshots AFTER + zéro erreur Playwright/Required Gate ; Rabat/Agdal inchangé.
+- **PROOF :** `scripts/audits/p1a6-map-responsive-smoke.ts` contrôle les deux états caméra et produit `map-casablanca-maarif-street-{390,430,768,1280}.png`. Toujours inspecter visuellement les captures face à l'artefact BEFORE et qualifier un score après QA.
+
+Mockup fonctionnel (vraie carte, sans contours approximatifs) :
+
+```text
+[Rechercher / ville]              [fond satellite]
+[← Maroc]                   [crédits réels]
+[Quartier · 2D] [Rue · zoom]
+Limites administratives indisponibles · source non revue
+     Carte 2D nord en haut (rue = zoom réel)
+[Fiche compacte / ouverte, CTA Search accessible]
+```
+
+## Limites explicites
+- **Ce n'est PAS les 3 modes L3 complets.** Le mode limites administratives est indisponible tant que le contour de l'arrondissement/sa sémantique source ne sont pas revus ; ne pas copier la PR #1108 `shadow-reference` comme si elle était certifiée.
+- Les repères POI historiques périmés ne sont pas rajeunis ; aucun marqueur, distance, temps ou prix ajouté.
+- Pas de fusion, de collecte, de DB cloud, d'import Supabase, de Vercel ou de nouvelles dépendances.
+- **Next :** CI+captures, corrections, closeout L3-A ; revue SIG géométrie administrative (human gate), vérification des POI et modes réels L3-B, puis L4–L6.
