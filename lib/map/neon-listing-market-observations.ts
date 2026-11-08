@@ -1,4 +1,6 @@
 import { queryNeonRows } from "@/lib/db/neon-read-client";
+import { getDbProvider } from "@/lib/db/provider";
+import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import {
   GEO_NEIGHBORHOODS,
   resolveCityEntity,
@@ -99,74 +101,95 @@ export async function readNeonListingMarketObservations(
   const variants = districtVariants(city.slug, targetSlugs);
   if (!variants.length) return [];
 
-  const params: unknown[] = [city.canonical_name];
-  const districtPlaceholders = variants.map((variant) => {
-    params.push(variant);
-    return `$${params.length}`;
-  });
-  const sourcePlaceholders = STRUCTURED_PUBLIC_SOURCE_NAMES.map((sourceName) => {
-    params.push(sourceName);
-    return `$${params.length}`;
-  });
+  // Akarfinder's new Supabase is the source of truth. Market reads must
+  // never silently cross back to Neon after the provider has switched.
+  let rows: NeonMarketListingRow[];
+  const provider = getDbProvider();
+  if (provider === "supabase") {
+    const { data, error } = await getSupabaseServerClient().rpc(
+      "read_market_observations_v1",
+      {
+        p_city: city.canonical_name,
+        p_district_variants: variants,
+        p_authorized_sources: STRUCTURED_PUBLIC_SOURCE_NAMES.map((name) => name.trim().toLowerCase()),
+        p_max_rows: MAX_MARKET_ROWS + 1,
+      },
+    );
+    if (error) throw new Error(`market_supabase_observations_failed: ${error.code ?? "rpc_error"}`);
+    rows = (Array.isArray(data) ? data : []) as NeonMarketListingRow[];
+  } else if (provider === "neon") {
+    const params: unknown[] = [city.canonical_name];
+    const districtPlaceholders = variants.map((variant) => {
+      params.push(variant);
+      return `$${params.length}`;
+    });
+    const sourcePlaceholders = STRUCTURED_PUBLIC_SOURCE_NAMES.map((sourceName) => {
+      params.push(sourceName);
+      return `$${params.length}`;
+    });
 
-  const publicClause = sourcePlaceholders.length
-    ? `
-      (
+    const publicClause = sourcePlaceholders.length
+      ? `
+        (
+          (
+            (pl.field_confidence->>'provider' = 'openserp'
+              OR pl.field_confidence->>'acquisition_provider' = 'openserp')
+            AND pl.field_confidence->>'publication_lane' = 'external_web_result'
+            AND pl.field_confidence->>'classification_lane' = 'individual_listing'
+          )
+          OR EXISTS (
+            SELECT 1
+            FROM public.listing_sources ls_candidate
+            WHERE ls_candidate.property_listing_id = pl.id
+              AND ls_candidate.is_active IS TRUE
+              AND lower(trim(ls_candidate.source_name)) IN (${sourcePlaceholders.join(",")})
+          )
+        )
+      `
+      : `
         (
           (pl.field_confidence->>'provider' = 'openserp'
             OR pl.field_confidence->>'acquisition_provider' = 'openserp')
           AND pl.field_confidence->>'publication_lane' = 'external_web_result'
           AND pl.field_confidence->>'classification_lane' = 'individual_listing'
         )
-        OR EXISTS (
-          SELECT 1
-          FROM public.listing_sources ls_candidate
-          WHERE ls_candidate.property_listing_id = pl.id
-            AND ls_candidate.is_active IS TRUE
-            AND lower(trim(ls_candidate.source_name)) IN (${sourcePlaceholders.join(",")})
-        )
-      )
-    `
-    : `
-      (
-        (pl.field_confidence->>'provider' = 'openserp'
-          OR pl.field_confidence->>'acquisition_provider' = 'openserp')
-        AND pl.field_confidence->>'publication_lane' = 'external_web_result'
-        AND pl.field_confidence->>'classification_lane' = 'individual_listing'
-      )
-    `;
+      `;
 
-  params.push(MAX_MARKET_ROWS + 1);
-  const limitPlaceholder = `$${params.length}`;
+    params.push(MAX_MARKET_ROWS + 1);
+    const limitPlaceholder = `$${params.length}`;
 
-  const rows = await queryNeonRows<NeonMarketListingRow>(
-    `SELECT
-       pl.id,
-       pl.canonical_fingerprint,
-       pl.district,
-       pl.transaction_type,
-       pl.price_mad,
-       pl.surface_m2,
-       pl.updated_at,
-       ls.source_name,
-       ls.listing_url,
-       ls.source_url
-     FROM public.property_listings pl
-     LEFT JOIN LATERAL (
-       SELECT source_name, listing_url, source_url
-       FROM public.listing_sources
-       WHERE property_listing_id = pl.id
-         AND is_active IS TRUE
-       ORDER BY first_seen_at NULLS LAST, id
-       LIMIT 1
-     ) ls ON TRUE
-     WHERE lower(trim(pl.city)) = lower($1)
-       AND lower(trim(pl.district)) IN (${districtPlaceholders.join(",")})
-       AND ${publicClause}
-     ORDER BY pl.updated_at DESC NULLS LAST, pl.id DESC
-     LIMIT ${limitPlaceholder}`,
-    params,
-  );
+    rows = await queryNeonRows<NeonMarketListingRow>(
+      `SELECT
+         pl.id,
+         pl.canonical_fingerprint,
+         pl.district,
+         pl.transaction_type,
+         pl.price_mad,
+         pl.surface_m2,
+         pl.updated_at,
+         ls.source_name,
+         ls.listing_url,
+         ls.source_url
+       FROM public.property_listings pl
+       LEFT JOIN LATERAL (
+         SELECT source_name, listing_url, source_url
+         FROM public.listing_sources
+         WHERE property_listing_id = pl.id
+           AND is_active IS TRUE
+         ORDER BY first_seen_at NULLS LAST, id
+         LIMIT 1
+       ) ls ON TRUE
+       WHERE lower(trim(pl.city)) = lower($1)
+         AND lower(trim(pl.district)) IN (${districtPlaceholders.join(",")})
+         AND ${publicClause}
+       ORDER BY pl.updated_at DESC NULLS LAST, pl.id DESC
+       LIMIT ${limitPlaceholder}`,
+      params,
+    );
+
+  } else {
+    throw new Error("market_observations_provider_unavailable");
+  }
 
   if (rows.length > MAX_MARKET_ROWS) {
     throw new Error(`market intelligence safety bound reached for ${city.slug}`);
