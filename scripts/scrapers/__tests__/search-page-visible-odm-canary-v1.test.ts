@@ -97,3 +97,22 @@ test("Supabase public search prioritizes active authorized source over older thi
   assert.match(code, /pickAuthorizedActiveSource\(sources, PUBLIC_AUTHORIZED_SOURCE_NAMES\)/);
   assert.match(code, /query\.public_search_only === true/);
 });
+
+
+test("fresh Supabase rejects the unported Neon ODM cursor and routes to structured fallback", () => {
+  const cursor = readFileSync("lib/search-gateway/public-search-cursor.ts", "utf8");
+  assert.match(cursor, /getDbProvider\(\) !== "neon"/);
+  assert.match(cursor, /throw new Error\("public_search_index_unavailable"\)/);
+  assert.match(router, /error\.message === "public_search_index_unavailable"/);
+  assert.match(router, /dependencies\.searchLegacy\(legacyQuery\)/);
+});
+
+test("Supabase public structured page filters authorized sources inside the counted DB join", () => {
+  const listings = readFileSync("lib/db/supabase-listings.ts", "utf8");
+  assert.match(listings, /query\.public_search_only === true && !isPersistedOpenSerpListingsEnabled\(\)/);
+  assert.match(listings, /firstPartyOnly \? "listing_sources!inner" : "listing_sources"/);
+  assert.match(listings, /\.eq\("listing_sources\.is_active", true\)/);
+  assert.match(listings, /\.in\("listing_sources\.source_name", PUBLIC_AUTHORIZED_SOURCE_NAMES\)/);
+  assert.match(listings, /\{ count: "exact" \}/);
+  assert.match(listings, /mapToDbRow\(row, resolvedByListingId\.get\(row\.id\), query\.public_search_only === true\)/);
+});

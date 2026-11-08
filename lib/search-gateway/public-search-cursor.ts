@@ -2,6 +2,7 @@ import { Buffer } from "node:buffer";
 import { createHash, timingSafeEqual } from "node:crypto";
 
 import { queryNeonRows } from "@/lib/db/neon-read-client";
+import { getDbProvider } from "@/lib/db/provider";
 import { diversifySearchGatewayResults } from "@/lib/search-gateway/search-gateway-diversify";
 import { mapSeedToThinIndexResult } from "@/lib/search-gateway/seed-thin-index";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
@@ -161,6 +162,11 @@ function mapAndDiversifyWithinBusinessLanes(rows: PublicSearchRpcRow[]): SearchG
 }
 
 export async function searchPublicRepresentations(input: PublicSearchInput): Promise<PublicSearchPage> {
+  // The canonical ODM index is not installed in the fresh database. Fall back
+  // to the structured provider search instead of reaching a stale Neon DB.
+  if (getDbProvider() !== "neon") {
+    throw new Error("public_search_index_unavailable");
+  }
   const capability = await queryNeonRows<{ available: boolean }>(
     "SELECT to_regproc('public.search_public_representations_v2') IS NOT NULL AS available",
   );
