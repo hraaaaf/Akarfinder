@@ -35,3 +35,13 @@ test("the backed-up source metadata is losslessly represented without granting p
   assert.match(compat, /not a permission to republish/);
   assert.doesNotMatch(compat, /GRANT /);
 });
+
+const ownerQa = readFileSync("scripts/db/qa_supabase_owner_publication_failclosed_2026-11-08.sql", "utf8");
+test("owner publication test uses an atomic isolated fixture and fail-closed approvals", () => {
+  assert.match(ownerQa, /qa_requires_an_empty_isolated_database/);
+  assert.match(ownerQa, /Seller draft must be approved before publication/);
+  assert.match(ownerQa, /photo_required/);
+  assert.match(ownerQa, /search_owner_public_representations_v1/);
+  assert.match(ownerQa, /DELETE FROM public\.buyer_leads WHERE id=v_lead/);
+  assert.match(ownerQa, /qa_cleanup_failed/);
+});

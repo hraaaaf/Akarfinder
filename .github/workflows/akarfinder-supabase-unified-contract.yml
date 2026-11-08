@@ -7,6 +7,7 @@ on:
       - "db/baselines/akarfinder_supabase_property_foundation_2026-11-08.sql"
       - "db/baselines/akarfinder_supabase_source_backup_compat_2026-11-08.sql"
       - "scripts/scrapers/__tests__/akarfinder-supabase-property-foundation.test.ts"
+      - "scripts/db/qa_supabase_owner_publication_failclosed_2026-11-08.sql"
       - "lib/db/preferred-public-source-order.ts"
       - "lib/seller/owner-listing-projection.ts"
       - "scripts/scrapers/__tests__/data-p0-owner-listing-integration.test.ts"
