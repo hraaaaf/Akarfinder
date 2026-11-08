@@ -1,0 +1,75 @@
+# LOT01-B Casablanca–Maârif — compteur public de biens (08/11/2026)
+
+**Constat externe en lecture seule (site public existant, pas la nouvelle PR)** : `GET /api/search?city=Casablanca&district=Maârif&limit=24` puis versions `offset=0`/`limit=100` renvoient toutes `{"listings":[],"total":5,"source":"database","has_more":false}`. La page Search annonce 5 résultats, alors que **zéro fiche** est renvoyée. **Ne pas présenter ces cinq lignes comme des annonces disponibles.**
+
+**Cause vérifiée dans le code** : `lib/search/structured-district-total.ts` fait un `SELECT COUNT(*)` sur `public.property_listings` par quartier avant contrôle des droits de publication ; `lib/search/database-search.ts` calcule les fiches visibles après `canPublishDbRowToPublicSearchSurface`, filtrage et canonicalisation, mais affichait la valeur SQL non filtrée comme `total`. Aucun assouplissement des règles d'autorisation n'est acceptable.
+
+**GOAL** : afficher le nombre de fiches réellement admissibles quand le scan de quartier est complet, plutôt que le total SQL brut. **SUCCESS** : pour 5 lignes SQL et 0 fiche admissible, résultat public `total:0` ; pour 2 fiches admissibles, `total:2` ; sur scan incomplet, ne pas prétendre avoir validé un chiffre définitif et conserver estimation historique. **PROOF** : nouveaux tests unitaires 3 cas ajoutés dans la suite existante `search-page-visible-odm-canary-v1.test.ts` ; CI typecheck + tests à vérifier sur le SHA de la PR.
+
+**Invariants** : source `database`, filtres, scan max 10 000, pagination, droits des sources, hiérarchie, suppression des duplicatas et absence de données fabriquées préservés. Un total égal aux correspondances post-filtre **avant** consolidation des doublons reste une limitation technique ; l'inventaire réel Maârif n'est pas certifié. Le Search peut afficher zéro annonce si les lignes n'ont pas l'autorisation légale — c'est préférable à une fausse disponibilité.
+
+**Limite** : changer le code dans PR ne corrige pas PROD sans merge/déploiement ; aucune intervention Vercel n'est autorisée. Les essais live après déploiement restent une validation humaine ultérieure.
+
+**Next exact** : tests du helper + vérification CI du code, puis audit prix/sources et échantillon de vrais liens autorisés sur la DB à accès maîtrisé. Aucun déploiement Vercel, aucune DB.
+
+
+## Closeout test de contrat LOT01-B — 08/11/2026
+
+- **Code SHA certifié** : `e13d36b22bc7e108118d3ee374c413832312ebdb` via [PR #1195 Draft](https://github.com/hraaaaf/Akarfinder/pull/1195).
+- **CI** [Search Page Visible ODM Canary V1 #42469023580 SUCCESS](https://github.com/hraaaaf/Akarfinder/actions/runs/42469023580) : suite de contrats Node `--experimental-strip-types` PASS, `npm ci` PASS, `npx tsc --noEmit` PASS. Les tests supplémentaires couvrent : 5 lignes SQL / 0 admissible → 0 ; 5 SQL / 2 admissibles → 2 ; scan incomplet ou hors quartier → estimation conservée. Aucun élargissement des droits de publication.
+- **Limite de preuve** : test unitaire/TypeScript uniquement ; **aucun test sur une vraie base Maârif avec le nouveau code en production**. La lecture du serveur public avant déploiement montre toujours `listings:[],total:5,has_more:false`. Aucun changement PROD, aucune DB.
+- **Conséquence produit** : après release autorisée et si les mêmes règles/rows s'appliquent, l'API ne promettra plus cinq offres quand aucune fiche ne peut être publiée. Cela **ne crée pas** de nouvelles annonces ni ne confirme l'existence/actualité des cinq lignes SQL, et n'élimine pas les limites de scan borné ou de déduplication.
+- **Lot 01-B état** : correction de vérité du total **GREEN aux tests de contrat**, inventaire/sources/prix Maârif **OUVERTS**. Ne pas annoncer release ou score global. Next : vérifier sources autorisées, prix et liens dans un environnement DB contrôlé ; comparer au serveur public uniquement après autorisation de déploiement.
+
+
+## Tranche B2 — Sélection de la bonne source autorisée (lecture de code, 08/11/2026)
+
+**Autre incohérence identifiée dans le code, non prouvée comme incidente en PROD** : le SQL de `queryNeonListings({public_search_only:true})` sélectionne les biens dès qu'une **source autorisée** est associée, mais le `LEFT JOIN LATERAL listing_sources` conservait systématiquement **la plus ancienne** source active (potentiellement tierce/legacy). Le contrôle `canPublishDbRowToPublicSearchSurface(row)` regarde ensuite uniquement `row.source_name` sélectionné et peut exclure un bien qui a pourtant une autre représentation **autorisée**.
+
+**Correctif candidat** : en recherche publique seulement, réutiliser les paramètres SQL de sources autorisées du `EXISTS` pour prioriser, dans le `LATERAL`, les représentations actives `first_party`/`partner_authorized` avant l'ancienne source tierce ; sous chaque classe, ordre historique `first_seen_at,id` conservé. Les autres lectures non publiques ne changent pas. **Aucune nouvelle source n'est autorisée**, aucune annonce synthétique, aucune transformation d'un site tiers en partenaire. Les candidats OpenSERP restent soumis aux contrôles d'origine/lien/PII habituels.
+
+**Preuve à obtenir** : tests du builder SQL (priorité/legacy/injection), lecture du code et `tsc --noEmit` via CI Search Page Visible ODM Canary. Aucun runtime PROD modifié ; données réelles non certifiées.
+
+### Audit source historique (preuve limitée, read-only)
+
+Dans la branche Neon **historique** `recovery-schema-cert-20260924` de la base `AkarFinder`, pour les paires exactes `city=Casablanca`, `district` dans `Maarif`/`El Maarif` (casse ignorée), on compte **1 535 lignes**, **747 prix positifs**, **647 surfaces positives**, et **0 association source autorisée** selon les six identifiants en vigueur. **0** ligne a le marqueur OpenSERP. La dernière date `updated_at` de ce sous-ensemble est **2026-09-28**, donc **aucune mise à jour sous 30 jours** au 08/11. Sources majoritaires : marocimmo.com, mubawab.ma, avito.ma, domio.ma, agenz.ma. Ce stock ancien est un index de référence, **pas un inventaire publiable ou frais**. La branche `test-neon-runtime-p0-20261006` présentait la même distribution agrégée de quartiers, sans source autorisée, mais **n'est pas la preuve du runtime PROD**. La vraie `DATABASE_URL` Vercel est sensible/non lisible, `DATABASE_PROVIDER=neon` est confirmé ; la branche par défaut `production` de ce projet Neon n'a pas de table `public.property_listings`. Ne pas inférer la connexion Vercel.
+
+**Constat live distinct** au même moment : `GET /api/search?city=Casablanca&district=Maârif&limit=24&offset=0` renvoie `total:5,listings:[],has_more:false`. `GET /api/search/gateway?city=Casablanca&district=Maârif` renvoie explicitement `reason:district_requires_structured_search,results_count:0` ; la restriction quartier est volontaire et protège contre les résultats faux positifs ville entière.
+
+**Gate produit toujours ouvert** : sans partenariat ou annonce propriétaire explicitement autorisée et vérifiée, il n'y a pas de vraie annonce Maârif exploitable prouvée. Ne pas publier les 1 535 lignes historiques. Aucune écriture DB / aucun Vercel deploy.
+
+
+## Closeout contractuel B2 — Source prioritaire & pipeline propriétaire — 08/11/2026
+
+**SHA de code testé :** `556f093511b0d3713139c4dc4724eea7d53c155d` sur [PR #1195 Draft](https://github.com/hraaaaf/Akarfinder/pull/1195). **[Workflow Search Page Visible ODM Canary #42480623012 SUCCESS](https://github.com/hraaaaf/Akarfinder/actions/runs/42480623012)** : tests Node de contrat incluant les trois nouveaux tests de priorité de sources, `npm ci` et `npx tsc --noEmit` PASS. La correction privilégie les identifiants de sources déjà autorisées si une même propriété a des représentations multiples ; la source la plus ancienne n'est plus prioritaire dans `public_search_only`. La liste des sources publiables n'a **pas été changée**. Aucune preuve DB réelle/PROD après changement : non déployé.
+
+**Vérité historique de l'inventaire :** branche `recovery-schema-cert-20260924` Neon, **pas** PROD : 151 900 propriétés indexées dans `public.property_listings`, 151 900 liens sources actifs, **0 lien de source autorisée** selon le registre. Sous-ensemble exact Casablanca + Maarif/El Maarif (insensible à la casse) : 1 535 lignes, 747 prix positifs, 647 surfaces positives, 0 source autorisée, 0 OpenSERP, dernière mise à jour le 28/09/2026 (plus de 30 jours). Des sources tierces historiques peuvent être indexées sans droit de republier leurs fiches. Ne pas produire de faux résultats.
+
+**Vérité PROD observable sans secret :** l'API Search Maârif conserve `total:5,listings:[],has_more:false` au 08/11 (code de correction non en production), tandis que l'API Gateway renvoie correctement `district_requires_structured_search`. `DATABASE_PROVIDER=neon` est configuré en Vercel Production, `DATABASE_URL` est une valeur sensible que le connecteur n'expose pas : branche/DB réelle **inconnue**. Ne pas attribuer le stock historique à PROD.
+
+**Parcours de collecte propriétaire existant, non certifié E2E :** `/vendre/dossier` utilise `SellerSecurePublishForm`, collecte ville/quartier, photos et données; les copies du produit prévoient revue humaine et confirmation volontaire avant publication. `lib/seller/owner-listing-projection.ts` active la recherche publique de ces annonces seulement si `OWNER_LISTINGS_PUBLIC_SEARCH_ENABLED=true`; **cette variable est absente de la liste d'environnement Vercel** observée pour le projet. En outre, `supportsOdmPublicSearchQuery` bloque l'ODM pour les requêtes `district`, et la projection de recherche propriétaire indexe la ville mais n'expose pas une identité de quartier utilisable pour filtrage strict. **Ne pas activer le canal propriétaire ni l'inclure de force dans Maârif avant une qualification explicite du quartier et un contrôle des droits.**
+
+**Décision recommandée / human gate :** acquérir au moins **un mandat ou une annonce propriétaire autorisée**, avec permission écrite de diffusion, prix/surface et adresse/quartier validés et date de vérification, puis prouver l'aller-retour dépôt→revue→publication→recherche Maârif à partir des vraies sources et de tests, dans un environnement autorisé. Sans cette donnée et sans identification sécurisée du runtime DB, le lot **annonces fiables** n'est pas terminable. Ne jamais élargir automatiquement Maârif à Casablanca.
+
+**Next exact** : certifier l'inventaire autorisé de la DB réellement utilisée, obtenir une source propriétaire/partenaire légitime si zéro, ajouter un identifiant de quartier sourcé au read-model propriétaire puis un test E2E du filtrage (prochain lot), et traiter les trois CI annexes. Aucun merge, écriture DB ni déploiement Vercel.
+
+
+## LOT01-C — Deux annonces fictives éphémères insérées, vérifiées et supprimées (08/11/2026)
+
+**Décision utilisateur explicite** : créer 1–2 annonces fictives uniquement pour tester, puis les supprimer après le test. Exécution sur **Neon branche TEST** `test-neon-runtime-p0-20261006` (`br-wild-mud-b2y0dhc2`), base `AkarFinder` ; PAS sur branche production, PAS sur Vercel, PAS via API publique. Labels `[TEST FICTIF – NE PAS PUBLIER]`, noms et URLs `fixture.invalid`, prix explicitement inventés.
+
+### Goal / Success / Proof
+
+- **Fixtures :** `98001108001` appartement Maârif 80 m², prix fictif **1 250 000 MAD**, `source_name=owner_declared` ; `98001108002` studio Maârif 45 m², prix fictif **6 500 MAD/mois**, deux liens sources **`avito` plus ancien** et **`partner_csv` plus récent**. `city=Casablanca`, `district=Maarif`, `field_confidence.test_only=true`. 2 lignes `property_listings`, 3 lignes `listing_sources` ; aucun média, utilisateur ou contact réel.
+- **Préflight** : IDs, fingerprints et URLs des fixtures absents dans la branche test ; `max(property_listings.id)=153251`, `max(listing_sources.id)=151965`.
+- **Premier essai** : Neon a refusé `INSERT` sur colonne `id GENERATED ALWAYS` ; transaction **avortée**, test indépendant a confirmé 0 fixture / 0 source.
+- **Transaction atomique réussie** (`mcp__Neon__run_sql_transaction`) : `INSERT ... OVERRIDING SYSTEM VALUE` pour les deux biens et trois sources ; `SELECT` simulant le **JOIN LATERAL de recherche publique** + `EXISTS` autorisation + ville/quartier exacts : **deux lignes** renvoyées ; pour appartement `selected_public_source=owner_declared` ; pour studio `selected_public_source=partner_csv` alors que `oldest_source=avito`. Bloc `DO` avec assertions bloquantes : 2 résultats et sélection de sources correcte ; exception aurait provoqué un rollback complet. Même transaction : `DELETE` strictement limité aux IDs/fingerprints test (cascade sur `listing_sources`), puis contrôle 0 bien / 0 lien source.
+- **Contrôle indépendant APRÈS commit transaction** via nouvelle requête en lecture seule : `indexed_properties_after=151900`, `active_sources_after=151900`, `synthetic_properties_remaining=0`, `synthetic_source_links_remaining=0`. **Nettoyage confirmé. Aucun objet test persistant dans les deux tables.**
+
+### Ce que cela ne prouve PAS
+
+Cela teste la compatibilité SQL et les conditions de source/district qui représentent le code `lib/db/neon-listings.ts` de LOT01-B ; **ce n'est pas** un test HTTP du serveur Next.js, du pipeline complet `/vendre/dossier`→modération→publication ni de la vraie base PROD. Aucune annonce n'a été visible publiquement. La géométrie/identité officielle du quartier Maârif est toujours non certifiée. Les prix fictifs ne doivent jamais être utilisés comme données de marché.
+
+**Statut :** LOT01-C `fixture SQL insertion → sélection → suppression` = SUCCESS vérifié ; LOT01 annonces réelles et parcours complet E2E = ouverts. [PR #1195](https://github.com/hraaaaf/Akarfinder/pull/1195), code source-priority certifié sur [CI #42480623012](https://github.com/hraaaaf/Akarfinder/actions/runs/42480623012). Aucun merge ni déploiement Vercel.
+
+**Next exact :** pour une certification d'application complète, prévoir des fixtures transactionnelles dans une CI connectée uniquement à une DB de test avec teardown garanti et contrôles HTTP+UI ; obtenir une vraie annonce propriétaire autorisée pour le test métier ultérieur. Ne jamais activer un canal public pour une fixture fictive.

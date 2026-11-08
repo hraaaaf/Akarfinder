@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import type { DbListingRow, DbListingsQuery, DbListingsResult, DbStats } from "@/lib/listings/db-listings";
 import { getSourcesByType } from "@/lib/sources/source-access-registry";
+import { buildPublicSourceOrderBy } from "./preferred-public-source-order";
 
 function getSql() {
   const url = process.env.DATABASE_URL;
@@ -56,7 +57,7 @@ const STRUCTURED_PUBLIC_SOURCE_NAMES = [
   ]),
 ];
 
-function addPublicSearchCandidateClause(conditions:string[],params:any[]){
+function addPublicSearchCandidateClause(conditions:string[],params:any[]):string[]{
   const structuredSourceParams = STRUCTURED_PUBLIC_SOURCE_NAMES.map((sourceName) => {
     params.push(sourceName);
     return "$" + params.length;
@@ -77,6 +78,7 @@ function addPublicSearchCandidateClause(conditions:string[],params:any[]){
         AND lower(trim(ls_candidate.source_name)) IN (${structuredSourceParams.join(",")})
     )
   )`);
+  return structuredSourceParams;
 }
 
 function buildWhere(q:DbListingsQuery){
@@ -86,18 +88,19 @@ function buildWhere(q:DbListingsQuery){
   if(q.min_price!=null)add("pl.price_mad >= ?",q.min_price); if(q.max_price!=null)add("pl.price_mad <= ?",q.max_price);
   if(q.min_surface!=null)add("pl.surface_m2 >= ?",q.min_surface); if(q.max_surface!=null)add("pl.surface_m2 <= ?",q.max_surface);
   if(q.bedrooms!=null)add("pl.bedrooms_count = ?",q.bedrooms);
-  if(q.public_search_only)addPublicSearchCandidateClause(c,p);
-  return {where:c.length?"WHERE "+c.join(" AND "):"",params:p};
+  const publicSourcePlaceholders = q.public_search_only ? addPublicSearchCandidateClause(c,p) : [];
+  return {where:c.length?"WHERE "+c.join(" AND "):"",params:p,publicSourcePlaceholders};
 }
 export async function queryNeonListings(q:DbListingsQuery={}):Promise<DbListingsResult>{
-  const sql=getSql(),{where,params}=buildWhere(q); const limit=Math.min(Math.max(q.limit??50,1),500), offset=Math.max(q.offset??0,0);
+  const sql=getSql(),{where,params,publicSourcePlaceholders}=buildWhere(q); const limit=Math.min(Math.max(q.limit??50,1),500), offset=Math.max(q.offset??0,0);
   const count:any=await sql.query(`SELECT COUNT(*)::int AS total FROM property_listings pl ${where}`,params);
   const rp=[...params,limit,offset], li=rp.length-1, oi=rp.length;
+  const sourceOrderBy = buildPublicSourceOrderBy(publicSourcePlaceholders);
   const rows:any=await sql.query(`SELECT pl.*,ls.source_name,ls.listing_url,ls.source_url,ls.origin_type
     FROM property_listings pl
     LEFT JOIN LATERAL (
       SELECT source_name,listing_url,source_url,origin_type FROM listing_sources
-      WHERE property_listing_id=pl.id AND is_active IS TRUE ORDER BY first_seen_at NULLS LAST,id LIMIT 1
+      WHERE property_listing_id=pl.id AND is_active IS TRUE ORDER BY ${sourceOrderBy} LIMIT 1
     ) ls ON TRUE
     ${where}
     ORDER BY pl.data_completeness_score DESC NULLS LAST,pl.updated_at DESC NULLS LAST,pl.id DESC
