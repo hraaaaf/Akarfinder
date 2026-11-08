@@ -52,3 +52,24 @@ Dans la branche Neon **historique** `recovery-schema-cert-20260924` de la base `
 **Décision recommandée / human gate :** acquérir au moins **un mandat ou une annonce propriétaire autorisée**, avec permission écrite de diffusion, prix/surface et adresse/quartier validés et date de vérification, puis prouver l'aller-retour dépôt→revue→publication→recherche Maârif à partir des vraies sources et de tests, dans un environnement autorisé. Sans cette donnée et sans identification sécurisée du runtime DB, le lot **annonces fiables** n'est pas terminable. Ne jamais élargir automatiquement Maârif à Casablanca.
 
 **Next exact** : certifier l'inventaire autorisé de la DB réellement utilisée, obtenir une source propriétaire/partenaire légitime si zéro, ajouter un identifiant de quartier sourcé au read-model propriétaire puis un test E2E du filtrage (prochain lot), et traiter les trois CI annexes. Aucun merge, écriture DB ni déploiement Vercel.
+
+
+## LOT01-C — Deux annonces fictives éphémères insérées, vérifiées et supprimées (08/11/2026)
+
+**Décision utilisateur explicite** : créer 1–2 annonces fictives uniquement pour tester, puis les supprimer après le test. Exécution sur **Neon branche TEST** `test-neon-runtime-p0-20261006` (`br-wild-mud-b2y0dhc2`), base `AkarFinder` ; PAS sur branche production, PAS sur Vercel, PAS via API publique. Labels `[TEST FICTIF – NE PAS PUBLIER]`, noms et URLs `fixture.invalid`, prix explicitement inventés.
+
+### Goal / Success / Proof
+
+- **Fixtures :** `98001108001` appartement Maârif 80 m², prix fictif **1 250 000 MAD**, `source_name=owner_declared` ; `98001108002` studio Maârif 45 m², prix fictif **6 500 MAD/mois**, deux liens sources **`avito` plus ancien** et **`partner_csv` plus récent**. `city=Casablanca`, `district=Maarif`, `field_confidence.test_only=true`. 2 lignes `property_listings`, 3 lignes `listing_sources` ; aucun média, utilisateur ou contact réel.
+- **Préflight** : IDs, fingerprints et URLs des fixtures absents dans la branche test ; `max(property_listings.id)=153251`, `max(listing_sources.id)=151965`.
+- **Premier essai** : Neon a refusé `INSERT` sur colonne `id GENERATED ALWAYS` ; transaction **avortée**, test indépendant a confirmé 0 fixture / 0 source.
+- **Transaction atomique réussie** (`mcp__Neon__run_sql_transaction`) : `INSERT ... OVERRIDING SYSTEM VALUE` pour les deux biens et trois sources ; `SELECT` simulant le **JOIN LATERAL de recherche publique** + `EXISTS` autorisation + ville/quartier exacts : **deux lignes** renvoyées ; pour appartement `selected_public_source=owner_declared` ; pour studio `selected_public_source=partner_csv` alors que `oldest_source=avito`. Bloc `DO` avec assertions bloquantes : 2 résultats et sélection de sources correcte ; exception aurait provoqué un rollback complet. Même transaction : `DELETE` strictement limité aux IDs/fingerprints test (cascade sur `listing_sources`), puis contrôle 0 bien / 0 lien source.
+- **Contrôle indépendant APRÈS commit transaction** via nouvelle requête en lecture seule : `indexed_properties_after=151900`, `active_sources_after=151900`, `synthetic_properties_remaining=0`, `synthetic_source_links_remaining=0`. **Nettoyage confirmé. Aucun objet test persistant dans les deux tables.**
+
+### Ce que cela ne prouve PAS
+
+Cela teste la compatibilité SQL et les conditions de source/district qui représentent le code `lib/db/neon-listings.ts` de LOT01-B ; **ce n'est pas** un test HTTP du serveur Next.js, du pipeline complet `/vendre/dossier`→modération→publication ni de la vraie base PROD. Aucune annonce n'a été visible publiquement. La géométrie/identité officielle du quartier Maârif est toujours non certifiée. Les prix fictifs ne doivent jamais être utilisés comme données de marché.
+
+**Statut :** LOT01-C `fixture SQL insertion → sélection → suppression` = SUCCESS vérifié ; LOT01 annonces réelles et parcours complet E2E = ouverts. [PR #1195](https://github.com/hraaaaf/Akarfinder/pull/1195), code source-priority certifié sur [CI #42480623012](https://github.com/hraaaaf/Akarfinder/actions/runs/42480623012). Aucun merge ni déploiement Vercel.
+
+**Next exact :** pour une certification d'application complète, prévoir des fixtures transactionnelles dans une CI connectée uniquement à une DB de test avec teardown garanti et contrôles HTTP+UI ; obtenir une vraie annonce propriétaire autorisée pour le test métier ultérieur. Ne jamais activer un canal public pour une fixture fictive.
