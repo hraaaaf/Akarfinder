@@ -9,7 +9,6 @@ const CRITICAL_RUNTIME_FILES = [
   "lib/map/city-market-intelligence-live.ts",
   "lib/map/rabat-market-intelligence-live.ts",
   "lib/map/neon-listing-market-observations.ts",
-  "lib/seller/owner-listing-projection.ts",
   "lib/odm/odm-shadow-telemetry-store.ts",
   "lib/search/structured-district-total.ts",
 ] as const;
@@ -73,4 +72,15 @@ test("SEO inventory gates fail closed before any Supabase call when Neon is prim
     assert.ok(client >= 0, `${path} must retain the legacy Supabase branch`);
     assert.ok(guard < client, `${path} must fail closed before constructing a Supabase client`);
   }
+});
+
+
+test("owner projection is deliberately dual-provider during the approved Supabase migration", async () => {
+  const src = await readFile("lib/seller/owner-listing-projection.ts", "utf8");
+  // Existing Neon behavior remains provider-guarded for rollback; the new
+  // Supabase path calls service-role RPCs and never bypasses the owner flag.
+  assert.match(src, /getDbProvider\(\) === "supabase"/);
+  assert.match(src, /getSupabaseServerClient\(\)\.rpc\(/);
+  assert.match(src, /queryNeonRows<OwnerSearchRow>/);
+  assert.match(src, /if \(!ownerListingsSearchEnabled\(\)\) return \{ results: \[\], totalCount: 0 \}/);
 });

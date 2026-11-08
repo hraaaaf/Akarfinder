@@ -10,6 +10,10 @@ on:
       - "scripts/scrapers/__tests__/search-page-visible-odm-canary-v1.test.ts"
       - ".github/workflows/akarfinder-supabase-unified-contract.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
