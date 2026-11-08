@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import test from "node:test";
 
 import {
@@ -26,4 +28,35 @@ test("Common Crawl seed provenance is seed_provider, never a freshness channel",
   assert.equal(mapped.row.freshness_status, "seed_only");
   assert.equal(mapped.row.fresh_last_seen_at, null);
   assert.deepEqual(mapped.row.fresh_channels, []);
+});
+
+test("Common Crawl importer refreshes duplicate CDX observations through the observation-only RPC", () => {
+  const source = readFileSync(
+    join(process.cwd(), "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"),
+    "utf8",
+  );
+
+  assert.match(source, /rpc\("odm_upsert_commoncrawl_seed_observations_v1"/);
+  assert.doesNotMatch(source, /ignoreDuplicates\s*:\s*true/);
+  assert.match(source, /freshness_promotions !== 0 \|\| stats\.detail_fetches !== 0/);
+});
+
+test("Common Crawl observation RPC advances CDX evidence without mutating freshness on existing rows", () => {
+  const migration = readFileSync(
+    join(process.cwd(), "supabase/migrations/20260831090000_commoncrawl_observation_refresh_v1.sql"),
+    "utf8",
+  );
+
+  assert.match(migration, /first_observed_at = least\(s\.first_observed_at, r\.first_observed_at\)/);
+  assert.match(migration, /last_observed_at = greatest\(s\.last_observed_at, r\.last_observed_at\)/);
+  assert.match(migration, /p\.no_bypass_required is true/);
+  assert.match(migration, /'commoncrawl' = any\(p\.allowed_discovery_channels\)/);
+
+  const updateStart = migration.indexOf("update public.source_offer_seeds s\n    set");
+  const updateEnd = migration.indexOf("where s.id = v_existing.id;", updateStart);
+  assert.ok(updateStart >= 0 && updateEnd > updateStart, "existing-row update block must exist");
+  const updateBlock = migration.slice(updateStart, updateEnd);
+  assert.doesNotMatch(updateBlock, /freshness_status/);
+  assert.doesNotMatch(updateBlock, /fresh_last_seen_at/);
+  assert.doesNotMatch(updateBlock, /fresh_channels/);
 });

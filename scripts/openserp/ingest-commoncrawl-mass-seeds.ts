@@ -2,13 +2,16 @@
 // CASABLANCA-MASS-ACQUISITION-V1 — guarded Common Crawl seed importer.
 // P0.1-MASS-INDEX-SOURCE-REGISTRY-OPERATIONAL-GATE
 // COMMONCRAWL-IMPORT-TIMEOUT-HARDENING-V1
+// COMMONCRAWL-OBSERVATION-REFRESH-V1
 //
 // Default mode is DRY RUN. --apply requires the exact same 3 Production
-// ingestion flags as the scheduled OpenSERP writer. Writes ONLY to
-// source_offer_seeds with ignoreDuplicates=true; never to discovery_candidates,
-// listing_sources, property_listings, clusters or any public-facing table.
-// Canonical Source Registry policy is re-read immediately before validation so
-// a stale artifact can never authorize a source/channel pair by itself.
+// ingestion flags as the scheduled OpenSERP writer. Writes ONLY authentic CDX
+// observation evidence to source_offer_seeds. Existing Common Crawl rows can
+// advance first/last observed timestamps, but this importer never promotes
+// freshness and never writes discovery_candidates, listing_sources,
+// property_listings, clusters or any public-facing table.
+// Canonical Source Registry policy is re-read immediately before validation and
+// the database RPC rechecks the current Source Policy Registry fail-closed.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -28,8 +31,74 @@ import { formatSupabaseError, withSupabaseRetry } from "@/lib/seed-freshness/sup
 
 const DEFAULT_INPUT = join(process.cwd(), "data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl");
 // Production remainder imports reached PostgreSQL statement_timeout with 500-row
-// upserts. Keep statements smaller and retry only transient/timeout failures.
+// statements. Keep RPC statements smaller and retry only transient failures.
 export const UPSERT_CHUNK = 100;
+
+type ObservationUpsertStats = {
+  input_rows: number;
+  inserted_rows: number;
+  refreshed_rows: number;
+  advanced_last_observed_rows: number;
+  unchanged_rows: number;
+  provider_conflict_rows: number;
+  policy_rejected_rows: number;
+  invalid_rows: number;
+  freshness_promotions: number;
+  detail_fetches: number;
+};
+
+function emptyObservationUpsertStats(): ObservationUpsertStats {
+  return {
+    input_rows: 0,
+    inserted_rows: 0,
+    refreshed_rows: 0,
+    advanced_last_observed_rows: 0,
+    unchanged_rows: 0,
+    provider_conflict_rows: 0,
+    policy_rejected_rows: 0,
+    invalid_rows: 0,
+    freshness_promotions: 0,
+    detail_fetches: 0,
+  };
+}
+
+function readIntegerField(record: Record<string, unknown>, key: keyof ObservationUpsertStats): number {
+  const value = record[key];
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    throw new Error(`invalid Common Crawl observation RPC result field ${key}: ${String(value)}`);
+  }
+  return value;
+}
+
+export function parseObservationUpsertStats(data: unknown): ObservationUpsertStats {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error("invalid Common Crawl observation RPC result");
+  }
+  const record = data as Record<string, unknown>;
+  return {
+    input_rows: readIntegerField(record, "input_rows"),
+    inserted_rows: readIntegerField(record, "inserted_rows"),
+    refreshed_rows: readIntegerField(record, "refreshed_rows"),
+    advanced_last_observed_rows: readIntegerField(record, "advanced_last_observed_rows"),
+    unchanged_rows: readIntegerField(record, "unchanged_rows"),
+    provider_conflict_rows: readIntegerField(record, "provider_conflict_rows"),
+    policy_rejected_rows: readIntegerField(record, "policy_rejected_rows"),
+    invalid_rows: readIntegerField(record, "invalid_rows"),
+    freshness_promotions: readIntegerField(record, "freshness_promotions"),
+    detail_fetches: readIntegerField(record, "detail_fetches"),
+  };
+}
+
+function addObservationUpsertStats(
+  total: ObservationUpsertStats,
+  next: ObservationUpsertStats,
+): ObservationUpsertStats {
+  const merged = emptyObservationUpsertStats();
+  for (const key of Object.keys(merged) as Array<keyof ObservationUpsertStats>) {
+    merged[key] = total[key] + next[key];
+  }
+  return merged;
+}
 
 function parseArgs(argv: string[]): { apply: boolean; input: string } {
   let input = DEFAULT_INPUT;
@@ -66,14 +135,25 @@ async function countSeeds(): Promise<number> {
   return count ?? 0;
 }
 
-async function insertChunk(rows: SourceOfferSeedInsert[], offset: number): Promise<void> {
+async function upsertObservationChunk(
+  rows: SourceOfferSeedInsert[],
+  offset: number,
+): Promise<ObservationUpsertStats> {
   const client = getSupabaseServerClient();
-  await withSupabaseRetry(async () => {
-    const { error } = await client
-      .from("source_offer_seeds")
-      .upsert(rows, { onConflict: "canonical_url", ignoreDuplicates: true });
+  return withSupabaseRetry(async () => {
+    const { data, error } = await client.rpc("odm_upsert_commoncrawl_seed_observations_v1", {
+      p_rows: rows,
+    });
     if (error) throw error;
-  }, `Common Crawl seed upsert offset=${offset} rows=${rows.length}`, { attempts: 4, baseDelayMs: 500 });
+    const stats = parseObservationUpsertStats(data);
+    if (stats.input_rows !== rows.length) {
+      throw new Error(`Common Crawl observation RPC row-count mismatch: sent=${rows.length} received=${stats.input_rows}`);
+    }
+    if (stats.freshness_promotions !== 0 || stats.detail_fetches !== 0) {
+      throw new Error("Common Crawl observation RPC violated observation-only contract");
+    }
+    return stats;
+  }, `Common Crawl observation upsert offset=${offset} rows=${rows.length}`, { attempts: 4, baseDelayMs: 500 });
 }
 
 async function main() {
@@ -129,8 +209,10 @@ async function main() {
   }
 
   const before = await countSeeds();
+  let observationStats = emptyObservationUpsertStats();
   for (let offset = 0; offset < batch.rows.length; offset += UPSERT_CHUNK) {
-    await insertChunk(batch.rows.slice(offset, offset + UPSERT_CHUNK), offset);
+    const chunkStats = await upsertObservationChunk(batch.rows.slice(offset, offset + UPSERT_CHUNK), offset);
+    observationStats = addObservationUpsertStats(observationStats, chunkStats);
   }
   const after = await countSeeds();
 
@@ -140,7 +222,16 @@ async function main() {
     ...summary,
     seed_rows_before: before,
     seed_rows_after: after,
-    newly_inserted_seed_rows: Math.max(0, after - before),
+    newly_inserted_seed_rows: observationStats.inserted_rows,
+    refreshed_observation_rows: observationStats.refreshed_rows,
+    advanced_last_observed_rows: observationStats.advanced_last_observed_rows,
+    unchanged_observation_rows: observationStats.unchanged_rows,
+    provider_conflict_rows: observationStats.provider_conflict_rows,
+    database_policy_rejected_rows: observationStats.policy_rejected_rows,
+    database_invalid_rows: observationStats.invalid_rows,
+    freshness_promotions: observationStats.freshness_promotions,
+    detail_fetches: observationStats.detail_fetches,
+    seed_row_count_delta: after - before,
   }, null, 2));
 }
 
