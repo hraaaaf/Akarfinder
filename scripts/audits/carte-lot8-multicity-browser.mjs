@@ -38,32 +38,12 @@ try {
       const pageErrors = [];
       const tileResponses = [];
       let highZoomTileCount = 0;
-      let tileGateSettled = false;
-      let resolveTiles;
-      let rejectTiles;
-      const tilesReady = new Promise((resolve, reject) => {
-        resolveTiles = resolve;
-        rejectTiles = reject;
-      });
-      const tileGateTimeout = setTimeout(() => {
-        if (tileGateSettled) return;
-        tileGateSettled = true;
-        rejectTiles(new Error(`${cityCase.slug}/${viewport.name}: no real high-zoom basemap tiles rendered within 20s`));
-      }, 20000);
-
       page.on("pageerror", (error) => pageErrors.push(String(error)));
       page.on("response", (response) => {
         const zoom = basemapTileZoom(response.url());
         if (zoom === null) return;
         tileResponses.push({ url: response.url(), status: response.status(), zoom });
-        if (zoom >= 9 && response.ok()) {
-          highZoomTileCount += 1;
-          if (highZoomTileCount >= 2 && !tileGateSettled) {
-            tileGateSettled = true;
-            clearTimeout(tileGateTimeout);
-            resolveTiles();
-          }
-        }
+        if (zoom >= 9 && response.ok()) highZoomTileCount += 1;
       });
 
       try {
@@ -84,7 +64,27 @@ try {
           { citySlug: cityCase.slug, districtSlug: cityCase.districtSlug },
           { timeout: 20000 },
         );
-        await tilesReady;
+        // This source reports ready ONLY after MapLibre style and real
+        // rendered non-focus basemap features are available at the camera.
+        // HTTP responses alone are unreliable (cache or alternate provider).
+        await page.waitForFunction(() => {
+          const e = document.querySelector("[data-maplibre-spike]");
+          if (!e) return false;
+          const count = Number(e.getAttribute("data-maplibre-basemap-feature-count"));
+          const zoom = Number(e.getAttribute("data-l3-camera-zoom"));
+          return e.getAttribute("data-maplibre-render-state") === "ready"
+            && e.getAttribute("data-maplibre-source-state") === "available"
+            && Number.isFinite(count) && count > 0
+            && Number.isFinite(zoom) && zoom >= 9;
+        }, null, { timeout: 20000 });
+        const renderedBasemap = await maplibre.evaluate((e) => ({
+          provider: e.getAttribute("data-maplibre-source"),
+          featureCount: Number(e.getAttribute("data-maplibre-basemap-feature-count")),
+          zoom: Number(e.getAttribute("data-l3-camera-zoom")),
+        }));
+        if (!["openfreemap", "carto"].includes(renderedBasemap.provider)
+          || renderedBasemap.featureCount < 1 || renderedBasemap.zoom < 9)
+          throw new Error(`${cityCase.slug}/${viewport.name}: no rendered high-zoom basemap ${JSON.stringify(renderedBasemap)}`);
         await page.waitForTimeout(450);
 
         // Preserve the actual rendered viewport before any visibility/layout assertions.
@@ -126,11 +126,14 @@ try {
           overflow,
           mapRendered: true,
           highZoomTileCount,
+          renderedBasemap,
           decisionRail: true,
           tileResponses,
         });
+      } catch (error) {
+        await page.screenshot({ path: `${outDir}/failure-${cityCase.slug}-${viewport.name}.png`, fullPage: false }).catch(() => {});
+        throw error;
       } finally {
-        clearTimeout(tileGateTimeout);
         await page.close();
       }
     }

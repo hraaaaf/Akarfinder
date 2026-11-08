@@ -1,3 +1,5 @@
+// Current C7 certification: active Rabat market UI, not retired C3 zone sheet.
+// Four viewports with API interception only, no database fixture persistence.
 import { chromium } from "playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 
@@ -8,278 +10,296 @@ await mkdir(outDir, { recursive: true });
 const viewports = [
   { name: "mobile-390", width: 390, height: 844 },
   { name: "mobile-430", width: 430, height: 932 },
-  { name: "tablet-768", width: 768, height: 900 },
-  { name: "desktop-1280", width: 1280, height: 900 },
+  { name: "tablet", width: 768, height: 900 },
+  { name: "desktop", width: 1280, height: 900 },
 ];
-const modes = [
-  { tab: "Prix", api: "price" },
-  { tab: "Densité", api: "density" },
-  { tab: "Annonces", api: "listings" },
-];
-const validDistricts = new Set(["agdal", "hay-riad", "souissi", "hassan"]);
-const fixtureMode = process.env.MARKET_BROWSER_FIXTURE === "1";
 
-function normalizeSlug(value) {
-  return String(value ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+function basemapTileZoom(url) {
+  if (!url.includes("tiles.openfreemap.org")) return null;
+  const match = url.match(/\/(\d+)\/\d+\/\d+\.(?:pbf|png)(?:\?|$)/);
+  return match ? Number(match[1]) : null;
 }
 
-function fixtureRabatPayload(mode) {
-  const zones = [
-    ["agdal", "Agdal", -6.852, 33.996, 15000, 4],
-    ["hay-riad", "Hay Riad", -6.866, 33.958, 16500, 6],
-    ["souissi", "Souissi", -6.830, 33.955, 18000, 8],
-    ["hassan", "Hassan", -6.830, 34.020, 14000, 3],
-  ];
-  const values = zones.map(([, , , , price, listings]) =>
-    mode === "price" ? price : mode === "density" ? listings / 10 : listings
-  );
-  return {
-    type: "FeatureCollection",
-    properties: {
-      mode,
-      transaction: "sale",
-      observedMarketOnly: true,
-      scaleMethod: "snapshot_quantiles_v1",
-      legend: {
-        availableCount: 4,
-        classCount: 3,
-        thresholds: [values[1], values[2]],
-        min: Math.min(...values),
-        max: Math.max(...values),
-        colors: ["#DCFCE7", "#22C55E", "#15803D"],
-        neutralColor: "#E5E7EB",
-      },
-    },
-    features: zones.map(([slug, displayName, lng, lat, price, listings], index) => {
-      const d = 0.008;
-      const metricValue = mode === "price" ? price : mode === "density" ? listings / 10 : listings;
-      return {
-        type: "Feature",
-        id: slug === "hassan" ? "market_zone_rabat_centre" : "market_zone_rabat_" + slug.replace(/-/g, "_"),
-        properties: {
-          zoneId: slug === "hassan" ? "market_zone_rabat_centre" : "market_zone_rabat_" + slug.replace(/-/g, "_"),
-          slug,
-          displayName,
-          semanticType: "market_zone",
-          officialBoundary: false,
-          canonicalNeighborhoodIds: ["district_rabat_" + slug.replace(/-/g, "_")],
-          areaKm2: 10,
-          publicationStatus: "canary",
-          mode,
-          transaction: "sale",
-          metricValue,
-          metricUnit: mode === "price" ? "MAD/m²" : mode === "density" ? "annonces/km²" : "annonces",
-          sampleCount: listings,
-          reliability: mode === "price" ? "limited" : null,
-          neutral: false,
-          classIndex: Math.min(index, 2),
-          fillColor: ["#DCFCE7", "#22C55E", "#15803D"][Math.min(index, 2)],
-          freshnessStatus: "unconfirmed",
-          snapshotVersion: "ci-fixture-v1",
-          marketMetrics: {
-            priceMedianMadM2: price,
-            priceSampleCount: listings,
-            priceReliability: "limited",
-            listingCount: listings,
-            listingDensityKm2: listings / 10,
-          },
-        },
-        geometry: {
-          type: "Polygon",
-          coordinates: [[
-            [lng - d, lat - d],
-            [lng + d, lat - d],
-            [lng + d, lat + d],
-            [lng - d, lat + d],
-            [lng - d, lat - d],
-          ]],
-        },
-      };
-    }),
-  };
-}
-
-async function waitForIntelligence(page, mode) {
-  const response = await page.waitForResponse((res) => {
-    const url = new URL(res.url());
-    return url.pathname === "/api/geo/rabat-market-intelligence"
-      && url.searchParams.get("mode") === mode
-      && url.searchParams.get("transaction") === "sale";
-  }, { timeout: 30000 });
-  if (response.status() !== 200) throw new Error(`C3 API ${mode} returned ${response.status()}`);
-  const payload = await response.json();
-  if (payload.properties?.mode !== mode) throw new Error(`C3 payload mode mismatch for ${mode}`);
+async function requireApiMode(page, mode) {
+  const result = await page.evaluate(async ({ baseUrl, mode }) => {
+    const response = await fetch(
+      `${baseUrl}/api/geo/market-intelligence?city=rabat&mode=${mode}&transaction=sale`,
+    );
+    return { status: response.status, text: await response.text() };
+  }, { baseUrl, mode });
+  if (result.status !== 200) {
+    throw new Error(`${mode}: market intelligence API returned ${result.status} ${result.text}`);
+  }
+  const payload = JSON.parse(result.text);
+  if (payload.mode !== mode) throw new Error(`${mode}: API mode mismatch`);
+  if (payload.city?.slug !== "rabat") throw new Error(`${mode}: API city mismatch`);
+  if (!Array.isArray(payload.districts) || !payload.districts.some((row) => row.districtSlug === "agdal")) {
+    throw new Error(`${mode}: Agdal district metric missing`);
+  }
+  if (mode === "density") {
+    const agdal = payload.districts.find((row) => row.districtSlug === "agdal");
+    if (agdal.areaBasis !== "rabat_osm_shadow") {
+      throw new Error(`density: Agdal must declare rabat_osm_shadow area basis, got ${agdal.areaBasis}`);
+    }
+  }
   return payload;
 }
 
-async function findInteractivePoint(page, box) {
-  const points = [];
-  for (let y = 180; y <= Math.max(181, box.height - 160); y += 24) {
-    for (let x = 40; x <= Math.max(41, box.width - 40); x += 24) {
-      points.push({ x, y, d: Math.hypot(x - box.width / 2, y - box.height / 2) });
-    }
-  }
-  points.sort((a, b) => a.d - b.d);
-  for (const point of points) {
-    await page.mouse.move(box.x + point.x, box.y + point.y);
-    if (await page.locator(".maplibregl-canvas").evaluate((canvas) => canvas.style.cursor === "pointer")) return point;
-  }
-  return null;
-}
-
-async function waitForInteractivePoint(page, viewportName, mode) {
-  const canvas = page.locator(".maplibregl-canvas");
-  const box = await canvas.boundingBox();
-  if (!box) throw new Error(`${viewportName}: missing MapLibre box for ${mode}`);
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    const point = await findInteractivePoint(page, box);
-    if (point) {
-      await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-      return { box, point };
-    }
-    await page.waitForTimeout(150);
-  }
-  throw new Error(`${viewportName}: ${mode} polygon not rendered before screenshot`);
+async function waitForSettledLegend(page, mode) {
+  await page.waitForFunction((expectedMode) => {
+    const legend = document.querySelector(`[data-akarfinder-intelligence-legend="${expectedMode}"]`);
+    if (!legend) return false;
+    const text = legend.textContent || "";
+    return !text.includes("Calcul des annonces observées") && !text.includes("temporairement indisponibles");
+  }, mode, { timeout: 15000 });
 }
 
 const report = { ok: false, cases: [], generatedAt: new Date().toISOString() };
 const browser = await chromium.launch({ headless: true });
+const fixtureMode = process.env.MARKET_BROWSER_FIXTURE === "1";
+
+function fixturePayload(mode) {
+  const values = {
+    price: { agdal: 15000, finance: null, souissi: null },
+    density: { agdal: 0.16, finance: null, souissi: null },
+    listings: { agdal: 2, finance: 0, souissi: 0 },
+  }[mode];
+  const districts = [
+    {
+      districtSlug: "agdal",
+      displayName: "Agdal",
+      mode,
+      transaction: "sale",
+      metricValue: values.agdal,
+      metricUnit: mode === "price" ? "MAD/m²" : mode === "density" ? "annonces/km²" : "annonces",
+      sampleCount: mode === "price" ? 2 : 2,
+      reliability: mode === "price" ? "limited" : null,
+      runtimeResolved: true,
+      neutral: mode === "price" ? false : false,
+      classIndex: 0,
+      fillColor: "#22C55E",
+      freshnessStatus: "unconfirmed",
+      snapshotVersion: "ci-fixture-v1",
+      areaKm2: 12.4,
+      areaBasis: "rabat_osm_shadow",
+      marketMetrics: {
+        priceMedianMadM2: 15000,
+        priceSampleCount: 2,
+        priceReliability: "limited",
+        listingCount: 2,
+        listingDensityKm2: 0.16,
+      },
+    },
+    {
+      districtSlug: "hay-riad",
+      displayName: "Rabat Finance City",
+      mode,
+      transaction: "sale",
+      metricValue: values.finance,
+      metricUnit: mode === "price" ? "MAD/m²" : mode === "density" ? "annonces/km²" : "annonces",
+      sampleCount: 0,
+      reliability: mode === "price" ? "insufficient" : null,
+      runtimeResolved: true,
+      neutral: true,
+      classIndex: null,
+      fillColor: "#E5E7EB",
+      freshnessStatus: "unconfirmed",
+      snapshotVersion: "ci-fixture-v1",
+      areaKm2: null,
+      areaBasis: null,
+      marketMetrics: {
+        priceMedianMadM2: null,
+        priceSampleCount: 0,
+        priceReliability: "insufficient",
+        listingCount: 0,
+        listingDensityKm2: null,
+      },
+    },
+    {
+      districtSlug: "souissi",
+      displayName: "Souissi",
+      mode,
+      transaction: "sale",
+      metricValue: values.souissi,
+      metricUnit: mode === "price" ? "MAD/m²" : mode === "density" ? "annonces/km²" : "annonces",
+      sampleCount: 0,
+      reliability: mode === "price" ? "insufficient" : null,
+      runtimeResolved: true,
+      neutral: true,
+      classIndex: null,
+      fillColor: "#E5E7EB",
+      freshnessStatus: "unconfirmed",
+      snapshotVersion: "ci-fixture-v1",
+      areaKm2: null,
+      areaBasis: null,
+      marketMetrics: {
+        priceMedianMadM2: null,
+        priceSampleCount: 0,
+        priceReliability: "insufficient",
+        listingCount: 0,
+        listingDensityKm2: null,
+      },
+    },
+  ];
+  return {
+    city: { slug: "rabat", displayName: "Rabat" },
+    mode,
+    transaction: "sale",
+    observedMarketOnly: true,
+    scaleMethod: "snapshot_quantiles_v1",
+    legend: {
+      availableCount: mode === "price" ? 1 : 3,
+      classCount: 1,
+      thresholds: [],
+      min: values.agdal ?? 0,
+      max: values.agdal ?? 0,
+      colors: ["#22C55E"],
+      neutralColor: "#E5E7EB",
+    },
+    districts,
+  };
+}
 
 try {
   for (const viewport of viewports) {
     const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
     if (fixtureMode) {
-      await page.route("**/api/geo/rabat-market-intelligence?**", async (route) => {
+      await page.route("**/api/geo/market-intelligence?**", async (route) => {
         const url = new URL(route.request().url());
-        const routeMode = url.searchParams.get("mode") || "price";
+        const mode = url.searchParams.get("mode") || "price";
         await route.fulfill({
           status: 200,
           contentType: "application/json",
-          body: JSON.stringify(fixtureRabatPayload(routeMode)),
+          body: JSON.stringify(fixturePayload(mode)),
         });
       });
     }
-    const diagnostics = { pageErrors: [], requestFailures: [] };
-    page.on("pageerror", (error) => diagnostics.pageErrors.push(String(error)));
-    page.on("requestfailed", (request) => {
-      if (request.url().includes("/api/geo/rabat-market-intelligence")) {
-        diagnostics.requestFailures.push({ url: request.url(), error: request.failure()?.errorText || "unknown" });
-      }
+    const pageErrors = [];
+    const tileResponses = [];
+    let highZoomTileCount = 0;
+    page.on("pageerror", (error) => pageErrors.push(String(error)));
+    page.on("response", (response) => {
+      const zoom = basemapTileZoom(response.url());
+      if (zoom == null) return;
+      tileResponses.push({ url: response.url(), status: response.status(), zoom });
+      if (zoom >= 9 && response.ok()) highZoomTileCount += 1;
     });
 
-    const initial = waitForIntelligence(page, "price");
-    await page.goto(`${baseUrl}/map?city=rabat`, { waitUntil: "domcontentloaded", timeout: 30000 });
-    await initial;
-    await page.locator("[data-akarfinder-market-intelligence-map]").waitFor({ state: "visible", timeout: 20000 });
-    await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 20000 });
-    await page.locator("[data-akarfinder-intelligence-legend]").waitFor({ state: "visible", timeout: 20000 });
+    try {
+      await page.goto(`${baseUrl}/map?city=rabat&layer=price`, {
+        waitUntil: "domcontentloaded",
+        timeout: 30000,
+      });
+      await page.getByText("Chargement de la carte…", { exact: true }).waitFor({ state: "hidden", timeout: 30000 });
+      await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 10000 });
+      // Browser verifies MapLibre canvas, market modes, API and screenshots.
+      // Preserve network tile responses for diagnosis, not as a cache-sensitive gate.
+      await page.waitForFunction(() => document.querySelectorAll('[data-akarfinder-intelligence-mode]').length === 3, null, { timeout: 10000 });
+      await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-legend="price"]'), null, { timeout: 10000 });
+      await waitForSettledLegend(page, "price");
 
-    let finalInteractive = null;
-    for (const mode of modes) {
-      if (mode.api !== "price") {
-        const response = waitForIntelligence(page, mode.api);
-        await page.getByRole("tab", { name: mode.tab }).click();
-        await response;
+      const pricePayload = await requireApiMode(page, "price");
+      const densityPayload = await requireApiMode(page, "density");
+      const listingsPayload = await requireApiMode(page, "listings");
+      const agdalListings = listingsPayload.districts.find((row) => row.districtSlug === "agdal");
+      if (agdalListings?.metricValue == null) throw new Error("listings: Agdal must expose a factual listing count");
+      const expectedListingsCount = Math.round(agdalListings.metricValue).toLocaleString("fr-FR");
+
+      const toolbar = page.locator("[data-akarfinder-generic-premium-toolbar]");
+      await toolbar.waitFor({ state: "visible", timeout: 10000 });
+      const tabs = toolbar.locator("[data-akarfinder-intelligence-mode]");
+      if (await tabs.count() !== 3) throw new Error(`${viewport.name}: expected exactly three market mode tabs`);
+
+      await toolbar.locator('[data-akarfinder-intelligence-mode="density"]').click();
+      await page.waitForURL(/layer=density/, { timeout: 10000 });
+      await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-mode="density"][aria-selected="true"]'), null, { timeout: 10000 });
+      await waitForSettledLegend(page, "density");
+
+      await toolbar.locator('[data-akarfinder-intelligence-mode="listings"]').click();
+      await page.waitForURL(/layer=listings/, { timeout: 10000 });
+      await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-mode="listings"][aria-selected="true"]'), null, { timeout: 10000 });
+      await waitForSettledLegend(page, "listings");
+
+      await page.screenshot({
+        path: `${outDir}/rabat-market-modes-${viewport.width}x${viewport.height}.png`,
+        fullPage: false,
+      });
+
+      await page.goto(`${baseUrl}/map?city=rabat&district=agdal&layer=listings`, {
+        waitUntil: "domcontentloaded",
+        timeout: 30000,
+      });
+      await page.getByText("Chargement de la carte…", { exact: true }).waitFor({ state: "hidden", timeout: 30000 });
+      await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 10000 });
+
+      const fullPanel = page.getByRole("complementary", { name: /Fiche repère quartier Agdal/i });
+      const compactPanel = page.locator("[data-akarfinder-mobile-compact-panel]");
+      const panel = viewport.width <= 767 ? compactPanel : fullPanel;
+      await panel.waitFor({ state: "visible", timeout: 20000 });
+
+      const metric = viewport.width <= 767
+        ? page.locator("[data-akarfinder-lot9-compact-metric]")
+        : page.locator("[data-akarfinder-lot9-panel-metric]");
+      await metric.waitFor({ state: "visible", timeout: 10000 });
+      await page.waitForFunction(({ mobile, expectedCount }) => {
+        const selector = mobile ? "[data-akarfinder-lot9-compact-metric]" : "[data-akarfinder-lot9-panel-metric]";
+        const text = document.querySelector(selector)?.textContent || "";
+        return !text.includes("Calcul") && !text.includes("indisponible") && text.includes(expectedCount);
+      }, { mobile: viewport.width <= 767, expectedCount: expectedListingsCount }, { timeout: 15000 });
+      const metricText = (await metric.textContent())?.trim() ?? "";
+      if (!metricText || /Données 2024-2025/.test(metricText) || /Calcul/.test(metricText)) {
+        throw new Error(`${viewport.name}: selected district did not settle on the Lot 9 metric: ${metricText}`);
       }
-      const tab = page.getByRole("tab", { name: mode.tab });
-      if (!(await tab.evaluate((el) => el.scrollWidth <= el.clientWidth + 1))) {
-        throw new Error(`${viewport.name}: ${mode.tab} tab overflow`);
+
+      const panelBox = await panel.boundingBox();
+      if (!panelBox) throw new Error(`${viewport.name}: selected district panel has no bounding box`);
+      if (panelBox.x < -1 || panelBox.x + panelBox.width > viewport.width + 1 || panelBox.y < -1 || panelBox.y + panelBox.height > viewport.height + 1) {
+        throw new Error(`${viewport.name}: selected district panel escapes viewport ${JSON.stringify(panelBox)}`);
       }
-      finalInteractive = await waitForInteractivePoint(page, viewport.name, mode.api);
-      await page.screenshot({ path: `${outDir}/${viewport.name}-${mode.api}.png`, fullPage: false });
-    }
-
-    if (!finalInteractive) throw new Error(`${viewport.name}: no interactive market-zone polygon`);
-    await page.mouse.click(
-      finalInteractive.box.x + finalInteractive.point.x,
-      finalInteractive.box.y + finalInteractive.point.y,
-    );
-    await page.waitForURL(
-      (url) => url.searchParams.get("city") === "rabat" && validDistricts.has(url.searchParams.get("district") ?? ""),
-      { timeout: 10000 },
-    );
-
-    const district = new URL(page.url()).searchParams.get("district");
-    const sheet = page.locator("[data-akarfinder-rich-zone-sheet]");
-    await sheet.waitFor({ state: "visible", timeout: 10000 });
-    for (const label of ["Prix médian / m²", "Densité", "Annonces"]) {
-      if (await sheet.getByText(label, { exact: true }).count() === 0) {
-        throw new Error(`${viewport.name}: missing ${label} KPI`);
+      if (viewport.width <= 767 && panelBox.height > 230) {
+        throw new Error(`${viewport.name}: compact district preview too tall ${JSON.stringify(panelBox)}`);
       }
-    }
-    if (await sheet.locator("[data-akarfinder-zone-polygon-preview]").count() !== 1) {
-      throw new Error(`${viewport.name}: missing polygon preview`);
-    }
 
-    const searchHref = await sheet.locator('a[href^="/search?"]').first().getAttribute("href");
-    if (!searchHref) throw new Error(`${viewport.name}: missing Search CTA`);
-    const searchUrl = new URL(searchHref, baseUrl);
-    if (
-      searchUrl.pathname !== "/search"
-      || normalizeSlug(searchUrl.searchParams.get("city")) !== "rabat"
-      || normalizeSlug(searchUrl.searchParams.get("district")) !== district
-    ) {
-      throw new Error(`${viewport.name}: Search CTA mismatch`);
-    }
+      const searchLink = viewport.width <= 767
+        ? panel.getByRole("link", { name: /Rechercher ici/i })
+        : panel.getByRole("link", { name: /Rechercher dans ce quartier/i });
+      const searchHref = await searchLink.getAttribute("href");
+      const searchUrl = new URL(searchHref || "", baseUrl);
+      if (searchUrl.pathname !== "/search" || searchUrl.searchParams.get("city") !== "Rabat" || searchUrl.searchParams.get("district") !== "Agdal") {
+        throw new Error(`${viewport.name}: Search handoff mismatch ${searchHref}`);
+      }
 
-    const sheetBox = await sheet.boundingBox();
-    if (
-      !sheetBox
-      || sheetBox.x < -1
-      || sheetBox.y < -1
-      || sheetBox.x + sheetBox.width > viewport.width + 1
-      || sheetBox.y + sheetBox.height > viewport.height + 1
-    ) {
-      throw new Error(`${viewport.name}: rich sheet escapes viewport`);
-    }
+      await page.screenshot({
+        path: `${outDir}/rabat-agdal-listings-${viewport.width}x${viewport.height}.png`,
+        fullPage: false,
+      });
 
-    let sheetHeightRatio = null;
-    let mapClearRatio = null;
-    const initialSheetState = await sheet.getAttribute("data-akarfinder-zone-sheet-state");
-    let expandedSheetHeight = null;
-    if (viewport.width < 640) {
-      if (initialSheetState !== "collapsed") throw new Error(`${viewport.name}: mobile sheet must open collapsed`);
-      const toggle = sheet.locator("[data-akarfinder-zone-sheet-toggle]");
-      if (await toggle.count() !== 1) throw new Error(`${viewport.name}: missing mobile sheet toggle`);
-      if (await toggle.getAttribute("aria-expanded") !== "false") throw new Error(`${viewport.name}: mobile toggle must start collapsed`);
-      sheetHeightRatio = sheetBox.height / viewport.height;
-      mapClearRatio = sheetBox.y / viewport.height;
-      if (sheetHeightRatio > 0.42) throw new Error(`${viewport.name}: collapsed sheet covers ${(sheetHeightRatio * 100).toFixed(1)}% of viewport`);
-      if (mapClearRatio < 0.45) throw new Error(`${viewport.name}: only ${(mapClearRatio * 100).toFixed(1)}% of viewport remains clear above sheet`);
-      await page.screenshot({ path: `${outDir}/${viewport.name}-zone-sheet.png`, fullPage: false });
-      await toggle.click();
-      await page.waitForFunction(() => document.querySelector("[data-akarfinder-rich-zone-sheet]")?.getAttribute("data-akarfinder-zone-sheet-state") === "expanded");
-      await sheet.locator("[data-akarfinder-zone-data-quality]").waitFor({ state: "visible", timeout: 5000 });
-      const expandedBox = await sheet.boundingBox();
-      if (!expandedBox || expandedBox.height <= sheetBox.height + 40) throw new Error(`${viewport.name}: expanded sheet did not reveal details`);
-      expandedSheetHeight = expandedBox.height;
-      await toggle.click();
-      await page.waitForFunction(() => document.querySelector("[data-akarfinder-rich-zone-sheet]")?.getAttribute("data-akarfinder-zone-sheet-state") === "collapsed");
-    } else {
-      await page.screenshot({ path: `${outDir}/${viewport.name}-zone-sheet.png`, fullPage: false });
-    }
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      if (overflow > 1) throw new Error(`${viewport.name}: horizontal overflow ${overflow}`);
+      if (pageErrors.length) throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(pageErrors)}`);
 
-    if (diagnostics.pageErrors.length || diagnostics.requestFailures.length) {
-      throw new Error(`${viewport.name}: diagnostics ${JSON.stringify(diagnostics)}`);
+      report.cases.push({
+        viewport: viewport.name,
+        width: viewport.width,
+        height: viewport.height,
+        highZoomTileCount,
+        overflow,
+        tileResponses: tileResponses.slice(-20),
+        priceAvailable: pricePayload.legend.availableCount,
+        densityAvailable: densityPayload.legend.availableCount,
+        listingsAvailable: listingsPayload.legend.availableCount,
+        metricText,
+        panelBox,
+        searchHref,
+      });
+    } catch (error) {
+      await page.screenshot({ path: `${outDir}/failure-${viewport.name}.png`, fullPage: false }).catch(() => {});
+      throw error;
+    } finally {
+      await page.close();
     }
-    report.cases.push({
-      ...viewport,
-      district,
-      searchHref,
-      diagnostics,
-      sheetHeightRatio,
-      mapClearRatio,
-      initialSheetState,
-      expandedSheetHeight,
-    });
-    await page.close();
   }
+
   report.ok = true;
 } catch (error) {
   report.error = error instanceof Error ? error.stack || error.message : String(error);
