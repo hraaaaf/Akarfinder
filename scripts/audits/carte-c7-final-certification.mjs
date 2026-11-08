@@ -38,8 +38,8 @@ async function requireApiMode(page, mode) {
   }
   if (mode === "density") {
     const agdal = payload.districts.find((row) => row.districtSlug === "agdal");
-    if (agdal.areaBasis !== "rabat_osm_shadow") {
-      throw new Error(`density: Agdal must declare rabat_osm_shadow area basis, got ${agdal.areaBasis}`);
+    if (agdal.areaBasis !== "rabat_market_zone_shadow") {
+      throw new Error(`density: Agdal must declare rabat_market_zone_shadow area basis, got ${agdal.areaBasis}`);
     }
   }
   return payload;
@@ -81,7 +81,7 @@ function fixturePayload(mode) {
       freshnessStatus: "unconfirmed",
       snapshotVersion: "ci-fixture-v1",
       areaKm2: 12.4,
-      areaBasis: "rabat_osm_shadow",
+      areaBasis: "rabat_market_zone_shadow",
       marketMetrics: {
         priceMedianMadM2: 15000,
         priceSampleCount: 2,
@@ -92,7 +92,7 @@ function fixturePayload(mode) {
     },
     {
       districtSlug: "hay-riad",
-      displayName: "Rabat Finance City",
+      displayName: "Hay Riad",
       mode,
       transaction: "sale",
       metricValue: values.finance,
