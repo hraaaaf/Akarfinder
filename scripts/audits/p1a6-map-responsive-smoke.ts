@@ -250,12 +250,15 @@ async function main() {
               // The attribution position may animate after the sheet transitions.
               // Await its measured separation instead of sampling the intermediate expanded frame.
               await page.waitForFunction(() => {
-                const note = document.querySelector("[data-l3-admin-unavailable]")?.getBoundingClientRect();
+                const panel = document.querySelector("[data-l3-admin-unavailable]")?.getBoundingClientRect();
                 const credit = document.querySelector(".maplibregl-ctrl-attrib")?.getBoundingClientRect();
                 const modes = document.querySelector("[data-l3-map-modes]");
-                if (!note || !credit || !modes || getComputedStyle(modes).display === "none") return false;
-                return note.bottom <= credit.top - 3 || note.top >= credit.bottom + 3 ||
-                  note.right <= credit.left - 3 || note.left >= credit.right + 3;
+                if (!credit || !modes || getComputedStyle(modes).display === "none") return false;
+                const toolbar = modes.getBoundingClientRect();
+                const apart = (rect: DOMRect) =>
+                  rect.bottom <= credit.top - 3 || rect.top >= credit.bottom + 3 ||
+                  rect.right <= credit.left - 3 || rect.left >= credit.right + 3;
+                return apart(toolbar) && (!panel || apart(panel));
               }, null, { timeout: 6000 });
             } catch (error) {
               findings.push({ route: route.path, viewport: viewport.label, check: "l2c-sheet-expand-collapse", detail: String(error).slice(0, 550) });

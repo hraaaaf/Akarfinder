@@ -70,7 +70,7 @@ export function MapLibreNeighborhood3D({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const isMaarifPilot = citySlug === "casablanca" && districtSlug === "maarif";
-  const [pilotView, setPilotView] = useState<"quartier" | "rue">("quartier");
+  const [pilotView, setPilotView] = useState<"quartier" | "rue" | "limites">("quartier");
   const [observedCamera, setObservedCamera] = useState({ pitch: -1, bearing: -1, zoom: -1 });
   const [ready, setReady] = useState(false);
   const [renderState, setRenderState] = useState<"loading" | "ready" | "error">("loading");
@@ -85,10 +85,10 @@ export function MapLibreNeighborhood3D({
   useEffect(() => { setPilotView("quartier"); }, [citySlug, districtSlug]);
 
   // L3-A: user-triggered camera changes, never pretend to offer a published boundary.
-  const selectMaarifView = (view: "quartier" | "rue") => {
+  const selectMaarifView = (view: "quartier" | "rue" | "limites") => {
     if (!isMaarifPilot) return;
     const map = mapInstanceRef.current;
-    if (!map) return;
+    if (!map) { setPilotView(view); return; }
     // Flat Maârif camera centers on the sourced neighborhood point.
     // The historical northwest 3D camera offset placed its marker at the bottom edge on desktop.
     map.easeTo({
@@ -342,7 +342,14 @@ export function MapLibreNeighborhood3D({
         <div className="l3-maarif-view-controls" data-l3-map-modes role="group" aria-label="Modes de la carte Maârif">
           <button type="button" data-l3-go-quarter aria-pressed={pilotView === "quartier"} onClick={() => selectMaarifView("quartier")}>Quartier · 2D</button>
           <button type="button" data-l3-go-street aria-pressed={pilotView === "rue"} onClick={() => selectMaarifView("rue")}>Rue · zoom</button>
-          <span role="status" data-l3-admin-unavailable>Limites administratives indisponibles · source non revue</span>
+          <button type="button" data-l3-go-admin aria-pressed={pilotView === "limites"} aria-controls="maarif-admin-boundary-explanation" onClick={() => selectMaarifView("limites")}>Limites</button>
+          {pilotView === "limites" ? (
+            <div id="maarif-admin-boundary-explanation" role="status" className="l3-maarif-admin-panel" data-l3-admin-unavailable>
+              <strong>Limites non disponibles</strong>
+              <p>Le contour officiel de l’arrondissement Maârif n’est pas encore vérifié. Le repère sur la carte indique le quartier, pas sa frontière.</p>
+              <button type="button" data-l3-admin-return onClick={() => selectMaarifView("quartier")}>Retour au quartier</button>
+            </div>
+          ) : null}
         </div>
       ) : null}
 

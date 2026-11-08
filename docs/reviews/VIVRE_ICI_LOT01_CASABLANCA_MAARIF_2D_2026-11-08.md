@@ -28,3 +28,29 @@
 - **Quatre CI annexes rouges** sur le même SHA (C7, Zillow, Market Synthetic hérités et autres) ne sont pas masquées. N2/N3 GREEN technique **n'autorisent ni merge, ni release**.
 
 **Tranche A statut : GREEN technique et visuel plus lisible, non déployé.** LOT01 global OUVERT (annonces/SQL et limites de quartiers à certifier). Aucun merge, aucune mutation DB, aucun déploiement Vercel. **Next exact :** certification LOT01-B + contrat de précision / inventaire réel, puis vérification des limites de Maârif et attribution CARTO en environnement autorisé.
+
+
+## 08/11/2026 — LOT01-D : modes Maârif, clarification UX sans géométrie inventée
+
+**Décision utilisateur** : le corpus Q1B de 9 990 annonces historiques est **strictement un jeu de test** ; ne pas l'utiliser pour afficher un marché public ou bloquer le chantier « Vivre Ici ». Reprise de la **carte 2D, fiche et navigation**, sans migration/activation publique.
+
+**GOAL** : transformer l'ancien long message d'ingénierie « limites administratives indisponibles · source non revue » qui perturbait l'interface en une **troisième action claire** à côté de « Quartier · 2D » et « Rue · zoom », sans prétendre disposer du contour légal du quartier.
+
+**BEFORE réel** : navigateur Playwright local `http://127.0.0.1:3210/map?city=casablanca&district=maarif&layer=explore` au code parent de la PR #1196, **390×844 / 430×932 / 768×900 / 1280×900**. Captures privées `C:\Users\lenovo\Desktop\AkarFinder-Vivre-Ici-QA-20261108\before\maarif-*.png` et rapport JSON. Carte OpenFreeMap source rendue et `data-maplibre-ready=true`, console JavaScript sans erreur, CTA Search valide. Sur 390 px, barre des modes **366×108** à y=186 dont ligne technique séparée gênante.
+
+**Changement candidat** : le mode **« Limites »** devient un vrai bouton `aria-pressed`, avec panneau explicatif accessible et retour `Retour au quartier`. La mention distingue explicitement **arrondissement Maârif** et quartier ; aucune géométrie administrative non validée n'est peinte. Le mode Rue garde `easeTo zoom=17.1` et nord en haut ; le mode Quartier `zoom=14.6`. Couleurs et composants existants conservés ; la troisième action est réversible. Les trois boutons conservent `min-height:44px` (audit Playwright mesuré).
+
+**AFTER sur les mêmes viewports** : captures privées `C:\Users\lenovo\Desktop\AkarFinder-Vivre-Ici-QA-20261108\after\maarif-*.png` ; la barre passe de **108 px** à **44 px** sur mobile, sans ligne technique permanente. Captures `C:\Users\lenovo\Desktop\AkarFinder-Vivre-Ici-QA-20261108\modes-after\admin-*.png` et `C:\Users\lenovo\Desktop\AkarFinder-Vivre-Ici-QA-20261108\modes-after\street-*.png`. Rapport `C:\Users\lenovo\Desktop\AkarFinder-Vivre-Ici-QA-20261108\modes-after\report.json` : **4/4 `ok:true`**, zéro erreur navigateur, zéro overflow horizontal, `boundaryStatus=unavailable`, source OpenFreeMap, URL Search stable `/search?city=Casablanca&district=Ma%C3%A2rif`. Les 4 scénarios vérifient **Ouverture Limites → explication visible → retour Quartier → Rue zoom ≥16.5 → retour Quartier**, sans polygone fictif. TypeScript `npx tsc --noEmit` **exit 0** sur la copie isolée.
+
+**Limite honnête et non-négociable** : cela livre trois **actions/états interactifs**, **pas trois cartographies certifiées** : le contour administratif reste à faire examiner par une personne compétente SIG/source, le quartier central n'est pas l'arrondissement OSM, et les POI doivent passer leur contrôle de fraîcheur. Rendu visuel CARTO avec clé réelle non testé (OpenFreeMap fallback) ; aucune note 9,5/10 ou release promise. Aucune donnée tierce historique publiée, aucune écriture DB, aucun déploiement Vercel.
+
+**Next exact** : CI cible et contrôle des captures 390/430/768/1280 sur le SHA PR puis lot Maârif **limite administrative sourcée/revue** et POI/contextualisation honnête. Fin de ce sous-lot ne signifie pas fin de Vivre Ici global.
+
+
+### LOT01-D — comparaison visuelle, régression et suite
+
+**Comparaison des captures réelles** : en mobile 390 px, l'ancien encart technique occupe la seconde ligne et porte le bloc modes à **108 px de hauteur** ; après correction, les trois boutons occupent **44 px**, la carte respire mieux. La fiche compacte garde le bouton Search au-dessus de la navigation basse. En desktop 1280, la barre reste dans la zone carte et n'envahit pas la fiche. Les captures 430/768 montrent la même hiérarchie, sans dépassement. **Score visuel indicatif interne sur ce sous-lot** : AVANT ~7/10 → APRÈS ~8/10 ; n'est **pas** le score du produit global et reste sous la cible 9,5/10. Maârif conserve un manque de données POI récentes et un contour administratif non certifié : les deux sont affichés comme indisponibles.
+
+**Compatibilité du smoke historique** : `scripts/audits/p1a6-map-responsive-smoke.ts` cherchait l'ancien message technique toujours présent, et aurait attendu en vain après repli mobile. Assertion mise à jour : en mode compact, mesurer la **non-superposition de la barre avec l'attribution**, et celle du panneau s'il est ouvert, sans demander un panneau absent par défaut. Un test préexistant `scripts/scrapers/__tests__/p1a6-responsive-hardening.test.ts` est **RED** pour une attente de chaîne `rabat-market-intelligence` dans `NationalMapRouter.tsx` (fichier non modifié par LOT01-D) : ne pas attribuer cet échec au nouveau mode ni revendiquer la suite totale verte. Le `npx tsc --noEmit` après changement du smoke est **GREEN (exit 0)**.
+
+**Closeout démontré localement** : le pilote 4 viewports ouvre Quartier → Limites → Retour Quartier → Rue zoom → Quartier, 4/4, zéro overflow, zéro erreur JS, cible tactile 44 px, aucun tracé de limites inventé. Les artefacts avant/après sont conservés sur le PC privé. **CI de ce nouveau HEAD, merge, déploiement Vercel restent à vérifier/autoriser distinctement.**
