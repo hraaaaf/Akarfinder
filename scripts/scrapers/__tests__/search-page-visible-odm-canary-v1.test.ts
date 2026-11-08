@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { publicEligibleDistrictTotal } from "../../../lib/search/public-district-total.ts";
-import { buildPublicSourceOrderBy } from "../../../lib/db/preferred-public-source-order.ts";
+import { buildPublicSourceOrderBy, pickAuthorizedActiveSource } from "../../../lib/db/preferred-public-source-order.ts";
 
 const page = readFileSync("app/search/page.tsx", "utf8");
 const router = readFileSync("lib/odm/odm-public-routing.ts", "utf8");
@@ -82,4 +82,18 @@ test("non-public Neon queries preserve their original chronological source selec
 
 test("source selector rejects interpolation of arbitrary source text into SQL", () => {
   assert.throws(() => buildPublicSourceOrderBy(["$1); DROP TABLE listing_sources; --"]), /invalid_public_source_placeholder/);
+});
+
+
+test("Supabase public search prioritizes active authorized source over older third-party source", () => {
+  const sources = [
+    { source_name: "avito", is_active: true, first_seen_at: "2025-01-01" },
+    { source_name: " partner_csv ", is_active: true, first_seen_at: "2026-11-08" },
+  ];
+  assert.equal(pickAuthorizedActiveSource(sources, ["owner_declared", "partner_csv"])?.source_name.trim(), "partner_csv");
+  assert.equal(pickAuthorizedActiveSource(sources, ["owner_declared"]), undefined);
+  assert.equal(pickAuthorizedActiveSource([{ source_name: "partner_csv", is_active: false }], ["partner_csv"]), undefined);
+  const code = readFileSync("lib/db/supabase-listings.ts", "utf8");
+  assert.match(code, /pickAuthorizedActiveSource\(sources, PUBLIC_AUTHORIZED_SOURCE_NAMES\)/);
+  assert.match(code, /query\.public_search_only === true/);
 });

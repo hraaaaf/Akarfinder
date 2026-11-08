@@ -1,0 +1,30 @@
+name: Akarfinder Supabase Unified Read Contracts
+
+on:
+  pull_request:
+    paths:
+      - "lib/db/supabase-listings.ts"
+      - "lib/db/preferred-public-source-order.ts"
+      - "lib/seller/owner-listing-projection.ts"
+      - "scripts/scrapers/__tests__/data-p0-owner-listing-integration.test.ts"
+      - "scripts/scrapers/__tests__/search-page-visible-odm-canary-v1.test.ts"
+      - ".github/workflows/akarfinder-supabase-unified-contract.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  supabase-unified-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Owner and Search source contracts
+        run: npx tsx --test scripts/scrapers/__tests__/data-p0-owner-listing-integration.test.ts scripts/scrapers/__tests__/search-page-visible-odm-canary-v1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit

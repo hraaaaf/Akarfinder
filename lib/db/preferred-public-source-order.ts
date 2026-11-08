@@ -17,3 +17,19 @@ export function buildPublicSourceOrderBy(publicSourcePlaceholders: readonly stri
   }
   return `CASE WHEN lower(trim(source_name)) IN (${publicSourcePlaceholders.join(",")}) THEN 0 ELSE 1 END, ${stableOrder}`;
 }
+
+
+/**
+ * Read the authorized representation first when multiple active sources
+ * describe the same property. No new source is authorized by this ordering.
+ * Missing authorized sources fall back to the existing heuristic and remain
+ * subject to the final public publication guard.
+ */
+export function pickAuthorizedActiveSource<T extends { source_name: string; is_active: boolean }>(
+  sources: readonly T[],
+  allowedSourceNames: readonly string[],
+): T | undefined {
+  const allowed = new Set(allowedSourceNames.map((name) => name.trim().toLowerCase()));
+  return sources.find((source) =>
+    source.is_active === true && allowed.has(source.source_name.trim().toLowerCase()));
+}
