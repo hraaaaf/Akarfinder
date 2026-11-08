@@ -7,6 +7,8 @@ on:
       - "app/map/**"
       - "components/map/NationalMapRouter.tsx"
       - "components/map/NationalTerritoryExperience.tsx"
+      - "lib/map/carto-basemap-style.ts"
+      - "scripts/scrapers/__tests__/carto-basemap-style.test.ts"
       - "components/map/NationalNeighborhoodOverlay.tsx"
       - "components/map/NationalNeighborhoodOverlayBridge.tsx"
       - "lib/map/national-territory-runtime.server.ts"
@@ -38,6 +40,8 @@ jobs:
         run: npm ci
       - name: TypeScript
         run: npx tsc --noEmit
+      - name: CARTO URL/attribution regression (no real key)
+        run: npx tsx --test scripts/scrapers/__tests__/carto-basemap-style.test.ts
       - name: Production build
         run: npm run build
       - name: Install Chromium
