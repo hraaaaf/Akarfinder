@@ -5,6 +5,7 @@
 // publication safety, source balancing and dedupe.
 
 import { createHash } from "node:crypto";
+import { getDbProvider } from "@/lib/db/provider";
 import { queryNeonRows } from "@/lib/db/neon-read-client";
 import { getListingUrlPatterns } from "@/lib/openserp-ingestion/domain-registry";
 import {
@@ -312,7 +313,20 @@ function candidateLimit(maxResults: number): number {
   return Math.min(500, Math.max(120, maxResults * 4));
 }
 
+// A legacy Neon-only SQL helper: bind values, never turn URLs into SQL tokens.
+export function positionalSqlPlaceholders(count: number): string {
+  if (!Number.isSafeInteger(count) || count < 1 || count > 200) {
+    throw new Error("invalid_thin_index_parameter_count");
+  }
+  return Array.from({ length: count }, (_, index) => `$${index + 1}`).join(", ");
+}
+
 export async function searchSeedThinIndexPage(input: SeedThinIndexInput): Promise<SeedThinIndexPage> {
+  // The canonical index and its backing tables only exist on the legacy provider.
+  // Block cross-provider reads BEFORE issuing any legacy SQL, including error fallbacks.
+  if (getDbProvider() !== "neon") {
+    throw new Error("public_search_index_unavailable");
+  }
   const maxResults = Math.max(1, Math.min(Math.trunc(input.maxResults ?? 100), 100));
   const rpcRows = await queryNeonRows<ThinIndexRpcRow>(
     `SELECT * FROM public.search_thin_index_v3(
@@ -349,7 +363,7 @@ export async function searchSeedThinIndexPage(input: SeedThinIndexInput): Promis
   const existing = urls.length
     ? await queryNeonRows<{ listing_url: string | null }>(
         `SELECT listing_url FROM public.listing_sources
-         WHERE listing_url IN (${urls.map((_, index) => `${index + 1}`).join(", ")})`,
+         WHERE listing_url IN (${positionalSqlPlaceholders(urls.length)})`,
         urls,
       )
     : [];

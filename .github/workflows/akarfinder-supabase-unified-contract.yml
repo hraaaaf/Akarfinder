@@ -1,0 +1,55 @@
+name: Akarfinder Supabase Unified Read Contracts
+
+on:
+  pull_request:
+    paths:
+      - "lib/db/supabase-listings.ts"
+      - "lib/map/neon-listing-market-observations.ts"
+      - "lib/map/supabase-listing-market-observations.ts"
+      - "lib/map/market-listing-observations.ts"
+      - "lib/map/city-market-intelligence-live.ts"
+      - "db/baselines/akarfinder_supabase_market_authorized_observations_2026-11-08.sql"
+      - "scripts/scrapers/__tests__/akarfinder-supabase-market-routing.test.ts"
+      - "db/baselines/akarfinder_supabase_property_foundation_2026-11-08.sql"
+      - "db/baselines/akarfinder_supabase_source_backup_compat_2026-11-08.sql"
+      - "scripts/scrapers/__tests__/akarfinder-supabase-property-foundation.test.ts"
+      - "scripts/db/qa_supabase_owner_publication_failclosed_2026-11-08.sql"
+      - "lib/db/preferred-public-source-order.ts"
+      - "lib/seller/owner-listing-projection.ts"
+      - "lib/feeds/pilot-license-gate.ts"
+      - "db/baselines/akarfinder_private_q1b_staging_2026_11_08.sql"
+      - "scripts/acquisition/q1b_private_staging_batches.py"
+      - "scripts/acquisition/test_q1b_private_staging_batches.py"
+      - "scripts/scrapers/__tests__/akarfinder-private-q1b-staging.test.ts"
+      - "lib/feeds/schema.ts"
+      - "lib/feeds/staging.ts"
+      - "scripts/scrapers/__tests__/partner-license-pilot-gate.test.ts"
+      - "scripts/scrapers/__tests__/direct-feeds-ingestion.test.ts"
+      - "scripts/scrapers/__tests__/data-p0-owner-listing-integration.test.ts"
+      - "scripts/scrapers/__tests__/search-page-visible-odm-canary-v1.test.ts"
+      - ".github/workflows/akarfinder-supabase-unified-contract.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  supabase-unified-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Owner and Search source contracts
+        run: npx tsx --test scripts/scrapers/__tests__/data-p0-owner-listing-integration.test.ts scripts/scrapers/__tests__/search-page-visible-odm-canary-v1.test.ts scripts/scrapers/__tests__/akarfinder-supabase-property-foundation.test.ts scripts/scrapers/__tests__/akarfinder-supabase-market-routing.test.ts scripts/scrapers/__tests__/partner-license-pilot-gate.test.ts scripts/scrapers/__tests__/direct-feeds-ingestion.test.ts scripts/scrapers/__tests__/akarfinder-private-q1b-staging.test.ts
+      - name: Historical private staging builder regression
+        run: python3 scripts/acquisition/test_q1b_private_staging_batches.py
+      - name: TypeScript
+        run: npx tsc --noEmit

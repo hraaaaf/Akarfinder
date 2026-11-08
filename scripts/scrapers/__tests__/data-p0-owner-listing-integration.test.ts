@@ -72,3 +72,13 @@ test("database and RPC access stay private", () => {
   assert.match(migration, /grant all on table .* to service_role/);
   assert.match(migration, /revoke all on function .* from public, anon, authenticated/);
 });
+
+
+test("unified Supabase owner projection uses private RPCs and retains fail-closed flag", () => {
+  const code = readFileSync("lib/seller/owner-listing-projection.ts", "utf8");
+  assert.match(code, /getDbProvider\(\) === "supabase"/);
+  assert.match(code, /\.rpc\(\s*"sync_owner_listing_representation_v1"/);
+  assert.match(code, /\.rpc\(\s*"search_owner_public_representations_v1"/);
+  assert.match(code, /if \(!ownerListingsSearchEnabled\(\)\) return \{ results: \[\], totalCount: 0 \}/);
+  assert.match(code, /getSupabaseServerClient\(\)/);
+});

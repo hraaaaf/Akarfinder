@@ -154,6 +154,7 @@ const browser = await chromium.launch({ headless: true });
 try {
   for (const viewport of viewports) {
     const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
+    try {
     if (fixtureMode) {
       await page.route("**/api/geo/rabat-market-intelligence?**", async (route) => {
         const url = new URL(route.request().url());
@@ -174,7 +175,7 @@ try {
     });
 
     const initial = waitForIntelligence(page, "price");
-    await page.goto(`${baseUrl}/map?city=rabat`, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.goto(`${baseUrl}/map?city=rabat&layer=price`, { waitUntil: "domcontentloaded", timeout: 30000 });
     await initial;
     await page.locator("[data-akarfinder-market-intelligence-map]").waitFor({ state: "visible", timeout: 20000 });
     await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 20000 });
@@ -279,6 +280,11 @@ try {
       expandedSheetHeight,
     });
     await page.close();
+    } catch (error) {
+      await page.screenshot({ path: `${outDir}/failure-${viewport.name}.png`, fullPage: false }).catch(() => {});
+      await page.close().catch(() => {});
+      throw error;
+    }
   }
   report.ok = true;
 } catch (error) {

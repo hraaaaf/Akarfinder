@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { positionalSqlPlaceholders, searchSeedThinIndexPage } from "../../../lib/search-gateway/seed-thin-index";
 
 const CRITICAL_RUNTIME_FILES = [
   "app/api/search/gateway/route.ts",
@@ -9,7 +10,6 @@ const CRITICAL_RUNTIME_FILES = [
   "lib/map/city-market-intelligence-live.ts",
   "lib/map/rabat-market-intelligence-live.ts",
   "lib/map/neon-listing-market-observations.ts",
-  "lib/seller/owner-listing-projection.ts",
   "lib/odm/odm-shadow-telemetry-store.ts",
   "lib/search/structured-district-total.ts",
 ] as const;
@@ -72,5 +72,44 @@ test("SEO inventory gates fail closed before any Supabase call when Neon is prim
     assert.ok(guard >= 0, `${path} must detect Neon provider`);
     assert.ok(client >= 0, `${path} must retain the legacy Supabase branch`);
     assert.ok(guard < client, `${path} must fail closed before constructing a Supabase client`);
+  }
+});
+
+
+test("owner projection is deliberately dual-provider during the approved Supabase migration", async () => {
+  const src = await readFile("lib/seller/owner-listing-projection.ts", "utf8");
+  // Existing Neon behavior remains provider-guarded for rollback; the new
+  // Supabase path calls service-role RPCs and never bypasses the owner flag.
+  assert.match(src, /getDbProvider\(\) === "supabase"/);
+  assert.match(src, /getSupabaseServerClient\(\)\.rpc\(/);
+  assert.match(src, /queryNeonRows<OwnerSearchRow>/);
+  assert.match(src, /if \(!ownerListingsSearchEnabled\(\)\) return \{ results: \[\], totalCount: 0 \}/);
+});
+
+test("legacy Thin Index never crosses the selected provider and uses bound URL parameters", async () => {
+  assert.equal(positionalSqlPlaceholders(1), "$1");
+  assert.equal(positionalSqlPlaceholders(3), "$1, $2, $3");
+  assert.throws(() => positionalSqlPlaceholders(0), /invalid_thin_index_parameter_count/);
+  assert.throws(() => positionalSqlPlaceholders(201), /invalid_thin_index_parameter_count/);
+
+  const source = await readFile("lib/search-gateway/seed-thin-index.ts", "utf8");
+  const guard = source.indexOf('if (getDbProvider() !== "neon")');
+  const query = source.indexOf("const rpcRows = await queryNeonRows");
+  assert.ok(guard >= 0 && query > guard, "provider gate must precede the first Neon query");
+  assert.match(source, /WHERE listing_url IN \(\$\{positionalSqlPlaceholders\(urls\.length\)\}\)/);
+
+  const prior = process.env.DATABASE_PROVIDER;
+  try {
+    // Both inactive providers must stop before the Neon client is reached.
+    for (const provider of ["supabase", "sqlite"]) {
+      process.env.DATABASE_PROVIDER = provider;
+      await assert.rejects(
+        () => searchSeedThinIndexPage({ city: "rabat" }),
+        /public_search_index_unavailable/,
+      );
+    }
+  } finally {
+    if (prior === undefined) delete process.env.DATABASE_PROVIDER;
+    else process.env.DATABASE_PROVIDER = prior;
   }
 });

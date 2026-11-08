@@ -1,4 +1,6 @@
 import { queryNeonRows } from "@/lib/db/neon-read-client";
+import { getDbProvider } from "@/lib/db/provider";
+import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
 export type OwnerListingSearchInput = {
@@ -41,6 +43,17 @@ export function ownerListingsSearchEnabled(env: NodeJS.ProcessEnv = process.env)
 }
 
 export async function syncOwnerListingProjection(draftId: string): Promise<string | null> {
+  // New unified Supabase runtime. Keep the Neon path only until cutover is
+  // certified and an authorized production rollback path is documented.
+  if (getDbProvider() === "supabase") {
+    const { data, error } = await getSupabaseServerClient().rpc(
+      "sync_owner_listing_representation_v1",
+      { p_draft_id: draftId },
+    );
+    if (error) throw new Error(`[owner] Supabase projection failed: ${error.message}`);
+    return typeof data === "string" ? data : null;
+  }
+
   const rows = await queryNeonRows<{ representation_id: string | null }>(
     "SELECT public.sync_owner_listing_representation_v1($1::uuid) AS representation_id",
     [draftId],
@@ -54,23 +67,41 @@ export async function searchOwnerListings(input: OwnerListingSearchInput): Promi
 }> {
   if (!ownerListingsSearchEnabled()) return { results: [], totalCount: 0 };
 
-  const rows = await queryNeonRows<OwnerSearchRow>(
-    `SELECT * FROM public.search_owner_public_representations_v1(
-      $1::text, $2::text, $3::text, $4::text,
-      $5::numeric, $6::numeric, $7::numeric, $8::numeric, $9::integer
-    )`,
-    [
-      input.q?.trim() || null,
-      input.city?.trim() || null,
-      input.propertyType?.trim() || null,
-      input.intent?.trim() || null,
-      bounded(input.minPrice),
-      bounded(input.maxPrice),
-      bounded(input.minSurface),
-      bounded(input.maxSurface),
-      Math.max(1, Math.min(Math.trunc(input.limit ?? 20), 50)),
-    ],
-  );
+  const params = [
+    input.q?.trim() || null,
+    input.city?.trim() || null,
+    input.propertyType?.trim() || null,
+    input.intent?.trim() || null,
+    bounded(input.minPrice),
+    bounded(input.maxPrice),
+    bounded(input.minSurface),
+    bounded(input.maxSurface),
+    Math.max(1, Math.min(Math.trunc(input.limit ?? 20), 50)),
+  ] as const;
+
+  let rows: OwnerSearchRow[];
+  if (getDbProvider() === "supabase") {
+    const { data, error } = await getSupabaseServerClient().rpc(
+      "search_owner_public_representations_v1",
+      {
+        p_query: params[0], p_city: params[1],
+        p_property_type: params[2], p_intent: params[3],
+        p_min_price: params[4], p_max_price: params[5],
+        p_min_surface: params[6], p_max_surface: params[7],
+        p_limit: params[8],
+      },
+    );
+    if (error) throw new Error(`[owner] Supabase search failed: ${error.message}`);
+    rows = (Array.isArray(data) ? data : []) as OwnerSearchRow[];
+  } else {
+    rows = await queryNeonRows<OwnerSearchRow>(
+      `SELECT * FROM public.search_owner_public_representations_v1(
+        $1::text, $2::text, $3::text, $4::text,
+        $5::numeric, $6::numeric, $7::numeric, $8::numeric, $9::integer
+      )`,
+      [...params],
+    );
+  }
   return {
     totalCount: Number(rows[0]?.total_count ?? 0),
     results: rows.map((row) => ({

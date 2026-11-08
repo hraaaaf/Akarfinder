@@ -7,6 +7,9 @@ import type {
   DbStats,
 } from "@/lib/listings/db-listings";
 import { getSupabaseServerClient } from "./supabase-client";
+import { getSourcesByType } from "@/lib/sources/source-access-registry";
+import { pickAuthorizedActiveSource } from "./preferred-public-source-order";
+import { isPersistedOpenSerpListingsEnabled } from "@/lib/listings/persisted-openserp-feature";
 import { isMarketIndexReadEnabled } from "@/lib/market-index/market-index-feature-flags";
 import { SupabaseMarketIndexReadRepository } from "@/lib/market-index/market-index-read-repository";
 import {
@@ -18,6 +21,13 @@ import {
   type ReadCandidateSource,
   type SourcePickOutcome,
 } from "@/lib/market-index/market-index-read-adapter";
+
+const PUBLIC_AUTHORIZED_SOURCE_NAMES = [
+  ...new Set([
+    ...getSourcesByType("first_party"),
+    ...getSourcesByType("partner_authorized"),
+  ]),
+];
 
 // PostgREST returns JSONB as parsed JS values; SQLite returns JSON strings.
 // Normalise back to strings so mapDbRowToListing's parseJsonSafe() still works.
@@ -94,12 +104,20 @@ type SupabaseListingRow = {
 // this listing (see querySupabaseListings/querySupabaseListingById below).
 // When absent -- the flag is off, or the listing wasn't a Market Index
 // candidate -- behavior is byte-identical to before this mission.
-function mapToDbRow(row: SupabaseListingRow, resolvedSource?: ReadCandidateSource | null): DbListingRow {
+function mapToDbRow(
+  row: SupabaseListingRow,
+  resolvedSource?: ReadCandidateSource | null,
+  publicSearchOnly = false,
+): DbListingRow {
   const sources = row.listing_sources ?? [];
+  const authorizedSource = publicSearchOnly
+    ? pickAuthorizedActiveSource(sources, PUBLIC_AUTHORIZED_SOURCE_NAMES)
+    : undefined;
   const activeSource =
-    resolvedSource !== undefined
+    authorizedSource ??
+    (resolvedSource !== undefined
       ? resolvedSource
-      : sources.find((s) => s.is_active) ?? sources[0] ?? null;
+      : sources.find((s) => s.is_active) ?? sources[0] ?? null);
 
   return {
     id: row.id,
@@ -242,10 +260,16 @@ export async function querySupabaseListings(
   const limit = Math.min(Math.max(query.limit ?? 50, 1), 500);
   const offset = Math.max(query.offset ?? 0, 0);
 
+  // Filtering via !inner applies at the DATABASE level, including count
+  // and pagination, before the application-level publication guard.
+  // Never collapse the explicit opt-in OpenSERP lane into first-party only:
+  // that lane requires its own provenance checks after retrieval.
+  const firstPartyOnly = query.public_search_only === true && !isPersistedOpenSerpListingsEnabled();
+  const sourceRelation = firstPartyOnly ? "listing_sources!inner" : "listing_sources";
   let q = supabase
     .from("property_listings")
     .select(
-      "*, listing_sources(id, origin_type, source_name, listing_url, source_url, is_active, first_seen_at)",
+      `*, ${sourceRelation}(id, origin_type, source_name, listing_url, source_url, is_active, first_seen_at)`,
       { count: "exact" }
     )
     .order("data_completeness_score", { ascending: false })
@@ -255,6 +279,12 @@ export async function querySupabaseListings(
 
   const pt = normalizePropertyType(query.property_type);
   const tt = normalizeTransactionType(query.transaction_type);
+
+  if (firstPartyOnly) {
+    q = q
+      .eq("listing_sources.is_active", true)
+      .in("listing_sources.source_name", PUBLIC_AUTHORIZED_SOURCE_NAMES);
+  }
 
   if (query.city) q = q.eq("city", query.city);
   if (pt) q = q.eq("property_type", pt);
@@ -274,7 +304,7 @@ export async function querySupabaseListings(
   const rows = (data ?? []) as SupabaseListingRow[];
   const resolvedByListingId = await resolveBatchListingSources(rows);
   return {
-    listings: rows.map((row) => mapToDbRow(row, resolvedByListingId.get(row.id))),
+    listings: rows.map((row) => mapToDbRow(row, resolvedByListingId.get(row.id), query.public_search_only === true)),
     total: count ?? 0,
   };
 }

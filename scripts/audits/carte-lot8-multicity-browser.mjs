@@ -38,32 +38,12 @@ try {
       const pageErrors = [];
       const tileResponses = [];
       let highZoomTileCount = 0;
-      let tileGateSettled = false;
-      let resolveTiles;
-      let rejectTiles;
-      const tilesReady = new Promise((resolve, reject) => {
-        resolveTiles = resolve;
-        rejectTiles = reject;
-      });
-      const tileGateTimeout = setTimeout(() => {
-        if (tileGateSettled) return;
-        tileGateSettled = true;
-        rejectTiles(new Error(`${cityCase.slug}/${viewport.name}: no real high-zoom basemap tiles rendered within 20s`));
-      }, 20000);
-
       page.on("pageerror", (error) => pageErrors.push(String(error)));
       page.on("response", (response) => {
         const zoom = basemapTileZoom(response.url());
         if (zoom === null) return;
         tileResponses.push({ url: response.url(), status: response.status(), zoom });
-        if (zoom >= 9 && response.ok()) {
-          highZoomTileCount += 1;
-          if (highZoomTileCount >= 2 && !tileGateSettled) {
-            tileGateSettled = true;
-            clearTimeout(tileGateTimeout);
-            resolveTiles();
-          }
-        }
+        if (zoom >= 9 && response.ok()) highZoomTileCount += 1;
       });
 
       try {
@@ -72,19 +52,87 @@ try {
           timeout: 30000,
         });
 
-        const maplibre = page.locator(`[data-maplibre-spike][data-maplibre-city="${cityCase.slug}"][data-maplibre-district="${cityCase.districtSlug}"]`);
-        await maplibre.waitFor({ state: "attached", timeout: 20000 });
-        const mapCanvas = page.locator(".maplibregl-canvas");
-        await mapCanvas.waitFor({ state: "attached", timeout: 10000 });
-        await page.waitForFunction(
-          ({ citySlug, districtSlug }) => {
-            const shell = document.querySelector(`[data-maplibre-spike][data-maplibre-city="${citySlug}"][data-maplibre-district="${districtSlug}"]`);
-            return shell?.getAttribute("data-maplibre-render-state") === "ready";
-          },
-          { citySlug: cityCase.slug, districtSlug: cityCase.districtSlug },
-          { timeout: 20000 },
+        // The actual product checks a *qualified OSM center* before mounting
+        // neighborhood MapLibre. Without one it deliberately shows the sourced
+        // city canvas + district decision rail, never a synthetic district map.
+        const geoResponse = await page.request.get(
+          `${baseUrl}/api/geo/national-territories?city=${encodeURIComponent(cityCase.slug)}`,
         );
-        await tilesReady;
+        if (!geoResponse.ok()) throw new Error(`${cityCase.slug}: V5 geo source HTTP ${geoResponse.status()}`);
+        const geo = await geoResponse.json();
+        const sourceCity = cityCase.slug === "mohammedia" ? "mohammadia" : cityCase.slug;
+        if (geo.view !== "city" || geo.place?.slug !== sourceCity) {
+          throw new Error(`${cityCase.slug}: V5 city context unavailable or mismatched`);
+        }
+        const sourceDistrict = geo.neighborhoods?.find((item) => item.slug === cityCase.districtSlug);
+        const hasQualifiedCenter = Boolean(
+          sourceDistrict?.sourceKinds?.includes("osm_neighborhood_label")
+          && sourceDistrict?.center
+          && Number.isFinite(sourceDistrict.center.lng)
+          && Number.isFinite(sourceDistrict.center.lat)
+          && Math.abs(sourceDistrict.center.lng) <= 180
+          && Math.abs(sourceDistrict.center.lat) <= 90,
+        );
+        const mapCanvas = page.locator(".maplibregl-canvas");
+        let renderedBasemap;
+        let renderMode;
+        if (hasQualifiedCenter) {
+          const maplibre = page.locator(
+            `[data-maplibre-spike][data-maplibre-city="${cityCase.slug}"][data-maplibre-district="${cityCase.districtSlug}"]`,
+          );
+          await maplibre.waitFor({ state: "attached", timeout: 20000 });
+          await mapCanvas.waitFor({ state: "attached", timeout: 10000 });
+          await page.waitForFunction(() => {
+            const e = document.querySelector("[data-maplibre-spike]");
+            if (!e) return false;
+            const count = Number(e.getAttribute("data-maplibre-basemap-feature-count"));
+            const zoom = Number(e.getAttribute("data-l3-camera-zoom"));
+            return e.getAttribute("data-maplibre-render-state") === "ready"
+              && e.getAttribute("data-maplibre-source-state") === "available"
+              && Number.isFinite(count) && count > 0
+              && Number.isFinite(zoom) && zoom >= 9;
+          }, null, { timeout: 20000 });
+          renderedBasemap = await maplibre.evaluate((e) => ({
+            provider: e.getAttribute("data-maplibre-source"),
+            featureCount: Number(e.getAttribute("data-maplibre-basemap-feature-count")),
+            zoom: Number(e.getAttribute("data-l3-camera-zoom")),
+          }));
+          if (!["openfreemap", "carto"].includes(renderedBasemap.provider)
+              || renderedBasemap.featureCount < 1 || renderedBasemap.zoom < 9) {
+            throw new Error(`${cityCase.slug}/${viewport.name}: no actual high-zoom basemap ${JSON.stringify(renderedBasemap)}`);
+          }
+          renderMode = "qualified-neighborhood-2d";
+        } else {
+          // Fès/Ville Nouvelle 430px was visually confirmed to take exactly
+          // this honest fallback; the map NEVER claims a sourced district center.
+          const national = page.locator('[data-akarfinder-national-map][data-akarfinder-national-view="city"]');
+          await national.waitFor({ state: "visible", timeout: 20000 });
+          await mapCanvas.waitFor({ state: "visible", timeout: 10000 });
+          await page.waitForFunction(() => {
+            const map = window.__AKARFINDER_NATIONAL_MAP__;
+            if (!map) return false;
+            try {
+              return map.queryRenderedFeatures().some((feature) =>
+                !String(feature.layer?.id || "").startsWith("akarfinder-national-"));
+            } catch { return false; }
+          }, null, { timeout: 20000 });
+          if (await page.locator("[data-maplibre-spike]").count() !== 0) {
+            throw new Error(`${cityCase.slug}/${viewport.name}: unsourced district must not mount a synthetic center`);
+          }
+          renderedBasemap = await page.evaluate(() => {
+            const map = window.__AKARFINDER_NATIONAL_MAP__;
+            return {
+              provider: "national-basemap",
+              featureCount: map.queryRenderedFeatures().filter((feature) =>
+                !String(feature.layer?.id || "").startsWith("akarfinder-national-")).length,
+              zoom: map.getZoom(),
+            };
+          });
+          if (renderedBasemap.featureCount < 1) {
+            throw new Error(`${cityCase.slug}/${viewport.name}: fallback city basemap has no rendered real features`);
+          }
+          renderMode = "source-honest-city-fallback";
+        }
         await page.waitForTimeout(450);
 
         // Preserve the actual rendered viewport before any visibility/layout assertions.
@@ -106,6 +154,11 @@ try {
           throw new Error(`${cityCase.slug}/${viewport.name}: Search handoff mismatch ${searchHref}`);
         }
 
+        const bottomBreathingRoom = viewport.height - (panelBox.y + panelBox.height);
+        if (viewport.width >= 1024 && renderMode === "source-honest-city-fallback" && bottomBreathingRoom < 10) {
+          throw new Error(`${cityCase.slug}/${viewport.name}: city decision rail needs >=10px bottom margin, got ${bottomBreathingRoom}`);
+        }
+
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
         if (overflow > 1) throw new Error(`${cityCase.slug}/${viewport.name}: horizontal overflow ${overflow}`);
 
@@ -123,14 +176,20 @@ try {
           viewport: viewport.name,
           searchHref,
           panelBox,
+          bottomBreathingRoom,
           overflow,
           mapRendered: true,
           highZoomTileCount,
+          renderedBasemap,
+          renderMode,
+          hasQualifiedCenter,
           decisionRail: true,
           tileResponses,
         });
+      } catch (error) {
+        await page.screenshot({ path: `${outDir}/failure-${cityCase.slug}-${viewport.name}.png`, fullPage: false }).catch(() => {});
+        throw error;
       } finally {
-        clearTimeout(tileGateTimeout);
         await page.close();
       }
     }

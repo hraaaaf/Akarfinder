@@ -63,10 +63,42 @@ try {
     page.on("pageerror", (error) => diagnostics.pageErrors.push(String(error)));
     page.on("requestfailed", (request) => diagnostics.requestFailures.push({ url: request.url(), error: request.failure()?.errorText || "unknown" }));
     try {
+      // Current entrypoint: source-backed MapLibre, not the optional historical SVG atlas.
       await page.goto(`${baseUrl}/map?layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
-      // The canonical /map opens PremiumInteractiveMap (SVG/TopoJSON).
-      // MapLibre's national city-layer contract still belongs to the legacy city router,
-      // not to the current national entry. Keep independent API inventory checks above.
+      const currentNational = page.locator('[data-akarfinder-national-map][data-akarfinder-national-view="morocco"]');
+      await currentNational.waitFor({ state: "visible", timeout: 30000 });
+      await page.locator(".maplibregl-canvas").first().waitFor({ state: "visible", timeout: 30000 });
+      await page.waitForFunction(() => {
+        const map = window.__AKARFINDER_NATIONAL_MAP__;
+        return Boolean(map?.isStyleLoaded())
+          && Boolean(map.getSource("akarfinder-national-city-points"))
+          && Boolean(map.getLayer("akarfinder-national-city-hits"))
+          && map.queryRenderedFeatures().some((feature) => !feature.layer.id.startsWith("akarfinder-"));
+      }, null, { timeout: 30000 });
+      const modernState = await page.evaluate(() => {
+        const map = window.__AKARFINDER_NATIONAL_MAP__;
+        const styleLayers = map.getStyle().layers || [];
+        return {
+          view: document.querySelector("[data-akarfinder-national-map]")?.getAttribute("data-akarfinder-national-view"),
+          styleLoaded: map.isStyleLoaded(),
+          vectorBaseLayers: styleLayers.filter((layer) => !layer.id.startsWith("akarfinder-")).length,
+          renderedBaseFeatures: map.queryRenderedFeatures().filter((feature) => !feature.layer.id.startsWith("akarfinder-")).length,
+          citySource: Boolean(map.getSource("akarfinder-national-city-points")),
+          cityHits: Boolean(map.getLayer("akarfinder-national-city-hits")),
+        };
+      });
+      if (modernState.view !== "morocco" || !modernState.styleLoaded ||
+          !modernState.citySource || !modernState.cityHits ||
+          modernState.vectorBaseLayers < 20 || modernState.renderedBaseFeatures < 1) {
+        throw new Error(`current national MapLibre contract invalid ${JSON.stringify(modernState)}`);
+      }
+      const modernOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      if (modernOverflow > 1) throw new Error(`current national horizontal overflow ${modernOverflow}`);
+      await page.screenshot({ path: `${outDir}/modern-morocco-${viewport.name}-after.png`, fullPage: false });
+
+      // Historical 12-region SVG remains a supported explicit comparison route.
+      // Keep ALL old topology, touch, city, quartier, data-truth and Search assertions.
+      await page.goto(`${baseUrl}/map?layer=premium`, { waitUntil: "domcontentloaded", timeout: 30000 });
       const shell = page.locator('[data-premium-map][data-map-level="national"]');
       await shell.waitFor({ state: "visible", timeout: 30000 });
       await page.waitForFunction(
@@ -176,11 +208,19 @@ try {
           throw new Error(`District map Search handoff drops location: ${finalHref}`);
         }
         await page.locator('[data-vivre-ici-territory-back]').click();
+        // This is a deliberate return to the current Explore route, NOT the opt-in SVG atlas.
+        await page.locator('[data-akarfinder-national-map][data-akarfinder-national-view="morocco"]')
+          .waitFor({ state: "visible", timeout: 15000 });
+        await page.waitForFunction(() => Boolean(window.__AKARFINDER_NATIONAL_MAP__?.isStyleLoaded()), null, { timeout: 15000 });
+        await page.screenshot({ path: `${outDir}/returned-modern-morocco-${viewport.name}-after.png`, fullPage: false });
+        // Re-open the atlas explicitly to independently certify its 12-region return contract.
+        await page.goto(`${baseUrl}/map?layer=premium`, { waitUntil: "domcontentloaded", timeout: 30000 });
       } else {
+        // Direct-listings links leave the atlas mounted; breadcrumb should restore it.
         await page.getByRole("navigation", { name: "Fil d’Ariane cartographique" })
           .getByRole("button", { name: "Maroc", exact: true }).click();
       }
-      // Returning to Morocco must restore the 12-region SVG and selection list.
+      // Both paths end with the old atlas explicitly mounted, without redefining the Explore URL.
       await page.locator('[data-premium-map][data-map-level="national"]').waitFor({ state: "visible", timeout: 15000 });
       if (await page.locator('[data-region-list-slug]').count() !== 12) {
         throw new Error("Returning to Morocco did not restore all 12 regions");
@@ -190,7 +230,11 @@ try {
       if (diagnostics.pageErrors.length || criticalRequestFailures.length) {
         throw new Error(`browser diagnostics ${JSON.stringify({ pageErrors: diagnostics.pageErrors, criticalRequestFailures })}`);
       }
-      report.cases.push({ viewport: viewport.name, overflow, layerState, geometryState, touchSignals, diagnostics, activeSelection: true, cityDrilldown: true });
+      report.cases.push({ viewport: viewport.name, modernState, modernOverflow, legacyAtlas: { overflow, layerState, geometryState }, touchSignals, diagnostics, activeSelection: true, cityDrilldown: true });
+    } catch (error) {
+      report.failure = { viewport: viewport.name, url: page.url(), message: String(error), diagnostics };
+      await page.screenshot({ path: `${outDir}/failure-${viewport.name}.png`, fullPage: false }).catch(() => {});
+      throw error;
     } finally {
       await context.close();
     }
