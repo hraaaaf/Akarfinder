@@ -25,3 +25,13 @@ test("snapshot keeps the 41/17-column catalog shape and the three operational in
   assert.equal(countColumns(links), 17);
   assert.equal((source.match(/^CREATE INDEX /gm) ?? []).length, 3);
 });
+
+const compat = readFileSync("db/baselines/akarfinder_supabase_source_backup_compat_2026-11-08.sql", "utf8");
+test("the backed-up source metadata is losslessly represented without granting publication rights", () => {
+  assert.match(compat, /canonical_kind text/);
+  assert.match(compat, /canonical_eligible boolean/);
+  assert.match(compat, /canonical_hygiene_version smallint/);
+  assert.match(compat, /canonical_classified_at timestamp with time zone/);
+  assert.match(compat, /not a permission to republish/);
+  assert.doesNotMatch(compat, /GRANT /);
+});

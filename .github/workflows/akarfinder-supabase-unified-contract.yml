@@ -5,6 +5,7 @@ on:
     paths:
       - "lib/db/supabase-listings.ts"
       - "db/baselines/akarfinder_supabase_property_foundation_2026-11-08.sql"
+      - "db/baselines/akarfinder_supabase_source_backup_compat_2026-11-08.sql"
       - "scripts/scrapers/__tests__/akarfinder-supabase-property-foundation.test.ts"
       - "lib/db/preferred-public-source-order.ts"
       - "lib/seller/owner-listing-projection.ts"
