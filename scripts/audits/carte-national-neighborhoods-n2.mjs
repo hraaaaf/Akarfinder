@@ -1,9 +1,16 @@
 import { chromium } from "playwright";
 import { mkdir, writeFile } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
 
 const baseUrl = process.env.BASE_URL || "http://127.0.0.1:3213";
 const outDir = process.env.AUDIT_OUTPUT_DIR || "data/audits/carte-national-neighborhoods-n2-after";
 await mkdir(outDir, { recursive: true });
+
+// Focused L6-B unit coverage belongs inside the already-authorized N2 audit.
+// Do not modify the legacy heavy PR workflow: efficiency policy forbids it.
+execFileSync(process.execPath, [
+  "--import", "tsx", "--test", "scripts/scrapers/__tests__/carto-basemap-style.test.ts",
+], { stdio: "inherit" });
 
 const viewports = [
   { name: "390", width: 390, height: 844 },
