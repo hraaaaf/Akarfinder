@@ -177,3 +177,14 @@ Correction : module Neon restauré **strictement** à la version pure avant DB-0
 **Décision DATA : GO inventaire/préparation interne, NO-GO publication/import commercial** : le corpus existe et son format est techniquement réutilisable pour contrôle privé ; aucune annonce n'est certifiée « prête à publier ». Les labels de conformité/activité ne remplacent ni autorisation source ni preuve datée d'offre active. Nouvelle Supabase reste vide, aucune requête d'écriture sur DB, aucune production, merge ou déploiement Vercel.
 
 **Next exact** : bâtir la matrice stricte `source_domaine × preuve_contractuelle × droits_autorisés × observation_récente × identité × contrôle_humain` ; sur les **9 990 existantes**, sélectionner un échantillon **dont les droits réels sont prouvés** (et non seulement les champs complets), vérifier fraîcheur et unicité physique, effectuer import **privé isolé** avec rollback + E2E avant toute demande de bascule prod. Si aucun accord documenté : *zéro import* et contractualiser un flux first-party/partner. **% global non certifié**.
+
+
+#### DB-07B — rapprochement exact entre les deux cohortes, sans double comptage
+
+**Nouvelle preuve, audit privé répété deux fois** : script local `_q1b_v411_exact_url_overlap_20261108.py`, résultat agrégé privé `Q1B_V411_EXACT_URL_OVERLAP_20261108.json`. Source 1, `observations_detailed_union_20261107.jsonl.gz` SHA-256 `76635208549dbce618cf0de9de5e3109f0ac39deefb08f83a330a882fed5f1ee` ; source 2, `neon_recovery_export_20261107.jsonl.gz` SHA-256 `c3d8a8c9476602baa7663d1e9903e6015cb7300d6e7539183bf48b735cb76b08`. Comparaison **strictement des chaînes URL stockées** `Q1B.canonical_url == Neon.listing_url`, sans réécriture/fuzzy matching, sans transfert de lignes ni PII :
+- 9 990 URLs distinctes Q1B ; 8 367 URLs distinctes de la cohorte `compliance_status=recovery_certified_v4_11` dans les 151 900 lignes Neon.
+- **2 335 URL exactes communes**, donc **6 032 URL V4.11 absentes de l'union Q1B** et **7 655 URL Q1B absentes de V4.11** ; total **16 022 URLs distinctes** dans l'union Q1B∪V4.11.
+- Contrôle témoin : les **3 740** observations détaillées Neon incluses dans Q1B ont toutes une URL exacte dans l'export Neon de 151 900 ; cela confirme l'appariement exact des chaînes sur leur source historique.
+- Répartition V4.11 : `marocimmo.com=4 473`, `domio.ma=3 462`, `sarout.ma=432`. Les **6 032 URLs supplémentaires sont seulement des représentations historiques non encore rapprochées en bien physique**, et **non 6 032 nouvelles annonces fraîches/contractuellement autorisées**.
+
+**Verdict** : baseline technique potentielle **16 022 liens immobiliers distincts**, **0 volume publiable certifié**. Pas de migration Supabase, ni changement de politique de diffusion. Le contrôle juridico-commercial doit agir au niveau source/mandat et offre datée, et pas seulement sur l'URL.
