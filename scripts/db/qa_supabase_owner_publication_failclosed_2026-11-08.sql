@@ -1,7 +1,8 @@
 -- Only for an explicitly approved, EMPTY, isolated Akarfinder Supabase.
 -- Single DO statement, atomic: no user data, no URL, and cascading cleanup.
 -- This script adds a stricter empty-database preflight than the SQL tested
--- through Supabase on 2026-11-08; this exact file has not yet been replayed.
+-- through Supabase on 2026-11-08; this exact file was replayed successfully
+-- on 2026-11-08 against empty AkarfFnder, with independent zero-row readback.
 DO $qa$
 DECLARE
   v_lead uuid; v_draft uuid; v_pub uuid;

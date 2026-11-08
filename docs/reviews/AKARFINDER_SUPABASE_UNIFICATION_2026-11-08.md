@@ -188,3 +188,22 @@ Correction : module Neon restauré **strictement** à la version pure avant DB-0
 - Répartition V4.11 : `marocimmo.com=4 473`, `domio.ma=3 462`, `sarout.ma=432`. Les **6 032 URLs supplémentaires sont seulement des représentations historiques non encore rapprochées en bien physique**, et **non 6 032 nouvelles annonces fraîches/contractuellement autorisées**.
 
 **Verdict** : baseline technique potentielle **16 022 liens immobiliers distincts**, **0 volume publiable certifié**. Pas de migration Supabase, ni changement de politique de diffusion. Le contrôle juridico-commercial doit agir au niveau source/mandat et offre datée, et pas seulement sur l'URL.
+
+
+### 08/11/2026 — DB-08 : approbation utilisateur, demandes de licences effectivement envoyées et QA réelle Supabase
+
+**Scope de l'approbation utilisateur** : avancer vers le premier pilote technique et contractualiser un flux autorisé. **Ne constitue pas** une licence des portails tiers ni une autorisation de déployer Vercel.
+
+**Provenance et droits — actions externes vérifiées dans Gmail du propriétaire :**
+- **Kaynly**, contact officiel `contact.kaynly@gmail.com` : le brouillon de proposition de flux a été **envoyé** ; Gmail ID `1a1bcb732758ea30`, label `SENT`. Contrat écrit, API/CSV/JSONL, champs, droits de réutilisation commerciale, source/URL, médias distincts, cadence, suppressions et essai de 1 000 annonces demandés.
+- **Marsad**, `contact@marsad.ma` : le brouillon de demande de licence API annonces individuelles a été **envoyé** ; Gmail ID `1a1bcb737814309f`, label `SENT`. Différence API d'annonces vs statistiques agrégées, droits, SLA, provenance, fraîcheur et essai de 1 000 demandés.
+- Recherches Gmail précédentes vers ces deux adresses hors brouillons : **0 message envoyé retrouvé** ; aucune réponse/autorisation contractuelle mise en évidence à la date de cette exécution. Ne pas inférer qu'une licence existe.
+
+**QA réelle sur Supabase `AkarfFnder` (`mgqsckxsqdqbzqwkgvwo`)** : préflight SQL SELECT sur les six tables du parcours propriétaire = **0 ligne dans chacune**. Le fichier exactement versionné `scripts/db/qa_supabase_owner_publication_failclosed_2026-11-08.sql` a alors été **exécuté avec succès via l'éditeur SQL** :
+- Une fiche fictive propriétaire avec consentements faux, sans photo, a été créée dans un bloc `DO` atomique ; la publication avant validation humaine a été refusée par le trigger ; après revue simulée `approved`, la projection est `live` mais `photo_required`, et la RPC de Search public **n'en retourne aucune**.
+- Le script détruit explicitement son lead fictif, ses brouillons et ses projections ; **une requête SELECT indépendante après l'exécution** confirme `property_listings=0`, `listing_sources=0`, `buyer_leads=0`, `seller_property_drafts=0`, `seller_listing_publications=0`, `owner_listing_representations=0`, `public_owner_search=0`.
+- C'est une **preuve SQL en vraie DB**, **pas** une certification HTTP navigateur, une licence acquise ou un import de données historiques. Aucune annonce/URL tierce importée.
+
+**CI code précédente :** HEAD `3a6df7d0159f476b79e2ef04faf9a7055afa473e` — 20 SUCCESS, 1 SKIPPED, 0 FAILURE au contrôle. Les vérifications de tout nouveau commit sont distinctes. PR #1196 Draft, non fusionnée.
+
+**GO/NO-GO :** GO pour test technique propriétaire/synthétique et prospection ; **NO-GO sur une importation réelle des 9 990 / 16 022 URLs** jusqu'aux preuves contractuelles et de fraîcheur. **Next exact :** recevoir/vérifier licence et échantillon de Kaynly ou Marsad, exécuter contrôle qualité/doublons/recence sur 1 000 données effectivement autorisées, pilote de données isolé et test HTTP/UI complet. Ne pas changer Vercel.
