@@ -325,3 +325,17 @@ Lire d’abord `docs/handovers/2026-09-18-vivre-ici-territory-dictionary-handove
 Le handover historique `docs/handovers/2026-09-17-vivre-ici-pr1025-main-integration-handover.md` reste utile uniquement pour l’historique d’intégration #1037.
 
 `3-vivre-ici-akarfinder.md — Vivre Ici AkarFinder — Territory Dictionary 53/53 pts`
+
+## 12. ACTUALISATION 06/11/2026 — Vivre ici sur main c0f172b : AUDIT NON CLOS
+
+La fusion Home/Search (#1147) et le closeout documentaire (#1173) ne certifient **pas** `/map`. Contrôle du code actuel : `PremiumInteractiveMap.tsx` publie des statistiques mock `priceRepere`/`landmarksVerified` avec « repère vérifié », alors que la spec Maârif 3 vues n'est pas réalisée par des commandes interactives sur `MapLibreNeighborhood3D` et que la géométrie administrative n'est pas passée dans `NationalMapRouter`. N3 CI au SHA d'avant fusion avait 2 cas (390/1280) SUCCESS, mais aucune capture dans l'artefact et pas les vues Maârif 2D/administratif/rue. **Aucune nouvelle note UX /map attribuée.** Voir `docs/reviews/VIVRE_ICI_CURRENT_MAIN_AUDIT_2026-11-06.md` pour preuves détaillées, Goal/Success/Proof et suite. Aucun déploiement Vercel.
+
+## 14. VALIDATION ONBOARDING PRODUIT — 07/11/2026 — DÉCISION FAISANT FOI
+
+**Nouvelle référence canonique produit :** `docs/handovers/AKARFINDER_VIVRE_ICI_ROADMAP_ONBOARDING_2026-11-07.md` (rédigée dans PR d'audit [#1174](https://github.com/hraaaaf/Akarfinder/pull/1174), toujours **DRAFT / non mergée** au moment de l'écriture). La présente section et cette nouvelle roadmap **priment pour les décisions produit** sur les anciens états « NEXT EXACT », scores et feuilles de route des phases antérieures, sans supprimer leur valeur historique.
+
+**6/6 choix utilisateur validés :** (1) A+B+C avec B « choisir où habiter » au centre ; (2) acheteurs et locataires ; (3) vie quotidienne > cadre de vie > marché → Search ; (4) carte dominante + fiche intelligente (rail desktop / sheet mobile) ; (5) Maroc entier à explorer + quartiers pilotes réellement approfondis, Maârif d'abord ; (6) B rationaliser et reconstruire sélectivement, **pas de réécriture intégrale**.
+
+**Matrice et roadmap L0–L6** détaillées dans le nouveau canonique ; blocs P0 préalables : publier zéro prix/repère mock comme « vérifié », préserver la précision géographique et les droits d'imagerie, obtenir les captures BEFORE de `main`, reprendre si utile les parties réelles de [#1108](https://github.com/hraaaaf/Akarfinder/pull/1108) (3 vues Maârif) **sans merger la branche historique**, et sans promouvoir le polygone arrondissement shadow `reviewed:false`. Les deux moteurs par échelle restent et la fiche intelligente devient le composant UX central. Décision Home de ne pas afficher de teaser Vivre Ici toujours valable.
+
+**État prouvé :** Search/Home #1147 et #1173 fusionnées, MAIS **Vivre Ici /map n'est pas audité visuellement sur le HEAD courant**, ni certifié à ≥9,5/10. [Audit préliminaire](docs/reviews/VIVRE_ICI_CURRENT_MAIN_AUDIT_2026-11-06.md) dans la PR #1174, pas encore intégré. Aucun changement runtime, DB ou déploiement Vercel pendant cet onboarding. **Next exact = L0, captures 4 viewports sur HEAD actuel, inspection visible, puis L1 vérité.**
