@@ -7,9 +7,8 @@ import type { Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { applyAkarFinderBasemapTreatment } from "@/lib/map/akarfinder-territorial-style";
 import { publicNationalCityLabel } from "@/lib/map/national-city-label";
+import { nationalBasemapConfiguration } from "@/lib/map/carto-basemap-style";
 
-const LIGHT_TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
-const DARK_TILE_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
 const ACCENT = "#0B63CE";
 const MOROCCO_CENTER: [number, number] = [-6.35, 31.6];
 const MOROCCO_ZOOM = 4.75;
@@ -104,10 +103,6 @@ type Props = {
   onBackToMorocco: () => void;
 };
 
-function styleForTheme(theme: string | undefined) {
-  return theme === "dark" ? DARK_TILE_STYLE : LIGHT_TILE_STYLE;
-}
-
 function emptyFilter(): unknown[] {
   return ["==", ["get", "slug"], "__none__"];
 }
@@ -187,15 +182,16 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
     let instance: MapLibreMap | null = null;
     void import("maplibre-gl").then(({ Map: MapClass, NavigationControl }) => {
       if (cancelled || !mapContainerRef.current) return;
+      const basemap = nationalBasemapConfiguration(document.documentElement.dataset.theme);
       instance = new MapClass({
         container: mapContainerRef.current,
-        style: styleForTheme(document.documentElement.dataset.theme),
+        style: basemap.style,
         center: MOROCCO_CENTER,
         zoom: MOROCCO_ZOOM,
         minZoom: 4.4,
         maxZoom: 15,
         maxBounds: [[-14.5, 20.5], [2.5, 37.5]],
-        attributionControl: { customAttribution: "© OpenStreetMap contributors" },
+        attributionControl: { customAttribution: basemap.attribution },
       });
       instance.addControl(new NavigationControl({ showCompass: false }), "bottom-right");
       instance.once("style.load", () => {
@@ -221,7 +217,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, selectedDistrict
     const map = mapRef.current;
     if (!map || !mapReady) return;
     setMapReady(false);
-    map.setStyle(styleForTheme(theme));
+    map.setStyle(nationalBasemapConfiguration(theme).style);
     map.once("style.load", () => {
       applyAkarFinderBasemapTreatment(map, theme);
       reduceBasemapSettlementLabels(map);
