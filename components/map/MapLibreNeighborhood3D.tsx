@@ -161,7 +161,9 @@ export function MapLibreNeighborhood3D({
           pitch: 0,
           bearing: 0,
           // Provider/OSM attributions must remain legible during map use.
-          attributionControl: { compact: false, customAttribution: basemap.attribution },
+          // Source styles already declare their licensing. Avoid duplicating OpenFreeMap attribution.
+          // CARTO receives explicit attribution until its live keyed style has been audited.
+          attributionControl: { compact: false, customAttribution: basemap.provider === "carto" ? basemap.attribution : undefined },
           canvasContextAttributes: { antialias: true },
           style: basemap.style,
         } as any);
@@ -184,12 +186,12 @@ export function MapLibreNeighborhood3D({
               type: "circle",
               source: FOCUS_SOURCE_ID,
               paint: {
-                "circle-radius": desktop ? 84 : 68,
+                "circle-radius": desktop ? 28 : 24,
                 "circle-color": "#12a9a1",
-                "circle-opacity": 0.13,
+                "circle-opacity": 0.08,
                 "circle-stroke-color": "#8ff8ee",
-                "circle-stroke-width": 1.5,
-                "circle-stroke-opacity": 0.56,
+                "circle-stroke-width": 1,
+                "circle-stroke-opacity": 0.3,
               },
             });
             map.addLayer({
