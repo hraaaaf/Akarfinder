@@ -19,6 +19,8 @@ on:
       - scripts/acquisition/__tests__/test_akarparser_v2_canary.py
       - scripts/acquisition/akarparser_v2_review_scorecard.py
       - scripts/acquisition/__tests__/test_akarparser_v2_review_scorecard.py
+      - scripts/acquisition/akarparser_v2_description_audit.py
+      - scripts/acquisition/__tests__/test_akarparser_v2_description_audit.py
       - .github/workflows/akarparser-v2-offline-tests.yml
   workflow_dispatch:
 jobs:
