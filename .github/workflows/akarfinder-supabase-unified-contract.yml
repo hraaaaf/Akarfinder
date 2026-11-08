@@ -5,6 +5,9 @@ on:
     paths:
       - "lib/db/supabase-listings.ts"
       - "lib/map/neon-listing-market-observations.ts"
+      - "lib/map/supabase-listing-market-observations.ts"
+      - "lib/map/market-listing-observations.ts"
+      - "lib/map/city-market-intelligence-live.ts"
       - "db/baselines/akarfinder_supabase_market_authorized_observations_2026-11-08.sql"
       - "scripts/scrapers/__tests__/akarfinder-supabase-market-routing.test.ts"
       - "db/baselines/akarfinder_supabase_property_foundation_2026-11-08.sql"

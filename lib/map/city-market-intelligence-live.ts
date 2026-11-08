@@ -12,7 +12,7 @@ import {
   type MarketAreaBasis,
   type MarketDistrictTarget,
 } from "@/lib/map/city-market-intelligence";
-import { readNeonListingMarketObservations } from "@/lib/map/neon-listing-market-observations";
+import { readListingMarketObservations } from "@/lib/map/market-listing-observations";
 
 function areaForDistrict(
   citySlug: string,
@@ -78,7 +78,7 @@ export async function readCityMarketIntelligenceMetrics(
   const canonicalTargets = buildCanonicalTargets(city.slug);
   if (!canonicalTargets.length) return [];
 
-  const observedRows = await readNeonListingMarketObservations(
+  const observedRows = await readListingMarketObservations(
     city.canonical_name,
     canonicalTargets.map((target) => target.slug),
   );

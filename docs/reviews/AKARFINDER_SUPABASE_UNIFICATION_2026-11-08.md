@@ -67,3 +67,10 @@
 - **Code candidat** : `lib/map/neon-listing-market-observations.ts` (nom historique conservé pour rollback) dispatche d'abord selon `DATABASE_PROVIDER` ; sur `supabase`, RPC privée Supabase ; sur `neon`, requête d'origine conservée, sans traversée cachée. Sur autre provider, erreur explicite. L'API Market existante rend 503 si la nouvelle RPC échoue, au lieu de chiffres inventés ; agrégation Maârif reste fondée sur observations `fresh:false`.
 - **Contrat / sécurité** dans `db/baselines/akarfinder_supabase_market_authorized_observations_2026-11-08.sql` et `scripts/scrapers/__tests__/akarfinder-supabase-market-routing.test.ts`. L'accès serveur réel via HTTPS/SDK Supabase et l'interface Map n'ont PAS encore été testés ; CI de branche à vérifier sur nouveau SHA. **Il n'y a pas de vraies observations marché importées** : ne pas prétendre afficher des prix certifiés.
 - **Next exact** : CI Supabase Unified + code TS, audit de toutes les autres importations directes de `queryNeonRows` et comportement sur DB vide. Ensuite trajectoire d'un seul fournisseur et données autorisées réelles avant tout merge/deploy Vercel.
+
+
+### Suivi CI / correctif architectural DB-05
+
+Le premier commit de DB-05 `46dd11203fcaaf66041392a2b75d07a1b7824156` a été rejeté par [Neon-only Runtime P0 #42499657734](https://github.com/hraaaaf/Akarfinder/actions/runs/42499657734) : il référençait Supabase dans `lib/map/neon-listing-market-observations.ts`, pourtant protégé comme module exclusivement Neon. **Le test était légitime ; nous ne l'avons pas désactivé.**
+
+Correction : module Neon restauré **strictement** à la version pure avant DB-05 ; nouveau `lib/map/supabase-listing-market-observations.ts` implémente uniquement l'appel à la fonction privée Supabase et la conversion en observations ; `lib/map/market-listing-observations.ts` décide explicitement via `DATABASE_PROVIDER`, sans bascule cachée ; `city-market-intelligence-live.ts` n'importe que ce routeur neutre. Les tests du module Neon restent inchangés et le test de contrat Supabase a été adapté à cette séparation. Ne pas déclarer les nouvelles CI vertes avant d'avoir leurs résultats.
