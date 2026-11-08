@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { publicEligibleDistrictTotal } from "../../../lib/search/public-district-total.ts";
 
 const page = readFileSync("app/search/page.tsx", "utf8");
 const router = readFileSync("lib/odm/odm-public-routing.ts", "utf8");
@@ -24,4 +25,42 @@ test("visible search page preserves fail-safe Legacy fallback and shadow behavio
   assert.match(page, /routed\.lane === "legacy_primary"/);
   assert.match(page, /scheduleOdmDualReadShadow\(resolvedQuery, routed\.result\)/);
   assert.doesNotMatch(page, /initialSearchResult\s*=\s*await searchListings\(resolvedQuery\)/);
+});
+
+
+test("Maârif: zero publicly admissible listings must not retain five SQL-counted rows", () => {
+  assert.equal(publicEligibleDistrictTotal({
+    districtRequested: true,
+    scanComplete: true,
+    eligibleMatches: 0,
+    rawTotal: 500,
+    structuredDistrictTotal: 5,
+  }), 0);
+});
+
+test("district total uses actual public matches when the whole scan is complete", () => {
+  assert.equal(publicEligibleDistrictTotal({
+    districtRequested: true,
+    scanComplete: true,
+    eligibleMatches: 2,
+    rawTotal: 500,
+    structuredDistrictTotal: 5,
+  }), 2);
+});
+
+test("incomplete scans and non-district search never falsely claim an exact eligible count", () => {
+  assert.equal(publicEligibleDistrictTotal({
+    districtRequested: true,
+    scanComplete: false,
+    eligibleMatches: 0,
+    rawTotal: 500,
+    structuredDistrictTotal: 5,
+  }), 5);
+  assert.equal(publicEligibleDistrictTotal({
+    districtRequested: false,
+    scanComplete: true,
+    eligibleMatches: 0,
+    rawTotal: 500,
+    structuredDistrictTotal: null,
+  }), 500);
 });

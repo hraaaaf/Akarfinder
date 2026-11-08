@@ -14,6 +14,7 @@ import type { SearchQuery, SearchResult } from "./types";
 import { compareRecommendedListings } from "./ranking";
 import { enrichSearchQueryWithTextIntent } from "./query-intent";
 import { queryStructuredDistrictTotal } from "./structured-district-total";
+import { publicEligibleDistrictTotal } from "./public-district-total";
 
 function normalize(value: string) {
   return value
@@ -198,6 +199,7 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
   const matchedListings: Listing[] = [];
   let rawTotal = 0;
   let scannedRows = 0;
+  let dbRowsExhausted = false;
 
   // Historical rows can contain accent/transliteration aliases (Temara/Témara,
   // Meknes/Meknès, etc.). When a canonical city has aliases, an exact DB filter
@@ -222,7 +224,10 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
     });
 
     rawTotal = base.total;
-    if (base.listings.length === 0) break;
+    if (base.listings.length === 0) {
+      dbRowsExhausted = true;
+      break;
+    }
 
     const publishableRows = base.listings.filter(canPublishDbRowToPublicSearchSurface);
     const mappedById = new Map(
@@ -254,11 +259,12 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
   const listings = usingCursor
     ? sorted.slice(0, limit)
     : sorted.slice(legacyOffset, legacyOffset + limit);
+  const rawIndexHasMore = !dbRowsExhausted && scanCursor < rawTotal;
   const hasMore = usingCursor
-    ? scanCursor < rawTotal
+    ? rawIndexHasMore
     : scanFullRankedSet
-      ? legacyOffset + listings.length < matchedListings.length || scanCursor < rawTotal
-      : scanCursor < rawTotal;
+      ? legacyOffset + listings.length < matchedListings.length || rawIndexHasMore
+      : rawIndexHasMore;
   const structuredDistrictTotal = await structuredDistrictTotalPromise;
 
   if (process.env.NODE_ENV !== "production") {
@@ -273,7 +279,17 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
     // Structured DB total after city/property/transaction/budget filters. For
     // district queries Supabase now counts that district explicitly; public,
     // reliability and free-text filtering may still reduce the visible rows.
-    total: structuredDistrictTotal ?? rawTotal,
+    // An unfiltered SQL count is not a number of public, publishable ads.
+    // Once the district scan is complete, report only eligible matches. If
+    // scanning stopped early, retain the legacy estimate rather than invent
+    // what lies beyond the bounded scan.
+    total: publicEligibleDistrictTotal({
+      districtRequested: Boolean(query.district),
+      scanComplete: !usingCursor && (dbRowsExhausted || scanCursor >= rawTotal),
+      eligibleMatches: matchedListings.length,
+      rawTotal,
+      structuredDistrictTotal,
+    }),
     limit,
     offset: usingCursor ? 0 : legacyOffset,
     next_cursor: hasMore ? scanCursor : null,
