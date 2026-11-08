@@ -2,6 +2,8 @@
 
 import { LocateFixed, Minus, Plus, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTheme } from "@/components/theme/ThemeProvider";
+import { nationalBasemapConfiguration } from "@/lib/map/carto-basemap-style";
 
 type LivingHereCategory =
   | "education" | "groceries" | "health" | "transport" | "food" | "green_sport"
@@ -38,8 +40,8 @@ export type MapLibreNeighborhood3DProps = {
   reserveRail?: boolean;
 };
 
-const OPENFREEMAP_VECTOR = "https://tiles.openfreemap.org/planet";
-const ESRI_IMAGERY_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+// LOT01: Historic component name retained for compatibility with the router.
+// The immersive 3D/satellite path is frozen; Explore only renders sourced 2D.
 const FOCUS_SOURCE_ID = "akarfinder-neighborhood-focus";
 const FOCUS_GLOW_LAYER_ID = "akarfinder-neighborhood-focus-glow";
 const FOCUS_RING_LAYER_ID = "akarfinder-neighborhood-focus-ring";
@@ -63,6 +65,8 @@ export function MapLibreNeighborhood3D({
   desktopCameraOffset = [0, 0],
   reserveRail = false,
 }: MapLibreNeighborhood3DProps) {
+  const { theme } = useTheme();
+  const basemap = nationalBasemapConfiguration(theme);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const isMaarifPilot = citySlug === "casablanca" && districtSlug === "maarif";
@@ -71,7 +75,7 @@ export function MapLibreNeighborhood3D({
   const [ready, setReady] = useState(false);
   const [renderState, setRenderState] = useState<"loading" | "ready" | "error">("loading");
   const [sourceState, setSourceState] = useState<"loading" | "available" | "unavailable">("loading");
-  const [buildingCount, setBuildingCount] = useState(0);
+  const [baseFeatureCount, setBaseFeatureCount] = useState(0);
   const [contextState, setContextState] = useState<"loading" | "ready" | "unavailable">("loading");
   const [context, setContext] = useState<NeighborhoodContext | null>(null);
   const [activeCategory, setActiveCategory] = useState<LivingHereCategory | "all">("all");
@@ -108,8 +112,8 @@ export function MapLibreNeighborhood3D({
     map.easeTo({
       center: targetCenter,
       zoom: desktop ? 14.05 : 14.45,
-      pitch: desktop ? 52 : 44,
-      bearing: desktop ? -27 : -18,
+      pitch: 0,
+      bearing: 0,
       duration: 650,
     });
   };
@@ -154,65 +158,18 @@ export function MapLibreNeighborhood3D({
           container: mapRef.current,
           center: targetCenter,
           zoom: isMaarifPilot ? 14.6 : desktop ? 14.05 : 14.45,
-          pitch: isMaarifPilot ? 0 : desktop ? 52 : 44,
-          bearing: isMaarifPilot ? 0 : desktop ? -27 : -18,
+          pitch: 0,
+          bearing: 0,
           // Provider/OSM attributions must remain legible during map use.
-          attributionControl: { compact: false },
+          attributionControl: { compact: false, customAttribution: basemap.attribution },
           canvasContextAttributes: { antialias: true },
-          style: {
-            version: 8,
-            sources: {
-              imagery: {
-                type: "raster",
-                tiles: [ESRI_IMAGERY_TILES],
-                tileSize: 256,
-                attribution: "Tiles © Esri",
-                maxzoom: 19,
-              },
-              openfreemap: {
-                type: "vector",
-                url: OPENFREEMAP_VECTOR,
-                attribution: "© OpenStreetMap contributors · OpenFreeMap",
-              },
-            },
-            layers: [
-              { id: "background", type: "background", paint: { "background-color": "#dce8e5" } },
-              {
-                id: "imagery", type: "raster", source: "imagery",
-                paint: {
-                  "raster-brightness-min": 0.14,
-                  "raster-brightness-max": 0.94,
-                  "raster-contrast": 0.08,
-                  "raster-saturation": -0.02,
-                  "raster-opacity": 0.98,
-                },
-              },
-            ],
-          } as any,
+          style: basemap.style,
         } as any);
         mapInstanceRef.current = map;
 
         map.once("load", () => {
           if (disposed) return;
           try {
-            map.addLayer({
-              id: "3d-buildings",
-              source: "openfreemap",
-              "source-layer": "building",
-              type: "fill-extrusion",
-              minzoom: 13.5,
-              filter: ["!=", ["get", "hide_3d"], true],
-              paint: {
-                "fill-extrusion-color": [
-                  "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                  0, "#e6dfd2", 10, "#d8cbb8", 24, "#c8b29a", 55, "#aa8e77", 120, "#826c5d",
-                ],
-                "fill-extrusion-height": ["coalesce", ["get", "render_height"], 0],
-                "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-                "fill-extrusion-opacity": 0.72,
-                "fill-extrusion-vertical-gradient": true,
-              },
-            } as any);
 
             map.addSource(FOCUS_SOURCE_ID, {
               type: "geojson",
@@ -270,11 +227,14 @@ export function MapLibreNeighborhood3D({
         });
 
         const evaluate = () => {
-          if (disposed || !map?.getLayer("3d-buildings")) return;
+          if (disposed || !map?.isStyleLoaded() || !map.getLayer(FOCUS_RING_LAYER_ID)) return;
           try {
-            const features = map.queryRenderedFeatures(undefined, { layers: ["3d-buildings"] });
-            setBuildingCount(features.length);
-            if (features.length > 0) setSourceState("available");
+            const features = map.queryRenderedFeatures().filter((feature: any) =>
+              feature.layer?.id !== FOCUS_GLOW_LAYER_ID && feature.layer?.id !== FOCUS_RING_LAYER_ID);
+            setBaseFeatureCount(features.length);
+            // Fail closed: a focus dot alone does not prove that real basemap tiles rendered.
+            if (features.length === 0) { setSourceState("unavailable"); return; }
+            setSourceState("available");
             setReady(true);
             setRenderState("ready");
             const cameraNow = {
@@ -303,7 +263,7 @@ export function MapLibreNeighborhood3D({
       mapInstanceRef.current = null;
       try { map?.remove(); } catch { /* no-op */ }
     };
-  }, [citySlug, districtSlug, districtLabel, center[0], center[1], desktopCameraOffset[0], desktopCameraOffset[1], boundaryGeometry]);
+  }, [citySlug, districtSlug, districtLabel, center[0], center[1], desktopCameraOffset[0], desktopCameraOffset[1], boundaryGeometry, theme]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -341,8 +301,9 @@ export function MapLibreNeighborhood3D({
       data-maplibre-ready={ready ? "true" : "false"}
       data-maplibre-render-state={renderState}
       data-maplibre-source-state={sourceState}
-      data-maplibre-source="openfreemap-vector"
-      data-maplibre-building-count={buildingCount}
+      data-maplibre-source={basemap.provider}
+      data-maplibre-mode="2d"
+      data-maplibre-basemap-feature-count={baseFeatureCount}
       data-maplibre-context-state={contextState}
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
       data-maplibre-city={citySlug}
@@ -406,7 +367,7 @@ export function MapLibreNeighborhood3D({
         <span className="maplibre-spike-map-note-copy">
           {boundaryGeometry ? "Périmètre qualifié affiché." : "Repère central sourcé · périmètre non revendiqué."}
         </span>
-        <span className="maplibre-spike-map-note-status">{buildingCount > 0 ? `${buildingCount} volumes 3D visibles` : "Chargement du relief urbain…"}</span>
+        <span className="maplibre-spike-map-note-status">{baseFeatureCount > 0 ? "Carte 2D · repère géolocalisé" : "Chargement du fond cartographique…"}</span>
       </div>
 
       <footer className="maplibre-spike-outro"><div><strong>Découvrez les quartiers autrement</strong><span>Un même moteur cartographique, du quartier au Maroc.</span></div><em>Des lieux. Des vies. Des projets.</em></footer>
