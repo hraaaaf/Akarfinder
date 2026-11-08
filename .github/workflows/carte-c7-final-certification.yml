@@ -5,7 +5,6 @@ on:
     paths:
       - "app/map/**"
       - "scripts/audits/carte-c7-final-certification.mjs"
-      - "scripts/audits/carte-lot9-market-modes-browser.mjs"
       - ".github/workflows/carte-c7-final-certification.yml"
       - "docs/CARTE_INTELLIGENCE_MARCHE_TARGET.md"
       - "docs/CARTE_INTELLIGENCE_MARCHE_STATUS.md"
@@ -76,7 +75,7 @@ jobs:
         run: |
           npm run start -- -p 3207 > /tmp/carte-c7.log 2>&1 &
           for attempt in {1..60}; do
-            if curl -fsS 'http://127.0.0.1:3207/map?city=rabat&layer=price' >/dev/null; then exit 0; fi
+            if curl -fsS 'http://127.0.0.1:3207/map?city=rabat' >/dev/null; then exit 0; fi
             sleep 1
           done
           cat /tmp/carte-c7.log
