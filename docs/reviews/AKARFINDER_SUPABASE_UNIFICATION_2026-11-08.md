@@ -159,3 +159,21 @@ Correction : module Neon restauré **strictement** à la version pure avant DB-0
 **Gates restants :** (1) licences/provenances documentées + échantillon source de première main ou partenaire autorisé ; (2) inventaire qualité/fraîcheur/dédoublonnage et capacité DB Free ; (3) migration contrôlée de cet échantillon sur base test privée avec rollback et RLS ; (4) E2E Next/API/UI sur Supabase sans Vercel déployé ; (5) revue UX/résultats ; (6) décision humaine de bascule Production. **Aucune DB écrite, aucun merge, aucun Vercel déployé**.
 
 **État :** sous-lot isolation du Thin Index GREEN sur HEAD code certifié ; migration Supabase globale et pourcentage projet toujours non certifiés.
+
+
+### 08/11/2026 — DB-07 : reprise réelle des 9 990 observations et audit privé de disponibilité (READ-ONLY)
+
+**GOAL** : rechercher la cohorte existante dans les anciennes PR plutôt que supposer un besoin de réacquisition. **Résultat prouvé** : [PR #1176](https://github.com/hraaaaf/Akarfinder/pull/1176) contient l'union de **9 990 observations historiques détaillées**, avec provenance source, champs économiques et horodatages ; [PR #1095](https://github.com/hraaaaf/Akarfinder/pull/1095) démontre une **autre cohorte** de 8 367 fiches V4.11 importées en Neon isolé le 26/09. **Ne jamais additionner ces deux nombres sans jonction contrôlée.**
+
+**Audit effectivement exécuté DEUX fois sur le PC privé connecté**, depuis `observations_detailed_union_20261107.jsonl.gz` ; script privé `_q1b_audit_9990_20261108.py`, résultat agrégé privé `Q1B_9990_READINESS_AGGREGATES_20261108.json` :
+- SHA-256 entrée gzip inchangé sur les deux passes : `76635208549dbce618cf0de9de5e3109f0ac39deefb08f83a330a882fed5f1ee` ; 9 990 enregistrements parsés sans erreur, 9 990 clés (domaine, ID, observation_ts) distinctes, **9 967 identités domaine/ID**, 9 990 URL canoniques distinctes ; **0 champ obligatoire manquant** et 0 prix/surface non positifs dans cet export.
+- `rights_status=unknown_not_proven` : **9 990/9 990**, soit **0 droit de réutilisation prouvé par la pièce**. `quality_status=historical_detailed` : 9 990/9 990 ; cela qualifie **la structure du registre, pas la précision à la source ni une licence**.
+- Date d'observation au 08/11/2026 : **0 ≤30 jours**, **6 307 entre 31 et 90 jours**, **3 683 >90 jours**. Dernière vue : **0 ≤30 jours**, **8 625 entre 31 et 90 jours**, **1 365 >90 jours**. **Aucune offre actuellement active n'est certifiée**.
+- Sources historiques par domaine (uniquement agrégats) : Mubawab **6 355**, Domio **2 048**, DarAgadir **1 255**, Sarout **287**, Mouldar **21**, Agenz **16**, Masaken **5**, 1Immo **3** ; somme = 9 990. Les 9 990 ne prouvent pas 9 990 biens physiques uniques.
+- Aucun enregistrement brut, URL, capture, coordonnée vendeur ni PII téléchargé hors du PC privé ; ni export GitHub/Notion des fiches source.
+
+**Corroboration Neon Recovery indépendante (SQL SELECT uniquement)** : branche `br-cold-mouse-b2a50yaa`, base `AkarFinder` : **151 900 `listing_sources`**, `is_active=true` pour **151 900** mais **0 `last_seen_at` depuis le 09/10/2026**, **98 525 `last_seen_at` NULL**, maximum `2026-09-26T23:59:59Z` ; **0 origine explicitement `first_party` ou `partner_authorized`**. Ici, `is_active` n'est **pas** une preuve de disponibilité actuelle.
+
+**Décision DATA : GO inventaire/préparation interne, NO-GO publication/import commercial** : le corpus existe et son format est techniquement réutilisable pour contrôle privé ; aucune annonce n'est certifiée « prête à publier ». Les labels de conformité/activité ne remplacent ni autorisation source ni preuve datée d'offre active. Nouvelle Supabase reste vide, aucune requête d'écriture sur DB, aucune production, merge ou déploiement Vercel.
+
+**Next exact** : bâtir la matrice stricte `source_domaine × preuve_contractuelle × droits_autorisés × observation_récente × identité × contrôle_humain` ; sur les **9 990 existantes**, sélectionner un échantillon **dont les droits réels sont prouvés** (et non seulement les champs complets), vérifier fraîcheur et unicité physique, effectuer import **privé isolé** avec rollback + E2E avant toute demande de bascule prod. Si aucun accord documenté : *zéro import* et contractualiser un flux first-party/partner. **% global non certifié**.
