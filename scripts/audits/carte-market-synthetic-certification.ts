@@ -254,7 +254,7 @@ async function certifyRabat(browser: Awaited<ReturnType<typeof chromium.launch>>
     page.on("pageerror", (error) => pageErrors.push(error.message));
 
     try {
-      await page.goto(`${BASE_URL}/map?city=rabat`, { waitUntil: "domcontentloaded", timeout: 30_000 });
+      await page.goto(`${BASE_URL}/map?city=rabat&layer=price`, { waitUntil: "domcontentloaded", timeout: 30_000 });
       await page.locator("[data-akarfinder-market-intelligence-map]").waitFor({ state: "visible", timeout: 20_000 });
       await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 20_000 });
       await page.locator("[data-akarfinder-intelligence-legend]").waitFor({ state: "visible", timeout: 20_000 });
@@ -300,6 +300,10 @@ async function certifyRabat(browser: Awaited<ReturnType<typeof chromium.launch>>
       const screenshot = `${OUT}/rabat-${viewport.name}-zone-sheet.png`;
       await page.screenshot({ path: screenshot, fullPage: false });
       report.cases.push({ family: "rabat-c7", city: "rabat", viewport: viewport.name, district, href, screenshot });
+    } catch (error) {
+      // Preserve the real mounted screen on any failed assertion; no fixture is written to the DB.
+      await page.screenshot({ path: `${OUT}/failure-rabat-${viewport.name}.png`, fullPage: false }).catch(() => {});
+      throw error;
     } finally {
       await page.close();
     }
