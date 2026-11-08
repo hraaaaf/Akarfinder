@@ -318,7 +318,7 @@ export function positionalSqlPlaceholders(count: number): string {
   if (!Number.isSafeInteger(count) || count < 1 || count > 200) {
     throw new Error("invalid_thin_index_parameter_count");
   }
-  return Array.from({ length: count }, (_, index) => `${index + 1}`).join(", ");
+  return Array.from({ length: count }, (_, index) => `$${index + 1}`).join(", ");
 }
 
 export async function searchSeedThinIndexPage(input: SeedThinIndexInput): Promise<SeedThinIndexPage> {
