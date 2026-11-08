@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - "lib/db/supabase-listings.ts"
+      - "db/baselines/akarfinder_supabase_property_foundation_2026-11-08.sql"
+      - "scripts/scrapers/__tests__/akarfinder-supabase-property-foundation.test.ts"
       - "lib/db/preferred-public-source-order.ts"
       - "lib/seller/owner-listing-projection.ts"
       - "scripts/scrapers/__tests__/data-p0-owner-listing-integration.test.ts"
@@ -29,6 +31,6 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Owner and Search source contracts
-        run: npx tsx --test scripts/scrapers/__tests__/data-p0-owner-listing-integration.test.ts scripts/scrapers/__tests__/search-page-visible-odm-canary-v1.test.ts
+        run: npx tsx --test scripts/scrapers/__tests__/data-p0-owner-listing-integration.test.ts scripts/scrapers/__tests__/search-page-visible-odm-canary-v1.test.ts scripts/scrapers/__tests__/akarfinder-supabase-property-foundation.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
