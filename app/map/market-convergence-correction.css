@@ -281,7 +281,12 @@
   }
 
   [data-p4-map-layout]:has([data-akarfinder-national-map]) .p4-map-decision-rail {
-    height: 100%;
+    /* The grid has 12px top/bottom padding; height:100% made the panel
+       12px taller than the visible 900px desktop viewport. Keep its
+       content scrollable inside the actual padded map-height envelope. */
+    box-sizing: border-box;
+    height: calc(100svh - 88px);
+    max-height: calc(100svh - 88px);
     min-height: 0;
     overflow-y: auto;
     border: 1px solid rgb(218 228 240 / .92);

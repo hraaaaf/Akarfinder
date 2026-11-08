@@ -154,6 +154,11 @@ try {
           throw new Error(`${cityCase.slug}/${viewport.name}: Search handoff mismatch ${searchHref}`);
         }
 
+        const bottomBreathingRoom = viewport.height - (panelBox.y + panelBox.height);
+        if (viewport.width >= 1024 && renderMode === "source-honest-city-fallback" && bottomBreathingRoom < 10) {
+          throw new Error(`${cityCase.slug}/${viewport.name}: city decision rail needs >=10px bottom margin, got ${bottomBreathingRoom}`);
+        }
+
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
         if (overflow > 1) throw new Error(`${cityCase.slug}/${viewport.name}: horizontal overflow ${overflow}`);
 
@@ -171,6 +176,7 @@ try {
           viewport: viewport.name,
           searchHref,
           panelBox,
+          bottomBreathingRoom,
           overflow,
           mapRendered: true,
           highZoomTileCount,
