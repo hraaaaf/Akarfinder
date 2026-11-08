@@ -11,3 +11,12 @@
 **Limite** : changer le code dans PR ne corrige pas PROD sans merge/déploiement ; aucune intervention Vercel n'est autorisée. Les essais live après déploiement restent une validation humaine ultérieure.
 
 **Next exact** : tests du helper + vérification CI du code, puis audit prix/sources et échantillon de vrais liens autorisés sur la DB à accès maîtrisé. Aucun déploiement Vercel, aucune DB.
+
+
+## Closeout test de contrat LOT01-B — 08/11/2026
+
+- **Code SHA certifié** : `e13d36b22bc7e108118d3ee374c413832312ebdb` via [PR #1195 Draft](https://github.com/hraaaaf/Akarfinder/pull/1195).
+- **CI** [Search Page Visible ODM Canary V1 #42469023580 SUCCESS](https://github.com/hraaaaf/Akarfinder/actions/runs/42469023580) : suite de contrats Node `--experimental-strip-types` PASS, `npm ci` PASS, `npx tsc --noEmit` PASS. Les tests supplémentaires couvrent : 5 lignes SQL / 0 admissible → 0 ; 5 SQL / 2 admissibles → 2 ; scan incomplet ou hors quartier → estimation conservée. Aucun élargissement des droits de publication.
+- **Limite de preuve** : test unitaire/TypeScript uniquement ; **aucun test sur une vraie base Maârif avec le nouveau code en production**. La lecture du serveur public avant déploiement montre toujours `listings:[],total:5,has_more:false`. Aucun changement PROD, aucune DB.
+- **Conséquence produit** : après release autorisée et si les mêmes règles/rows s'appliquent, l'API ne promettra plus cinq offres quand aucune fiche ne peut être publiée. Cela **ne crée pas** de nouvelles annonces ni ne confirme l'existence/actualité des cinq lignes SQL, et n'élimine pas les limites de scan borné ou de déduplication.
+- **Lot 01-B état** : correction de vérité du total **GREEN aux tests de contrat**, inventaire/sources/prix Maârif **OUVERTS**. Ne pas annoncer release ou score global. Next : vérifier sources autorisées, prix et liens dans un environnement DB contrôlé ; comparer au serveur public uniquement après autorisation de déploiement.
