@@ -208,11 +208,19 @@ try {
           throw new Error(`District map Search handoff drops location: ${finalHref}`);
         }
         await page.locator('[data-vivre-ici-territory-back]').click();
+        // This is a deliberate return to the current Explore route, NOT the opt-in SVG atlas.
+        await page.locator('[data-akarfinder-national-map][data-akarfinder-national-view="morocco"]')
+          .waitFor({ state: "visible", timeout: 15000 });
+        await page.waitForFunction(() => Boolean(window.__AKARFINDER_NATIONAL_MAP__?.isStyleLoaded()), null, { timeout: 15000 });
+        await page.screenshot({ path: `${outDir}/returned-modern-morocco-${viewport.name}-after.png`, fullPage: false });
+        // Re-open the atlas explicitly to independently certify its 12-region return contract.
+        await page.goto(`${baseUrl}/map?layer=premium`, { waitUntil: "domcontentloaded", timeout: 30000 });
       } else {
+        // Direct-listings links leave the atlas mounted; breadcrumb should restore it.
         await page.getByRole("navigation", { name: "Fil d’Ariane cartographique" })
           .getByRole("button", { name: "Maroc", exact: true }).click();
       }
-      // Returning to Morocco must restore the 12-region SVG and selection list.
+      // Both paths end with the old atlas explicitly mounted, without redefining the Explore URL.
       await page.locator('[data-premium-map][data-map-level="national"]').waitFor({ state: "visible", timeout: 15000 });
       if (await page.locator('[data-region-list-slug]').count() !== 12) {
         throw new Error("Returning to Morocco did not restore all 12 regions");
