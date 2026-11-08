@@ -37,7 +37,10 @@ async function verifyFocus(page, citySlug, viewportName) {
     const map = window.__AKARFINDER_NATIONAL_MAP__;
     // MapLibre getFilter throws if the target style layer has not been added
     // yet. Wait for BOTH sourced layers before reading either filter.
-    if (!map?.isStyleLoaded() || map.isMoving()) return false;
+    // This gate checks the sourced focus layers, not completion of unrelated
+    // third-party basemap tile requests. isStyleLoaded() also waits for tiles,
+    // and can remain false despite these exact layers/filters being installed.
+    if (!map || map.isMoving()) return false;
     if (!map.getLayer("akarfinder-national-city-active-line") ||
         !map.getLayer("akarfinder-national-city-focus-halo")) return false;
     const filter = map.getFilter("akarfinder-national-city-active-line");
@@ -106,7 +109,26 @@ try {
       await page.screenshot({ path: outDir + "/focus-casablanca-" + viewport.name + ".png", fullPage: false });
       if (errors.length) throw new Error("React/browser exceptions " + JSON.stringify(errors));
     } catch (error) {
-      if (!report.failure) report.failure = { viewport: viewport.name, error: String(error) };
+      // Preserve actionable evidence if tiles delay style readiness. Never
+      // substitute this diagnostic for the focus/layer/filter assertions.
+      const focusDiagnostic = await page.evaluate(() => {
+        const map = window.__AKARFINDER_NATIONAL_MAP__;
+        if (!map) return { mapPresent: false };
+        const line = "akarfinder-national-city-active-line";
+        const halo = "akarfinder-national-city-focus-halo";
+        const linePresent = Boolean(map.getLayer(line));
+        const haloPresent = Boolean(map.getLayer(halo));
+        return {
+          mapPresent: true,
+          styleLoaded: map.isStyleLoaded(),
+          moving: map.isMoving(),
+          linePresent,
+          haloPresent,
+          lineFilter: linePresent ? map.getFilter(line) : null,
+          haloFilter: haloPresent ? map.getFilter(halo) : null,
+        };
+      }).catch((diagnosticError) => ({ diagnosticError: String(diagnosticError) }));
+      if (!report.failure) report.failure = { viewport: viewport.name, error: String(error), focusDiagnostic };
       item.errors = errors;
       item.error = String(error);
       try { await page.screenshot({ path: outDir + "/failure-" + viewport.name + ".png", fullPage: false }); } catch {}
