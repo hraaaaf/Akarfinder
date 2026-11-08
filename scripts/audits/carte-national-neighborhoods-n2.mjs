@@ -165,6 +165,8 @@ try {
     }
     const page = await context.newPage();
     const pageErrors = [];
+    const satelliteRequests = [];
+    page.on("request", (req) => { if (/\/World_Imagery\/MapServer\/tile\//.test(req.url())) satelliteRequests.push(req.url()); });
     let auditPhase = "initial-city-load";
     page.on("pageerror", (error) => pageErrors.push({ phase: auditPhase, message: String(error), stack: error.stack, url: page.url() }));
 
@@ -233,6 +235,17 @@ try {
         const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
         return shell?.getAttribute("data-maplibre-render-state") === "ready";
       }, null, { timeout: 20000 });
+      // LOT01: the Maârif Explore path must stay flat and never request Esri satellite tiles.
+      if (await maplibre.getAttribute("data-maplibre-mode") !== "2d") throw new Error("Maârif 2D mode not active");
+      const camera = await maplibre.evaluate((node) => ({
+        pitch: Number(node.getAttribute("data-l3-camera-pitch")),
+        bearing: Number(node.getAttribute("data-l3-camera-bearing")),
+        basemapFeatures: Number(node.getAttribute("data-maplibre-basemap-feature-count")),
+      }));
+      if (Math.abs(camera.pitch) > 0.01 || Math.abs(camera.bearing) > 0.01 || camera.basemapFeatures < 1) {
+        throw new Error(`Maârif flat basemap not proven ${JSON.stringify(camera)}`);
+      }
+      if (satelliteRequests.length) throw new Error(`Esri satellite requested: ${satelliteRequests.length}`);
       const rail = page.locator('[data-p4-map-decision-rail]');
       await rail.waitFor({ state: "visible", timeout: 10000 });
       const activeHref = await rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i }).getAttribute("href");
@@ -258,7 +271,7 @@ try {
       await page.screenshot({ path: `${outDir}/postal-maarif-${viewport.name}-after.png`, fullPage: false });
 
       if (pageErrors.length) throw new Error(`browser page errors ${JSON.stringify(pageErrors)}`);
-      report.cases.push({ viewport: viewport.name, overflow, layerState, zoomedDots, mappedSelection: "maplibre", noCenterFallback: true, searchHandoff: true });
+      report.cases.push({ viewport: viewport.name, overflow, layerState, zoomedDots, mappedSelection: "maplibre-2d", imageryRequests: satelliteRequests.length, noCenterFallback: true, searchHandoff: true });
     } catch (error) {
       report.failure = { viewport: viewport.name, error: String(error) };
       throw error;

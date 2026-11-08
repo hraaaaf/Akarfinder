@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MapNeighborhoodClient } from "@/components/map/MapNeighborhoodClient";
 import { MapLibreNeighborhood3D } from "@/components/map/MapLibreNeighborhood3D";
-import { National3DBuildingsLayer } from "@/components/map/National3DBuildingsLayer";
 import { NationalNeighborhoodOverlayBridge } from "@/components/map/NationalNeighborhoodOverlayBridge";
 import { getNeighborhoodBySlug } from "@/lib/map/canonical-neighborhood-data";
 import { MAP_LAYER_EXPLORE, type MapNavigationState } from "@/lib/map/map-navigation-state";
@@ -168,7 +167,6 @@ export function NationalMapRouter({ initialState }: Props) {
         onSelectCity={selectCity}
         onBackToMorocco={backToMorocco}
       />
-      <National3DBuildingsLayer citySlug={selectedCitySlug} districtSlug={selectedDistrictSlug} />
       <NationalNeighborhoodOverlayBridge
         citySlug={selectedCitySlug}
         districtSlug={selectedDistrictSlug}

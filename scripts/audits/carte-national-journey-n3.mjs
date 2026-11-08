@@ -130,6 +130,8 @@ try {
 
     const page = await context.newPage();
     const pageErrors = [];
+    const satelliteRequests = [];
+    page.on("request", (req) => { if (/\/World_Imagery\/MapServer\/tile\//.test(req.url())) satelliteRequests.push(req.url()); });
     page.on("pageerror", (error) => pageErrors.push(String(error)));
 
     try {
@@ -141,6 +143,16 @@ try {
         return shell?.getAttribute("data-maplibre-render-state") === "ready";
       }, null, { timeout: 25000 });
 
+      if (await maplibre.getAttribute("data-maplibre-mode") !== "2d") throw new Error("Maârif must use 2D Explore");
+      const flat = await maplibre.evaluate((node) => ({
+        pitch: Number(node.getAttribute("data-l3-camera-pitch")),
+        bearing: Number(node.getAttribute("data-l3-camera-bearing")),
+        features: Number(node.getAttribute("data-maplibre-basemap-feature-count")),
+      }));
+      if (Math.abs(flat.pitch) > 0.01 || Math.abs(flat.bearing) > 0.01 || flat.features < 1) {
+        throw new Error(`Flat vector basemap failed ${JSON.stringify(flat)}`);
+      }
+      if (satelliteRequests.length) throw new Error(`Esri imagery leaked: ${satelliteRequests.length}`);
       const rail = page.locator("[data-p4-map-decision-rail]");
       await rail.waitFor({ state: "visible", timeout: 10000 });
       const handoff = rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i });
@@ -168,6 +180,8 @@ try {
         citySelection: "casablanca",
         districtSelection: "maarif",
         maplibreReady: true,
+        presentation: "2d-vector",
+        imageryRequests: satelliteRequests.length,
         searchHandoff: handoffUrl.pathname + handoffUrl.search,
         searchRendered: true,
         overflow,
