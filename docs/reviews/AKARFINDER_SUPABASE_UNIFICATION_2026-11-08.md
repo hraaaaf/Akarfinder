@@ -129,3 +129,16 @@ Correction : module Neon restauré **strictement** à la version pure avant DB-0
 **Sous-lot audits hérités** : GREEN sur SHA de code `c61d8471` avec rapports et artefacts. **Lot migration Supabase toujours ouvert** : sources publiables réelles non qualifiées, Thin Index/ODM Neon restant, E2E HTTP/UI sans secrets de la nouvelle base, quotas et déploiement. Cette mise à jour documentaire n'autorise ni migration de données, ni merge, ni déploiement Vercel.
 
 **Next exact** : contrôler CI de la PR sur le HEAD docs-only, puis qualifier les seules sources réutilisables légalement avant E2E Supabase isolé. Aucun avancement global en % certifié.
+
+### 08/11/2026 — Audit migration DB-06 préparatoire : garde Thin Index legacy + paramètres SQL
+
+**Preuves source GitHub lues au HEAD `5577bb95` avant changement :**
+- `lib/search-gateway/public-search-cursor.ts` bloque déjà les appels à `search_public_representations_v2` lorsque `DATABASE_PROVIDER !== neon`, avec `public_search_index_unavailable`. `app/api/search/gateway/route.ts` dégrade explicitement dans ce cas ; un autre chemin `appendSeedThinIndexResults` peut toutefois être appelé en cas d'autres erreurs.
+- `lib/search-gateway/seed-thin-index.ts` contient deux appels `queryNeonRows` sans test de fournisseur à l'entrée, donc risque de lecture ancienne DB en dégradation hors fournisseur Neon. De plus, le filtre des `listing_sources` construisait les tokens SQL `IN (1, 2, ...)` au lieu de placeholders liés `IN ($1, $2, ...)`, incompatibles avec la colonne URL texte.
+- `/api/search` utilise le moteur structuré sélectionné par `lib/db/index.ts` en dégradation ; la reconstruction du Thin Index sur Supabase **n'est pas faite**.
+
+**Correctif candidat en code PR (aucune mutation DB) :** garde `getDbProvider() === "neon"` immédiatement en tête de `searchSeedThinIndexPage`, avant toute requête ; refus explicite `public_search_index_unavailable` pour les autres providers, sans utiliser le mot Supabase dans le module historique Neon-only ; helper `positionalSqlPlaceholders` limité à 1..200 et générant les marqueurs `$n` pour `queryNeonRows`. Tests `neon-only-runtime-critical-paths.test.ts` étendus : vérifier les marqueurs 1/3, les bornes invalides, l'ordre du garde et le comportement avec `DATABASE_PROVIDER=supabase` et `sqlite`. CI Neon-only doit certifier sans modification du workflow.
+
+**Lecture réelle DB cible** : le projet `AkarfFnder/mgqsckxsqdqbzqwkgvwo` répond `ACTIVE_HEALTHY`, une lecture SQL distincte montre `property_listings=0`, `listing_sources=0`, `buyer_leads=0` et `owner_listing_representations=0`. L'advisor sécurité rapporte 9 `INFO rls_enabled_no_policy` (modèle volontaire privé) et aucun `WARN` dans la réponse ; 9 tables ont RLS selon l'advisor. **Aucune donnée migrée / aucune écriture BD.**
+
+**Statut** : correctif candidat tant que CI `Neon-only Runtime P0` + validations de branche non GREEN. Ne pas interpréter cette garde comme migration de l'index ODM ou autorisation de réutilisation des offres tierces. Next : certifier CI sur HEAD puis inventaire juridique et qualité des sources avant vrai E2E.
