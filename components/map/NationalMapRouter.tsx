@@ -7,7 +7,7 @@ import { MapNeighborhoodClient } from "@/components/map/MapNeighborhoodClient";
 import { MapLibreNeighborhood3D } from "@/components/map/MapLibreNeighborhood3D";
 import { NationalNeighborhoodOverlayBridge } from "@/components/map/NationalNeighborhoodOverlayBridge";
 import { getNeighborhoodBySlug } from "@/lib/map/canonical-neighborhood-data";
-import { MAARIF_TARGET_PILOT_BOUNDARY } from "@/lib/geo/maarif-target-pilot-boundary";
+import { MAARIF_TARGET_PILOT_BOUNDARY } from "@/lib/map/maarif-osm-arrondissement-shadow";
 import { MAP_LAYER_EXPLORE, type MapNavigationState } from "@/lib/map/map-navigation-state";
 
 const NationalTerritoryExperienceDynamic = dynamic(

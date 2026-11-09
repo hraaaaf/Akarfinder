@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
-import { MAARIF_TARGET_PILOT_BOUNDARY as B } from "../../../lib/geo/maarif-target-pilot-boundary.js";
+import { MAARIF_TARGET_PILOT_BOUNDARY as B } from "../../../lib/map/maarif-osm-arrondissement-shadow.js";
 
 test("Maârif relation is an explicit unreviewed OSM shadow, never the central quarter", () => {
   assert.equal(B.status, "shadow-reference");
