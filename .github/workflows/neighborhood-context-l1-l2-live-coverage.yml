@@ -1,0 +1,70 @@
+name: Neighborhood Context L1 L2 Live Availability (STRICT)
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-live-sources:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      NCI_L1_OUTPUT_DIR: artifacts/neighborhood-context-l1
+      NCI_L2_OUTPUT_DIR: artifacts/neighborhood-context-l2
+      NCI_L2_L1_SNAPSHOT: artifacts/neighborhood-context-l1/snapshot.json
+      AKAR_NCI_OVERPASS_ENDPOINTS: https://overpass-api.de/api/interpreter;https://overpass.private.coffee/api/interpreter
+
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Refresh real L1 source snapshot, no synthetic fallback
+        run: npx tsx scripts/neighborhood-context/l1-generate-pilot.ts
+      - name: Generate L2 assignments from same live snapshot
+        run: npx tsx scripts/neighborhood-context/l2-generate-pilot.ts
+      - name: Upload source-status evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neighborhood-context-live-source-status-${{ github.run_id }}
+          path: |
+            artifacts/neighborhood-context-l1/report.json
+            artifacts/neighborhood-context-l2/report.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Strict L1 and L2 availability truth gates
+        shell: bash
+        run: |
+          set +e
+          node scripts/neighborhood-context/l1-validate-report.mjs
+          l1_status=$?
+          node scripts/neighborhood-context/l2-validate-report.mjs
+          l2_status=$?
+          {
+            echo "### Live source truth (NOT a PR contract check)"
+            echo "- L1 source-coverage gate exit code: ${l1_status}"
+            echo "- L2 source-anchor gate exit code: ${l2_status}"
+            echo "- Current POIs are NOT certified when either gate fails."
+            echo "- Required live thresholds are unchanged (L1 >=4/6 pilots; L2 >=5 truth-safe anchors)."
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$l1_status" -ne 0 ] || [ "$l2_status" -ne 0 ]; then
+            echo "::error title=Live POI source unavailable::L1/L2 strict coverage gate failed. This blocks data certification; no pretend green."
+            exit 1
+          fi
