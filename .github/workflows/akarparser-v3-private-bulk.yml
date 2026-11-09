@@ -1,0 +1,79 @@
+name: AkarParser V3 Private Raw Bulk
+on:
+  pull_request:
+    paths:
+      - "scripts/acquisition/akarparser_v3_raw_bulk.py"
+      - "scripts/acquisition/__tests__/test_akarparser_v3_raw_bulk.py"
+      - ".github/workflows/akarparser-v3-private-bulk.yml"
+      - "docs/data/AKARPARSER_V3_RAW_BULK_2026-11-09.md"
+  workflow_dispatch:
+    inputs:
+      authorize_private_batch:
+        type: boolean
+        description: "Explicitly authorize offline parsing of approved private local inbox"
+        required: true
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: akarparser-v3-private-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  regression:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Offline 10/100/1000 contracts — synthetic only
+        run: python -Werror::ResourceWarning -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v3_raw_bulk.py'
+
+  private-batch:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.authorize_private_batch == true
+    runs-on: [self-hosted, windows, akarfinder-private-lake]
+    environment: q1f-private-batch
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify approved local paths
+        env:
+          Q1F_RAW_BATCH_PATH: ${{ vars.Q1F_RAW_BATCH_PATH }}
+          Q1F_PRIVATE_OUTPUT_PARENT: ${{ vars.Q1F_PRIVATE_OUTPUT_PARENT }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ([string]::IsNullOrWhiteSpace($env:Q1F_RAW_BATCH_PATH) -or
+              [string]::IsNullOrWhiteSpace($env:Q1F_PRIVATE_OUTPUT_PARENT)) {
+            throw 'PRIVATE_BATCH_PATHS_NOT_CONFIGURED'
+          }
+          if (-not (Test-Path -LiteralPath $env:Q1F_RAW_BATCH_PATH)) {
+            throw 'APPROVED_PRIVATE_BATCH_MISSING'
+          }
+          if (-not (Test-Path -LiteralPath $env:Q1F_PRIVATE_OUTPUT_PARENT -PathType Container)) {
+            throw 'APPROVED_PRIVATE_OUTPUT_PARENT_MISSING'
+          }
+      - name: Private offline batch — aggregate logs only
+        env:
+          Q1F_RAW_BATCH_PATH: ${{ vars.Q1F_RAW_BATCH_PATH }}
+          Q1F_PRIVATE_OUTPUT_PARENT: ${{ vars.Q1F_PRIVATE_OUTPUT_PARENT }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $dest = Join-Path $env:Q1F_PRIVATE_OUTPUT_PARENT "q1f-v3-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+          python scripts/acquisition/akarparser_v3_raw_bulk.py --input "$env:Q1F_RAW_BATCH_PATH" --out "$dest"
+          if ($LASTEXITCODE -ne 0) { throw 'Q1F_PRIVATE_BATCH_FAILED' }
+          $report = Get-Content -LiteralPath (Join-Path $dest "aggregate_report.json") -Raw | ConvertFrom-Json
+          if ($report.input_count -lt 1 -or $report.safety.neon_admission_authorized -ne $false -or
+              $report.safety.db_writes -ne 0) { throw 'Q1F_FAIL_CLOSED' }
+          Write-Host "Q1F_BATCH_RECORDS=$($report.input_count)"
+          Write-Host "Q1F_PRODUCTION_NEON_WRITES=0"
+          Write-Host "Q1F_INDEPENDENT_PRECISION_CERTIFIED=0"
+      # NO cache, artifacts, uploads, cloud credentials, or untrusted PR execution.

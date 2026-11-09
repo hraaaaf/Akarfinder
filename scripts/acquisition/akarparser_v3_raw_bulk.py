@@ -43,7 +43,7 @@ ALIASES = {
     "bathrooms": ("bathrooms_count", "bathrooms", "numberOfBathroomsTotal"),
     "observed_at": ("observed_at", "fetched_at", "captured_at", "scraped_at"),
     "published_at": ("published_at", "published_at_source", "datePublished"),
-    "source_offer_id": ("source_offer_key", "source_offer_id", "external_offer_id"),
+    "source_offer_id": ("source_offer_key", "source_offer_id", "external_offer_id", "listing_id"),
     "image_urls": ("image_urls", "images", "photos", "image"),
 }
 NESTED = ("listing", "property", "data", "details", "attributes", "raw_json", "payload",
@@ -199,6 +199,13 @@ def adapt(raw: dict) -> tuple[dict, dict]:
                             and not (a == "name" and "address" in origin)), None)
             if matched:
                 val, key = matched
+                if field == "surface_m2" and isinstance(val, dict):
+                    unit = str(val.get("unitCode") or val.get("unit") or "").lower()
+                    if unit not in ("mtk", "m2", "m²", "sqm"):
+                        if origin == "row":
+                            row.pop(key, None)
+                            row.pop("surface_m2", None)
+                        continue  # never interpret SQF / unlabelled QuantitativeValue as m²
                 if field == "observed_at":
                     row["observed_at"] = val
                 elif not present(row.get(field)):
@@ -234,9 +241,19 @@ def adapt(raw: dict) -> tuple[dict, dict]:
                 if val:
                     row[key] = val
                     evidence[key] = {"path": "visible_text." + kind, "method": "explicit_unit_regex", "verified": False}
+        if not present(row.get("bedrooms")):
+            m = v2.BED_RX.search(body)
+            if m:
+                row["bedrooms"] = int(m.group(1))
+                evidence["bedrooms"] = {"path": "visible_text.bedrooms", "method": "unit_regex", "verified": False}
         if not present(row.get("description")) and len(body) > 30:
             row["description"] = body[:3000]
             evidence["description"] = {"path": "html.visible_text", "method": "visible_text", "verified": False}
+    # V2 sees ONLY V3-vetted fields: otherwise unvetted nested JSON-LD might
+    # reinterpret e.g. SQF as square metres. Preserve original bytes via raw_sha256.
+    for key in ("raw_html", "html", "page_html", "body_html", "raw_json", "payload",
+                "raw_payload", "listing_data", "structured_data"):
+        row.pop(key, None)
     return row, evidence
 
 
@@ -278,9 +295,18 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
     row, provenance = adapt(raw)
     base = v2.parse_record(row, generated_at=clock.isoformat())
     e = base["extracted"]
+    if str(row.get("property_type") or "").strip().lower() in ("ferme", "farm"):
+        if e.get("property_type") and e["property_type"] != "farm":
+            base["status"] = "quarantine"  # explicit farm contradicts lexical type inference
+            base["quality"]["issues"].append("PROPERTY_TYPE_CONFLICT")
+        e["property_type"] = "farm"  # preserve the explicit source type
     e["image_urls"] = v2.media_items(row.get("image_urls") or row.get("images"))
+    http_code = row.get("http_status")
+    invalid_http = str(http_code) in ("404", "410", "403", "429", "500", "503")
+    if invalid_http:
+        base["quality"]["issues"].append("SOURCE_HTTP_NON_SUCCESS")
     status = quality(e, base["source"], clock,
-                     quarantine=base["status"] == "quarantine",
+                     quarantine=base["status"] == "quarantine" or invalid_http,
                      serp=bool(row.get("query_id") and row.get("source_domain")))
     return {
         "version": VERSION, "record_id": base["record_id"], "source": base["source"],
@@ -328,6 +354,8 @@ def source_records(root: Path) -> Iterator[tuple[str, int, dict]]:
                     if not line.strip():
                         continue
                     try:
+                        if len(line) > 3_000_000:
+                            raise ValueError("RAW_RECORD_OVER_3MB")
                         value = json.loads(line)
                         if not isinstance(value, dict):
                             raise ValueError("NOT_OBJECT")
@@ -342,7 +370,11 @@ def source_records(root: Path) -> Iterator[tuple[str, int, dict]]:
         else:
             if path.stat().st_size > 64_000_000:
                 raise ValueError("JSON_ARRAY_TOO_LARGE_USE_JSONL")
-            raw = json.loads(path.read_text(encoding="utf-8"))
+            try:
+                raw = json.loads(path.read_text(encoding="utf-8"))
+            except (ValueError, UnicodeError):
+                yield label, 1, {"_v3_invalid": "INVALID_JSON_FILE"}
+                continue
             if isinstance(raw, dict):
                 raw = raw["listings"] if isinstance(raw.get("listings"), list) else [raw]
             if not isinstance(raw, list):
@@ -415,7 +447,7 @@ def run(root: Path, out: Path, *, as_of: datetime, limit: int | None = None) -> 
             except Exception as exc:
                 counts["errors"] += 1
                 writers["errors"].put({"input_file": file, "line": line, "error_type": type(exc).__name__,
-                                       "error_code": str(exc) if str(exc) in ("HTML_TOO_LARGE", "NOT_OBJECT", "INVALID_JSONL_RECORD") else "PARSE_FAILED"})
+                                       "error_code": str(exc) if str(exc) in ("HTML_TOO_LARGE", "NOT_OBJECT", "INVALID_JSONL_RECORD", "INVALID_JSON_FILE", "CAPTURE_HASH_MISMATCH", "RAW_RECORD_OVER_3MB") else "PARSE_FAILED"})
     finally:
         for f in writers.values():
             f.close()

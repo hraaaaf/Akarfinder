@@ -219,6 +219,32 @@ class TestV3(unittest.TestCase):
         self.assertEqual(parsed["fields"]["surface_total_m2"], 145)
         self.assertEqual(parsed["quality"]["status"], "ready_internal")
 
+    def test_no_sqft_as_m2(self):
+        rec = raw(36)
+        del rec["surface_m2"]
+        rec["floorSize"] = {"value": 1200, "unitCode": "FTK"}
+        got = m.parse_raw(rec, NOW)
+        self.assertIsNone(got["fields"]["surface_total_m2"])
+        self.assertNotEqual(got["quality"]["status"], "ready_internal")
+        other = raw(37)
+        other["surface_m2"] = {"value": 1200, "unitCode": "FTK"}
+        got2 = m.parse_raw(other, NOW)
+        self.assertIsNone(got2["fields"]["surface_total_m2"])
+
+    def test_explicit_farm_remains_farm(self):
+        rec = raw(51)
+        rec["property_type"] = "farm"
+        result = m.parse_raw(rec, NOW)
+        self.assertEqual(result["fields"]["property_type"], "farm")
+        self.assertFalse(result["quality"]["neon_product_admission_authorized"])
+
+    def test_images_and_bedroom_text(self):
+        content = HTML.replace('3 chambres, ascenseur', '4 chambres, ascenseur')
+        item = m.parse_raw({"raw_html": content, "fetched_at": "2026-11-08T12:00:00Z",
+                            "images": ["https://example.ma/photo1.jpg", "https://example.ma/photo2.jpg"]}, NOW)
+        self.assertEqual(item["fields"]["bedrooms_count"], 4)
+        self.assertEqual(len(item["fields"]["image_urls"]), 2)
+
     def test_output_inside_input_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             b = Path(tmp)
