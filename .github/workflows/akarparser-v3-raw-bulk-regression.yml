@@ -5,6 +5,7 @@ on:
     paths:
       - 'scripts/acquisition/akarparser_v2.py'
       - 'scripts/acquisition/akarparser_v3_raw_bulk.py'
+      - 'scripts/acquisition/akarparser_v3_benchmark.py'
       - 'scripts/acquisition/__tests__/test_akarparser_v2*.py'
       - 'scripts/acquisition/__tests__/test_akarparser_v3*.py'
       - '.github/workflows/akarparser-v3-raw-bulk-regression.yml'
@@ -29,7 +30,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Syntax check
-        run: python -m py_compile scripts/acquisition/akarparser_v2.py scripts/acquisition/akarparser_v3_raw_bulk.py
+        run: python -m py_compile scripts/acquisition/akarparser_v2.py scripts/acquisition/akarparser_v3_raw_bulk.py scripts/acquisition/akarparser_v3_benchmark.py
       - name: V2 + V3 offline regression
         run: |
           python -m unittest discover -q -s scripts/acquisition/__tests__ -p 'test_akarparser_v2*.py'
