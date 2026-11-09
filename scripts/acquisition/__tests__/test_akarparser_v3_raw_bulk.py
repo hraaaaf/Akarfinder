@@ -245,6 +245,13 @@ class TestV3(unittest.TestCase):
         self.assertEqual(item["fields"]["bedrooms_count"], 4)
         self.assertEqual(len(item["fields"]["image_urls"]), 2)
 
+    def test_explicit_foreign_country_is_quarantined(self):
+        listing = raw(777)
+        listing["country"] = "France"
+        result = m.parse_raw(listing, NOW)
+        self.assertEqual(result["quality"]["status"], "quarantine")
+        self.assertIn("EXPLICIT_COUNTRY_OUTSIDE_MOROCCO", result["quality"]["v2_issues"])
+
     def test_output_inside_input_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             b = Path(tmp)

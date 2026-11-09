@@ -305,8 +305,11 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
     invalid_http = str(http_code) in ("404", "410", "403", "429", "500", "503")
     if invalid_http:
         base["quality"]["issues"].append("SOURCE_HTTP_NON_SUCCESS")
+    foreign_country = bool(e.get("country") and e["country"] != "Morocco")
+    if foreign_country:
+        base["quality"]["issues"].append("EXPLICIT_COUNTRY_OUTSIDE_MOROCCO")
     status = quality(e, base["source"], clock,
-                     quarantine=base["status"] == "quarantine" or invalid_http,
+                     quarantine=base["status"] == "quarantine" or invalid_http or foreign_country,
                      serp=bool(row.get("query_id") and row.get("source_domain")))
     return {
         "version": VERSION, "record_id": base["record_id"], "source": base["source"],
