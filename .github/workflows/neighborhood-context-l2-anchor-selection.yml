@@ -8,6 +8,7 @@ on:
       - "scripts/neighborhood-context/**"
       - "scripts/scrapers/__tests__/neighborhood-context-l2-anchor-selection.test.ts"
       - "scripts/scrapers/__tests__/neighborhood-context-l1-l2-availability-gates.test.mjs"
+      - "scripts/scrapers/__tests__/vivre-ici-maarif-source-claims-qa.test.mjs"
       - ".github/workflows/neighborhood-context-l2-anchor-selection.yml"
   workflow_dispatch:
 
@@ -40,6 +41,7 @@ jobs:
           scripts/scrapers/__tests__/neighborhood-context-l2-anchor-selection.test.ts
           scripts/scrapers/__tests__/neighborhood-context-l1-poi-registry.test.ts
           scripts/scrapers/__tests__/neighborhood-context-l1-l2-availability-gates.test.mjs
+          scripts/scrapers/__tests__/vivre-ici-maarif-source-claims-qa.test.mjs
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Explicit scope of this status

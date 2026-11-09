@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import { MAARIF_TARGET_PILOT_BOUNDARY as B } from "../../../lib/map/maarif-osm-arrondissement-shadow.js";
 import { MAARIF_HISTORICAL_CENTRAL_SECTOR_REFERENCE as SECTOR } from "../../../lib/map/maarif-historical-sector-reference.js";
+import { MAARIF_AUC_2026_ARRONDISSEMENT_PLAN_REFERENCE as PLAN2026 } from "../../../lib/map/maarif-auc-2026-plan-reference.js";
 
 test("Maârif relation is an explicit unreviewed OSM shadow, never the central quarter", () => {
   assert.equal(B.status, "shadow-reference");
@@ -73,4 +74,21 @@ test("router refuses to substitute central Maârif quartier for OSM arrondisseme
   assert.match(router, /MAARIF_TARGET_PILOT_BOUNDARY\.centralSectorBoundaryClaim === false/);
   assert.match(router, /MAARIF_TARGET_PILOT_BOUNDARY\.publicationStatus === "shadow"/);
   assert.match(router, /isMaarifReference && allowShadowAdministrativePreview/);
+});
+test("AUC 2026 plan is verified arrondissement planning raster, never a 103-ha central boundary", () => {
+  assert.equal(PLAN2026.sourceRole, "arrondissement-urban-planning-reference");
+  assert.equal(PLAN2026.planNumber, "AUC 01/2026");
+  assert.equal(PLAN2026.homologationDecree, "2.26.658");
+  assert.equal(PLAN2026.bulletinOfficielPublication, "2026-10-01");
+  assert.equal(PLAN2026.pdfBytes, 59646409);
+  assert.match(PLAN2026.pdfSha256, /^[a-f0-9]{64}$/);
+  assert.equal(PLAN2026.printedScaleDenominator, 5000);
+  assert.equal(PLAN2026.publicationSourceGeometry, null);
+  assert.equal(PLAN2026.centralSectorBoundaryCertified, false);
+  assert.equal(PLAN2026.projectedCoordinateReferenceVerified, false);
+  assert.equal(PLAN2026.is2026CentralSectorPolygon, false);
+  assert.equal(PLAN2026.publishedMapBoundaryAllowed, false);
+  assert.equal(PLAN2026.attributionAndReuseReviewed, false);
+  assert.equal(SECTOR.geometry, null);
+  assert.equal(B.centralSectorBoundaryClaim, false);
 });
