@@ -344,6 +344,19 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
     row, provenance = adapt(raw)
     base = v2.parse_record(row, generated_at=clock.isoformat())
     e = base["extracted"]
+    # Mubawab's schema Sell tag is unreliable for rentals, and V2 may infer
+    # sale/rent from incidental marketing text without direct evidence.
+    # On captured HTML detail pages, retain only V3's explicitly evidenced
+    # transaction. A missing transaction is safer than a false classification.
+    host = (urlparse(str(row.get("source_url") or "")).hostname or "").removeprefix("www.")
+    strict_mubawab = host == "mubawab.ma" and any(
+        isinstance(raw.get(k), str) and raw[k].lstrip().startswith("<")
+        for k in ("raw_html", "html", "page_html", "body_html")
+    )
+    if strict_mubawab and provenance.get("transaction_type", {}).get("method") != "portal_detail_explicit":
+        if e.get("transaction_type") is not None:
+            base["quality"]["issues"].append("MUBAWAB_UNPROVEN_TRANSACTION_SUPPRESSED")
+        e["transaction_type"] = None
     # V2 can independently infer a number from description text. For Avito,
     # an undifferentiated 5 002 DH/month financing figure must never become
     # a sale price, even if its source was not picked by the V3 regex.

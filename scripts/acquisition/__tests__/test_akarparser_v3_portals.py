@@ -227,5 +227,40 @@ class TestPortalAdapters(unittest.TestCase):
         self.assertEqual(rec["fields"]["surface_total_m2"], 87.0)
         self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
 
+    def test_mubawab_incidental_marketing_rental_inference_is_suppressed(self):
+        import json
+        listing = {"@type": "RealEstateListing",
+                   "name": "Appartements neufs Palmier Casablanca dès 1,1 MDH",
+                   "description": ("Projet immobilier neuf avec option de mise en location "
+                                   "pour investisseurs, sans annonce de location directe"),
+                   "offers": {"price": 1200000, "priceCurrency": "MAD",
+                              "businessFunction": "http://purl.org/goodrelations/v1#Sell"}}
+        html = ("<html><head><script type='application/ld+json'>" +
+                json.dumps(listing) + "</script></head><body>" +
+                "<p>Immobilier Casablanca</p><p>Appartements Casablanca</p>" +
+                "<p>Palmier</p><p>Obtenir un financement</p><p>37m²</p></body></html>")
+        rec = v3.parse_raw({"raw_html": html,
+                            "source_url": "https://www.mubawab.ma/fr/a/8433291/appartements-neufs",
+                            "fetched_at": "2026-11-09T16:00:00Z"}, NOW)
+        self.assertIsNone(rec["fields"]["transaction_type"])
+        self.assertNotEqual(rec["quality"]["status"], "ready_internal")
+        self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+
+    def test_mubawab_explicit_unaccented_a_louer_is_rental(self):
+        import json
+        listing = {"@type": "RealEstateListing",
+                   "name": "Rare: a louer Studio neuf avec grande terrasse",
+                   "offers": {"price": 6200, "priceCurrency": "MAD",
+                              "businessFunction": "http://purl.org/goodrelations/v1#Sell"}}
+        html = ("<html><head><script type='application/ld+json'>" +
+                json.dumps(listing) + "</script></head><body>" +
+                "<p>Immobilier Casablanca</p><p>Appartements Casablanca</p>" +
+                "<p>Les Hôpitaux</p><p>Obtenir un financement</p><p>52m²</p></body></html>")
+        rec = v3.parse_raw({"raw_html": html,
+                            "source_url": "https://www.mubawab.ma/fr/a/8437981/rare-a-louer-studio",
+                            "fetched_at": "2026-11-09T16:00:00Z"}, NOW)
+        self.assertEqual(rec["fields"]["transaction_type"], "rent")
+        self.assertIn("SCHEMA_SELL_CONTRADICTS_RENTAL_TEXT", rec["quality"]["review_reasons"])
+
 if __name__ == "__main__":
     unittest.main()

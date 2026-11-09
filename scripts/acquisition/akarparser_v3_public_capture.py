@@ -129,15 +129,23 @@ def fetch_detail(url: str, host: str) -> tuple[bytes, str]:
     return contents, final_url
 
 def capture(source: Path, previous: Path, destination: Path, *, max_new: int,
-            max_per_domain: int, delay_seconds: float = MIN_DELAY_SECONDS) -> dict:
+            max_per_domain: int, delay_seconds: float = MIN_DELAY_SECONDS,
+            allowed_domains: tuple[str, ...] | None = None) -> dict:
     if not (1 <= max_new <= 100 and 1 <= max_per_domain <= 30):
         raise ValueError("INVALID_BATCH_BOUNDS")
     if delay_seconds < MIN_DELAY_SECONDS:
         raise ValueError("RATE_LIMIT_UNSAFE")
+    if allowed_domains is not None and (
+        not allowed_domains or any(domain not in DETAIL_PATHS for domain in allowed_domains)
+    ):
+        raise ValueError("INVALID_DOMAIN_ALLOWLIST")
     if destination.exists():
         raise FileExistsError("NEVER_OVERWRITE_PRIVATE_CANARY")
     previously_seen = existing_fingerprints(previous)
     candidates = candidates_from_structured(source, set(previously_seen))
+    if allowed_domains is not None:
+        candidates = {domain: urls for domain, urls in candidates.items()
+                      if domain in allowed_domains}
     destination.mkdir(parents=True)
     counts = Counter()
     counts["known_original_details"] = len(previously_seen)
@@ -209,6 +217,7 @@ def capture(source: Path, previous: Path, destination: Path, *, max_new: int,
         "eligible_historical_urls": counts["eligible_historical_urls"],
         "network_detail_attempts": counts["network_detail_attempts"],
         "per_domain": dict(per_domain),
+        "allowed_domains": list(allowed_domains) if allowed_domains is not None else None,
         "errors": {host: dict(errs) for host, errs in errors.items()},
         "blocked_domains": sorted(blocked),
         "safety": {"db_writes": 0, "no_auth_or_bypass": True, "no_publication": True,
@@ -227,9 +236,12 @@ def main():
     ap.add_argument("--max-new", type=int, default=20)
     ap.add_argument("--max-per-domain", type=int, default=8)
     ap.add_argument("--delay-seconds", type=float, default=MIN_DELAY_SECONDS)
+    ap.add_argument("--domains", help="Comma-separated allowlist from known detail hosts")
     args = ap.parse_args()
+    allowlist = tuple(sorted(set(x.strip() for x in args.domains.split(",") if x.strip()))) if args.domains else None
     print(json.dumps(capture(args.structured, args.existing_inbox, args.out,
                              max_new=args.max_new, max_per_domain=args.max_per_domain,
-                             delay_seconds=args.delay_seconds), sort_keys=True))
+                             delay_seconds=args.delay_seconds,
+                             allowed_domains=allowlist), sort_keys=True))
 if __name__ == "__main__":
     main()

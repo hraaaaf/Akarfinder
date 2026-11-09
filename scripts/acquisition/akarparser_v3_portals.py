@@ -118,14 +118,14 @@ def enrich(page, row: dict, evidence: dict) -> None:
                 continue
             title = str(node.get("name") or "")
             summary = str(node.get("description") or "")[:360]
-            sale_title = bool(re.search(r"\b(?:à\s+vendre|en\s+vente|à\s+la\s+vente)\b", title, re.I))
-            rent_title = bool(re.search(r"\b(?:à\s+louer|en\s+location|à\s+la\s+location)\b", title, re.I))
+            sale_title = bool(re.search(r"\b(?:(?:à|a)\s+vendre|en\s+vente|(?:à|a)\s+la\s+vente)\b", title, re.I))
+            rent_title = bool(re.search(r"\b(?:(?:à|a)\s+louer|en\s+location|(?:à|a)\s+la\s+location)\b", title, re.I))
             if sale_title != rent_title:
                 _set(row, evidence, "transaction_type", "sale" if sale_title else "rent",
                      "mubawab.jsonld.listing.title.explicit_transaction")
             else:
-                sale_body = bool(re.search(r"\b(?:à\s+la\s+vente|mis\s+en\s+vente|à\s+vendre)\b", summary, re.I))
-                rent_body = bool(re.search(r"\b(?:à\s+la\s+location|à\s+louer|mis\s+en\s+location)\b", summary, re.I))
+                sale_body = bool(re.search(r"\b(?:(?:à|a)\s+la\s+vente|mis\s+en\s+vente|(?:à|a)\s+vendre)\b", summary, re.I))
+                rent_body = bool(re.search(r"\b(?:(?:à|a)\s+la\s+location|(?:à|a)\s+louer|mis\s+en\s+location)\b", summary, re.I))
                 if sale_body != rent_body:
                     _set(row, evidence, "transaction_type", "sale" if sale_body else "rent",
                          "mubawab.jsonld.listing.description.explicit_transaction")

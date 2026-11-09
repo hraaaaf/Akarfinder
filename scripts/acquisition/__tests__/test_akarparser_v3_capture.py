@@ -124,6 +124,37 @@ class CaptureContracts(unittest.TestCase):
                 + "listing " * 250 + "</body></html>")
         c.check_detail_markup(page, "domio.ma")
 
+    def test_allowlisted_sources_do_not_probe_unrelated_robots(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "candidates.jsonl.gz"
+            make_structured(source, [
+                "https://domio.ma/fr/appartement/vendre/casablanca/2345/hero",
+                "https://barnes-marrakech.com/fr/vente/marrakech/2769836",
+            ])
+            page = (b"<html><head><meta property='og:title' content='Appartement'></head>"
+                    + b"<body><h1>Annonce</h1>" + b"detail " * 300 + b"</body></html>")
+            with patch.object(c, "robots", return_value=FakeRobots()) as check_robots, \
+                 patch.object(c, "fetch_detail", side_effect=lambda url, host: (page, url)) as fetched, \
+                 patch.object(c.time, "sleep"):
+                result = c.capture(source, root / "existing", root / "out",
+                                   max_new=2, max_per_domain=2,
+                                   allowed_domains=("domio.ma",))
+            self.assertEqual(result["captured"], 1)
+            self.assertEqual(result["allowed_domains"], ["domio.ma"])
+            check_robots.assert_called_once_with("domio.ma")
+            fetched.assert_called_once()
+
+    def test_unknown_allowlist_fails_before_writing(self):
+        with TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            source=root / "candidates.jsonl.gz"
+            make_structured(source, [])
+            with self.assertRaisesRegex(ValueError, "INVALID_DOMAIN_ALLOWLIST"):
+                c.capture(source, root / "old", root / "out", max_new=1,
+                          max_per_domain=1, allowed_domains=("evil.example",))
+            self.assertFalse((root / "out").exists())
+
     def test_delay_floor_never_reduced(self):
         with TemporaryDirectory() as tmp:
             root=Path(tmp);source=root/"source.jsonl.gz"
