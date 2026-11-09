@@ -140,3 +140,14 @@ test("pinned raw JSON export SHA-256 detects mutation of otherwise plausible OSM
   assert.equal(verifyPinnedCandidateExportBytes(Buffer.from(text),{candidate_snapshot_sha256:correct}),true);
   assert.equal(verifyPinnedCandidateExportBytes(Buffer.from(text+" "),{candidate_snapshot_sha256:correct}),false);
 });
+
+test("rejects OSM-derived map directories as independent identity or GPS evidence", () => {
+  for (const url of ["https://mapcarta.com/fr/N2824741221", "https://tiles.mapcarta.com/derived", "https://rues-maroc.openalfa.com/casablanca/shopping"]) {
+    const a=checked(data());
+    a.reviews.candidates[0].independent_review.identity.source_url=url;
+    assert.equal(evaluatePrivateOfflineAdmission(a).refused_by_reason.independent_identity_missing,1);
+    const b=checked(data());
+    b.reviews.candidates[0].independent_review.position.source_url=url;
+    assert.equal(evaluatePrivateOfflineAdmission(b).refused_by_reason.independent_position_missing,1);
+  }
+});

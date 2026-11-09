@@ -25,13 +25,15 @@ export function verifyPinnedCandidateExportBytes(sourceBytes, manifest) {
 const DAY_MS = 86_400_000;
 const MAX_EVIDENCE_AGE_DAYS = 30;
 const SOURCE_DOMAINS_BLOCKED = new Set(["openstreetmap.org", "www.openstreetmap.org", "geofabrik.de",
-  "www.geofabrik.de", "overpass-api.de", "overpass.private.coffee"]);
+  "www.geofabrik.de", "overpass-api.de", "overpass.private.coffee", "mapcarta.com", "www.mapcarta.com", "openalfa.com", "www.openalfa.com", "rues-maroc.openalfa.com"]);
 
 function validHttpSource(url) {
   if (typeof url !== "string") return false;
   try {
     const parsed = new URL(url);
-    return parsed.protocol === "https:" && !SOURCE_DOMAINS_BLOCKED.has(parsed.hostname.toLowerCase());
+    const hostname = parsed.hostname.toLowerCase().replace(/\.$/, "");
+    return parsed.protocol === "https:" && ![...SOURCE_DOMAINS_BLOCKED].some((domain) =>
+      hostname === domain || hostname.endsWith(`.${domain}`));
   } catch {
     return false;
   }

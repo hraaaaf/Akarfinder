@@ -235,3 +235,16 @@ PR roadmap : #902. Lots : #904, #906, #907, #913.
 - Ces nouveaux jobs planifiés ne sont **pas activés avant un éventuel merge sur main** ; leur existence en Draft ne constitue aucune preuve de couverture ni autorisation de déploiement.
 - Tests synthétiques de sécurité `neighborhood-context-l1-l2-availability-gates.test.mjs` : 7 assertions de refus ; 51/51 tests ciblés locaux, TypeScript PASS, YAML workflows 3/3, efficacité PR 3/3. Aucun changement au read-model runtime ni aux scores métier. **Aucune injection des 415 candidats Maârif ni des 24 dossiers non certifiés**.
 - Sous-lot technique L1/L2 : candidat prêt pour révision CI, **pas certifié en PROD**. Next : push, CI exact HEAD, qualification des preuves POI et SIG, UI/UX, merge gate humain, aucun Vercel sans autorisation.
+
+### 09/11/2026 — LOT01-O : garde-fou SIG Maârif
+
+- **Deux périmètres sans interchangeabilité** : secteur central Maârif historique **environ 103 ha** (rapport AUC page imprimée 10), arrondissement Maârif **environ 1 240 ha**. Une aire similaire ne certifie ni la topologie ni la date de la géométrie.
+- `lib/map/maarif-historical-sector-reference.ts` porte les axes historiques et **aucune géométrie** / aucune certification SIG actuelle. `MAARIF_TARGET_PILOT_BOUNDARY` identifie explicitement la relation OSM `2801474` comme **arrondissement, non secteur central**. Le routeur contrôle la portée avant de permettre une preview interne derrière son drapeau OFF par défaut.
+- 6/6 tests unitaires dédiés verts ; **aucun changement UI public** et aucune publication de POI. Next : obtenir le vrai tracé SIG compétent, qualifier les POI, CI, merge/release gates.
+
+### 09/11/2026 — LOT01-O : qualité de filiation des sources POI
+
+- Les sources **Mapcarta et OpenAlfa** reprennent des POI OSM ; le sas `maarif-offline-review-admission.mjs` les **refuse** désormais comme preuves indépendantes d'identité ou GPS. Cas test : Armel / node 2824741221. 12/12 tests sas.
+- Étude hors repo et lecture seule d'une liste Casabus **non documentée** : 3 879 enregistrements arrêts/lignes ; une correspondance plausible `LYCEE EL WALLADA` à **~4 m** de `node/5079740007`, lignes L050/L084, **3 autres arrêts prioritaires sans rapprochement probant**. Aucune date de service vérifiée ni autorisation de publication.
+- QA privée Maârif : **17/24 avec indice externe**, **7/24 sans**, **0/24 certifiés** ; la proximité et le nom ne suffisent pas à une attestation d'activité, de GPS indépendant ou de quartier central.
+- Contour arrondissement 1 240 ha et secteur central ~103 ha demeurent deux couches **distinctes et non certifiées en SIG actuel**. Next : sources primaires/contrôles humains, preview privée autorisée distinctement, UX final et closeout.

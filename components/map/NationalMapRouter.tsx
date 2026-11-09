@@ -159,6 +159,8 @@ export function NationalMapRouter({ initialState }: Props) {
         desktopCameraOffset={isMaarifReference ? [-0.0055, 0.0090] : [0, 0]}
         administrativeBoundaryPreview={isMaarifReference && allowShadowAdministrativePreview
           && MAARIF_TARGET_PILOT_BOUNDARY.status === "shadow-reference"
+          && MAARIF_TARGET_PILOT_BOUNDARY.geographicScope === "arrondissement"
+          && MAARIF_TARGET_PILOT_BOUNDARY.centralSectorBoundaryClaim === false
           && MAARIF_TARGET_PILOT_BOUNDARY.reviewed === false
           && MAARIF_TARGET_PILOT_BOUNDARY.publicationStatus === "shadow"
             ? MAARIF_TARGET_PILOT_BOUNDARY.geometry : null}

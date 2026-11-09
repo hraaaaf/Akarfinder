@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import { MAARIF_TARGET_PILOT_BOUNDARY as B } from "../../../lib/map/maarif-osm-arrondissement-shadow.js";
+import { MAARIF_HISTORICAL_CENTRAL_SECTOR_REFERENCE as SECTOR } from "../../../lib/map/maarif-historical-sector-reference.js";
 
 test("Maârif relation is an explicit unreviewed OSM shadow, never the central quarter", () => {
   assert.equal(B.status, "shadow-reference");
@@ -48,4 +49,28 @@ test("OSM preview is always labelled indicative, not published as government-cer
   assert.match(source, /non certifié par la commune/);
   assert.match(source, /ne représente pas la limite du quartier central/);
   assert.match(source, /© OpenStreetMap contributors · ODbL/);
+});
+
+test("AUC historical central sector (103 ha) cannot inherit arrondissement geometry (1240 ha)", () => {
+  assert.equal(B.geographicScope, "arrondissement");
+  assert.equal(B.areaHectaresApprox, 1240);
+  assert.equal(B.centralSectorBoundaryClaim, false);
+  assert.equal(SECTOR.geographicScope, "historical-central-sector");
+  assert.equal(SECTOR.areaHectaresApprox, 103);
+  assert.ok(B.areaHectaresApprox / SECTOR.areaHectaresApprox > 10);
+  assert.equal(SECTOR.geometry, null, "No real central-sector polygon has been certified");
+  assert.equal(SECTOR.sigCertified, false);
+  assert.equal(SECTOR.current2026BoundaryVerified, false);
+  assert.equal(SECTOR.publicationStatus, "textual-reference-only");
+  assert.equal(SECTOR.sourcePrintedPage, 10);
+  assert.match(SECTOR.sourceUrl, /auc\.ma\/wp-content\/uploads\/2020\/05\/RAPPORT-JUSTIFICATIF-MAARIF\.pdf/);
+  assert.deepEqual(SECTOR.axes.south, ["Boulevard Brahim Roudani"]);
+});
+
+test("router refuses to substitute central Maârif quartier for OSM arrondissement shadow", () => {
+  const router = readFileSync("components/map/NationalMapRouter.tsx", "utf8");
+  assert.match(router, /MAARIF_TARGET_PILOT_BOUNDARY\.geographicScope === "arrondissement"/);
+  assert.match(router, /MAARIF_TARGET_PILOT_BOUNDARY\.centralSectorBoundaryClaim === false/);
+  assert.match(router, /MAARIF_TARGET_PILOT_BOUNDARY\.publicationStatus === "shadow"/);
+  assert.match(router, /isMaarifReference && allowShadowAdministrativePreview/);
 });
