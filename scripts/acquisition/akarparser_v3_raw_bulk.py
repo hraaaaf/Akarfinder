@@ -429,6 +429,9 @@ def run(root: Path, out: Path, *, as_of: datetime, limit: int | None = None) -> 
                 if "_v3_invalid" in raw:
                     raise ValueError(raw["_v3_invalid"])
                 result = parse_raw(raw, as_of)
+                # Bind the structured record to its immutable private input manifest.
+                # Needed by independent, source-blind benchmark labels; no raw data exposed.
+                result["input_ref"] = {"file": file, "line": line, "file_sha256": inputs[file]["sha256"]}
                 url = result["source"]["source_url"]
                 if url and url in seen_urls:
                     counts["duplicate_urls"] += 1
