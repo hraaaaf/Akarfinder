@@ -47,6 +47,30 @@ Les valeurs supplémentaires extraites de texte sont des **candidats**, pas des 
 - Données brutes, 15 pages de suppléments, nouvelle archive, échantillons et 100 dossiers restent uniquement dans le stockage privé du poste Windows.
 - **0 écriture Neon/Supabase, 0 publication, 0 déploiement Vercel, 0 merge.** L'archivage secondaire sur volume indépendant reste à faire.
 
+## Q1E — 09/11/2026 — inventaire croisé privé des 100 dossiers (sans revendication de précision)
+
+**Données analysées directement sur le Windows connecté, en lecture seule.** File privée du *même échantillon* `Q1E_CANARY_20261109_EXACT_SAME_1000/private_review_queue_100.jsonl.gz` : 100 lignes, 100 identifiants distincts et 100 URL exactes distinctes, SHA-256 de la file `b6f7a62c1db3a4702ae78dbba74bd2934541ba18f9595683df0959c511cc6c97`.
+
+Archives historiques privées du backup Supabase examinées sans exporter d'annonce individuelle :
+- `listing_representations.copy.sql.gz` : **143 121** lignes examinées ; **57/100** URL exactes communes ;
+- `source_offer_seeds.copy.sql.gz` : **78 110** lignes examinées ; les **mêmes 57/100** URL communes ;
+- `mubawab_listing_corpus_v1.copy.sql.gz` : **37 420** lignes examinées ; **0/100** URL exactes communes ;
+- **43/100** dossiers n'ont pas de correspondance URL exacte dans ces trois fichiers, ce qui ne prouve pas qu'aucune source indépendante n'existe.
+
+Comparaison prudente sur les 57 représentations historiques correspondant exactement par URL :
+
+| Champ | Identiques lorsqu'ils sont disponibles des deux côtés | Un côté absent | Différents |
+|---|---:|---:|---:|
+| Prix MAD | 40 | 17 | 0 |
+| Surface m² | 42 | 15 | 0 |
+| Type de bien, étiquette strictement identique | 51 | 5 | **1** |
+
+**Important :** il s'agit de concordance de valeurs **entre deux enregistrements historiques** ; aucune page originale ni capture datée et indépendante n'a été authentifiée. Les archives peuvent être périmées, provenir de traitements apparentés ou présenter une variation de classification. **La divergence de type n'est pas, à elle seule, une erreur prouvée du parseur.** Les concordances ne prouvent ni précision à 98 %, ni disponibilité actuelle, ni droit de republication. **Revue humaine indépendante = 0/100 ; nouvelle observation certifiée = 0 ; Neon produit = interdit.**
+
+Preuves locales agrégées, jamais committées : `Q1E_CANARY_20261109_EXACT_SAME_1000/q1e_review_archive_overlap_aggregate_20261109_v2.json` SHA-256 `ce5a2a17d57d516132cb5b6c55270ff99eef9bce9d24ecad8736a7744555c914`, et `q1e_historical_corroboration_aggregate_20261109.json` SHA-256 `4a51d6cf7af19c5f006c19371e890d2544cc195f84f5b268f0ce9d82a5621547`. Une première tentative d'inventaire local avait un séparateur PostgreSQL COPY mal analysé ; **ne pas réutiliser** le fichier d'agrégats sans suffixe `_v2`.
+
+**Suite :** faire examiner en priorité la **divergence de type** par preuve source originale ; obtenir ou constater l'absence de captures pour les 100 dossiers, en particulier les 43 sans corroboration secondaire ; scorecard seulement après revue effective. Aucun nouveau crawl de sites tiers n'a été lancé.
+
 ## NEXT EXACT
 
 1. Obtenir des captures source originales indépendantes pour les 100 dossiers ; documenter individuellement preuve et horodatage ou `UNVERIFIABLE`.
