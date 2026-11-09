@@ -62,17 +62,34 @@ def file_md5(path):
     return h.hexdigest()
 
 
+def object_source_metadata(obj):
+    """Source OSM edit timestamp, not proof of current business operation."""
+    try:
+        version = int(obj.version)
+    except (ValueError, TypeError, AttributeError):
+        version = None
+    try:
+        value = str(obj.timestamp)
+        # The timestamp of individual OSM objects may be many years old;
+        # it must never be replaced by the Geofabrik PBF download timestamp.
+        modified_at = value if len(value) >= 10 and value[:4].isdigit() and int(value[:4]) >= 2004 else None
+    except (ValueError, TypeError, AttributeError, RuntimeError):
+        modified_at = None
+    return version, modified_at
+
+
 class MaarifHandler(osmium.SimpleHandler):
     def __init__(self):
         super().__init__()
         self.records = []
         self.ids = set()
         self.rejected = Counter()
+        self.area_error_examples = []
         self.point_count = 0
         self.area_count = 0
         self.factory = osmium.geom.GeoJSONFactory()
 
-    def consider(self, typ, obj_id, tags, lat, lon, precision):
+    def consider(self, typ, obj_id, tags, lat, lon, precision, osm_version=None, osm_modified_at=None):
         if not (math.isfinite(lat) and math.isfinite(lon)):
             self.rejected["invalid_coordinates"] += 1
             return
@@ -108,6 +125,9 @@ class MaarifHandler(osmium.SimpleHandler):
             "position_precision_independently_verified": False,
             "central_quarter_membership_certified": False,
             "source_license": "ODbL-1.0",
+            "osm_object_version": osm_version,
+            "osm_object_modified_at": osm_modified_at,
+            "business_last_verified_at": None,
         })
 
     def node(self, node):
@@ -117,9 +137,27 @@ class MaarifHandler(osmium.SimpleHandler):
             return
         try:
             if node.location.valid():
-                self.consider("node", node.id, tags, node.location.lat, node.location.lon, "osm_node")
+                self.consider("node", node.id, tags, node.location.lat, node.location.lon,
+                              "osm_node", *object_source_metadata(node))
         except Exception:
             self.rejected["node_geometry_error"] += 1
+
+    def record_area_error(self, area, reason, error=None):
+        """Keep bounded OSM IDs to diagnose geometry failures without a second full scan."""
+        if len(self.area_error_examples) >= 25:
+            return
+        try:
+            typ = "way" if area.from_way() else "relation"
+            source_id = f"{typ}/{area.orig_id()}"
+        except Exception:
+            source_id = "unknown"
+        self.area_error_examples.append({
+            "source_id": source_id,
+            "reason": reason,
+            "exception_type": type(error).__name__ if error is not None else None,
+            "exception_summary": str(error)[:160] if error is not None else None,
+            "qa_only": True,
+        })
 
     def area(self, area):
         self.area_count += 1
@@ -129,12 +167,15 @@ class MaarifHandler(osmium.SimpleHandler):
             geom = shape(json.loads(self.factory.create_multipolygon(area)))
             if geom.is_empty or not geom.is_valid:
                 self.rejected["invalid_area_geometry"] += 1
+                self.record_area_error(area, "invalid_area_geometry")
                 return
             point = geom.representative_point()
             typ = "way" if area.from_way() else "relation"
-            self.consider(typ, area.orig_id(), area.tags, point.y, point.x, "osm_polygon_representative_point")
-        except Exception:
+            self.consider(typ, area.orig_id(), area.tags, point.y, point.x,
+                          "osm_polygon_representative_point", *object_source_metadata(area))
+        except Exception as error:
             self.rejected["area_geometry_error"] += 1
+            self.record_area_error(area, "area_geometry_error", error)
 
 
 def main():
@@ -180,8 +221,11 @@ def main():
         "counts": counts,
         "object_types": geom_counts,
         "rejections": dict(h.rejected),
+        "area_error_examples": h.area_error_examples,
         "total_nodes_scanned": h.point_count,
         "total_areas_scanned": h.area_count,
+        "individual_osm_edit_timestamps_recorded": sum(bool(x["osm_object_modified_at"]) for x in h.records),
+        "individual_business_operational_checks": 0,
         "publication_guard": {
             "eligible": False,
             "all_individual_operations_unverified": True,
