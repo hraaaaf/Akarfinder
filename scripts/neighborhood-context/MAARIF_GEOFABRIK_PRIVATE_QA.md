@@ -55,3 +55,19 @@
 
 - Les **2 erreurs de géométrie** vues pendant le premier parcours concernent des objets catégorisés examinés sur **l'ensemble du Maroc** : le callback `area()` construisait leur polygone **avant** le filtre radial centré sur Maârif. Leur appartenance à Maârif est **inconnue** tant que les deux identifiants OSM ne sont pas récupérés. Ne pas les déclarer comme des défauts locaux certains.
 - La file de 24 candidats contient désormais **11 candidats avec sources secondaires** et **13 sans**. Deux nouveaux recoupements de pharmacies proviennent d'annuaires indépendants mais aucune ouverture actuelle ni vérification GPS ou administrative n'est certifiée. Source QA locale : `...\poi-pbf\qualification\maarif-24-priority-reconciled-private.json`. Pas d'injection read-model.
+
+### Sas offline d'admission revue humaine (LOT01-K)
+
+Commande QA privée (hors dépôt et hors serveur de rendu) :
+
+```powershell
+node scripts/neighborhood-context/maarif-offline-review-admission.mjs --input "<private-v2-pbf-candidates>.json" --reviews "<private-review-ledger>.json" --manifest "<pinned-source-manifest>.json" --output "<private-admission-report>.json"
+```
+
+- Exige l'empreinte PBF Geofabrik épinglée MD5 `c2334c9499b4565a6a16cf2f45624912`, le manifeste de réplication `2026-11-08T21:21:00Z`, les 415 objets cohérents (catégories, identités, géolocalisation dans un **rayon contextuel**, pas une limite administrative).
+- Un rapprochement secondaire de nom/adresse ne suffit **jamais**. Pour accéder uniquement à une **preview privée**, chaque dossier demande une revue datée : identité et adresse, coordonnées vérifiées depuis une autre source, activité documentée à la date du contrôle, attribution/ODbL revue, reviewer identifié, pas de revendication « ouvert maintenant » ni d'appartenance au quartier central, sources HTTPS distinctes. Le code vérifie la *structure déclarée*, **pas la vérité des sites ni leur indépendance réelle**.
+- Sortie réelle du 09/11/2026 : `415` objets d'origine, `24` dossiers de revue, `0` admis, `24` en attente de revue humaine ; `public_read_model_write=false`, `database_write=false`, aucun appel Overpass.
+- Ne pas déposer les JSON nominatifs ni les justificatifs source en Git/Notion. Test : `node --test scripts/scrapers/__tests__/vivre-ici-maarif-offline-admission.test.mjs` — **11 PASS**.
+- L1 et ANN-L6 ne fusionnent plus deux IDs OSM différents par simple proximité/nom : une fusion de plateformes de bus ou de commerces exige preuve manuelle. La comparaison PBF V2 prouve seulement **415 IDs cohérents**, pas 415 établissements actuels.
+
+- **SHA-256 de la sortie JSON V2** conservé dans le manifeste privé : `e8fcb8e382e365952bfa0971d81c319014e68831d39fb9a36a60fca441d66933`. La CLI refuse une modification des octets JSON ; le MD5 valide séparément le PBF original. **11/11 tests** du sas d'admission et 0/24 candidat admis en QA, aucun traitement runtime.

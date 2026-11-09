@@ -145,12 +145,20 @@ describe("Neighborhood Context L1 — canonical POI registry", () => {
     assert.equal(validateNeighborhoodPoiV1(stale, NOW).valid, true);
   });
 
-  it("deduplicates same-category same-name POIs within 80m while preserving stable identity", () => {
+  it("deduplicates only exact OSM IDs; same-name nearby objects stay distinct until independently reviewed", () => {
     const a = basePoi({ poi_id: "osm:node:100", source_entity_id: "node/100", source_url: "https://www.openstreetmap.org/node/100" });
     const b = basePoi({ poi_id: "osm:node:101", source_entity_id: "node/101", source_url: "https://www.openstreetmap.org/node/101", latitude: 33.9972, longitude: -6.8471 });
     const c = basePoi({ poi_id: "osm:node:102", source_entity_id: "node/102", source_url: "https://www.openstreetmap.org/node/102", latitude: 34.01, longitude: -6.847 });
     const deduped = dedupeNeighborhoodPois([c, b, a, a]);
-    assert.deepEqual(deduped.map((poi) => poi.poi_id), ["osm:node:100", "osm:node:102"]);
+    assert.deepEqual(deduped.map((poi) => poi.poi_id), ["osm:node:100", "osm:node:101", "osm:node:102"]);
+  });
+
+  it("retains opposite-direction bus platforms even when the coordinates and names are nearly identical", () => {
+    const a = basePoi({ poi_id: "osm:node:12180986678", source_entity_id: "node/12180986678", source_url: "https://www.openstreetmap.org/node/12180986678", name: "Résidence Loubna II", normalized_name: "residence loubna ii", category: "transport", latitude: 33.5979353, longitude: -7.6445017 });
+    const b = basePoi({ poi_id: "osm:node:10164169864", source_entity_id: "node/10164169864", source_url: "https://www.openstreetmap.org/node/10164169864", name: "Résidence Loubna II", normalized_name: "residence loubna ii", category: "transport", latitude: 33.5979729, longitude: -7.6445432 });
+    const output = dedupeNeighborhoodPois([a, b, a]);
+    assert.equal(output.length, 2);
+    assert.deepEqual(new Set(output.map((p) => p.poi_id)), new Set([a.poi_id,b.poi_id]));
   });
 });
 

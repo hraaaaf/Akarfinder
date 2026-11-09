@@ -157,38 +157,20 @@ function parseOsmProviderId(value: string): {
   };
 }
 
-function haversineMeters(a: NeighborhoodPoiV1, b: NeighborhoodPoiV1): number {
-  const radius = 6_371_000;
-  const rad = (degrees: number) => (degrees * Math.PI) / 180;
-  const dLat = rad(b.latitude - a.latitude);
-  const dLon = rad(b.longitude - a.longitude);
-  const lat1 = rad(a.latitude);
-  const lat2 = rad(b.latitude);
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-  return 2 * radius * Math.asin(Math.min(1, Math.sqrt(h)));
-}
-
+/**
+ * Keep distinct OSM object IDs until a separately reviewed identity link proves
+ * equivalence. Same name/category/proximity is NOT a dedupe proof: two bus
+ * platforms can have identical names and be just a few metres apart.
+ *
+ * Only exact IDs are idempotent. Never turn a radius into a merge decision.
+ */
 export function dedupeNeighborhoodPois(input: NeighborhoodPoiV1[]): NeighborhoodPoiV1[] {
   const ordered = [...input].sort((a, b) => a.poi_id.localeCompare(b.poi_id, "en"));
-  const accepted: NeighborhoodPoiV1[] = [];
-  const seenIds = new Set<string>();
-
+  const unique = new Map<string, NeighborhoodPoiV1>();
   for (const poi of ordered) {
-    if (seenIds.has(poi.poi_id)) continue;
-    const duplicate = accepted.some(
-      (candidate) =>
-        candidate.category === poi.category &&
-        candidate.normalized_name === poi.normalized_name &&
-        haversineMeters(candidate, poi) <= 80,
-    );
-    if (duplicate) continue;
-    seenIds.add(poi.poi_id);
-    accepted.push(poi);
+    if (!unique.has(poi.poi_id)) unique.set(poi.poi_id, poi);
   }
-
-  return accepted;
+  return [...unique.values()];
 }
 
 export function adaptOsmNearbyResult(

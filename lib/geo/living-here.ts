@@ -197,14 +197,10 @@ function dedupePois(
   const seenIds = new Set<string>();
 
   for (const poi of pois) {
+    // A name/category/radius match is not identity proof. Opposite-direction
+    // bus platforms can share a stop name and be <10 m apart. Do not merge
+    // different provider IDs unless a separate reviewed identity map exists.
     if (seenIds.has(poi.id)) continue;
-    const duplicate = accepted.some(
-      (candidate) =>
-        candidate.category === poi.category &&
-        normalize(candidate.name) === normalize(poi.name) &&
-        haversineMeters(candidate.coordinate, poi.coordinate) <= 80,
-    );
-    if (duplicate) continue;
     seenIds.add(poi.id);
     accepted.push(poi);
   }
