@@ -13,6 +13,7 @@ execFileSync(process.execPath, [
   "scripts/scrapers/__tests__/carto-basemap-style.test.ts",
   "scripts/scrapers/__tests__/vivre-ici-maarif-osm-admin-shadow.test.ts",
   "scripts/scrapers/__tests__/vivre-ici-maarif-poi-private-qa.test.mjs",
+  "scripts/scrapers/__tests__/vivre-ici-maarif-osm-pbf-gate.test.mjs",
 ], { stdio: "inherit" });
 
 const viewports = [
