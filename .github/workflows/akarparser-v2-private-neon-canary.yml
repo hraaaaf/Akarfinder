@@ -1,0 +1,36 @@
+name: AkarParser V2 Private Neon Canary
+on:
+  workflow_dispatch:
+    inputs:
+      authorize_readonly_canary:
+        description: "Authorize 1000 private rows from Neon Recovery for read-only Q1E validation"
+        type: boolean
+        default: false
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref || github.ref }}
+  cancel-in-progress: false
+jobs:
+  private-neon:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.authorize_readonly_canary == true
+    runs-on: ubuntu-latest
+    environment: q1e-neon-readonly
+    timeout-minutes: 20
+    env:
+      Q1E_NEON_RECOVERY_READONLY_URL: ${{ secrets.Q1E_NEON_RECOVERY_READONLY_URL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Ensure PostgreSQL client
+        run: command -v psql
+      - name: Run local regression first
+        run: python -Werror::ResourceWarning -m unittest discover -s scripts/acquisition/__tests__ -p 'test_akarparser_v2*.py' -v
+      - name: Private read-only 1000 real rows (aggregate-only logs)
+        run: python scripts/acquisition/akarparser_v2_neon_readonly_canary.py --scratch-root "$RUNNER_TEMP"
+      # No upload-artifact; row-level files exist only during this job.

@@ -318,3 +318,11 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 - **Preuve :** run GitHub déterministe + artifact manifest/summary + hashes + invariants `databaseWrites=0`, `sourceSiteFetches=0`, `productionWrites=0`.
 
 **Boussole actuelle : 253 372 représentations L0/L1 FROZEN -> Candidate Lake -> probable_unique -> live_confidence -> search eligibility shadow.**
+
+## 08/11/2026 — Q1E descriptions et revue indépendante
+
+- Le canary réel de 1 000 lignes a extrait 0 description. L’audit privé confirme 0/151 900 dans l’export historique, 0/1 000 dans l’échantillon et 0/1 000 dans les sorties. Les 76 pages exportées ont un schéma uniforme de 19 clés sans champ de description.
+- Un `SELECT` agrégé distinct sur Neon Recovery compte 14 950/151 900 `description_snippet` renseignés. Le texte exact de la projection exportée n’a pas été conservé ; l’omission amont dans la projection est la cause la mieux étayée, tandis qu’une perte d’échantillonnage ou un défaut d’alias parseur ne sont pas démontrés. Pas de changement du parseur ni de nouveau canary.
+- Les 100 fiches de revue sont préparées, mais 0/100 ont une adjudication indépendante et les captures originales nécessaires ne sont pas présentes. Prix, surface et type : précision **NON VÉRIFIÉE** ; le seuil de 98 % n’est pas évalué. Nouveaux enregistrements détaillés certifiés : 0.
+- L’export source demeure inchangé (151 900 lignes, SHA-256 `c3d8a8c9476602baa7663d1e9903e6015cb7300d6e7539183bf48b735cb76b08`). Tests Python au HEAD de code `4613fc1dfbc508d7e25565d7ea45bd8b6fdc5d9b` : 62/62 PASS ; CI de ce HEAD : 4/4 SUCCESS. Rapport canonique : `docs/data/AKARPARSER_V2_DESCRIPTION_AUDIT_2026-11-08.md`. Les données et scorecards détaillées demeurent dans le stockage privé.
+- **Next exact :** créer un nouvel export privé en lecture seule avec la colonne `description_snippet`, en conservant l’original ; vérifier pagination, volume, empreintes et règles de confidentialité, puis relancer un canary dans un nouveau dossier. Obtenir indépendamment les captures originales avant toute certification des 100 dossiers.

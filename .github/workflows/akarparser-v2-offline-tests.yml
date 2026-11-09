@@ -1,0 +1,112 @@
+name: AkarParser V2 Offline Regression
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref }}
+  cancel-in-progress: true
+on:
+  pull_request:
+    paths:
+      - scripts/acquisition/akarparser_v2.py
+      - scripts/acquisition/akarparser_v2_canary.py
+      - scripts/acquisition/akarparser_v2_private_archive.py
+      - scripts/acquisition/akarparser_v2_promotion_gate.py
+      - scripts/acquisition/__tests__/test_akarparser_v2_private_archive.py
+      - scripts/acquisition/__tests__/test_akarparser_v2_private_workflow.py
+      - scripts/acquisition/__tests__/test_akarparser_v2_promotion_gate.py
+      - .github/workflows/akarparser-v2-private-windows-lake.yml
+      - scripts/acquisition/akarparser_v2_neon_readonly_canary.py
+      - scripts/acquisition/__tests__/test_akarparser_v2_neon_canary.py
+      - scripts/acquisition/__tests__/test_akarparser_v2.py
+      - scripts/acquisition/__tests__/test_akarparser_v2_canary.py
+      - scripts/acquisition/akarparser_v2_review_scorecard.py
+      - scripts/acquisition/__tests__/test_akarparser_v2_review_scorecard.py
+      - scripts/acquisition/akarparser_v2_description_audit.py
+      - scripts/acquisition/__tests__/test_akarparser_v2_description_audit.py
+      - scripts/acquisition/akarparser_v2_description_merge.py
+      - scripts/acquisition/__tests__/test_akarparser_v2_description_merge.py
+      - .github/workflows/akarparser-v2-offline-tests.yml
+  workflow_dispatch:
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Offline standard-library regression suite
+        run: python -Werror::ResourceWarning -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v2*.py'
+
+      - name: Canary on 300 repository records (no private uploads)
+        run: |
+          python scripts/acquisition/akarparser_v2_canary.py \
+            --input scripts/scrapers/output/mubawab-expansion-clean-listings.json \
+            --out "$RUNNER_TEMP/akarparser-v2-repo-canary" \
+            --sample-size 300 --audit-size 30
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          path = Path(os.environ["RUNNER_TEMP"]) / "akarparser-v2-repo-canary/aggregate_report.json"
+          result = json.loads(path.read_text(encoding="utf-8"))
+          assert result["selection"]["selected"] == 300
+          assert result["source"]["unchanged"] is True
+          assert result["manual_review"]["queue_size"] == 30
+          assert result["invariants"]["publication_allowed"] == 0
+          assert result["invariants"]["new_detailed_observations_certified"] == 0
+          assert result["invariants"]["cloud_writes"] == 0
+          assert result["invariants"]["production_writes"] == 0
+          assert result["parser"]["counts"]["input"] == 300
+          print("Repo canary: 300 records processed; no auto-publication or certified new observations")
+          print("Statuses:", json.dumps(result["parser"]["status_counts"], sort_keys=True))
+          print("Issues:", json.dumps(result["parser"]["issues"], sort_keys=True))
+          PY
+
+      - name: Additional historical repository cohorts (read-only, no private uploads)
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import sys
+          sys.path.insert(0, "scripts/acquisition")
+          from akarparser_v2_canary import run_canary
+
+          cohorts = [
+              ("openserp-discovery", "data/openserp/first-write-candidates-source.jsonl", 305, 20),
+              ("openserp-quality", "data/openserp/quality/openserp-quality-corpus-v1.jsonl", 250, 20),
+              ("p0-clean", "scripts/scrapers/output/p0-clean-listings.json", 30, 10),
+          ]
+          temp = Path(os.environ["RUNNER_TEMP"])
+          for label, filename, count, reviews in cohorts:
+              report = run_canary(Path(filename), temp / ("akarparser-v2-" + label),
+                                  count=count, review=reviews)
+              assert report["selection"]["selected"] == count, label
+              assert report["manual_review"]["queue_size"] == reviews, label
+              assert report["source"]["unchanged"] is True, label
+              assert report["parser"]["counts"]["input"] == count, label
+              for k in ("cloud_writes", "production_writes", "publication_allowed",
+                        "new_detailed_observations_certified"):
+                  assert report["invariants"][k] == 0, (label, k)
+              if label.startswith("openserp-"):
+                  statuses = report["parser"]["status_counts"]
+                  issues = report["parser"]["issues"]
+                  assert statuses.get("ready_internal", 0) == 0, label
+                  assert statuses.get("complete_candidate", 0) == 0, label
+                  assert issues.get("serp_snippet_not_detail_observation") == count, label
+                  # Fixed benchmark cohorts: guard against dropping real
+                  # nested/flat SERP hints while still blocking promotion.
+                  minimum_core_hints = {"openserp-discovery": 71, "openserp-quality": 30}[label]
+                  core_hints = count - issues.get("required_core_fields_missing", 0)
+                  assert core_hints >= minimum_core_hints, (label, core_hints)
+              print(json.dumps({
+                  "cohort": label, "input_rows": count,
+                  "statuses": report["parser"]["status_counts"],
+                  "issues": report["parser"]["issues"],
+                  "publication_authorized": False,
+                  "manual_review_completed": False,
+              }, sort_keys=True))
+          print("TOTAL checked-in historical representations tested in this workflow: 885 (not distinct listings)")
+          PY
