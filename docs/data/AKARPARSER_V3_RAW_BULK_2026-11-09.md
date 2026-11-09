@@ -6,7 +6,7 @@ GOAL : recevoir 10, 100, 1 000 ou davantage d'annonces en fichiers bruts (HTML, 
 
 SUCCESS TECHNIQUE : pipeline hors ligne, données sources inchangées, calcul déterministe à date fixée, tri des fiches prêtes en interne / incomplètes / quarantaine, manifeste par hash, aucun import Neon.
 
-PROOF AU 09/11/2026 : 19/19 tests de V3 réussis sur Windows, comprenant lots synthétiques de 10, 100 et 1 000 et réplication déterministe. Un pilote de compatibilité a traité 1 000 lignes historiques réellement enregistrées (Neon Recovery préstructuré, PAS des pages HTML brutes indépendantes). Résultat de ce pilote : 106 complete_requires_freshness, 894 partial, 0 ready_internal, 0 erreur, 0 publication. Couverture : titre 1 000, ville 1 000, quartier 570, prix MAD 834, surface m² 228, type 1 000, transaction 1 000. Les champs présents ne sont pas des champs indépendamment validés.
+PROOF AU 09/11/2026 : 20/20 tests de V3 réussis sur Windows (89/89 V2+V3), comprenant lots synthétiques de 10, 100 et 1 000 et réplication déterministe. Un pilote de compatibilité a traité 1 000 lignes historiques réellement enregistrées (Neon Recovery préstructuré, PAS des pages HTML brutes indépendantes). Résultat de ce pilote : 106 complete_requires_freshness, 894 partial, 0 ready_internal, 0 erreur, 0 publication. Couverture : titre 1 000, ville 1 000, quartier 570, prix MAD 834, surface m² 228, type 1 000, transaction 1 000. Les champs présents ne sont pas des champs indépendamment validés.
 
 ## Import de masse privé
 
@@ -61,3 +61,15 @@ Les tests HTML/JSON-LD V3 utilisent des exemples synthétiques ; la compatibilit
 NEXT EXACT : récolter un lot légal et privé de captures complètes par portail avec hash/date ; exécuter V3 sur 10, puis 100, puis 1 000, mesurer précision et couverture des champs sur vérité terrain, développer des adaptateurs spécifiques aux sites dont la structure le nécessite. Surveiller mémoire et performance pour 10 000+ ; convertir les gros JSON en JSONL. Ne pas importer Neon ni déployer Vercel.
 
 PR V3 créée séparément de la PR Q1E #1188, branchée sur celle-ci pour réutiliser V2. Aucun merge sans feu vert ; aucun déploiement.
+
+## Correction ciblée de la politique CI (09/11/2026)
+
+Sur HEAD `82a6707dd1072b7d547535555f4a5c0d5d4771bf`, le workflow **CI Workflow Efficiency Policy** a échoué (run `42632312231`, job `129211442901`) : les deux nouveaux workflows AkarParser V3 avaient une concurrence au niveau racine et `cancel-in-progress: true`, mais le champ `group` ne contenait pas `github.workflow`, exigé par `scripts/ci/validate-workflow-efficiency.mjs`. Les 13 tests unitaires de cette politique avaient réussi ; son contrôle du diff complet avait détecté les deux configurations.
+
+Correctifs isolés sans changement du parseur :
+- `.github/workflows/akarparser-v3-private-bulk.yml` : ajout de `${{ github.workflow }}` dans la clé `concurrency.group`, commit `d00c49850140b6dd110bbfd60ca81ca6b4ef6b5e` ;
+- `.github/workflows/akarparser-v3-raw-bulk-regression.yml` : même isolation par nom de workflow, commit `68e6396ff6f0af4c92c54c7fee7a6ba845b4f3ea`.
+
+Les deux fichiers gardent le numéro de PR et l'annulation des exécutions obsolètes. La structure des règles a été vérifiée avant les écritures, mais **aucun succès CI sur ces corrections n'est revendiqué**. Première vérification du HEAD `68e6396f` : runs `42633907253` (Private Bulk), `42633907476` (V3 Regression), `42633907956` (Efficiency), tous QUEUED. Les 89/89 tests Python sont une preuve locale antérieure aux changements de workflow, non une preuve de succès de ces trois runs.
+
+PR #1198 demeure Draft, non fusionnée. Aucun déploiement Vercel, aucune écriture Neon produit et aucune validation de précision sur de vrais HTML bruts. Prochaine action : contrôler les conclusions CI quand elles sont disponibles ; constituer un corpus autorisé, indépendant, multiportails, puis mesurer la précision réelle par champ/source avant toute admission.
