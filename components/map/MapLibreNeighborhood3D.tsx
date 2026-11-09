@@ -36,6 +36,8 @@ export type MapLibreNeighborhood3DProps = {
   districtLabel: string;
   center: MutablePosition;
   boundaryGeometry?: BoundaryGeometry | null;
+  /** OSM shadow geometry; never an official or neighborhood-central boundary. */
+  administrativeBoundaryPreview?: BoundaryGeometry | null;
   desktopCameraOffset?: MutablePosition;
   reserveRail?: boolean;
 };
@@ -45,6 +47,31 @@ export type MapLibreNeighborhood3DProps = {
 const FOCUS_SOURCE_ID = "akarfinder-neighborhood-focus";
 const FOCUS_GLOW_LAYER_ID = "akarfinder-neighborhood-focus-glow";
 const FOCUS_RING_LAYER_ID = "akarfinder-neighborhood-focus-ring";
+const ADMIN_SHADOW_SOURCE_ID = "akarfinder-maarif-osm-admin-shadow";
+const ADMIN_SHADOW_FILL_ID = "akarfinder-maarif-osm-admin-shadow-fill";
+const ADMIN_SHADOW_LINE_ID = "akarfinder-maarif-osm-admin-shadow-line";
+
+function previewBounds(geometry: BoundaryGeometry | null): [[number, number], [number, number]] | null {
+  if (!geometry || geometry.type !== "Polygon") return null;
+  const rings = geometry.coordinates;
+  if (!Array.isArray(rings) || rings.length !== 1 || !Array.isArray(rings[0])) return null;
+  const ring = rings[0] as unknown[];
+  if (ring.length < 4 || ring.length > 2000) return null;
+  let west = Infinity, east = -Infinity, south = Infinity, north = -Infinity;
+  for (const point of ring) {
+    if (!Array.isArray(point) || point.length !== 2 ||
+        !Number.isFinite(point[0]) || !Number.isFinite(point[1])) return null;
+    const lng = point[0] as number, lat = point[1] as number;
+    if (lng < -7.85 || lng > -7.45 || lat < 33.4 || lat > 33.75) return null;
+    west = Math.min(west, lng); east = Math.max(east, lng);
+    south = Math.min(south, lat); north = Math.max(north, lat);
+  }
+  const first = ring[0] as number[], last = ring[ring.length - 1] as number[];
+  if (first[0] !== last[0] || first[1] !== last[1] ||
+      east - west < .005 || east - west > .1 ||
+      north - south < .005 || north - south > .1) return null;
+  return [[west, south], [east, north]];
+}
 
 const CATEGORY_META: Record<LivingHereCategory, { label: string; color: string }> = {
   education: { label: "Écoles", color: "#2f80ed" }, groceries: { label: "Courses", color: "#7b61ff" },
@@ -62,6 +89,7 @@ export function MapLibreNeighborhood3D({
   districtLabel,
   center,
   boundaryGeometry = null,
+  administrativeBoundaryPreview = null,
   desktopCameraOffset = [0, 0],
   reserveRail = false,
 }: MapLibreNeighborhood3DProps) {
@@ -70,6 +98,7 @@ export function MapLibreNeighborhood3D({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const isMaarifPilot = citySlug === "casablanca" && districtSlug === "maarif";
+  const adminPreviewBounds = isMaarifPilot ? previewBounds(administrativeBoundaryPreview) : null;
   const [pilotView, setPilotView] = useState<"quartier" | "rue" | "limites">("quartier");
   const [observedCamera, setObservedCamera] = useState({ pitch: -1, bearing: -1, zoom: -1 });
   const [ready, setReady] = useState(false);
@@ -89,15 +118,32 @@ export function MapLibreNeighborhood3D({
     if (!isMaarifPilot) return;
     const map = mapInstanceRef.current;
     if (!map) { setPilotView(view); return; }
-    // Flat Maârif camera centers on the sourced neighborhood point.
-    // The historical northwest 3D camera offset placed its marker at the bottom edge on desktop.
-    map.easeTo({
-      center,
-      zoom: view === "rue" ? 17.1 : 14.6,
-      pitch: 0,
-      bearing: 0,
-      duration: 450,
-    });
+    const showAdminPreview = view === "limites" && adminPreviewBounds !== null &&
+      Boolean(map.getLayer(ADMIN_SHADOW_FILL_ID)) && Boolean(map.getLayer(ADMIN_SHADOW_LINE_ID));
+    if (adminPreviewBounds && map.getLayer(ADMIN_SHADOW_FILL_ID) && map.getLayer(ADMIN_SHADOW_LINE_ID)) {
+      const visibility = showAdminPreview ? "visible" : "none";
+      map.setLayoutProperty(ADMIN_SHADOW_FILL_ID, "visibility", visibility);
+      map.setLayoutProperty(ADMIN_SHADOW_LINE_ID, "visibility", visibility);
+    }
+    if (showAdminPreview && adminPreviewBounds) {
+      // The outline is an OSM *indicative arrondissement* shadow preview, not a
+      // legal, reviewed boundary or the perimeter of the central Maârif quarter.
+      map.fitBounds(adminPreviewBounds, {
+        padding: { top: 115, right: 50, bottom: window.innerWidth < 1024 ? 250 : 130, left: 50 },
+        maxZoom: 14,
+        pitch: 0,
+        bearing: 0,
+        duration: 450,
+      });
+    } else {
+      map.easeTo({
+        center,
+        zoom: view === "rue" ? 17.1 : 14.6,
+        pitch: 0,
+        bearing: 0,
+        duration: 450,
+      });
+    }
     setPilotView(view);
   };
 
@@ -208,6 +254,34 @@ export function MapLibreNeighborhood3D({
               },
             });
 
+            // The shadow is hidden by default and only available for an explicitly
+            // enabled private QA build, with clear ODbL attribution and no legal claim.
+            if (adminPreviewBounds && administrativeBoundaryPreview) {
+              map.addSource(ADMIN_SHADOW_SOURCE_ID, {
+                type: "geojson",
+                data: {
+                  type: "Feature",
+                  properties: { entity: "OSM relation/2801474", scope: "arrondissement", reviewed: false },
+                  geometry: administrativeBoundaryPreview,
+                } as any,
+                attribution: "© OpenStreetMap contributors (ODbL)",
+              });
+              map.addLayer({
+                id: ADMIN_SHADOW_FILL_ID,
+                type: "fill",
+                source: ADMIN_SHADOW_SOURCE_ID,
+                layout: { visibility: "none" },
+                paint: { "fill-color": "#0B63CE", "fill-opacity": 0.1 },
+              });
+              map.addLayer({
+                id: ADMIN_SHADOW_LINE_ID,
+                type: "line",
+                source: ADMIN_SHADOW_SOURCE_ID,
+                layout: { visibility: "none" },
+                paint: { "line-color": "#071B33", "line-width": 2.6, "line-opacity": 0.92 },
+              });
+            }
+
             if (boundaryGeometry) {
               map.addSource("neighborhood-boundary", {
                 type: "geojson",
@@ -265,7 +339,7 @@ export function MapLibreNeighborhood3D({
       mapInstanceRef.current = null;
       try { map?.remove(); } catch { /* no-op */ }
     };
-  }, [citySlug, districtSlug, districtLabel, center[0], center[1], desktopCameraOffset[0], desktopCameraOffset[1], boundaryGeometry, theme]);
+  }, [citySlug, districtSlug, districtLabel, center[0], center[1], desktopCameraOffset[0], desktopCameraOffset[1], boundaryGeometry, administrativeBoundaryPreview, theme]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -315,8 +389,9 @@ export function MapLibreNeighborhood3D({
       data-l3-camera-pitch={observedCamera.pitch}
       data-l3-camera-bearing={observedCamera.bearing}
       data-l3-camera-zoom={observedCamera.zoom}
-      data-l3-admin-boundary="unavailable"
+      data-l3-admin-boundary={adminPreviewBounds ? "osm-indicative-preview" : "unavailable"}
       data-maplibre-boundary-status={boundaryGeometry ? "provided" : "center-only"}
+      data-l3-admin-preview-source={adminPreviewBounds ? "osm-relation-2801474" : "none"}
       data-maplibre-reserve-rail={reserveRail ? "true" : "false"}
     >
       <div className="maplibre-spike-map" data-maplibre-map-surface>
@@ -344,9 +419,26 @@ export function MapLibreNeighborhood3D({
           <button type="button" data-l3-go-street aria-pressed={pilotView === "rue"} onClick={() => selectMaarifView("rue")}>Rue · zoom</button>
           <button type="button" data-l3-go-admin aria-pressed={pilotView === "limites"} aria-controls="maarif-admin-boundary-explanation" onClick={() => selectMaarifView("limites")}>Limites</button>
           {pilotView === "limites" ? (
-            <div id="maarif-admin-boundary-explanation" role="status" className="l3-maarif-admin-panel" data-l3-admin-unavailable>
-              <strong>Limites non disponibles</strong>
-              <p>Le contour officiel de l’arrondissement Maârif n’est pas encore vérifié. Le repère sur la carte indique le quartier, pas sa frontière.</p>
+            <div id="maarif-admin-boundary-explanation" role="status" className="l3-maarif-admin-panel"
+              data-l3-admin-unavailable={adminPreviewBounds ? undefined : "true"}
+              data-l3-admin-preview={adminPreviewBounds ? "true" : undefined}>
+              {adminPreviewBounds ? (
+                <>
+                  <strong>Arrondissement Maârif · contour OSM indicatif</strong>
+                  <p>Tracé communautaire en prévisualisation, non certifié par la commune. Il ne représente pas la limite du quartier central ni une frontière cadastrale.</p>
+                  <a href="https://www.openstreetmap.org/relation/2801474" target="_blank" rel="noopener noreferrer">
+                    © OpenStreetMap contributors · ODbL
+                  </a>
+                  <a href="https://maarif.casablancacity.ma/fr/article/420/situation-geographique" target="_blank" rel="noopener noreferrer">
+                    Limites textuelles · Commune de Casablanca
+                  </a>
+                </>
+              ) : (
+                <>
+                  <strong>Limites non disponibles</strong>
+                  <p>Le contour officiel de l’arrondissement Maârif n’est pas encore vérifié. Le repère sur la carte indique le quartier, pas sa frontière.</p>
+                </>
+              )}
               <button type="button" data-l3-admin-return onClick={() => selectMaarifView("quartier")}>Retour au quartier</button>
             </div>
           ) : null}

@@ -9,7 +9,9 @@ await mkdir(outDir, { recursive: true });
 // Focused L6-B unit coverage belongs inside the already-authorized N2 audit.
 // Do not modify the legacy heavy PR workflow: efficiency policy forbids it.
 execFileSync(process.execPath, [
-  "--import", "tsx", "--test", "scripts/scrapers/__tests__/carto-basemap-style.test.ts",
+  "--import", "tsx", "--test",
+  "scripts/scrapers/__tests__/carto-basemap-style.test.ts",
+  "scripts/scrapers/__tests__/vivre-ici-maarif-osm-admin-shadow.test.ts",
 ], { stdio: "inherit" });
 
 const viewports = [

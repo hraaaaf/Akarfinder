@@ -7,6 +7,7 @@ import { MapNeighborhoodClient } from "@/components/map/MapNeighborhoodClient";
 import { MapLibreNeighborhood3D } from "@/components/map/MapLibreNeighborhood3D";
 import { NationalNeighborhoodOverlayBridge } from "@/components/map/NationalNeighborhoodOverlayBridge";
 import { getNeighborhoodBySlug } from "@/lib/map/canonical-neighborhood-data";
+import { MAARIF_TARGET_PILOT_BOUNDARY } from "@/lib/geo/maarif-target-pilot-boundary";
 import { MAP_LAYER_EXPLORE, type MapNavigationState } from "@/lib/map/map-navigation-state";
 
 const NationalTerritoryExperienceDynamic = dynamic(
@@ -30,6 +31,9 @@ export function NationalMapRouter({ initialState }: Props) {
   const router = useRouter();
   const params = useSearchParams();
   const shellRef = useRef<HTMLDivElement>(null);
+  // Shadow OSM geometry only in an explicitly enabled local QA preview.
+  // Never treated as a reviewed or official border in public production.
+  const allowShadowAdministrativePreview = process.env.NEXT_PUBLIC_VIVRE_ICI_ADMIN_SHADOW_PREVIEW === "true";
   const rawCity = params.get("city");
   const rawLayer = params.get("layer") ?? MAP_LAYER_EXPLORE;
   const selectedCitySlug = useMemo(() => safeSlug(rawCity), [rawCity]);
@@ -153,6 +157,11 @@ export function NationalMapRouter({ initialState }: Props) {
         districtLabel={selectedNeighborhood.neighborhood}
         center={verifiedCenter!}
         desktopCameraOffset={isMaarifReference ? [-0.0055, 0.0090] : [0, 0]}
+        administrativeBoundaryPreview={isMaarifReference && allowShadowAdministrativePreview
+          && MAARIF_TARGET_PILOT_BOUNDARY.status === "shadow-reference"
+          && MAARIF_TARGET_PILOT_BOUNDARY.reviewed === false
+          && MAARIF_TARGET_PILOT_BOUNDARY.publicationStatus === "shadow"
+            ? MAARIF_TARGET_PILOT_BOUNDARY.geometry : null}
       />
     );
   }

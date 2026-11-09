@@ -62,6 +62,25 @@
   background: #083b5b;
   color: #fff;
 }
+[data-vivre-ici-page] .l3-maarif-admin-panel a {
+  display: block;
+  width: fit-content;
+  margin: 3px 0 8px;
+  color: #0B63CE;
+  font-size: 12px;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+[data-vivre-ici-page] .l3-maarif-admin-panel a:focus-visible {
+  outline: 3px solid #0B63CE;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+[data-vivre-ici-page] .l3-maarif-admin-panel[data-l3-admin-preview="true"] {
+  border-color: #9fc5e6;
+  max-width: min(370px, calc(100vw - 24px));
+}
 @media (max-width: 1023px) {
   [data-vivre-ici-page] [data-l3-maarif-pilot="true"] .l3-maarif-view-controls {
     top: 186px;
