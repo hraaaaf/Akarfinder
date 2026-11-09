@@ -25,14 +25,14 @@ describe("Neighborhood Context L7 — national baseline", () => {
     assert.equal(baseline.summary.runtime_models, 6);
     assert.equal(baseline.summary.missing_runtime_models, 15);
     assert.deepEqual(baseline.summary.status_counts, {
-      covered: 1,
-      partial: 1,
+      covered: 0,
+      partial: 2,
       insufficient: 2,
       unavailable: 17,
     });
     assert.equal(baseline.summary.neighborhoods_with_anchors, 4);
-    assert.equal(baseline.summary.total_anchors, 12);
-    assert.equal(baseline.summary.covered_rate_percent, 4.76);
+    assert.equal(baseline.summary.total_anchors, 11); // Aug fixture: no invented anchor
+    assert.equal(baseline.summary.covered_rate_percent, 0);
 
     const missing = baseline.neighborhoods.filter((row) => !row.runtime_model_present);
     assert.equal(missing.length, 15);
@@ -43,7 +43,7 @@ describe("Neighborhood Context L7 — national baseline", () => {
     const baseline = buildNeighborhoodContextNationalBaseline(NOW);
     const anchors = baseline.neighborhoods.flatMap((row) => row.anchors);
 
-    assert.equal(anchors.length, 12);
+    assert.equal(anchors.length, 11);
     assert.equal(anchors.every((anchor) => anchor.freshness_status === "fresh"), true);
     assert.equal(
       anchors.every((anchor) => Boolean(

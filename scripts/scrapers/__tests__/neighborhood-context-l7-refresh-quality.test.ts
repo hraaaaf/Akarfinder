@@ -81,8 +81,8 @@ describe("Neighborhood Context L7-B — batch behavior", () => {
     assert.equal(report.blocked_targets, 4);
     assert.equal(report.available_targets, 4);
     assert.equal(report.unavailable_targets, 13);
-    assert.equal(report.total_pois, 13);
-    assert.equal(report.total_anchors, 12);
+    assert.equal(report.total_pois, 12);
+    assert.equal(report.total_anchors, 11);
     assert.deepEqual(validateNeighborhoodContextNationalRefreshReport(report), []);
 
     const blocked = report.rows.filter((row) => row.refresh_status === "blocked");
@@ -116,7 +116,7 @@ describe("Neighborhood Context L7-B — batch behavior", () => {
     });
 
     const evidence = report.rows.flatMap((row) => row.anchor_evidence);
-    assert.equal(evidence.length, 12);
+    assert.equal(evidence.length, 11);
     assert.equal(evidence.every((entry) => entry.poi_id.startsWith("osm:")), true);
     assert.equal(evidence.every((entry) => Boolean(entry.source_id && entry.attribution && entry.license_policy && entry.observed_at)), true);
     assert.equal(evidence.every((entry) => entry.freshness_status === "fresh"), true);
@@ -158,18 +158,18 @@ describe("Neighborhood Context L7-B — batch behavior", () => {
       "district_rabat_agdal",
       "district_tanger_malabata",
     ]);
-    assert.equal(report.rows.find((row) => row.canonical_neighborhood_id === "district_rabat_agdal")?.selection_status, "ready");
+    assert.equal(report.rows.find((row) => row.canonical_neighborhood_id === "district_rabat_agdal")?.selection_status, "partial_context");
     assert.equal(report.rows.find((row) => row.canonical_neighborhood_id === "district_tanger_malabata")?.selection_status, "partial_context");
   });
 });
 
 describe("Neighborhood Context L7-B — quality and regression", () => {
-  it("has five deliberate canaries spanning covered, partial, insufficient, unavailable and blocked", () => {
+  it("has five deliberate canaries spanning partial, insufficient, unavailable and blocked without fabricating covered", () => {
     const baseline = buildNeighborhoodContextNationalBaseline(NOW);
     const canaries = getNeighborhoodContextQualityCanaries(baseline);
     assert.equal(canaries.length, NEIGHBORHOOD_CONTEXT_L7_CANARY_IDS.length);
     assert.deepEqual(canaries.map((entry) => entry.canonical_neighborhood_id), [...NEIGHBORHOOD_CONTEXT_L7_CANARY_IDS]);
-    assert.equal(canaries.find((entry) => entry.canonical_neighborhood_id === "district_rabat_agdal")?.coverage_status, "covered");
+    assert.equal(canaries.find((entry) => entry.canonical_neighborhood_id === "district_rabat_agdal")?.coverage_status, "partial");
     assert.equal(canaries.find((entry) => entry.canonical_neighborhood_id === "district_tanger_malabata")?.coverage_status, "partial");
     assert.equal(canaries.find((entry) => entry.canonical_neighborhood_id === "district_casablanca_maarif")?.coverage_status, "insufficient");
     assert.equal(canaries.find((entry) => entry.canonical_neighborhood_id === "district_agadir_founty")?.coverage_status, "unavailable");

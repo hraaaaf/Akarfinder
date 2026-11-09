@@ -35,10 +35,34 @@ if (baseline.eligible_neighborhoods !== 21) findings.push("baseline_neighborhood
 if (baseline.eligible_cities !== 8) findings.push("baseline_cities");
 if (baseline.runtime_models !== 6) findings.push("baseline_runtime_models");
 if (baseline.missing_runtime_models !== 15) findings.push("baseline_missing_models");
-if (baseline.total_anchors !== 12) findings.push("baseline_anchors");
-
+// Anchors depend on the explicit 30-day source TTL. The August 2026 seed
+// correctly yields ZERO in November 2026; never demand the historical 12.
+const rows = Array.isArray(report.baseline?.neighborhoods) ? report.baseline.neighborhoods : [];
+const actualAnchors = rows.flatMap((row) => Array.isArray(row.anchors) ? row.anchors : []);
+const actualCount = actualAnchors.length;
+if (rows.length !== 21) findings.push("baseline_row_count");
+if (baseline.total_anchors !== actualCount) findings.push("baseline_anchor_count_mismatch");
+if (baseline.neighborhoods_with_anchors !== rows.filter((row) => (row.anchors?.length ?? 0) > 0).length) {
+  findings.push("baseline_neighborhoods_with_anchors_mismatch");
+}
+if (rows.some((row) => row.anchor_count !== (row.anchors?.length ?? 0))) {
+  findings.push("baseline_row_anchor_count_mismatch");
+}
+const reportTime = Date.parse(report.generated_at ?? "");
+if (!Number.isFinite(reportTime)) findings.push("invalid_report_timestamp");
+for (const anchor of actualAnchors) {
+  const seen = Date.parse(anchor.observed_at ?? "");
+  if (anchor.freshness_status !== "fresh" ||
+      !Number.isFinite(seen) ||
+      !Number.isFinite(reportTime) ||
+      seen > reportTime ||
+      reportTime - seen > 30 * 24 * 60 * 60 * 1000) {
+    findings.push("stale_or_future_poi_anchor");
+    break;
+  }
+}
 const provenance = report.provenance_audit ?? {};
-if (provenance.anchor_count !== 12) findings.push("provenance_anchor_count");
+if (provenance.anchor_count !== actualCount) findings.push("provenance_anchor_count_mismatch");
 if (provenance.missing_evidence_count !== 0) findings.push("provenance_missing_evidence");
 if (!Array.isArray(provenance.findings) || provenance.findings.length !== 0) findings.push("provenance_findings");
 
