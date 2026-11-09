@@ -25,6 +25,7 @@ import "./ux-convergence-l9.css";
 import "./l2c-sheet.css";
 import "./l2d-attribution.css";
 import "./l3-maarif-modes.css";
+import "./vivre-ici-daily-evidence.css";
 
 export const dynamic = "force-dynamic";
 

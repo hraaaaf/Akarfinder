@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { resolveCityEntity, resolveNeighborhoodEntity } from "@/lib/geo/geo-entity-registry";
 import type { NeighborhoodContextReadModelV1 } from "@/lib/neighborhood-context/read-model";
+import type { LivingHereCategory } from "@/lib/geo/living-here";
 import { mapPoiCategoryLabel } from "@/lib/neighborhood-context/map-poi-presentation";
 import {
   buildMapHref,
@@ -24,6 +25,15 @@ const DISTRICT_HERO_MEDIA = {
     source: "https://commons.wikimedia.org/wiki/File:Parfumerie_jura,_Ma%C3%A2rif,_Casablanca.jpg",
   },
 } as const;
+
+const DAILY_CONTEXT_CATEGORIES = [
+  { key: "education", label: "Écoles" },
+  { key: "groceries", label: "Courses" },
+  { key: "health", label: "Santé" },
+  { key: "transport", label: "Transports" },
+  { key: "green_sport", label: "Parcs & sport" },
+  { key: "shopping", label: "Commerces" },
+] as const satisfies readonly { key: LivingHereCategory; label: string }[];
 
 type ContextPayload =
   | { status: "ok"; context: NeighborhoodContextReadModelV1 }
@@ -88,6 +98,12 @@ export function P4MapDecisionRail() {
   const localCategoryLabels = localContext
     ? Array.from(new Set(localContext.categories.map((category) => mapPoiCategoryLabel(category))))
     : [];
+  // Only public read-model anchors can populate the daily evidence cards.
+  // Private OSM QA candidates never enter this component.
+  const dailyCategorySummary = DAILY_CONTEXT_CATEGORIES.map((category) => ({
+    ...category,
+    count: localContext?.anchors.filter((anchor) => anchor.category === category.key).length ?? 0,
+  }));
   const contextIntro = districtEntity
     ? localContext?.anchor_count
       ? `${districtEntity.canonical_name} : ${localContext.anchor_count} repère${localContext.anchor_count > 1 ? "s" : ""} public${localContext.anchor_count > 1 ? "s" : ""} sourcé${localContext.anchor_count > 1 ? "s" : ""}. Les biens ne sont cartographiés que lorsqu’une position exacte vérifiée est disponible.`
@@ -163,6 +179,22 @@ export function P4MapDecisionRail() {
                 : "Aucun lieu suffisamment récent n’est disponible pour décrire le quotidien de ce quartier."
               : "Les informations de proximité ne sont pas disponibles actuellement."}
           </p>
+          <details className="p4-daily-evidence-details" data-vivre-ici-daily-details>
+            <summary>Afficher les 6 catégories <span aria-hidden="true">⌄</span></summary>
+          <ul className="p4-daily-evidence-grid" data-vivre-ici-daily-grid aria-label="Catégories du quotidien et couverture des sources">
+            {dailyCategorySummary.map((category) => (
+              <li key={category.key} data-daily-category={category.key} data-daily-state={category.count > 0 ? "sourced" : "unavailable"}>
+                <span>{category.label}</span>
+                <strong>{category.count > 0
+                  ? `${category.count} repère${category.count > 1 ? "s" : ""} sourcé${category.count > 1 ? "s" : ""}`
+                  : "Non documenté"}</strong>
+              </li>
+            ))}
+          </ul>
+          <p data-daily-evidence-disclaimer>
+            Une rubrique non documentée ne prouve pas l’absence de lieux dans le quartier. Les repères sont contextuels, sans délimitation certifiée ni estimation de trajet.
+          </p>
+          </details>
         </section>
       ) : null}
 
@@ -252,7 +284,7 @@ export function P4MapDecisionRail() {
           className="p4-premium-primary-action"
         >
           <Search size={15} aria-hidden="true" />
-          {districtEntity ? `Voir les biens disponibles à ${districtEntity.canonical_name}` : `Voir les biens de ${cityName === "Maroc" ? "la zone" : cityName}`}
+          {districtEntity ? `Rechercher des biens à ${districtEntity.canonical_name}` : `Voir les biens de ${cityName === "Maroc" ? "la zone" : cityName}`}
         </Link>
         {districtEntity?.seo_eligible && cityEntity ? (
           <Link

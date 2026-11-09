@@ -112,7 +112,7 @@ try {
         throw new Error(`${viewport.name}: Vivre Ici rail escapes viewport ${JSON.stringify({ panelBox, layoutDiagnostics })}`);
       }
       if (await rail.getByRole("heading", { name: "Maârif", exact: true }).count() !== 1) throw new Error(`${viewport.name}: Maârif heading missing`);
-      const searchLink = rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i });
+      const searchLink = rail.getByRole("link", { name: /Rechercher des biens à Maârif/i });
       const searchHref = await searchLink.getAttribute("href");
       if (!searchHref) throw new Error(`${viewport.name}: Search handoff missing`);
       const searchUrl = new URL(searchHref, baseUrl);

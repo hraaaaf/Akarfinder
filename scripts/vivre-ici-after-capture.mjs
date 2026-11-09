@@ -188,7 +188,7 @@ try {
 
     const rail = page.locator('[data-p4-map-decision-rail]');
     await rail.waitFor({ state: 'visible', timeout: 15000 });
-    const handoff = rail.getByRole('link', { name: /Voir les biens disponibles à Maârif/i });
+    const handoff = rail.getByRole('link', { name: /Rechercher des biens à Maârif/i });
     const searchHref = await handoff.getAttribute('href');
     const territoryBack = page.getByRole('link', { name: 'Retour à la carte du Maroc' });
     await territoryBack.waitFor({ state: 'visible', timeout: 10000 });

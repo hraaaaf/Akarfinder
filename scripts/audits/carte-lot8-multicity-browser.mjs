@@ -146,7 +146,7 @@ try {
           throw new Error(`${cityCase.slug}/${viewport.name}: decision rail escapes viewport ${JSON.stringify(panelBox)}`);
         }
 
-        const searchLink = rail.getByRole("link", { name: new RegExp(`Voir les biens disponibles à ${cityCase.district}`, "i") });
+        const searchLink = rail.getByRole("link", { name: new RegExp(`Rechercher des biens à ${cityCase.district}`, "i") });
         const searchHref = await searchLink.getAttribute("href");
         if (!searchHref) throw new Error(`${cityCase.slug}/${viewport.name}: Search handoff missing`);
         const searchUrl = new URL(searchHref, baseUrl);

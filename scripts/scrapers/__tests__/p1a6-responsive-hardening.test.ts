@@ -85,6 +85,21 @@ describe("P1A.6 — Responsive hardening", () => {
     assert.ok(rail.includes("href={searchHref}"), "Search handoff remains geo-filtered");
   });
 
+  it("L2-B daily evidence uses only source-backed context and never promises listings", () => {
+    const rail = source("components/map/P4MapDecisionRail.tsx");
+    const page = source("app/map/page.tsx");
+    const audit = source("scripts/audits/vivre-ici-maarif-daily-context-qa.mjs");
+    assert.ok(rail.includes("data-vivre-ici-daily-details"));
+    assert.ok(rail.includes("data-vivre-ici-daily-grid"));
+    assert.ok(rail.includes("localContext?.anchors.filter"));
+    assert.ok(rail.includes("category.count > 0"));
+    assert.ok(rail.includes("Non documenté"));
+    assert.ok(rail.includes("Rechercher des biens à"));
+    assert.equal(rail.includes("Voir les biens disponibles à"), false);
+    assert.ok(page.includes('import "./vivre-ici-daily-evidence.css";'));
+    assert.ok(audit.includes("VIVRE_ICI_DAILY_QA_AFTER"));
+  });
+
   it("L2-C replaces decorative mobile handle with a true accessible sheet", () => {
     const rail = source("components/map/P4MapDecisionRail.tsx");
     const css = source("app/map/l2c-sheet.css");
@@ -106,11 +121,11 @@ describe("P1A.6 — Responsive hardening", () => {
     const css = source("app/map/l3-maarif-modes.css");
     const audit = source("scripts/audits/p1a6-map-responsive-smoke.ts");
     assert.ok(map.includes('data-l3-maarif-pilot={isMaarifPilot ? "true" : "false"}'));
-    assert.ok(map.includes("data-l3-admin-boundary=\"unavailable\""));
+    assert.ok(map.includes('data-l3-admin-boundary={adminPreviewBounds ? "osm-indicative-preview" : "unavailable"}'));
     assert.ok(map.includes('data-l3-go-street'));
     assert.ok(map.includes('data-l3-go-quarter'));
-    assert.ok(map.includes('pitch: isMaarifPilot ? 0'));
-    assert.ok(map.includes('bearing: isMaarifPilot ? 0'));
+    assert.ok((map.match(/pitch: 0,/g) ?? []).length >= 4, 'all map modes keep pitch zero');
+    assert.ok((map.match(/bearing: 0,/g) ?? []).length >= 4, 'all map modes keep north-up bearing');
     assert.equal(map.includes('<span>Quartiers</span>'), false);
     assert.ok(css.includes('min-height: 44px'));
     assert.ok(audit.includes('l3a-maarif-real-camera-modes'));
@@ -123,7 +138,7 @@ describe("P1A.6 — Responsive hardening", () => {
     const css = source("app/map/l2d-attribution.css");
     const page = source("app/map/page.tsx");
     const audit = source("scripts/audits/p1a6-map-responsive-smoke.ts");
-    assert.ok(maplibre.includes("attributionControl: { compact: false }"));
+    assert.ok(maplibre.includes("attributionControl: { compact: false, customAttribution:"));
     assert.equal(maplibre.includes("attributionControl: false"), false);
     assert.ok(national.includes("data-premium-map-attribution"));
     assert.ok(national.includes("https://www.openstreetmap.org/copyright"));
@@ -136,7 +151,10 @@ describe("P1A.6 — Responsive hardening", () => {
 
   it("preserves Rabat intelligence for city-only while canonical district routing uses MapLibre", () => {
     const router = source("components/map/NationalMapRouter.tsx");
-    assert.match(router, /rabat-market-intelligence/);
+    const legacy = source("components/map/MapNeighborhoodClient.tsx");
+    assert.match(legacy, /rabat-market-intelligence/);
+    assert.match(router, /if \(!useNationalExplore\) return <MapNeighborhoodClient initialState=\{initialState\} \/>/);
+    assert.match(router, /const useNationalExplore = rawLayer === MAP_LAYER_EXPLORE && !useMapLibreNeighborhood/);
     assert.match(router, /MapNeighborhoodClient/);
     assert.match(router, /useMapLibreNeighborhood/);
     assert.match(router, /MapLibreNeighborhood3D/);
