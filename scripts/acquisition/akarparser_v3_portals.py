@@ -66,6 +66,18 @@ def enrich(page, row: dict, evidence: dict) -> None:
                 if business_function.endswith("#Sell"):
                     row["_mubawab_schema_offer_sell"] = True
             break
+        # A specific 'Studio ...' listing title takes precedence over the
+        # broad 'Appartements' category. Never broaden it back to apartment.
+        for node in page.jsonld:
+            if node.get("@type") != "RealEstateListing":
+                continue
+            if re.match(r"^\s*studio\b", str(node.get("name") or ""), re.I):
+                row["property_type"] = "studio"
+                evidence["property_type"] = {
+                    "path": "mubawab.jsonld.listing.name.studio",
+                    "method": "portal_detail_explicit", "verified": False,
+                }
+            break
         # The early breadcrumb is: Immobilier <City>, <Category> <City>, <District>.
         for i, label in enumerate(hero[:-2]):
             city = re.fullmatch(r"Immobilier ([\wÀ-ÿ][\wÀ-ÿ '-]{1,55})", label)
@@ -78,6 +90,45 @@ def enrich(page, row: dict, evidence: dict) -> None:
                 continue
             _set(row, evidence, "city", city_name, "mubawab.detail_breadcrumb.city")
             _set(row, evidence, "district", district, "mubawab.detail_breadcrumb.district")
+            break
+        # Primary listing area, displayed just beneath the price in the hero.
+        # Prefer this over an incidental surface in title/description (e.g.
+        # land area versus built area). Keep conflicting claims for review.
+        if "Obtenir un financement" in hero:
+            idx = hero.index("Obtenir un financement")
+            primary = next((re.fullmatch(r"(\d{1,5})\s*m(?:²|2)", value, re.I)
+                            for value in hero[idx+1:idx+12]
+                            if re.fullmatch(r"(\d{1,5})\s*m(?:²|2)", value, re.I)), None)
+            if primary:
+                amount = v2.number(primary.group(1))
+                if amount and 5 <= amount <= 100_000:
+                    _set(row, evidence, "surface_m2", amount,
+                         "mubawab.detail_hero.primary_area_m2")
+                    for node in page.jsonld:
+                        if node.get("@type") != "RealEstateListing":
+                            continue
+                        title_area = re.search(r"(\d{2,5})\s*m(?:²|2)", str(node.get("name") or ""), re.I)
+                        if title_area and v2.number(title_area.group(1)) != amount:
+                            row["_mubawab_title_area_mismatch"] = True
+                        break
+        # The actual listing description may explicitly say 'à la vente' or
+        # 'à louer'. The schema.org Sell marker is explicitly NOT used.
+        for node in page.jsonld:
+            if node.get("@type") != "RealEstateListing":
+                continue
+            title = str(node.get("name") or "")
+            summary = str(node.get("description") or "")[:360]
+            sale_title = bool(re.search(r"\b(?:à\s+vendre|en\s+vente|à\s+la\s+vente)\b", title, re.I))
+            rent_title = bool(re.search(r"\b(?:à\s+louer|en\s+location|à\s+la\s+location)\b", title, re.I))
+            if sale_title != rent_title:
+                _set(row, evidence, "transaction_type", "sale" if sale_title else "rent",
+                     "mubawab.jsonld.listing.title.explicit_transaction")
+            else:
+                sale_body = bool(re.search(r"\b(?:à\s+la\s+vente|mis\s+en\s+vente|à\s+vendre)\b", summary, re.I))
+                rent_body = bool(re.search(r"\b(?:à\s+la\s+location|à\s+louer|mis\s+en\s+location)\b", summary, re.I))
+                if sale_body != rent_body:
+                    _set(row, evidence, "transaction_type", "sale" if sale_body else "rent",
+                         "mubawab.jsonld.listing.description.explicit_transaction")
             break
 
     elif host == "avito.ma":

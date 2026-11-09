@@ -165,5 +165,67 @@ class TestPortalAdapters(unittest.TestCase):
             self.assertEqual(items[0]["quality"]["status"], "requires_manual_review")
             self.assertFalse(items[0]["quality"]["neon_product_admission_authorized"])
 
+    def test_mubawab_primary_displayed_area_wins_but_disagreement_is_reviewed(self):
+        import json
+        ld = {"@type": "RealEstateListing",
+              "name": "Appartement 119 m² avec terrasse à Val Fleuri",
+              "description": "Appartement à vendre 120 m², belle terrasse",
+              "offers": {"price": 1800000, "priceCurrency": "MAD"}}
+        html = ("<html><head><script type='application/ld+json'>" +
+                json.dumps(ld) + "</script></head><body>" +
+                "<p>Immobilier Casablanca</p><p>Appartements Casablanca</p>" +
+                "<p>Val Fleury</p><p>Obtenir un financement</p>" +
+                "<p>100m²</p><p>3 Pièces</p></body></html>")
+        rec = v3.parse_raw({"raw_html": html,
+                            "source_url": "https://www.mubawab.ma/fr/a/8455001/terrasse",
+                            "fetched_at": "2026-11-09T16:00:00Z"}, NOW)
+        self.assertEqual(rec["fields"]["surface_total_m2"], 100.0)
+        self.assertEqual(rec["field_evidence"]["surface_m2"]["path"],
+                         "mubawab.detail_hero.primary_area_m2")
+        self.assertEqual(rec["quality"]["status"], "requires_manual_review")
+        self.assertIn("PRIMARY_AREA_DIFFERS_FROM_TITLE_AREA",
+                      rec["quality"]["review_reasons"])
+        self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+
+    def test_mubawab_explicit_sale_in_source_description_not_schema_sell(self):
+        import json
+        ld = {"@type": "RealEstateListing", "name": "Studio meublé 28m²",
+              "description": "Découvrez ce bien rare à la vente dans la Kasbah",
+              "offers": {"price": 890000, "priceCurrency": "MAD",
+                         "businessFunction": "http://purl.org/goodrelations/v1#Sell"}}
+        html = ("<html><head><script type='application/ld+json'>" +
+                json.dumps(ld) + "</script></head><body>" +
+                "<p>Immobilier Rabat</p><p>Appartements Rabat</p>" +
+                "<p>Les Oudayas</p><p>Obtenir un financement</p>" +
+                "<p>28m²</p></body></html>")
+        rec = v3.parse_raw({"raw_html": html,
+                            "source_url": "https://www.mubawab.ma/fr/a/8455002/studio",
+                            "fetched_at": "2026-11-09T16:00:00Z"}, NOW)
+        self.assertEqual(rec["fields"]["transaction_type"], "sale")
+        self.assertEqual(rec["fields"]["surface_total_m2"], 28.0)
+        self.assertNotIn("SCHEMA_SELL_CONTRADICTS_RENTAL_TEXT",
+                         rec["quality"]["review_reasons"])
+        self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+
+    def test_mubawab_studio_specific_listing_title_wins_generic_apartment_category(self):
+        import json
+        ld = {"@type": "RealEstateListing",
+              "name": "Studio Neuf de 87 m² avec Grande Terrasse",
+              "description": "Studio disponible à la vente",
+              "offers": {"price": 1150000, "priceCurrency": "MAD"}}
+        html = ("<html><head><script type='application/ld+json'>" +
+                json.dumps(ld) + "</script></head><body>" +
+                "<p>Immobilier Casablanca</p><p>Appartements Casablanca</p>" +
+                "<p>Ferme Bretonne</p><p>Obtenir un financement</p>" +
+                "<p>87m²</p></body></html>")
+        rec = v3.parse_raw({"raw_html": html,
+                            "source_url": "https://www.mubawab.ma/fr/a/8455100/studio",
+                            "fetched_at": "2026-11-09T16:00:00Z"}, NOW)
+        self.assertEqual(rec["fields"]["property_type"], "studio")
+        self.assertEqual(rec["field_evidence"]["property_type"]["path"],
+                         "mubawab.jsonld.listing.name.studio")
+        self.assertEqual(rec["fields"]["surface_total_m2"], 87.0)
+        self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+
 if __name__ == "__main__":
     unittest.main()
