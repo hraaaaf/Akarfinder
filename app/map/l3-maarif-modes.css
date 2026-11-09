@@ -102,3 +102,31 @@
     display: none !important;
   }
 }
+
+/* LOT01-G: preview-only compact disclosure keeps more of the OSM outline visible on phones.
+   The full source wording, ODbL link and 44px return remain visible. */
+@media (max-width: 600px) {
+  [data-vivre-ici-page] .l3-maarif-admin-panel[data-l3-admin-preview="true"] {
+    padding: 10px 12px 11px;
+    border-radius: 13px;
+    width: min(350px, calc(100vw - 24px));
+  }
+  [data-vivre-ici-page] .l3-maarif-admin-panel[data-l3-admin-preview="true"] strong {
+    display: block;
+    font-size: 13px;
+    line-height: 1.28;
+  }
+  [data-vivre-ici-page] .l3-maarif-admin-panel[data-l3-admin-preview="true"] p {
+    margin: 4px 0 5px;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  [data-vivre-ici-page] .l3-maarif-admin-panel[data-l3-admin-preview="true"] a {
+    font-size: 11px;
+    line-height: 1.2;
+    margin: 2px 0 5px;
+  }
+  [data-vivre-ici-page] .l3-maarif-admin-panel[data-l3-admin-preview="true"] [data-l3-admin-return] {
+    min-height: 44px;
+  }
+}

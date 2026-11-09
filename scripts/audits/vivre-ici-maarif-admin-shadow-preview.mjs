@@ -38,6 +38,16 @@ for (const vp of widths) {
   await page.waitForFunction(()=> {
     const e=document.querySelector("[data-l3-maarif-pilot]");return Number(e?.getAttribute("data-l3-camera-zoom"))<14.1;
   },null,{timeout:17000});
+  const panelRect = await page.locator("[data-l3-admin-preview]").boundingBox();
+  const returnRect = await page.locator("[data-l3-admin-return]").boundingBox();
+  const attributionRect = await page.locator(".maplibregl-ctrl-attrib").first().boundingBox();
+  const sheetRect = await page.locator("[data-p4-map-decision-rail]").boundingBox();
+  if (!panelRect || !returnRect || returnRect.height < 44) throw Error("preview disclosure / return target missing");
+  const intersects = (a,b) => a && b && a.x < b.x+b.width && a.x+a.width > b.x && a.y < b.y+b.height && a.y+a.height > b.y;
+  if (vp.width <= 430 && panelRect.height > 195) throw Error("mobile disclosure too tall: " + panelRect.height);
+  if (intersects(panelRect, attributionRect)) throw Error("admin disclosure overlaps map attribution");
+  if (intersects(panelRect, sheetRect)) throw Error("admin disclosure overlaps mobile sheet");
+  Object.assign(outcome, {panelHeightPx: Math.round(panelRect.height), returnHeightPx: Math.round(returnRect.height), attributionOverlap: false, sheetOverlap: false});
   await page.screenshot({path:join(out,"limites-"+outcome.viewport+".png"),animations:"disabled"});
   const overflow=await page.evaluate(()=>Math.max(0,document.documentElement.scrollWidth-innerWidth));
   if(overflow)throw Error("overflow "+overflow);
