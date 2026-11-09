@@ -19,6 +19,7 @@ from typing import Any, Iterator
 from urllib.parse import urlparse
 
 import akarparser_v2 as v2
+import akarparser_v3_portals as portals
 
 VERSION = "akarparser-v3-bulk-0.1.0"
 EXTENSIONS = (".html", ".htm", ".json", ".jsonl", ".jsonl.gz", ".ndjson", ".ndjson.gz", ".csv", ".csv.gz")
@@ -193,7 +194,27 @@ def adapt(raw: dict) -> tuple[dict, dict]:
         row["raw_html"] = html
     sources = layers(row, page)
     evidence = {}
+    # Some portals put the listing price in RealEstateListing.price as a
+    # schema.org PriceSpecification object, not as a scalar or offers[].
+    # Accept only an explicitly currency-labelled price; never convert EUR.
+    for origin, obj in sources:
+        typ = obj.get("@type")
+        kinds = typ if isinstance(typ, list) else [typ]
+        if "RealEstateListing" not in kinds:
+            continue
+        spec = obj.get("price")
+        if not isinstance(spec, dict) or not present(spec.get("price")) or not present(spec.get("priceCurrency")):
+            continue
+        if not present(row.get("price")) or isinstance(row.get("price"), dict):
+            row["price"] = spec["price"]
+            evidence["price"] = {"path": origin + ".price.price", "method": "schema_price_specification", "verified": False}
+        if not present(row.get("price_currency")):
+            row["price_currency"] = spec["priceCurrency"]
+            evidence["price_currency"] = {"path": origin + ".price.priceCurrency", "method": "schema_price_specification", "verified": False}
+        break
     for field, aliases in ALIASES.items():
+        if field in ("price", "price_currency") and field in evidence:
+            continue
         for origin, obj in sources:
             matched = next(((obj[a], a) for a in aliases if present(obj.get(a))
                             and not (a == "name" and "address" in origin)), None)
@@ -225,6 +246,28 @@ def adapt(raw: dict) -> tuple[dict, dict]:
             if present(val) and not present(row.get(key)):
                 row[key] = val
                 evidence[key] = {"path": "html.meta." + key, "method": "html_metadata", "verified": False}
+        # Domio's PRIMARY listing hero has a scoped type/transaction label and
+        # occasionally "District, City"; generic page navigation and price-area
+        # comparison widgets must never be treated as listing facts.
+        if urlparse(str(row.get("source_url") or "")).hostname in ("domio.ma", "www.domio.ma"):
+            hero_lines = [x.strip() for x in "".join(page.text).splitlines() if x.strip()]
+            hero_stop = next((i for i, x in enumerate(hero_lines) if x == "Copier le lien"), 0)
+            hero_lines = hero_lines[:hero_stop] if hero_stop else []
+            for value in hero_lines:
+                hero = re.fullmatch(r"(Appartement|Studio|Villa|Maison|Terrain|Duplex|Riad|Bureau)\s*[·•]\s*(Acheter|Louer)", value, re.I)
+                if hero:
+                    if not present(row.get("property_type")):
+                        row["property_type"] = hero.group(1)
+                        evidence["property_type"] = {"path": "domio.listing_hero.type", "method": "hero_label", "verified": False}
+                    if not present(row.get("transaction_type")):
+                        row["transaction_type"] = "sale" if hero.group(2).casefold() == "acheter" else "rent"
+                        evidence["transaction_type"] = {"path": "domio.listing_hero.transaction", "method": "hero_label", "verified": False}
+                district = re.fullmatch(r"([^,\n]{2,45}),\s*([^,\n]{2,45})", value)
+                if district and not present(row.get("district")) and present(row.get("city")):
+                    if district.group(2).strip().casefold() == str(row["city"]).strip().casefold():
+                        row["district"] = district.group(1).strip()
+                        evidence["district"] = {"path": "domio.listing_hero.location", "method": "hero_label", "verified": False}
+        portals.enrich(page, row, evidence)
         body = "\n".join(x.strip() for x in "".join(page.text).splitlines() if x.strip())[:250000]
     else:
         body = str(raw.get("raw_text") or raw.get("text") or "")[:250000]
@@ -236,6 +279,8 @@ def adapt(raw: dict) -> tuple[dict, dict]:
                     row[key] = val
                     evidence[key] = {"path": "visible_text.label." + key, "method": "label_regex", "verified": False}
         for key, kind in (("price_mad", "price"), ("surface_m2", "area")):
+            if key == "price_mad" and row.get("_portal_skip_price_regex"):
+                continue  # never mistake Avito financing instalments for sale prices
             if not present(row.get(key)) and not (key == "price_mad" and present(row.get("price"))):
                 val = annotated(body, kind)
                 if val:
@@ -295,6 +340,15 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
     row, provenance = adapt(raw)
     base = v2.parse_record(row, generated_at=clock.isoformat())
     e = base["extracted"]
+    # V2 can independently infer a number from description text. For Avito,
+    # an undifferentiated 5 002 DH/month financing figure must never become
+    # a sale price, even if its source was not picked by the V3 regex.
+    if (row.get("_portal_skip_price_regex") and not present(row.get("price_mad"))
+            and not present(row.get("price"))):
+        e["price_mad"] = None
+        e["price_amount_raw"] = None
+        e["price_currency_raw"] = None
+        base["quality"]["issues"].append("UNTRUSTED_FINANCING_PRICE_SUPPRESSED")
     if str(row.get("property_type") or "").strip().lower() in ("ferme", "farm"):
         if e.get("property_type") and e["property_type"] != "farm":
             base["status"] = "quarantine"  # explicit farm contradicts lexical type inference

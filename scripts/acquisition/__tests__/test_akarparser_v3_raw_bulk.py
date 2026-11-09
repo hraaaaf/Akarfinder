@@ -252,6 +252,49 @@ class TestV3(unittest.TestCase):
         self.assertEqual(result["quality"]["status"], "quarantine")
         self.assertIn("EXPLICIT_COUNTRY_OUTSIDE_MOROCCO", result["quality"]["v2_issues"])
 
+    def test_realestatelisting_price_specification_with_explicit_currency(self):
+        for currency, expected in (("MAD", 1250000.0), ("EUR", None)):
+            with self.subTest(currency=currency):
+                html = ("<html><head><script type='application/ld+json'>" +
+                        json.dumps({"@context": "https://schema.org", "@type": "RealEstateListing",
+                                    "name": "Vente appartement Rabat", "description": "Vente appartement",
+                                    "address": {"addressLocality": "Rabat", "addressNeighborhood": "Agdal"},
+                                    "price": {"@type": "PriceSpecification", "price": "1250000",
+                                              "priceCurrency": currency},
+                                    "floorSize": {"@type": "QuantitativeValue", "value": 85,
+                                                  "unitCode": "MTK"}}) +
+                        "</script></head><body></body></html>")
+                parsed = m.parse_raw({"raw_html": html,
+                                      "source_url": "https://example.test/a/123",
+                                      "fetched_at": "2026-11-08T12:00:00Z"}, NOW)
+                self.assertEqual(parsed["fields"]["price_mad"], expected)
+                self.assertEqual(parsed["field_evidence"]["price"]["method"], "schema_price_specification")
+                self.assertFalse(parsed["quality"]["neon_product_admission_authorized"])
+
+    def test_domio_hero_scoped_listing_facts(self):
+        jsonld = {"@context": "https://schema.org", "@type": "RealEstateListing",
+                  "name": "Appartement magnifique", "address": {"addressLocality": "Casablanca"},
+                  "price": {"@type": "PriceSpecification", "price": "980000", "priceCurrency": "MAD"},
+                  "floorSize": {"@type": "QuantitativeValue", "value": 68, "unitCode": "MTK"}}
+        header = "<div>Appartement · Acheter</div><p>Racine, Casablanca</p><div>Copier le lien</div>"
+        footer = "<p>Gauthier, Casablanca</p>"
+        html = ("<html><head><script type='application/ld+json'>" + json.dumps(jsonld) +
+                "</script></head><body>" + header + footer + "</body></html>")
+        item = m.parse_raw({"raw_html": html, "source_url": "https://domio.ma/fr/appartement/vendre/casablanca/123/fiche",
+                            "fetched_at": "2026-11-08T12:00:00Z"}, NOW)
+        self.assertEqual(item["fields"]["district"], "Racine")
+        self.assertEqual(item["fields"]["price_mad"], 980000.0)
+        self.assertEqual(item["fields"]["transaction_type"], "sale")
+        self.assertEqual(item["fields"]["property_type"], "apartment")
+        self.assertEqual(item["quality"]["status"], "ready_internal")
+        self.assertFalse(item["quality"]["neon_product_admission_authorized"])
+        html_no_hero_district = html.replace("Racine, Casablanca", "Casablanca")
+        no_district = m.parse_raw({"raw_html": html_no_hero_district,
+                                  "source_url": "https://domio.ma/fr/appartement/vendre/casablanca/123/fiche",
+                                  "fetched_at": "2026-11-08T12:00:00Z"}, NOW)
+        self.assertIsNone(no_district["fields"]["district"])
+        self.assertEqual(no_district["quality"]["status"], "partial")
+
     def test_output_inside_input_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             b = Path(tmp)

@@ -3,7 +3,10 @@ on:
   pull_request:
     paths:
       - "scripts/acquisition/akarparser_v3_raw_bulk.py"
+      - "scripts/acquisition/akarparser_v3_portals.py"
       - "scripts/acquisition/__tests__/test_akarparser_v3_raw_bulk.py"
+      - "scripts/acquisition/__tests__/test_akarparser_v3_portals.py"
+      - "scripts/acquisition/__tests__/test_akarparser_v3_benchmark.py"
       - ".github/workflows/akarparser-v3-private-bulk.yml"
       - "docs/data/AKARPARSER_V3_RAW_BULK_2026-11-09.md"
   workflow_dispatch:
@@ -31,7 +34,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Offline 10/100/1000 contracts — synthetic only
-        run: python -Werror::ResourceWarning -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v3_raw_bulk.py'
+        run: python -Werror::ResourceWarning -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v3*.py'
 
   private-batch:
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.authorize_private_batch == true
