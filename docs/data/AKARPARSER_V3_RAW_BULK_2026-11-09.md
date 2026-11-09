@@ -101,3 +101,22 @@ PR #1198 demeure Draft, non fusionnée. Aucun déploiement Vercel, aucune écrit
 **Next exact :** contrôler les métadonnées source pour détecter les contradictions internes (ce contrôle n'est pas une vérité terrain indépendante), terminer le commit/CI des adaptateurs, puis étiqueter les 100 observations indépendamment par champ avant de calculer la précision réelle et décider une éventuelle montée vers 1 000. Garder l'admission publique fermée.
 
 **Contrôle supplémentaire (mêmes pages, non indépendant) :** `Q1F_PRIVATE_RESULTS/Q1F_REAL_100_PARSED_20261109/source_markup_consistency.json` : 25/25 prix Avito concordent avec `og:title`, 23/23 Domio comparables concordent avec `RealEstateListing.price`, 30/30 Mubawab comparables concordent avec `offers.price` ; **78/78 concordances pour les pages disposant d'une référence de prix directement comparable dans les métadonnées source**. 20 Agenz + 2 Domio sans référence exploitable dans cette méthode ; 0 anomalie relevée sur les 78 comparables. Ceci est un contrôle de cohérence interne basé sur la même source HTML, PAS une annotation indépendante, une précision statistique, un contrôle de fraîcheur ou une validation juridique.
+
+## Q1F — Revue des anomalies du canary réel 100 (09/11/2026, sous-lot qualité)
+
+**GOAL :** empêcher la promotion interne de fiches dont les champs sont présents mais dont le sens commercial est contradictoire ou le prix atypique.
+
+**Anomalies observées sur HTML originaux :**
+- Deux annonces classées `sale` affichent des prix de vente particulièrement bas au regard de leur surface. Les prix concordent avec les métadonnées source mais leur **validité immobilière n'est pas démontrée** : un prix d'annonce publié peut lui-même être incorrect.
+- Sur les 30 HTML Mubawab du canary, `offers.businessFunction` vaut `#Sell`, y compris dans deux annonces où l'extraction lexicale des titres/descriptions indique `rent`. **Ne jamais déduire une vente du seul `#Sell` de Mubawab.** Le moteur conserve la transaction textuelle et signale la contradiction.
+
+**Correctif vérifié :** nouveau statut `requires_manual_review` lorsque les champs d'une fiche auraient permis `ready_internal`, mais qu'un signal exige une vérification (vente inférieure à 50 000 MAD ; vente inférieure à 1 000 MAD/m² ; contradiction Mubawab `#Sell` avec le texte de location). Ces seuils sont des **alertes de plausibilité internes**, pas une preuve d'erreur. Le prix source est conservé, sans modification ni conversion. Les fiches déjà `partial` conservent ce statut mais enregistrent les `review_reasons`. En cas de mise en quarantaine antérieure, la quarantaine prime.
+
+**PROOF — même corpus brut de 100 SHA inchangés, nouveau dossier privé** `Q1F_PRIVATE_RESULTS/Q1F_REAL_100_PARSED_20261109_v7_review_gates` :
+- Avant : 74 `ready_internal`, 26 `partial`.
+- Après : **71 `ready_internal`, 3 `requires_manual_review`, 26 `partial`** (Avito 1 risque prix, Mubawab 2 contradictions ; Domio 1 signal prix reste déjà `partial`).
+- Répartition : Agenz 20 prêtes ; Avito 23 prêtes + 1 revue + 1 partielle ; Domio 10 prêtes + 15 partielles ; Mubawab 18 prêtes + 2 revues + 10 partielles.
+- Couverture des 7 champs inchangée : ville 100/100, quartier 83/100, prix MAD 98/100, surface 99/100, titre 100/100, type 100/100, transaction 91/100. **0 droits certifiés, 0 vérité terrain indépendante, 0 écriture Neon.**
+- Tests locaux **107/107 PASS** : V2 69/69 et V3 38/38 ; inclut le contrôle de routage du statut de revue vers `review.jsonl.gz`, l'absence de fausse vente sur métadonnées seules et le maintien des locations normalement tarifées.
+
+**Limite réelle / NEXT :** 100 annotations indépendantes à effectuer sur les captures sources, avec preuves par champ et revue de l'activité des annonces. Les 100 templates privés sont prêts. Tant que cette validation n'existe pas, la montée à 1 000 pages réelles serait une hausse de volume, **pas un gain démontré de fiabilité**. Ne pas fusionner, importer en base produit ou déployer Vercel sur la base de ces seuls résultats.

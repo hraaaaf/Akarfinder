@@ -54,6 +54,18 @@ def enrich(page, row: dict, evidence: dict) -> None:
     elif host == "mubawab.ma":
         if not re.match(r"^/fr/a/\d+/", path):
             return
+        # Mubawab sometimes declares Sell in JSON-LD for rentals too.
+        # Preserve this as independent contradictory metadata, never as a
+        # definitive sale classification.
+        for obj in page.jsonld:
+            if obj.get("@type") != "RealEstateListing":
+                continue
+            offer = obj.get("offers")
+            if isinstance(offer, dict):
+                business_function = str(offer.get("businessFunction") or "")
+                if business_function.endswith("#Sell"):
+                    row["_mubawab_schema_offer_sell"] = True
+            break
         # The early breadcrumb is: Immobilier <City>, <Category> <City>, <District>.
         for i, label in enumerate(hero[:-2]):
             city = re.fullmatch(r"Immobilier ([\wÀ-ÿ][\wÀ-ÿ '-]{1,55})", label)

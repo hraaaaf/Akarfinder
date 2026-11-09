@@ -70,5 +70,100 @@ class TestPortalAdapters(unittest.TestCase):
         self.assertFalse(item["quality"]["neon_product_admission_authorized"])
 
 
+    def test_suspicious_sale_price_stays_visible_but_requires_manual_review(self):
+        raw = {"source_url": "https://example.test/fiche/13",
+               "title": "Appartement à vendre",
+               "city": "Casablanca", "district": "Maarif",
+               "price_mad": 13000, "surface_m2": 75,
+               "property_type": "apartment", "transaction_type": "sale",
+               "observed_at": "2026-11-09T16:00:00Z"}
+        rec = v3.parse_raw(raw, NOW)
+        self.assertEqual(rec["fields"]["price_mad"], 13000.0)
+        self.assertEqual(rec["quality"]["status"], "requires_manual_review")
+        self.assertIn("LOW_SALE_PRICE_REQUIRES_REVIEW", rec["quality"]["review_reasons"])
+        self.assertIn("LOW_SALE_PRICE_PER_M2_REQUIRES_REVIEW", rec["quality"]["review_reasons"])
+        self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+        raw.update(price_mad=400000, surface_m2=900)
+        rec = v3.parse_raw(raw, NOW)
+        self.assertEqual(rec["quality"]["status"], "requires_manual_review")
+        self.assertNotIn("LOW_SALE_PRICE_REQUIRES_REVIEW", rec["quality"]["review_reasons"])
+        self.assertIn("LOW_SALE_PRICE_PER_M2_REQUIRES_REVIEW", rec["quality"]["review_reasons"])
+
+    def test_normal_rental_price_not_treated_as_low_sale(self):
+        raw = {"source_url": "https://example.test/fiche/14",
+               "title": "Studio à louer", "city": "Rabat", "district": "Agdal",
+               "price_mad": 6200, "surface_m2": 52,
+               "property_type": "studio", "transaction_type": "rent",
+               "observed_at": "2026-11-09T16:00:00Z"}
+        rec = v3.parse_raw(raw, NOW)
+        self.assertEqual(rec["quality"]["status"], "ready_internal")
+        self.assertEqual(rec["quality"]["review_reasons"], [])
+
+    def test_mubawab_inconsistent_sell_businessfunction_not_trusted(self):
+        import json
+        obj = {"@context": "https://schema.org", "@type": "RealEstateListing",
+               "name": "Studio à louer Rabat",
+               "address": {"addressLocality": "Rabat"},
+               "offers": {"@type": "Offer", "price": 6200, "priceCurrency": "MAD",
+                          "businessFunction": "http://purl.org/goodrelations/v1#Sell"},
+               "floorSize": {"@type": "QuantitativeValue", "value": 52,
+                             "unitCode": "MTK"}}
+        html = ("<html><head><script type='application/ld+json'>" +
+                json.dumps(obj) + "</script></head><body>" +
+                "<p>Immobilier Rabat</p><p>Appartements Rabat</p><p>Hassan</p>" +
+                "<h1>Studio à louer Rabat</h1></body></html>")
+        rec = v3.parse_raw({"raw_html": html,
+                            "source_url": "https://www.mubawab.ma/fr/a/8123444/test",
+                            "fetched_at": "2026-11-09T16:00:00Z"}, NOW)
+        self.assertEqual(rec["fields"]["transaction_type"], "rent")
+        self.assertEqual(rec["quality"]["status"], "requires_manual_review")
+        self.assertIn("SCHEMA_SELL_CONTRADICTS_RENTAL_TEXT", rec["quality"]["review_reasons"])
+        self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+
+    def test_mubawab_sell_metadata_alone_not_transaction_proof(self):
+        import json
+        obj = {"@type": "RealEstateListing", "name": "Studio sympa",
+               "address": {"addressLocality": "Rabat"},
+               "offers": {"price": 920000, "priceCurrency": "MAD",
+                          "businessFunction": "http://purl.org/goodrelations/v1#Sell"}}
+        html = ("<html><head><script type='application/ld+json'>" +
+                json.dumps(obj) + "</script></head><body>" +
+                "<p>Immobilier Rabat</p><p>Appartements Rabat</p><p>Hassan</p>" +
+                "</body></html>")
+        rec = v3.parse_raw({"raw_html": html,
+                            "source_url": "https://www.mubawab.ma/fr/a/8123445/test",
+                            "fetched_at": "2026-11-09T16:00:00Z"}, NOW)
+        self.assertIsNone(rec["fields"]["transaction_type"])
+        self.assertEqual(rec["quality"]["status"], "partial")
+
+    def test_manual_review_is_written_to_review_bucket_not_ready(self):
+        import tempfile
+        from pathlib import Path
+        import json
+        import gzip
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inp = root / "sample.jsonl"
+            good = {"source_url": "https://example.test/good",
+                    "title": "Appartement à vendre", "city": "Casablanca",
+                    "district": "Maarif", "price_mad": 900000,
+                    "surface_m2": 85, "property_type": "apartment",
+                    "transaction_type": "sale",
+                    "observed_at": "2026-11-09T16:00:00Z"}
+            low = dict(good, source_url="https://example.test/low",
+                       price_mad=13000)
+            inp.write_text(json.dumps(good) + "\n" + json.dumps(low) + "\n",
+                           encoding="utf-8")
+            result = v3.run(inp, root / "parsed", as_of=NOW)
+            self.assertEqual(result["status_counts"]["input"], 2)
+            self.assertEqual(result["status_counts"]["ready_internal"], 1)
+            self.assertEqual(result["status_counts"]["requires_manual_review"], 1)
+            with gzip.open(root / "parsed" / "review.jsonl.gz", "rt",
+                           encoding="utf-8") as handle:
+                items = [json.loads(line) for line in handle]
+            self.assertEqual(len(items), 1)
+            self.assertEqual(items[0]["quality"]["status"], "requires_manual_review")
+            self.assertFalse(items[0]["quality"]["neon_product_admission_authorized"])
+
 if __name__ == "__main__":
     unittest.main()

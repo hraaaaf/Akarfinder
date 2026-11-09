@@ -302,7 +302,8 @@ def adapt(raw: dict) -> tuple[dict, dict]:
     return row, evidence
 
 
-def quality(e: dict, source: dict, as_of: datetime, *, quarantine: bool, serp: bool) -> dict:
+def quality(e: dict, source: dict, as_of: datetime, *, quarantine: bool, serp: bool,
+            review_reasons: tuple[str, ...] = ()) -> dict:
     observed = utc_date(e.get("observed_at"))
     age = round((as_of - observed).total_seconds() / 86400, 2) if observed else None
     freshness = ("unproven" if age is None else "future_invalid" if age < -0.05
@@ -327,8 +328,11 @@ def quality(e: dict, source: dict, as_of: datetime, *, quarantine: bool, serp: b
     status = ("source_snippet_only" if serp else "quarantine" if quarantine or freshness == "future_invalid"
               else "ready_internal" if not missing and freshness == "recent_claimed" and score >= 80
               else "complete_requires_freshness" if not missing else "partial")
+    if review_reasons and status == "ready_internal":
+        status = "requires_manual_review"
     return {
         "score": score, "score_breakdown": score_parts, "status": status,
+        "review_reasons": list(review_reasons),
         "missing_fields": missing, "freshness_status": freshness, "observation_age_days": age,
         "freshness_independently_verified": False, "rights_verified": False,
         "availability_verified": False, "physical_uniqueness_verified": False,
@@ -362,9 +366,22 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
     foreign_country = bool(e.get("country") and e["country"] != "Morocco")
     if foreign_country:
         base["quality"]["issues"].append("EXPLICIT_COUNTRY_OUTSIDE_MOROCCO")
+    # Price plausibility is NOT evidence of an incorrect listing. It is a
+    # conservative manual-review gate, never a silent price correction.
+    review_reasons = []
+    price = e.get("price_mad")
+    area = e.get("surface_total_m2")
+    if e.get("transaction_type") == "sale" and isinstance(price, (int, float)) and price > 0:
+        if price < 50_000:
+            review_reasons.append("LOW_SALE_PRICE_REQUIRES_REVIEW")
+        if isinstance(area, (int, float)) and area > 0 and price / area < 1_000:
+            review_reasons.append("LOW_SALE_PRICE_PER_M2_REQUIRES_REVIEW")
+    if row.get("_mubawab_schema_offer_sell") and e.get("transaction_type") == "rent":
+        review_reasons.append("SCHEMA_SELL_CONTRADICTS_RENTAL_TEXT")
     status = quality(e, base["source"], clock,
                      quarantine=base["status"] == "quarantine" or invalid_http or foreign_country,
-                     serp=bool(row.get("query_id") and row.get("source_domain")))
+                     serp=bool(row.get("query_id") and row.get("source_domain")),
+                     review_reasons=tuple(review_reasons))
     return {
         "version": VERSION, "record_id": base["record_id"], "source": base["source"],
         "raw_sha256": hashlib.sha256(json.dumps(raw, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")).hexdigest(),
@@ -513,7 +530,8 @@ def run(root: Path, out: Path, *, as_of: datetime, limit: int | None = None) -> 
             f.close()
     if counts["input"] == 0:
         raise ValueError("NO_INPUT_RECORDS")
-    statuses = ("ready_internal", "complete_requires_freshness", "partial", "source_snippet_only", "quarantine")
+    statuses = ("ready_internal", "requires_manual_review", "complete_requires_freshness",
+                "partial", "source_snippet_only", "quarantine")
     if counts["input"] != counts["errors"] + sum(counts[s] for s in statuses):
         raise AssertionError("ACCOUNTING_ERROR")
     report = {
