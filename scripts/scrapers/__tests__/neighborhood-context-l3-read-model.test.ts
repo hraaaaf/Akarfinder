@@ -22,7 +22,7 @@ describe("Neighborhood Context L3 — read model", () => {
   it("preserves the expected pilot coverage without fabricating missing context", () => {
     const catalog = buildNeighborhoodContextRuntimeCatalog(NOW);
     const byId = new Map(catalog.map((entry) => [entry.canonical_neighborhood_id, entry]));
-    assert.equal(byId.get("district_rabat_agdal")?.coverage_status, "covered");
+    assert.equal(byId.get("district_rabat_agdal")?.coverage_status, "partial");
     assert.equal(byId.get("district_casablanca_maarif")?.coverage_status, "insufficient");
     assert.equal(byId.get("district_marrakech_gueliz")?.coverage_status, "insufficient");
     assert.equal(byId.get("district_tanger_malabata")?.coverage_status, "partial");
@@ -33,7 +33,7 @@ describe("Neighborhood Context L3 — read model", () => {
   it("keeps canonical POI identity and complete provenance", () => {
     const agdal = getNeighborhoodContextReadModelBySlugs("rabat", "agdal", NOW);
     assert.ok(agdal);
-    assert.equal(agdal.anchor_count, 5);
+    assert.equal(agdal.anchor_count, 4);
     assert.equal(agdal.anchors.every((anchor) => anchor.poi_id.startsWith("osm:")), true);
     assert.equal(agdal.anchors.every((anchor) => anchor.source_id === "openstreetmap"), true);
     assert.equal(agdal.anchors.every((anchor) => anchor.freshness_status === "fresh"), true);
@@ -69,6 +69,12 @@ describe("Neighborhood Context L3 — API", () => {
     const body = await response.json() as { status: string; context: { canonical_neighborhood_id: string; anchor_count: number } };
     assert.equal(body.status, "ok");
     assert.equal(body.context.canonical_neighborhood_id, "district_rabat_agdal");
-    assert.equal(body.context.anchor_count, 5);
+    // Public API uses the current clock, not the fixed historic date used in the unit catalog.
+    // The August 2026 seed must disappear once it has expired, rather than re-labeling stale
+    // places as current or relaying made-up replacement POIs.
+    const liveCatalog = getNeighborhoodContextReadModelBySlugs("rabat", "agdal");
+    assert.ok(liveCatalog);
+    assert.equal(body.context.anchor_count, liveCatalog.anchor_count);
+    assert.equal(body.context.anchor_count, 0, "2026-08 legacy seed must remain expired");
   });
 });

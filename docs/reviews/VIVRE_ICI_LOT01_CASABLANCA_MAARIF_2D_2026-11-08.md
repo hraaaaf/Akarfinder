@@ -142,3 +142,23 @@ Le premier SHA du prototype [6cbe05c1](https://github.com/hraaaaf/Akarfinder/com
 **Sources de revue supplémentaire identifiées mais NON ajoutées à la file privée** : Instituto Español Juan Ramón Jiménez (ministère espagnol, numéro de boulevard divergent selon documents), Fitness Park Racine (opérateur, node géographique candidat non identifié de manière certaine), Casa Tramway (réseau général, pas de certification des 128 arrêts). Ne pas transformer une source de marque ou un plan général en preuve de géolocalisation d'un POI précis.
 
 **NO-GO** : publication de POI, statut ouvert actuellement, comptage de stations uniques, contour du quartier central, intégration read-model ou DB, fusion, Vercel. **Next exact** : analyser les 2 anomalies de géométrie sans scan lourd du Maroc, poursuivre les 21 vérifications individuelles encore absentes sur la shortlist, statuer sur doublons/directions de transport, puis passer revue SIG et UX. Pourcentage global non certifié.
+
+### 09/11/2026 — CI L1/L3 corrective batch (post-commit 70130144), hors production
+
+**Défaut observé dans les vrais journaux GitHub Actions** : run L3 42630347075 FAIL sur 3 assertions historiques fausses : Agdal attendu covered/5 anchors, mais seed réel figé au 24/08/2026 = partial/4 anchors ; API exécutée au 09/11/2026 renvoie 0 ancre car seed daté du 16/08 et TTL 30 jours. Run L1 42630347026 FAIL sur seed total attendu 13, mais source versionnée = 12 entrées. Les workflows ne prouvent AUCUN bug de chargement des 415 candidats OSM (jamais injectés dans runtime). Échec secondaire upload-artifact = absence de rapport après l'arrêt sur tests.
+
+**Solution rigoureuse** : pas de changement à la seed ni au TTL, pas de promotion frauduleuse des 415 candidats. Test L1 corrige 13 → 12 (source réelle). L3 historise ses assertions au 24 août : partial/4 pour Agdal ; API actuelle compare au read-model courant et requiert 0 ancre du seed désormais expiré. Le rapport L3 sépare désormais **historical_fixture** au 24/08 (11 ancres sélectionnées dans 6 modèles, sans findings) et **live_coverage_ready=false** (0 ancre dans six modèles au 09/11). Gate technique L3 peut passer si l'ancien seed est correctement masqué, mais il REFUSE de présenter les données courantes comme couvertes. Screenshot QA locale montrée : six modèles indisponibles, zéro ancre, footer TECH PASS · LIVE DATA UNAVAILABLE.
+
+**Preuves QA locale** : tests L1+L2+L3 27/27 PASS, L3 generate exit 0, validate exit 0, screenshot exit 0 ; rapport local sous C:\Users\lenovo\Desktop\AkarFinder-Vivre-Ici-QA-20261109\l3-stale-readmodel-qa\. L3 en prod reste vide tant qu'aucun POI n'a été individuellement qualifié ; aucune publication, DB, merge ou Vercel.
+
+**CI du dernier HEAD distant 70130144** : au contrôle après ce lot, L1 et L3 FAILED, quatre autres workflows encore QUEUED, sept SUCCESS et un SKIPPED. Corrections préparées LOCAL et non encore fusionnées/poussées au moment de cette note ; ne pas prétendre la CI distante corrigée sans nouvelle exécution réelle.
+
+**Prochaines actions** : terminer les analyses des autres workflows existants, commit groupé des tests + L3 report/gate + documentation, push safe sur PR #1197, vérifier nouvelle CI exacte HEAD ; si Overpass live indisponible, classer L1/L2 en blocage EXTERNE plutôt que maquiller le taux de disponibilité. Revue SIG 2026 et POI commerciaux restent NO-GO.
+
+#### LOT01-I — Consolidation correctifs CI locaux (avant push)
+
+- Correctifs L1/L3 et séparation de la certification technique / couverture opérationnelle préservant les dates et le TTL 30 jours. Le seed d'août ne devient JAMAIS une source actuelle en novembre.
+- Nouveau test `scripts/scrapers/__tests__/neighborhood-context-l3-report-guard.test.mjs` : **5/5 PASS** (refus faux live_coverage_ready, refus de réintroduire des ancres périmées, refus de modèle manquant, refus de fixture historique vide). Test ajouté à l'exécution du workflow L3 existant, sans second benchmark.
+- Contrôles ciblés regroupés L1 + L2 + L3 + nouveau guard + deux guards POI : **44/44 PASS** en local. **TypeScript --noEmit exit 0**. Report L3 généré et gate validé exit 0 : **6 modèles, 0 ancre actuelle, 11 ancres uniquement dans la fixture historique, 0 finding**. Cette réussite technique **n'établit pas une couverture de vie quotidienne publiable**.
+- Capture QA Playwright inspectée et présentée, réétiquetée **TECH PASS · LIVE DATA UNAVAILABLE** : `C:\Users\lenovo\Desktop\AkarFinder-Vivre-Ici-QA-20261109\l3-stale-readmodel-qa\l3-read-model-proof.png`.
+- **Next exact** : commit unique de remédiation, SHA et CI distants exacts ; aucune fusion/déploiement. Les étapes de validation métier POI (24 candidats prioritaires), revue ODbL, SIG 2026 et visual score final restent ouvertes.

@@ -203,3 +203,13 @@ PR roadmap : #902. Lots : #904, #906, #907, #913.
 4. figer un mockup cible de convergence ;
 5. seulement ensuite implémenter la convergence sur `NeighborhoodContextReadModelV1` ;
 6. aucun Vercel.
+---
+
+## 10. Statut opérationnel au 9 novembre 2026 — ne pas confondre certification historique et données vivantes
+
+- Les certifications L1/L2/L3 de 2026-08 restent des validations **historiques de code et de preuves à leur date** ; elles ne certifient pas que les POI sont encore frais en novembre. La ligne 4/6 de la roadmap est l'historique des clôtures, **pas un taux de couverture POI actuelle**.
+- Le seed ANN-L5 a été observé le **16 août 2026**, TTL maximum de **30 jours**. Au **9 novembre 2026**, les six read-models de production rendent **0 ancre fraîche** et le statut **unavailable** ; aucune donnée n'est artificiellement rafraîchie. Une fiche vide peut être techniquement correcte et commercialement incomplète.
+- L'ancien test L1 attendait 13 lignes dans un seed qui en contient **12**. Le test L3 attendait Agdal covered/5 dans la fixture datée 24 août, mais la source versionnée donne **partial/4** à cette date ; l'API réelle aujourd'hui doit donner **0** pour Agdal.
+- Le rapport L3 dissocie maintenant **technical gate ok** et **live_coverage_ready=false**. Il mesure un **historical_fixture** gelé au 24 août (11 ancres sélectionnées avec les données actuelles du dépôt) et un **live runtime** (0 ancre au 9 novembre). Aucun retour à la fraîcheur sans provenance extérieure certifiée.
+- Le pilote Geofabrik Maârif du 9 novembre fournit **415 candidats OSM en QA privée**, pas des pins publics. Les scripts et contrats sont documentés dans `scripts/neighborhood-context/MAARIF_GEOFABRIK_PRIVATE_QA.md`. Le contour arrondissement OSM reste *shadow* non certifié ; référence administrative prioritaire : plan homologué **décret n° 2.26.658 du 16 septembre 2026, BO n° 7548 du 1er octobre 2026** ([Agence urbaine de Casablanca](https://www.auc.ma/e-services-2/e-documents/)).
+- Pour la PR Vivre Ici #1197, aucune attestation de couverture live, aucun merge, aucune activation de la frontière et aucun déploiement Vercel sans revue SIG et vérification opérationnelle des POI. Source et tests CI exact HEAD à vérifier avant clôture.

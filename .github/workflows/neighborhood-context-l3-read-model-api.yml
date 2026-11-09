@@ -41,6 +41,7 @@ jobs:
         run: >-
           npx tsx --test
           scripts/scrapers/__tests__/neighborhood-context-l3-read-model.test.ts
+          scripts/scrapers/__tests__/neighborhood-context-l3-report-guard.test.mjs
           scripts/scrapers/__tests__/neighborhood-context-l2-anchor-selection.test.ts
           scripts/scrapers/__tests__/neighborhood-context-l1-poi-registry.test.ts
 
