@@ -10,6 +10,7 @@ on:
       - "scripts/neighborhood-context/j18-indicative-candidate-reader.mjs"
       - "scripts/neighborhood-context/j18-indicative-candidate-reader.d.mts"
       - "scripts/neighborhood-context/j18-review-route-gate.mjs"
+      - "scripts/neighborhood-context/j18-cdn-upload-plan.mjs"
       - "scripts/neighborhood-context/j18-review-route-gate.d.mts"
       - "scripts/neighborhood-context/fixtures/j18-review-route-gate.test.mjs"
       - "app/api/geo/j18-indicative-review/route.ts"

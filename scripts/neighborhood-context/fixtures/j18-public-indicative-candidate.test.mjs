@@ -7,6 +7,7 @@ import {tmpdir} from "node:os";
 import {fileURLToPath} from "node:url";
 import {buildJ18ReleaseCandidate,QA_SCHEMA,EVIDENCE_SCHEMA,CANDIDATE_SCHEMA,CANDIDATE_STATE}
  from "../j18-public-indicative-candidate.mjs";
+import {buildJ18CdnPlan} from "../j18-cdn-upload-plan.mjs";
 import {queryJ18IndicativeCandidate} from "../j18-indicative-candidate-reader.mjs";
 const sha=b=>createHash("sha256").update(b).digest("hex");
 const md5=b=>createHash("md5").update(b).digest("hex");
@@ -128,4 +129,34 @@ test("J18 candidate reader rejects unauthorized published claim",()=>withFixture
  m.publicEndpointEnabled=true;await writeFile(mp,JSON.stringify(m));
  await assert.rejects(queryJ18IndicativeCandidate({directory:f.out,
  expectedSourceSha:f.manifest.sourceSha256,bbox:"-7.66,33.57,-7.60,33.62",now:new Date(t)}),/j18_unapproved_candidate/);
+}));
+
+test("J18-D content-addressed upload plan is NOT an upload or publication",()=>withFixture(async f=>{
+ await build(f);
+ const outFile=join(f.root,"cdn-plan.json");
+ const summary=await buildJ18CdnPlan({candidateDirectory:f.out,sourceSha:f.manifest.sourceSha256,outFile,now:new Date(t)});
+ const plan=JSON.parse(await readFile(outFile,"utf8"));
+ assert.equal(summary.objects,1);
+ assert.equal(summary.features,1);
+ assert.equal(summary.uploadPerformed,false);
+ assert.equal(plan.status,"NOT_APPROVED_NOT_UPLOADED");
+ assert.equal(plan.networkActionsPerformed,0);
+ assert.equal(plan.publicationAuthorized,false);
+ assert.equal(plan.storageProvider,"UNSELECTED");
+ assert.equal(plan.activationPointerCreated,false);
+ assert.equal(plan.entries[0].relativeSourcePath,f.tileFile);
+ assert.match(plan.entries[0].objectKey,/^osm-indicative\/v1\/[0-9a-f]{64}\/tiles\/3447\/2471-[0-9a-f]{64}\.json$/);
+ await assert.rejects(buildJ18CdnPlan({candidateDirectory:f.out,sourceSha:f.manifest.sourceSha256,outFile,now:new Date(t)}),/EEXIST/);
+}));
+test("J18-D upload plan fails closed for expired or mismatching source",()=>withFixture(async f=>{
+ await build(f);
+ const args={candidateDirectory:f.out,sourceSha:f.manifest.sourceSha256,outFile:join(f.root,"plan.json"),now:new Date(t)};
+ await assert.rejects(buildJ18CdnPlan({...args,sourceSha:"a".repeat(64)}),/j18_cdn_manifest_invalid_or_stale/);
+ await assert.rejects(buildJ18CdnPlan({...args,now:new Date("2027-01-01T00:00:00.000Z")}),/j18_cdn_manifest_invalid_or_stale/);
+}));
+test("J18-D uploader plan rejects altered tile checksum",()=>withFixture(async f=>{
+ await build(f);
+ await writeFile(join(f.out,f.tileFile),"{}");
+ await assert.rejects(buildJ18CdnPlan({candidateDirectory:f.out,sourceSha:f.manifest.sourceSha256,
+ outFile:join(f.root,"cdn-plan.json"),now:new Date(t)}),/j18_cdn_tile_hash_invalid/);
 }));

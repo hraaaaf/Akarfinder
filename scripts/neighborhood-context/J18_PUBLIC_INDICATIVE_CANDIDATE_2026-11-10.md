@@ -70,3 +70,15 @@ NEXT EXACT : CI de ce lot, rétablir l'agent de machine, exécuter l'export rée
 **Vérification HTTP avant restauration** : 3 villes 200/180, bbox trop large 400, limit 181 = 400, Host et forwarded Host usurpés 404, cache private no-store/noindex ; test 7/7 PASS. La première tentative de compilation a montré un HTTP500 résolu en supprimant l'import du générateur offline dans le lecteur. Tests unitaires J18 18/18 PASS et tsc --noEmit PASS.
 
 **Artefact :** j18-review-http-report.json (hors Git), logs Next de revue/restauration privés sur PC. CI du nouveau HEAD à valider après commit. J18-C termine une **capacité de revue locale** ; aucune distribution publique réellement opérationnelle et aucune publication de données.
+
+## J18-D — Plan d'objets CDN immuables, SANS upload (10/11/2026)
+
+**Goal :** préparer l'acheminement des repères OSM sans D1 ni base transactionnelle, tout en conservant le gate humain de publication.
+
+**Implémentation :** scripts/neighborhood-context/j18-cdn-upload-plan.mjs construit uniquement un plan privé, aucun réseau/SDK/identifiant de stockage. Il vérifie à nouveau le manifeste candidat, la provenance SHA du PBF, le TTL, les 1339 tuiles et les SHA-256 de leurs octets. Chaque clé d'objet candidate est immuable : osm-indicative/v1/[sourceSHA]/tiles/[x]/[y]-[tileSHA].json. Le résultat est marqué NOT_APPROVED_NOT_UPLOADED, publicationAuthorized=false, activationPointerCreated=false, storageProvider=UNSELECTED.
+
+**Preuve réelle :** plan créé sur le PC hors dépôt dans j18-private-cdn-upload-plan-not-approved.json. **1339 objets**, **9 225 988 octets**, **27 567 repères**, expiration 2026-12-08T21:21Z, uploadPerformed=false. 3 nouveaux tests synthétiques PASS : noms immuables / intégrité et absence d'upload, refus SHA ou TTL incorrect, refus d'une tuile altérée. Le plan ne constitue ni une mise en ligne ni une autorisation de transfert.
+
+**Architecture conseillée :** pour cette volumétrie, CDN d'objets immuables + petite API de contrôle d'expiration/version active. Préférence provisoire pour Vercel Blob (proximité de l'hébergement existant) ; alternative Supabase Storage CDN. Le choix final dépend des quotas du plan et de l'accès de l'équipe, car les requêtes/blobs sont facturables selon usage. Aucune ressource créée, aucune dépense autorisée, aucun token récupéré. Références : https://vercel.com/docs/vercel-blob ; https://vercel.com/docs/vercel-blob/usage-and-pricing ; https://supabase.com/docs/guides/storage/cdn/fundamentals.
+
+**Gate suivant :** coder une API publique validant le pointeur de version et l'expiration à chaque lecture, avec hébergement approuvé et vraies latences réseau, sans jamais promouvoir directement le dossier REVIEW_CANDIDATE_ONLY_NOT_PUBLIC. Validation humaine nécessaire avant création d'un bucket public, upload, merge et tout déploiement Vercel. Un score visuel de 9,5/10 n'est pas démontré par ce lot backend.
