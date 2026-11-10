@@ -32,3 +32,19 @@ Commande de préparation privée, après disponibilité du PBF et de son manifes
 - CI Node du HEAD commité à lire ; en cas d'échec, corriger avant J18 closeout. La comparaison visuelle réelle du produit final ne peut être considérée comme achevée à ce stade.
 
 NEXT EXACT : CI de ce lot, rétablir l'agent de machine, exécuter l'export réel et la vérification des manifestes, concevoir un endpoint distinct de lecture publique avec quotas/cache et source pinning, puis tests 3 modes/4 viewports et validation humaine. Ne pas merger ni déployer Vercel.
+
+## J18-A/B — Export source national réel et lecture bornée (10/11/2026)
+
+**Goal :** préparer un candidat de données OSM indicatives à partir du vrai PBF, sans le publier ni contaminer le modèle de POI enrichis. Source vérifiée directement via pyosmium : réplication 2026-11-08T21:21:00Z, PBF Geofabrik 244 434 479 octets, MD5 c2334c9499b4565a6a16cf2f45624912 et SHA256 0ba250a5c27319a029b7c6b971e2a96a86b300d459406bb162be4c44a23a730f. Empreintes recalculées et égales au manifest J11.
+
+**Success réel :** générateur exit 0, 27 567 points / 1 339 tuiles, état REVIEW_CANDIDATE_ONLY_NOT_PUBLIC, expiration 2026-12-08T21:21:00.000Z. Sortie privée sur PC sous C:\Users\lenovo\Desktop\AkarFinder-Vivre-Ici-QA-20261110\j18-review-candidate-morocco-20261110 ; attestation PBF sous j18-source-evidence\pbf-source-evidence-private.json. Aucune tuile, PBF ou JSON nominatif dans Git, aucun upload ni DB.
+
+**Proof indépendant :** toutes les 1 339 tuiles et leurs SHA256 relus, 27 567 IDs OSM uniques ; 0 revendication de commerces ouverts ou de frontière officielle. Volumétrie totale tuiles : 9 225 988 octets, maximum par tuile 351 336 octets. Catégories : transport 10 417 ; santé 8 129 ; écoles 4 794 ; courses 1 988 ; espaces verts et sport 1 179 ; shopping 1 060. Bbox contextuelles (pas administratives) : Casablanca 652, Rabat 389, Marrakech 465.
+
+**Nouveau lecteur hors API :** scripts/neighborhood-context/j18-indicative-candidate-reader.mjs. Lecture bornée (max 64 cellules / 180 résultats), SHA source épinglée, SHA de chaque tuile lue, validité de la date source/TTL 30 jours, attribution ODbL et refus des déclarations commerciales ou territoriales non certifiées. Tests synthétiques Windows : 14/14 PASS après correction test Windows de fileURLToPath. Pas de route publique, pas de runtime prod ni flag déployable ajouté.
+
+**3 villes / 25 requêtes locales par ville :** 180 résultats par vue. Casablanca P50 18,65 ms / P95 23,60 ms ; Rabat P50 9,98 / P95 11,30 ; Marrakech P50 12,79 / P95 14,88. 540/540 features exactement identiques aux tuiles QA J11 (ID, nom, catégorie, coordonnées, claims). Mesures locales disque, pas réseau/CDN. Rapports privés j18-real-export-verification.json, j18-three-city-reader-benchmark.json et j18-3city-parity-report.json.
+
+**Modes/UX/a11y QA** : 4/4 vues (390x844, 430x932, 768x900, 1280x900) : modes Quartier 2D, Rue, Limites ; changement réel des pixels après Rue, panneau Limites véridique, 0 erreurs JS et 0 overflow, 0 violation axe automatisée détectée dans les états audités. Vérifications axe incomplete restantes ; valeur d'attribut zoom parfois en retard. Captures privées j18-after-3modes (quartier/rue/limites) montrées. Pas de score visuel 9,5 certifié.
+
+**Gate NO-GO** : aucun endpoint de données publiques activé ; seed historique d'août reste expiré, modèle enrichi public à 0 ancre. Prochaine étape : backend de distribution versionné distinct, tests réseau/CDN/lecteur écran réel, validation des frontières, revue visuelle ≥9,5/10 puis décision humaine de merge/Vercel. Ne pas confondre candidate indicatif et source métier certifiée.

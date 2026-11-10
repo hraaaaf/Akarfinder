@@ -7,6 +7,7 @@ import {tmpdir} from "node:os";
 import {fileURLToPath} from "node:url";
 import {buildJ18ReleaseCandidate,QA_SCHEMA,EVIDENCE_SCHEMA,CANDIDATE_SCHEMA,CANDIDATE_STATE}
  from "../j18-public-indicative-candidate.mjs";
+import {queryJ18IndicativeCandidate} from "../j18-indicative-candidate-reader.mjs";
 const sha=b=>createHash("sha256").update(b).digest("hex");
 const md5=b=>createHash("md5").update(b).digest("hex");
 const t="2026-11-10T00:00:00.000Z",observed="2026-11-08T21:21:00.000Z";
@@ -81,7 +82,7 @@ test("J18 will not overwrite an existing candidate",()=>withFixture(async f=>{
 test("J18 forbids output inside repository including public folder",async()=>{
  const url=new URL("../../../public/j18-data",import.meta.url);
  await assert.rejects(buildJ18ReleaseCandidate({
- sourceDir:"/invalid",pbfPath:"/invalid",evidencePath:"/invalid",outDir:url.pathname,
+ sourceDir:"/invalid",pbfPath:"/invalid",evidencePath:"/invalid",outDir:fileURLToPath(url),
  now:new Date(t)}),/j18_output_must_be_outside_repo/);
 });
 
@@ -97,3 +98,34 @@ test("J18 rejects symlinked external path pointing into repository",async()=>{
    }),/j18_output_must_be_outside_repo/);
  }finally{await rm(folder,{recursive:true,force:true});}
 });
+
+test("J18 candidate reader returns at most bounded sourced indicative OSM features",()=>withFixture(async f=>{
+ await build(f);
+ const q=await queryJ18IndicativeCandidate({directory:f.out,expectedSourceSha:f.manifest.sourceSha256,
+ bbox:"-7.66,33.57,-7.60,33.62",limit:180,now:new Date(t)});
+ assert.equal(q.features.length,1);assert.equal(q.publicationAuthorized,false);
+ assert.equal(q.features[0].properties.osmId,"node/301");
+ assert.equal(q.features[0].properties.currentlyOpen,null);
+ assert.equal(q.features[0].properties.officialQuarterMembership,null);
+}));
+test("J18 candidate reader rejects non-matching SHA and old source",()=>withFixture(async f=>{
+ await build(f);
+ const args={directory:f.out,expectedSourceSha:"a".repeat(64),bbox:"-7.66,33.57,-7.60,33.62",now:new Date(t)};
+ await assert.rejects(queryJ18IndicativeCandidate(args),/j18_unapproved_candidate/);
+ await assert.rejects(queryJ18IndicativeCandidate({...args,expectedSourceSha:f.manifest.sourceSha256,
+ now:new Date("2027-01-01T00:00:00.000Z")}),/j18_candidate_stale/);
+}));
+test("J18 candidate reader rejects corruption and overly wide viewport",()=>withFixture(async f=>{
+ await build(f);
+ const args={directory:f.out,expectedSourceSha:f.manifest.sourceSha256,
+ bbox:"-7.66,33.57,-7.60,33.62",now:new Date(t)};
+ await assert.rejects(queryJ18IndicativeCandidate({...args,bbox:"-15,20,0,40"}),RangeError);
+ await writeFile(join(f.out,f.tileFile),"{}");
+ await assert.rejects(queryJ18IndicativeCandidate(args),/j18_tile_integrity/);
+}));
+test("J18 candidate reader rejects unauthorized published claim",()=>withFixture(async f=>{
+ await build(f);const mp=join(f.out,"manifest.json"),m=JSON.parse(await readFile(mp,"utf8"));
+ m.publicEndpointEnabled=true;await writeFile(mp,JSON.stringify(m));
+ await assert.rejects(queryJ18IndicativeCandidate({directory:f.out,
+ expectedSourceSha:f.manifest.sourceSha256,bbox:"-7.66,33.57,-7.60,33.62",now:new Date(t)}),/j18_unapproved_candidate/);
+}));

@@ -7,6 +7,7 @@ on:
       - "scripts/neighborhood-context/national-osm-tile-pack.py"
       - "scripts/neighborhood-context/private-national-qa-tiles.mjs"
       - "scripts/neighborhood-context/j18-public-indicative-candidate.mjs"
+      - "scripts/neighborhood-context/j18-indicative-candidate-reader.mjs"
       - "scripts/neighborhood-context/fixtures/j18-public-indicative-candidate.test.mjs"
       - "scripts/neighborhood-context/J18_PUBLIC_INDICATIVE_CANDIDATE_2026-11-10.md"
       - "scripts/neighborhood-context/private-qa-host-guard.mjs"
