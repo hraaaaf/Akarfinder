@@ -38,3 +38,11 @@ Source et attribution OSM/ODbL présentes ; `businessOperatingStatusCertified=fa
 **Compression J11-B indépendante** : 1 339 tuiles, 9 184 479 octets bruts hors manifeste, 1 387 698 octets gzip niveau 6 (économie 84,9 %) ; tuile la plus dense 351 305 octets bruts, 35 774 octets gzip. Mesure disque QA sans requête HTTP ; ne pas présenter comme mesure CDN.
 
 **Prochain gate J11-C2** : test HTTP localhost Next avec `NODE_ENV=development` et variables locales privées, 404 en production/sans flag/hors loopback, puis branchement MapLibre sur option QA, captures BEFORE/AFTER aux 390/430/768/1280. Pas de déploiement Vercel, de merge ni de promotion du pack.
+
+## J11-C1 — preuve HTTP de sécurité locale (10/11/2026)
+
+**Défaut découvert lors du contrôle réseau réel** : la route QA renvoyait HTTP 200 avec un en-tête `Host: foo.invalid` malgré un `request.nextUrl.hostname` normalisé à `127.0.0.1`. Le contrôle du seul `nextUrl.hostname` n'était pas suffisant pour garantir la restriction d'hôte. **Correctif** : helper `private-qa-host-guard.mjs` avec lecture du champ `Host`, du champ `X-Forwarded-Host` et du hostname Next, refus en cas d'hôte non loopback ou d'en-tête malformé ; garder en outre le serveur de développement lié uniquement à `127.0.0.1`.
+
+**Après correctif** : HTTP `200` pour l'hôte local autorisé, `404` pour `Host: foo.invalid`, `404` pour `X-Forwarded-Host: foo.invalid`. **12/12 tests Node locaux PASS** (8 lecture de tuiles + 4 garde d'hôte). Le host check est une défense supplémentaire, **pas une authentification** et ne remplace jamais l'écoute loopback et `NODE_ENV=development`. Aucune activation Vercel.
+
+**J11-C2** : un essai de capture BEFORE 390 px sur le serveur Next local a expiré sur `/map` (timeout `domcontentloaded` 60 s pendant la compilation de la page). **Aucune capture actuelle certifiée**, pas de rendu MapLibre QA validé. Diagnostiquer la compilation/capture, puis BEFORE/AFTER 390/430/768/1280 avant validation UI. Les captures historiques du 08/11 ne constituent pas une preuve de rendu sur ce nouveau HEAD.

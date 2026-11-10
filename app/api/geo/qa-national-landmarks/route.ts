@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseQaBbox, queryPrivateNationalQaPack } from "@/scripts/neighborhood-context/private-national-qa-tiles.mjs";
+import { isPrivateQaLoopbackRequest } from "@/scripts/neighborhood-context/private-qa-host-guard.mjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,7 +11,11 @@ export async function GET(request: NextRequest) {
     "Cache-Control": "private, no-store, max-age=0",
     "X-Robots-Tag": "noindex, nofollow",
   };
-  const localHostname = ["localhost", "127.0.0.1", "[::1]", "::1"].includes(request.nextUrl.hostname.toLowerCase());
+  const localHostname = isPrivateQaLoopbackRequest(
+    request.nextUrl.hostname,
+    request.headers.get("host"),
+    request.headers.get("x-forwarded-host"),
+  );
   const dir = process.env.AKAR_VIVRE_ICI_QA_TILE_PACK_DIR;
   const sha = process.env.AKAR_VIVRE_ICI_QA_EXPECTED_SHA256;
   if (process.env.NODE_ENV !== "development" ||
