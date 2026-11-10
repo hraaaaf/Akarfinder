@@ -34,7 +34,41 @@ def enrich(page, row: dict, evidence: dict) -> None:
     path = unquote(parsed.path)
     lines = [x.strip() for x in "".join(page.text).splitlines() if x.strip()]
     hero = lines[:100]
-    if host == "agenz.ma":
+    if host == "domio.ma":
+        # A full listing headline such as "Appartement à vendre –
+        # Belvédère, Casablanca" is NOT a neighborhood. Conversely a
+        # "Quartier Belvédère – Casablanca" line in the listing's own
+        # description is an explicit location claim.
+        listing = next((
+            node for node in page.jsonld
+            if node.get("@type") == "RealEstateListing"
+        ), {})
+        for source, text in (("description", listing.get("description")),
+                             ("name", listing.get("name"))):
+            # Case-sensitive initial letters + a close delimiter distinguish
+            # an actual place name ("Quartier Aïn Chock – Casablanca") from
+            # prose ("quartier prisé de Talborjt", "quartier qui vit").
+            match = re.search(
+                r"\b[Qq]uartier\s+"
+                r"([A-ZÀ-Ÿ0-9][\wÀ-ÿ'’-]*"
+                r"(?:\s+[A-ZÀ-Ÿ0-9][\wÀ-ÿ'’-]*){0,2})"
+                r"(?=\s*(?:[,;–—.!?]|$))",
+                str(text or "")[:650],
+            )
+            if not match:
+                continue
+            neighborhood = match.group(1).strip()
+            if neighborhood.split()[0].casefold() in (
+                "recherché", "prisé", "résidentiel", "calme",
+                "est", "qui", "avec", "très", "de", "du", "des",
+            ):
+                continue
+            if re.fullmatch(r"[\wÀ-ÿ][\wÀ-ÿ'’ -]{1,48}", neighborhood):
+                _set(row, evidence, "district", neighborhood,
+                     "domio.jsonld.listing." + source + ".explicit_quartier")
+                break
+
+    elif host == "agenz.ma":
         # Factual route metadata on individual listing pages (not search results).
         match = re.fullmatch(
             r"/fr/annonces/immo-([^/]+)/(vente|location)-([^/]+)/([^/]+)/(\d+)(?:/)?",
@@ -88,7 +122,17 @@ def enrich(page, row: dict, evidence: dict) -> None:
         for node in page.jsonld:
             if node.get("@type") != "RealEstateListing":
                 continue
-            if re.match(r"^\s*studio\b", str(node.get("name") or ""), re.I):
+            listing_title = str(node.get("name") or "")
+            if re.match(r"^\s*(?:(?:à|a)\s+vendre\s+)?terrains?\b", listing_title, re.I):
+                # "À vendre Terrain ..." can appear in the broad "Villas"
+                # portal category when the existing villa is for demolition.
+                # Listing intent is land, not the incidental building.
+                row["property_type"] = "land"
+                evidence["property_type"] = {
+                    "path": "mubawab.jsonld.listing.name.explicit_terrain",
+                    "method": "portal_detail_explicit", "verified": False,
+                }
+            elif re.match(r"^\s*studio\b", listing_title, re.I):
                 row["property_type"] = "studio"
                 evidence["property_type"] = {
                     "path": "mubawab.jsonld.listing.name.studio",

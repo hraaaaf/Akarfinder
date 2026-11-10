@@ -264,9 +264,21 @@ def adapt(raw: dict) -> tuple[dict, dict]:
                         evidence["transaction_type"] = {"path": "domio.listing_hero.transaction", "method": "hero_label", "verified": False}
                 district = re.fullmatch(r"([^,\n]{2,45}),\s*([^,\n]{2,45})", value)
                 if district and not present(row.get("district")) and present(row.get("city")):
-                    if district.group(2).strip().casefold() == str(row["city"]).strip().casefold():
-                        row["district"] = district.group(1).strip()
-                        evidence["district"] = {"path": "domio.listing_hero.location", "method": "hero_label", "verified": False}
+                    # Some listing HEADLINES are "... à vendre – Quartier, City".
+                    # A comma+city is insufficient to make the entire heading
+                    # a neighborhood. Require a location-like phrase instead.
+                    neighborhood = district.group(1).strip()
+                    heading_like = bool(re.search(
+                        r"\b(?:appartement|appartements|studio|villa|maison|"
+                        r"terrain|duplex|bureau|vendre|louer|vente|location)\b",
+                        neighborhood, re.I
+                    ))
+                    if (not heading_like
+                            and district.group(2).strip().casefold()
+                            == str(row["city"]).strip().casefold()):
+                        row["district"] = neighborhood
+                        evidence["district"] = {"path": "domio.listing_hero.location",
+                                               "method": "hero_label", "verified": False}
         portals.enrich(page, row, evidence)
         body = "\n".join(x.strip() for x in "".join(page.text).splitlines() if x.strip())[:250000]
     else:
