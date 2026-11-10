@@ -22,3 +22,19 @@ Ne jamais ajouter ces variables au Vercel ni envoyer le pack QA sur Internet.
 ## J11-C1 durcissement accès local
 
 En mode QA, le hostname de la requête doit également être loopback (`localhost`, `127.0.0.1`, `::1`) ; même un serveur Next de développement accessible sur le LAN ne doit pas distribuer ces données privées sur une autre adresse. L’échec donne HTTP 404, sans fuite de chemin local.
+
+## J11-C1 — preuve Node sur pack national réel (10/11/2026)
+
+Script de QA privé `qa-node-national-serving.mjs` exécuté sur le PC, avec le lecteur versionné `private-national-qa-tiles.mjs` du dépôt, pack final J11-B et empreinte SHA-256 PBF épinglée. **75 lectures Node**, 25/ville et 180 points retournés/ville, exit 0. Sans écriture DB, réseau public ou UI.
+
+| Ville | Médiane Node disque | P95 |
+|---|---:|---:|
+| Casablanca | 38,032 ms | 68,237 ms |
+| Rabat | 35,819 ms | 38,924 ms |
+| Marrakech | 36,805 ms | 50,109 ms |
+
+Source et attribution OSM/ODbL présentes ; `businessOperatingStatusCertified=false` et `officialNeighborhoodMembershipCertified=false` sur les trois villes. Ce benchmark valide **le module Node**, pas encore l'API HTTP Next ni le rendu MapLibre.
+
+**Compression J11-B indépendante** : 1 339 tuiles, 9 184 479 octets bruts hors manifeste, 1 387 698 octets gzip niveau 6 (économie 84,9 %) ; tuile la plus dense 351 305 octets bruts, 35 774 octets gzip. Mesure disque QA sans requête HTTP ; ne pas présenter comme mesure CDN.
+
+**Prochain gate J11-C2** : test HTTP localhost Next avec `NODE_ENV=development` et variables locales privées, 404 en production/sans flag/hors loopback, puis branchement MapLibre sur option QA, captures BEFORE/AFTER aux 390/430/768/1280. Pas de déploiement Vercel, de merge ni de promotion du pack.
