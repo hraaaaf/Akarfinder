@@ -124,3 +124,35 @@ test("J18-F requires pinned source and manifest SHA and a bounded cache",()=>{
  assert.throws(()=>createJ18PrivateBlobReadModel({readObject:async()=>new Uint8Array(),sourceSha:"wrong",manifestSha:f.manifestSha}),RangeError);
  assert.throws(()=>createJ18PrivateBlobReadModel({readObject:async()=>new Uint8Array(),sourceSha,manifestSha:f.manifestSha,maxCacheBytes:100}),RangeError);
 });
+
+test("J18-F allows a SHA-pinned newer manifest to reuse an unchanged older private tile",async()=>{
+ const f=fixture(),newSource="c".repeat(64);
+ const newer={...f.manifest,sourceSha256:newSource,
+  tiles:{"3447:2471":{...f.manifest.tiles["3447:2471"],blobSourceSha256:sourceSha}}};
+ const data=Buffer.from(JSON.stringify(newer)+"\n"),hash=sha(data);
+ const newManifestKey="osm-indicative/v1/"+newSource+"/manifest-"+hash+".json";
+ f.store.set(newManifestKey,data);
+ const reads=[];
+ const model=createJ18PrivateBlobReadModel({sourceSha:newSource,manifestSha:hash,
+  readObject:async p=>{reads.push(p);return f.store.get(p);},
+  clock:()=>Date.parse(at)});
+ const result=await model.query({bbox,limit:180});
+ assert.equal(result.sourceSha256,newSource);
+ assert.equal(result.features.length,2);
+ assert.deepEqual(reads,[newManifestKey,f.tileKey]);
+ assert.equal(result.publicationAuthorized,false);
+});
+test("J18-F rejects invalid previous-snapshot source SHA before any private tile GET",async()=>{
+ const f=fixture(),newSource="c".repeat(64);
+ const m={...f.manifest,sourceSha256:newSource,
+  tiles:{"3447:2471":{...f.manifest.tiles["3447:2471"],blobSourceSha256:"../../unauthorized"}}};
+ const bytes=Buffer.from(JSON.stringify(m)+"\n"),hash=sha(bytes);
+ const pathname="osm-indicative/v1/"+newSource+"/manifest-"+hash+".json";
+ f.store.set(pathname,bytes);
+ const reads=[];
+ const model=createJ18PrivateBlobReadModel({sourceSha:newSource,manifestSha:hash,
+  readObject:async p=>{reads.push(p);return f.store.get(p);},
+  clock:()=>Date.parse(at)});
+ await assert.rejects(model.query({bbox}),/j18_blob_tile_manifest_invalid/);
+ assert.deepEqual(reads,[pathname]);
+});

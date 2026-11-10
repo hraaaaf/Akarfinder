@@ -113,7 +113,11 @@ export function createJ18PrivateBlobReadModel({
    const base="tiles/"+String(x).padStart(4,"0")+"/"+String(y).padStart(4,"0");
    if(entry.path!==base+".json"||!hex(entry.sha256)||
       !Number.isSafeInteger(entry.count)||entry.count<1||entry.count>10000)fail("tile_manifest_invalid");
-   const path=prefix+base+"-"+entry.sha256+".json";
+   // A signed next-snapshot manifest may reuse an unchanged tile from an older source.
+   // The tile SHA remains verified; the origin source SHA is never a free-form URL.
+   const blobSourceSha=entry.blobSourceSha256??sourceSha;
+   if(!hex(blobSourceSha))fail("tile_manifest_invalid");
+   const path="osm-indicative/v1/"+blobSourceSha+"/"+base+"-"+entry.sha256+".json";
    const tileBytes=await fetchVerified(path,entry.sha256,MAX_TILE_BYTES);
    const tile=JSON.parse(tileBytes.toString("utf8"));
    if(tile?.schema!==SCHEMA||tile.state!==STATE||
