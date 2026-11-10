@@ -352,6 +352,19 @@ def quality(e: dict, source: dict, as_of: datetime, *, quarantine: bool, serp: b
     }
 
 
+def explicit_unit_rate_equals_price(description: str, price: float | None) -> bool:
+    """Only reject a claimed total when the primary text marks *that value* as MAD/m²."""
+    if not isinstance(price, (int, float)) or not isinstance(description, str):
+        return False
+    matches = re.findall(
+        r"(?<!\d)(\d[\d\s\u202f\u00a0.,]{0,16})\s*"
+        r"(?:dhs?|mad|dirhams?)\s*(?:/|par)\s*m(?:²|2)(?!\w)",
+        description[:6000], flags=re.I,
+    )
+    return any((rate := v2.number(value)) is not None
+               and abs(rate - price) <= 0.01 for value in matches)
+
+
 def stable_observation_id(raw_hash: str, base: dict) -> tuple[str, str]:
     """Keep source-backed V2 IDs; bind source-less observations to the immutable capture.
 
@@ -396,6 +409,17 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
         e["price_amount_raw"] = None
         e["price_currency_raw"] = None
         base["quality"]["issues"].append("MUBAWAB_UNIT_RATE_SUPPRESSED_AS_TOTAL")
+    # Domio can likewise encode the advertised MAD/m² rate as its JSON-LD
+    # price specification. Match the actual number in the *primary listing*
+    # description, not unrelated price comparisons elsewhere on the page.
+    domio_unit_rate = (host == "domio.ma"
+        and str(provenance.get("description", {}).get("path") or "").startswith("jsonld[")
+        and explicit_unit_rate_equals_price(str(row.get("description") or ""), e.get("price_mad")))
+    if domio_unit_rate:
+        e["price_mad"] = None
+        e["price_amount_raw"] = None
+        e["price_currency_raw"] = None
+        base["quality"]["issues"].append("DOMIO_UNIT_RATE_SUPPRESSED_AS_TOTAL")
     # V2 can independently infer a number from description text. For Avito,
     # an undifferentiated 5 002 DH/month financing figure must never become
     # a sale price, even if its source was not picked by the V3 regex.
@@ -421,7 +445,7 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
     # Price plausibility is NOT evidence of an incorrect listing. It is a
     # conservative manual-review gate, never a silent price correction.
     review_reasons = []
-    if strict_mubawab and row.get("_mubawab_unit_price_not_total"):
+    if (strict_mubawab and row.get("_mubawab_unit_price_not_total")) or domio_unit_rate:
         review_reasons.append("UNIT_PRICE_RATE_NOT_TOTAL_REQUIRES_REVIEW")
     price = e.get("price_mad")
     area = e.get("surface_total_m2")
