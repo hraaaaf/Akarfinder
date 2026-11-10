@@ -7,7 +7,7 @@
     overflow: visible !important;
   }
 
-  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-context-header h2 {
+  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-context-header :is(h1,h2) {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;

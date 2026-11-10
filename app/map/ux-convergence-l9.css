@@ -149,7 +149,7 @@
     display: none !important;
   }
 
-  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-context-header h2 {
+  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-context-header :is(h1,h2) {
     margin-top: 2px !important;
     font-size: 22px !important;
     line-height: 1.02 !important;

@@ -158,7 +158,7 @@ export function P4MapDecisionRail() {
         <p className="p4-premium-kicker">
           {districtEntity ? `${cityName} · Quartier` : "Vivre ici"}
         </p>
-        <h2>{title}</h2>
+        <h1>{title}</h1>
         {districtEntity ? <p className="p4-premium-context-location">Vivre, comprendre, puis chercher</p> : null}
         <p className="p4-premium-lede">{contextIntro}</p>
         {districtEntity ? (
@@ -180,7 +180,7 @@ export function P4MapDecisionRail() {
       <div id="vivre-ici-sheet-extra" data-l2c-extra>
       {districtEntity ? (
         <section className="mt-4 rounded-2xl border px-4 py-3" style={{ borderColor: "var(--border)", background: "var(--surface)" }} aria-labelledby="vivre-ici-quotidien" data-l2b-daily-context>
-          <h3 id="vivre-ici-quotidien" className="text-[15px] font-extrabold">Vie quotidienne</h3>
+          <h2 id="vivre-ici-quotidien" className="text-[15px] font-extrabold">Vie quotidienne</h2>
           <p className="mt-1.5 text-[11px] leading-5" style={{ color: "var(--text-secondary)" }}>
             {localContext
               ? localContext.anchor_count > 0
@@ -264,7 +264,7 @@ export function P4MapDecisionRail() {
       <section className="p4-premium-market-card" data-p4-map-data-contract data-l2b-living-context aria-labelledby="vivre-ici-cadre">
         <div>
           <p className="p4-premium-market-eyebrow">Sources et couverture</p>
-          <h3 id="vivre-ici-cadre" className="p4-premium-market-title">Cadre de vie</h3>
+          <h2 id="vivre-ici-cadre" className="p4-premium-market-title">Cadre de vie</h2>
         </div>
         <p className="p4-premium-market-copy">
           {districtEntity && localContext?.coverage_status === "covered"
@@ -292,7 +292,7 @@ export function P4MapDecisionRail() {
       </div>
 
       <section className="mt-4" aria-labelledby="vivre-ici-biens" data-l2b-listings>
-        <h3 id="vivre-ici-biens" className="mb-2 text-[15px] font-extrabold">Biens</h3>
+        <h2 id="vivre-ici-biens" className="mb-2 text-[15px] font-extrabold">Biens</h2>
         <div className="p4-premium-actions">
         <Link
           href={searchHref}

@@ -104,7 +104,7 @@
     color: var(--vivre-teal) !important;
   }
 
-  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header h2 {
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header :is(h1,h2) {
     margin-top: 7px !important;
     font-size: 36px !important;
     line-height: .96 !important;
@@ -409,7 +409,7 @@
     overflow-y: clip !important;
   }
 
-  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header h2 {
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header :is(h1,h2) {
     display: block !important;
     visibility: visible !important;
   }

@@ -638,7 +638,7 @@ export function MapLibreNeighborhood3D({
         <div className="l3-maarif-view-controls" data-l3-map-modes role="group" aria-label="Modes de la carte Maârif">
           <button type="button" data-l3-go-quarter aria-pressed={pilotView === "quartier"} onClick={() => selectMaarifView("quartier")}>Quartier · 2D</button>
           <button type="button" data-l3-go-street aria-pressed={pilotView === "rue"} onClick={() => selectMaarifView("rue")}>Rue · zoom</button>
-          <button type="button" data-l3-go-admin aria-pressed={pilotView === "limites"} aria-controls="maarif-admin-boundary-explanation" onClick={() => selectMaarifView("limites")}>Limites</button>
+          <button type="button" data-l3-go-admin aria-pressed={pilotView === "limites"} aria-controls={pilotView === "limites" ? "maarif-admin-boundary-explanation" : undefined} aria-expanded={pilotView === "limites"} onClick={() => selectMaarifView("limites")}>Limites</button>
           {pilotView === "limites" ? (
             <div id="maarif-admin-boundary-explanation" role="status" className="l3-maarif-admin-panel"
               data-l3-admin-unavailable={adminPreviewBounds ? undefined : "true"}
