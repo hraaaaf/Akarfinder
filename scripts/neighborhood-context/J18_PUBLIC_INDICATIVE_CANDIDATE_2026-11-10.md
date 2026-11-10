@@ -48,3 +48,25 @@ NEXT EXACT : CI de ce lot, rétablir l'agent de machine, exécuter l'export rée
 **Modes/UX/a11y QA** : 4/4 vues (390x844, 430x932, 768x900, 1280x900) : modes Quartier 2D, Rue, Limites ; changement réel des pixels après Rue, panneau Limites véridique, 0 erreurs JS et 0 overflow, 0 violation axe automatisée détectée dans les états audités. Vérifications axe incomplete restantes ; valeur d'attribut zoom parfois en retard. Captures privées j18-after-3modes (quartier/rue/limites) montrées. Pas de score visuel 9,5 certifié.
 
 **Gate NO-GO** : aucun endpoint de données publiques activé ; seed historique d'août reste expiré, modèle enrichi public à 0 ancre. Prochaine étape : backend de distribution versionné distinct, tests réseau/CDN/lecteur écran réel, validation des frontières, revue visuelle ≥9,5/10 puis décision humaine de merge/Vercel. Ne pas confondre candidate indicatif et source métier certifiée.
+
+## J18-C — Route HTTP locale stricte, futur CDN non activé (10/11/2026)
+
+**Goal** : qualifier une route serveur utilisant le candidat de 27 567 repères sans rendre public le pack privé ni écrire en DB.
+
+**Implémentation** : app/api/geo/j18-indicative-review/route.ts, scripts/neighborhood-context/j18-review-route-gate.mjs et déclarations TypeScript. Route active exclusivement sous NODE_ENV=development, flag AKAR_VIVRE_ICI_J18_REVIEW_ONLY=true, dossier candidat hors dépôt, SHA256 source épinglée, URL et headers Host / X-Forwarded-Host loopback. Désactivée en production même avec opt-in. Cache private no-store, X-Robots-Tag noindex, CSP restrictive. Bbox ≤64 cellules, limite ≤180. Aucune déclaration d'ouverture réelle ni de frontière officielle.
+
+**Défaut et correctif** : le premier bundle HTTP retournait 500 car le lecteur importait le générateur offline qui utilise un URL relatif à import.meta.url incompatible avec webpack/Next. Le lecteur est maintenant indépendant de tout générateur ou fonction d'écriture. TypeScript et contrats ont passé après correction.
+
+**Preuves HTTP réelles** : 7/7 PASS (Casablanca, Rabat, Marrakech = 180 repères chacune, 200 ; bbox trop large 400 ; limit 181 = 400 ; Host falsifié 404 ; forwarded Host falsifié 404). Attributions, claims non certifiés, no-store/noindex observés. Rapport privé j18-review-http-report.json. Temps local inclut compilation à froid Casablanca ~3956ms, Rabat 124.2ms et Marrakech 104.9ms en route de dev, pas des latences CDN. 18/18 contrats Node de la route+J18 PASS, tsc --noEmit PASS avant le test HTTP.
+
+**Piste CDN NON ACTIVÉE** : objet immuable par SHA source et cellule, avec pointeur de version signé/activé puis TTL de réplication ≤30 jours. Vercel Blob est une option intégrée au site, CDN avec cache et paths immuables ; vérifier limites et prix du plan avant adoption. Alternative Supabase Storage CDN. Éviter une lecture D1/DB par chaque tuile. Sources officielles : https://vercel.com/docs/vercel-blob ; https://vercel.com/docs/vercel-blob/usage-and-pricing ; https://supabase.com/docs/guides/storage/cdn/fundamentals. Aucun compte/storage/upload créé, aucune dépense ni déploiement.
+
+**Next exact** : restaurer le serveur de dev sans J18 opt-in, obtenir HTTP404 sur route J18 par défaut et la carte 200, exécuter CI du nouveau commit et consigner HEAD. L'API publique et les tuiles CDN restent soumises à approbation source/stockage, accessibilité/latence mobile, revue visuelle cible ≥9,5/10 et human gate distinct. Ne pas considérer la release terminée.
+
+## J18-C — Rétablissement de la preview après audit (10/11/2026)
+
+**Restauration effective des flags** : le processus Next local de revue HTTP temporaire a été arrêté, puis le serveur development 127.0.0.1:3100 redémarré avec les flags préexistants de QA J11 (pack local et source SHA256 épinglée), mais **sans aucune des trois variables J18**. Preuves HTTP après redémarrage : nouvelle route J18 = HTTP404 (fail-closed), ancienne route QA J11 = HTTP200. Aucun process public/Vercel ni variable de publication ajouté. Une preuve d'affichage map supplémentaire reste à lire après compilation du routeur.
+
+**Vérification HTTP avant restauration** : 3 villes 200/180, bbox trop large 400, limit 181 = 400, Host et forwarded Host usurpés 404, cache private no-store/noindex ; test 7/7 PASS. La première tentative de compilation a montré un HTTP500 résolu en supprimant l'import du générateur offline dans le lecteur. Tests unitaires J18 18/18 PASS et tsc --noEmit PASS.
+
+**Artefact :** j18-review-http-report.json (hors Git), logs Next de revue/restauration privés sur PC. CI du nouveau HEAD à valider après commit. J18-C termine une **capacité de revue locale** ; aucune distribution publique réellement opérationnelle et aucune publication de données.

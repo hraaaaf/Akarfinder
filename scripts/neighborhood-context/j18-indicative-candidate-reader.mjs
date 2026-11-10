@@ -7,7 +7,9 @@ import {createHash} from "node:crypto";
 import {readFile,stat} from "node:fs/promises";
 import {isAbsolute,join} from "node:path";
 import {parseQaBbox} from "./private-national-qa-tiles.mjs";
-import {CANDIDATE_SCHEMA,CANDIDATE_STATE} from "./j18-public-indicative-candidate.mjs";
+// Reader intentionally does not import the offline builder (no filesystem write code in the HTTP bundle).
+const CANDIDATE_SCHEMA="AKARFINDER_J18_INDICATIVE_RELEASE_CANDIDATE_V1";
+const CANDIDATE_STATE="REVIEW_CANDIDATE_ONLY_NOT_PUBLIC";
 
 const MAX_READ_CELLS=64,MAX_FILE_BYTES=650000;
 const CATEGORIES=Object.freeze(["education","green_sport","groceries","health","shopping","transport"]);

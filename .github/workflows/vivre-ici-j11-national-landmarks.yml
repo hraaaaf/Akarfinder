@@ -8,6 +8,11 @@ on:
       - "scripts/neighborhood-context/private-national-qa-tiles.mjs"
       - "scripts/neighborhood-context/j18-public-indicative-candidate.mjs"
       - "scripts/neighborhood-context/j18-indicative-candidate-reader.mjs"
+      - "scripts/neighborhood-context/j18-indicative-candidate-reader.d.mts"
+      - "scripts/neighborhood-context/j18-review-route-gate.mjs"
+      - "scripts/neighborhood-context/j18-review-route-gate.d.mts"
+      - "scripts/neighborhood-context/fixtures/j18-review-route-gate.test.mjs"
+      - "app/api/geo/j18-indicative-review/route.ts"
       - "scripts/neighborhood-context/fixtures/j18-public-indicative-candidate.test.mjs"
       - "scripts/neighborhood-context/J18_PUBLIC_INDICATIVE_CANDIDATE_2026-11-10.md"
       - "scripts/neighborhood-context/private-qa-host-guard.mjs"
@@ -60,4 +65,4 @@ jobs:
         with:
           node-version: "22"
       - name: J11-C local-only QA tile reader contracts
-        run: node --test scripts/neighborhood-context/fixtures/private-national-qa-tiles.test.mjs scripts/neighborhood-context/fixtures/private-qa-host-guard.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j11c-ui-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j12-ui-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j15-density-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j16-glyph-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j17-a11y-contract.test.mjs scripts/neighborhood-context/fixtures/j18-public-indicative-candidate.test.mjs
+        run: node --test scripts/neighborhood-context/fixtures/private-national-qa-tiles.test.mjs scripts/neighborhood-context/fixtures/private-qa-host-guard.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j11c-ui-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j12-ui-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j15-density-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j16-glyph-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j17-a11y-contract.test.mjs scripts/neighborhood-context/fixtures/j18-public-indicative-candidate.test.mjs scripts/neighborhood-context/fixtures/j18-review-route-gate.test.mjs
