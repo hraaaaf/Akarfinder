@@ -20,8 +20,10 @@ on:
       - "app/map/l2d-attribution.css"
       - "app/map/vivre-ici-j12-touch-targets.css"
       - "app/map/vivre-ici-j12-keyboard-poi.css"
+      - "app/map/vivre-ici-j15-mobile-density.css"
       - "app/map/page.tsx"
       - "scripts/neighborhood-context/fixtures/vivre-ici-j12-ui-contract.test.mjs"
+      - "scripts/neighborhood-context/fixtures/vivre-ici-j15-density-contract.test.mjs"
       - ".github/workflows/vivre-ici-j11-national-landmarks.yml"
       - "scripts/neighborhood-context/NATIONAL_OSM_TILE_READMODEL_J11B.md"
       - "scripts/neighborhood-context/NATIONAL_OSM_LOCAL_PREVIEW_J11C.md"
@@ -51,4 +53,4 @@ jobs:
         with:
           node-version: "22"
       - name: J11-C local-only QA tile reader contracts
-        run: node --test scripts/neighborhood-context/fixtures/private-national-qa-tiles.test.mjs scripts/neighborhood-context/fixtures/private-qa-host-guard.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j11c-ui-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j12-ui-contract.test.mjs
+        run: node --test scripts/neighborhood-context/fixtures/private-national-qa-tiles.test.mjs scripts/neighborhood-context/fixtures/private-qa-host-guard.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j11c-ui-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j12-ui-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j15-density-contract.test.mjs
