@@ -76,3 +76,7 @@ Source et attribution OSM/ODbL présentes ; `businessOperatingStatusCertified=fa
 **Analyse visuelle provisoire 8/10** : progrès réel vs AFTER précédemment vide ; clusters plus lisibles et message fiche cohérent. Les contrôles catégorie restent denses en mobile ; panneau/attribution occupent encore de la place ; limites fiables du quartier central Maârif absentes. **Pas de 9,5/10**, pas de score certifié production.
 
 **Next** : typecheck et GitHub CI du HEAD après commit ; J12 tests multi-ville, zoom large (refus >64 cellules), interactions a11y/mobile, cache/réseau ; J13 docs/closeout ; J14 gate release humain. **Aucun merge, DB produit ou déploiement Vercel.**
+
+## J12 — QA tactile, attribution, clavier et multivilles (10/11/2026)
+
+Compte rendu détaillé et preuves : `scripts/neighborhood-context/J12_MAPLIBRE_QA_2026-11-10.md`. Résultats locaux observés : 44 px sur cibles tactiles auditées 390/430/768 ; attribution desktop contenue ; Playwright 4/4 viewports, API QA 9/9 assertions (Casablanca/Rabat/Marrakech + refus), clavier 2/2 ; Node contrats J11+J12 21/21. Tous ces résultats concernent la QA locale, pas la production. J12 reste ouvert pour accès clavier aux repères WebGL individuels et vérification réseau réelle ; objectif visuel 9,5/10 non atteint. Aucun merge, DB PROD, Vercel ni publication du pack privé.
