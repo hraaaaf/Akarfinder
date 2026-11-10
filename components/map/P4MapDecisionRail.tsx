@@ -16,6 +16,10 @@ import {
 } from "@/lib/map/map-navigation-state";
 
 const FLAGSHIP_CITIES = ["Casablanca", "Rabat", "Marrakech", "Tanger", "Agadir", "Fès"] as const;
+// J11-C2 QA display contract: indicative national OSM pins are distinct from
+// the richer, independently sourced neighborhood evidence in this sidebar.
+const QA_INDICATIVE_OSM = process.env.NODE_ENV === "development" &&
+  process.env.NEXT_PUBLIC_VIVRE_ICI_QA_NATIONAL_POI === "true";
 
 const DISTRICT_HERO_MEDIA = {
   "casablanca:maarif": {
@@ -107,9 +111,11 @@ export function P4MapDecisionRail() {
   const contextIntro = districtEntity
     ? localContext?.anchor_count
       ? `${districtEntity.canonical_name} : ${localContext.anchor_count} repère${localContext.anchor_count > 1 ? "s" : ""} public${localContext.anchor_count > 1 ? "s" : ""} sourcé${localContext.anchor_count > 1 ? "s" : ""}. Les biens ne sont cartographiés que lorsqu’une position exacte vérifiée est disponible.`
-      : localContext
-        ? `Aucun repère suffisamment récent n’est actuellement disponible pour ${districtEntity.canonical_name}. Les lieux seront présentés après vérification de leurs sources.`
-        : `Les repères de ${districtEntity.canonical_name} ne sont affichés que lorsqu’ils disposent de sources récentes et vérifiables.`
+      : QA_INDICATIVE_OSM
+        ? "Carte : repères OSM indicatifs si chargés. Fiche : données de vie quotidienne enrichies non disponibles. Ni ouverture ni appartenance au quartier certifiées."
+        : localContext
+          ? `Aucun repère suffisamment récent n’est actuellement disponible pour ${districtEntity.canonical_name}. Les lieux seront présentés après vérification de leurs sources.`
+          : `Les repères de ${districtEntity.canonical_name} ne sont affichés que lorsqu’ils disposent de sources récentes et vérifiables.`
     : cityName === "Maroc"
       ? "Explorez les territoires disponibles, puis descendez vers les villes et quartiers avec une précision explicitement qualifiée."
       : `Explorez ${cityName} et ses quartiers avec des repères sourcés uniquement.`;
@@ -120,6 +126,7 @@ export function P4MapDecisionRail() {
       className="p4-map-decision-rail"
       data-p4-map-decision-rail
       data-vivre-ici-premium-context
+      data-j11c-qa-rail={QA_INDICATIVE_OSM ? "true" : "false"}
       data-sheet-expanded={sheetExpanded ? "true" : "false"}
       aria-label="Vivre ici : territoire, vie locale et biens"
     >
@@ -156,7 +163,7 @@ export function P4MapDecisionRail() {
         <p className="p4-premium-lede">{contextIntro}</p>
         {districtEntity ? (
           <div className="p4-premium-proofline" aria-label="Règles de fiabilité">
-            <span>{localContext?.anchor_count ? "Repères publics sourcés" : "Repères récents indisponibles"}</span>
+            <span>{localContext?.anchor_count ? "Repères publics sourcés" : QA_INDICATIVE_OSM ? "Repères OSM indicatifs · QA locale" : "Repères récents indisponibles"}</span>
             <span>Positions immobilières exactes uniquement</span>
           </div>
         ) : null}
@@ -164,7 +171,9 @@ export function P4MapDecisionRail() {
 
       {districtEntity && localContext?.anchor_count === 0 ? (
         <p className="p4-premium-empty-evidence" role="status">
-          Aucun repère suffisamment récent n’est actuellement disponible pour {districtEntity.canonical_name}.
+          {QA_INDICATIVE_OSM
+            ? "La fiche ne dispose pas de repères enrichis. Les points OSM de la carte, lorsqu’ils chargent, sont uniquement indicatifs."
+            : `Aucun repère suffisamment récent n’est actuellement disponible pour ${districtEntity.canonical_name}.`}
         </p>
       ) : null}
 
@@ -176,8 +185,12 @@ export function P4MapDecisionRail() {
             {localContext
               ? localContext.anchor_count > 0
                 ? "Transports, écoles, santé et commerces : seuls les lieux effectivement documentés figurent ci-dessous."
-                : "Aucun lieu suffisamment récent n’est disponible pour décrire le quotidien de ce quartier."
-              : "Les informations de proximité ne sont pas disponibles actuellement."}
+                : QA_INDICATIVE_OSM
+                  ? "Les catégories ci-dessous concernent le contexte détaillé non disponible. Les repères OSM de la carte sont indicatifs."
+                  : "Aucun lieu suffisamment récent n’est disponible pour décrire le quotidien de ce quartier."
+              : QA_INDICATIVE_OSM
+                ? "Contexte détaillé indisponible ; les repères OSM de la carte sont indicatifs."
+                : "Les informations de proximité ne sont pas disponibles actuellement."}
           </p>
           <details className="p4-daily-evidence-details" data-vivre-ici-daily-details>
             <summary>Afficher les 6 catégories <span aria-hidden="true">⌄</span></summary>
@@ -258,7 +271,9 @@ export function P4MapDecisionRail() {
             ? "Des repères locaux récents et documentés sont disponibles, avec leur provenance."
             : districtEntity && localContext?.coverage_status === "partial" && localContext.anchor_count > 0
               ? "La couverture locale est partielle. Les informations manquantes ne sont pas extrapolées."
-              : "Les éléments de cadre de vie sont insuffisamment documentés ou indisponibles dans cette vue."}
+              : QA_INDICATIVE_OSM && districtEntity
+                ? "Cadre de vie enrichi non disponible. Les repères OSM affichés par la carte ne certifient ni activité ni périmètre."
+                : "Les éléments de cadre de vie sont insuffisamment documentés ou indisponibles dans cette vue."}
         </p>
         <p className="mt-2 text-[10px] leading-4" style={{ color: "var(--text-secondary)" }}>
           Les prix de quartier ne sont pas publiés sans source actuelle vérifiable. Aucun score de qualité de vie ni temps de trajet n’est estimé.

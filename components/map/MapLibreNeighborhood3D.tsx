@@ -50,6 +50,13 @@ const FOCUS_RING_LAYER_ID = "akarfinder-neighborhood-focus-ring";
 const ADMIN_SHADOW_SOURCE_ID = "akarfinder-maarif-osm-admin-shadow";
 const ADMIN_SHADOW_FILL_ID = "akarfinder-maarif-osm-admin-shadow-fill";
 const ADMIN_SHADOW_LINE_ID = "akarfinder-maarif-osm-admin-shadow-line";
+const QA_OSM_ENABLED = process.env.NODE_ENV === "development" &&
+  process.env.NEXT_PUBLIC_VIVRE_ICI_QA_NATIONAL_POI === "true";
+const QA_OSM_SOURCE_ID = "akarfinder-osm-national-qa";
+const QA_OSM_LAYER_ID = "akarfinder-osm-national-qa-points";
+const QA_OSM_CLUSTER_ID = "akarfinder-osm-national-qa-clusters";
+const QA_OSM_COUNT_ID = "akarfinder-osm-national-qa-cluster-count";
+type QaOsmSelection = { name: string; category: LivingHereCategory; osmId: string };
 
 function previewBounds(geometry: BoundaryGeometry | null): [[number, number], [number, number]] | null {
   if (!geometry || geometry.type !== "Polygon") return null;
@@ -102,12 +109,20 @@ export function MapLibreNeighborhood3D({
   const [pilotView, setPilotView] = useState<"quartier" | "rue" | "limites">("quartier");
   const [observedCamera, setObservedCamera] = useState({ pitch: -1, bearing: -1, zoom: -1 });
   const [ready, setReady] = useState(false);
+  const [qaState, setQaState] = useState<"off" | "loading" | "ready" | "zoom" | "error">("off");
+  const [qaCount, setQaCount] = useState(0);
+  const [qaShownCount, setQaShownCount] = useState(0);
+  const [qaCategories, setQaCategories] = useState<LivingHereCategory[]>([]);
+  const [qaSelected, setQaSelected] = useState<QaOsmSelection | null>(null);
+  const qaFeaturesRef = useRef<any[]>([]);
   const [renderState, setRenderState] = useState<"loading" | "ready" | "error">("loading");
   const [sourceState, setSourceState] = useState<"loading" | "available" | "unavailable">("loading");
   const [baseFeatureCount, setBaseFeatureCount] = useState(0);
   const [contextState, setContextState] = useState<"loading" | "ready" | "unavailable">("loading");
   const [context, setContext] = useState<NeighborhoodContext | null>(null);
   const [activeCategory, setActiveCategory] = useState<LivingHereCategory | "all">("all");
+  const activeQaCategoryRef = useRef(activeCategory);
+  activeQaCategoryRef.current = activeCategory;
   const [screenPoints, setScreenPoints] = useState<Record<string, ScreenPoint>>({});
   const [centerPoint, setCenterPoint] = useState<ScreenPoint | null>(null);
 
@@ -341,6 +356,153 @@ export function MapLibreNeighborhood3D({
     };
   }, [citySlug, districtSlug, districtLabel, center[0], center[1], desktopCameraOffset[0], desktopCameraOffset[1], boundaryGeometry, administrativeBoundaryPreview, theme]);
 
+
+  // J11-C2: gated QA-only national OSM viewport, never enabled on a production build.
+  useEffect(() => {
+    if (!QA_OSM_ENABLED || !ready) return;
+    const map = mapInstanceRef.current;
+    if (!map?.isStyleLoaded?.()) return;
+    let cancelled = false;
+    let controller: AbortController | null = null;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const empty = { type: "FeatureCollection", features: [] };
+    try {
+      if (!map.getSource(QA_OSM_SOURCE_ID)) map.addSource(QA_OSM_SOURCE_ID, {
+        type: "geojson", data: empty, cluster: true, clusterMaxZoom: 16, clusterRadius: 46,
+        attribution: "© OpenStreetMap contributors · ODbL",
+      });
+      if (!map.getLayer(QA_OSM_LAYER_ID)) map.addLayer({
+        id: QA_OSM_LAYER_ID, type: "circle", source: QA_OSM_SOURCE_ID, minzoom: 13,
+        filter: ["!", ["has", "point_count"]],
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 13, 3, 15, 5.5, 17, 7],
+          "circle-color": ["match", ["get", "category"],
+            "education", "#2f80ed", "groceries", "#7b61ff", "health", "#df5a56",
+            "transport", "#2979d3", "green_sport", "#3c9a63", "shopping", "#8b5cf6", "#708090"],
+          "circle-stroke-color": "#ffffff", "circle-stroke-width": 1.6, "circle-opacity": 0.92,
+        },
+      });
+      if (!map.getLayer(QA_OSM_CLUSTER_ID)) map.addLayer({
+        id: QA_OSM_CLUSTER_ID, type: "circle", source: QA_OSM_SOURCE_ID,
+        filter: ["has", "point_count"], minzoom: 13,
+        paint: {
+          "circle-color": "#116477",
+          "circle-radius": ["step", ["get", "point_count"], 13, 10, 17, 30, 21],
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 2.2,
+          "circle-opacity": 0.88,
+        },
+      });
+      if (!map.getLayer(QA_OSM_COUNT_ID)) map.addLayer({
+        id: QA_OSM_COUNT_ID, type: "symbol", source: QA_OSM_SOURCE_ID,
+        filter: ["has", "point_count"], minzoom: 13,
+        layout: {
+          "text-field": ["get", "point_count_abbreviated"],
+          "text-font": ["Open Sans Regular"],
+          "text-size": 11, "text-allow-overlap": true,
+        },
+        paint: { "text-color": "#ffffff" },
+      });
+    } catch { setQaState("error"); return; }
+    const clear = () => {
+      try { map.getSource(QA_OSM_SOURCE_ID)?.setData(empty); } catch {}
+      qaFeaturesRef.current = [];
+      setQaCount(0); setQaShownCount(0); setQaCategories([]); setQaSelected(null);
+    };
+    const refresh = async () => {
+      controller?.abort();
+      controller = new AbortController();
+      const signal = controller.signal;
+      if (map.getZoom() < 13) { clear(); setQaState("zoom"); return; }
+      const bounds = map.getBounds();
+      const box = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()];
+      if (box.some((n: number) => !Number.isFinite(n))) { clear(); setQaState("error"); return; }
+      setQaState("loading");
+      try {
+        const query = new URLSearchParams({ bbox: box.map((n: number) => n.toFixed(6)).join(","), limit: "180" });
+        const response = await fetch("/api/geo/qa-national-landmarks?" + query.toString(), { signal, cache: "no-store" });
+        if (response.status === 400) {
+          if (!cancelled && !signal.aborted) { clear(); setQaState("zoom"); }
+          return;
+        }
+        if (!response.ok) throw new Error("qa_no_source");
+        const value = await response.json();
+        if (!value?.ok || value.state !== "PRIVATE_CANDIDATE_NO_DB_OR_UI_WRITE" ||
+            value.label !== "Repères à proximité" || value.businessOperatingStatusCertified !== false ||
+            value.officialNeighborhoodMembershipCertified !== false || value.entrancePrecisionCertified !== false ||
+            !Array.isArray(value.features) || value.features.length > 180) throw new Error("qa_invalid_provenance");
+        if (cancelled || signal.aborted) return;
+        const source = map.getSource(QA_OSM_SOURCE_ID);
+        if (!source) throw new Error("qa_source_missing");
+        qaFeaturesRef.current = value.features;
+        const selectedCategory = activeQaCategoryRef.current;
+        const visible = selectedCategory === "all" ? value.features :
+          value.features.filter((f: any) => f?.properties?.category === selectedCategory);
+        source.setData({ type: "FeatureCollection", features: visible });
+        setQaCount(value.features.length);
+        setQaShownCount(visible.length);
+        setQaCategories((Object.keys(CATEGORY_META) as LivingHereCategory[]).filter(cat =>
+          value.features.some((feature: any) => feature?.properties?.category === cat)));
+        setQaSelected(null); setQaState("ready");
+      } catch {
+        if (!cancelled && !signal.aborted) { clear(); setQaState("error"); }
+      }
+    };
+    const schedule = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => { void refresh(); }, 220);
+    };
+    const onClick = (event: any) => {
+      const p = event.features?.[0]?.properties;
+      if (typeof p?.name !== "string" || typeof p?.osmId !== "string" ||
+          !/^(node|way|relation)\/[1-9]\d*$/.test(p.osmId) || !(p.category in CATEGORY_META)) return;
+      setQaSelected({ name: p.name.slice(0, 200), osmId: p.osmId, category: p.category as LivingHereCategory });
+    };
+    const onClusterClick = (event: any) => {
+      if (!event.features?.[0]?.properties?.cluster) return;
+      map.easeTo({ center: event.lngLat, zoom: Math.min(17.2, map.getZoom() + 1.5), duration: 450 });
+    };
+    const cursorOn = () => { map.getCanvas().style.cursor = "pointer"; };
+    const cursorOff = () => { map.getCanvas().style.cursor = ""; };
+    map.on("moveend", schedule);
+    map.on("click", QA_OSM_LAYER_ID, onClick);
+    map.on("click", QA_OSM_CLUSTER_ID, onClusterClick);
+    map.on("mouseenter", QA_OSM_LAYER_ID, cursorOn);
+    map.on("mouseleave", QA_OSM_LAYER_ID, cursorOff);
+    map.on("mouseenter", QA_OSM_CLUSTER_ID, cursorOn);
+    map.on("mouseleave", QA_OSM_CLUSTER_ID, cursorOff);
+    void refresh();
+    return () => {
+      cancelled = true; controller?.abort();
+      if (timer) clearTimeout(timer);
+      try {
+        map.off("moveend", schedule);
+        map.off("click", QA_OSM_LAYER_ID, onClick);
+        map.off("click", QA_OSM_CLUSTER_ID, onClusterClick);
+        map.off("mouseenter", QA_OSM_LAYER_ID, cursorOn);
+        map.off("mouseleave", QA_OSM_LAYER_ID, cursorOff);
+        map.off("mouseenter", QA_OSM_CLUSTER_ID, cursorOn);
+        map.off("mouseleave", QA_OSM_CLUSTER_ID, cursorOff);
+        if (map.getLayer(QA_OSM_COUNT_ID)) map.removeLayer(QA_OSM_COUNT_ID);
+        if (map.getLayer(QA_OSM_CLUSTER_ID)) map.removeLayer(QA_OSM_CLUSTER_ID);
+        if (map.getLayer(QA_OSM_LAYER_ID)) map.removeLayer(QA_OSM_LAYER_ID);
+        if (map.getSource(QA_OSM_SOURCE_ID)) map.removeSource(QA_OSM_SOURCE_ID);
+      } catch {}
+    };
+  }, [ready, citySlug, districtSlug, theme]);
+
+  useEffect(() => {
+    if (!QA_OSM_ENABLED || !ready) return;
+    const map = mapInstanceRef.current;
+    if (!map?.getSource?.(QA_OSM_SOURCE_ID)) return;
+    const visible = activeCategory === "all" ? qaFeaturesRef.current :
+      qaFeaturesRef.current.filter((f: any) => f?.properties?.category === activeCategory);
+    try {
+      map.getSource(QA_OSM_SOURCE_ID).setData({ type: "FeatureCollection", features: visible });
+      setQaShownCount(visible.length);
+    } catch { /* current map may be reinitialized */ }
+  }, [ready, activeCategory, qaState]);
+
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !ready) return;
@@ -367,7 +529,7 @@ export function MapLibreNeighborhood3D({
     };
   }, [context, ready, center[0], center[1]]);
 
-  const categories = context?.categories.filter((category) => Boolean(CATEGORY_META[category])) ?? [];
+  const categories = QA_OSM_ENABLED && qaState === "ready" ? qaCategories : context?.categories.filter((category) => Boolean(CATEGORY_META[category])) ?? [];
   const visibleAnchors = context?.anchors.filter((anchor) => activeCategory === "all" || anchor.category === activeCategory) ?? [];
 
   return (
@@ -382,6 +544,11 @@ export function MapLibreNeighborhood3D({
       data-maplibre-basemap-feature-count={baseFeatureCount}
       data-maplibre-context-state={contextState}
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
+      data-j11c-qa-enabled={QA_OSM_ENABLED ? "true" : "false"}
+      data-j11c-qa-state={qaState}
+      data-j11c-qa-count={qaCount}
+      data-j11c-qa-shown={qaShownCount}
+      data-j11c-qa-clustered={QA_OSM_ENABLED ? "true" : "false"}
       data-maplibre-city={citySlug}
       data-maplibre-district={districtSlug}
       data-l3-maarif-pilot={isMaarifPilot ? "true" : "false"}
@@ -413,6 +580,23 @@ export function MapLibreNeighborhood3D({
         </div>
       </div>
 
+      {QA_OSM_ENABLED ? (
+        <div className="maplibre-qa-osm-status" data-j11c-qa-attribution role="status" aria-live="polite">
+          <b>Repères à proximité</b>
+          <span>{qaState === "ready" ? String(qaShownCount) + " repères indicatifs · regroupés selon le zoom" :
+            qaState === "zoom" ? "Zoomez pour afficher les repères" :
+            qaState === "error" ? "Repères OSM indisponibles pour cette vue" : "Chargement des repères OSM…"}</span>
+          <small>© OpenStreetMap contributors · ODbL · Ouverture non vérifiée</small>
+        </div>
+      ) : null}
+      {QA_OSM_ENABLED && qaSelected ? (
+        <div className="maplibre-qa-osm-detail" data-j11c-selected-osm role="group" aria-label="Repère indicatif">
+          <button type="button" aria-label="Fermer le repère" onClick={() => setQaSelected(null)}>×</button>
+          <strong>{qaSelected.name}</strong>
+          <span>{CATEGORY_META[qaSelected.category]?.label ?? "Repère"} · Position indicative OSM</span>
+          <a href={"https://www.openstreetmap.org/" + qaSelected.osmId} target="_blank" rel="noopener noreferrer">Source OpenStreetMap</a>
+        </div>
+      ) : null}
       {isMaarifPilot ? (
         <div className="l3-maarif-view-controls" data-l3-map-modes role="group" aria-label="Modes de la carte Maârif">
           <button type="button" data-l3-go-quarter aria-pressed={pilotView === "quartier"} onClick={() => selectMaarifView("quartier")}>Quartier · 2D</button>
@@ -474,6 +658,9 @@ export function MapLibreNeighborhood3D({
       <footer className="maplibre-spike-outro"><div><strong>Découvrez les quartiers autrement</strong><span>Un même moteur cartographique, du quartier au Maroc.</span></div><em>Des lieux. Des vies. Des projets.</em></footer>
 
       <style jsx global>{`
+        .maplibre-qa-osm-status{position:absolute;z-index:13;left:18px;bottom:70px;display:flex;flex-direction:column;gap:3px;max-width:min(340px,calc(100% - 36px));padding:9px 12px;border:1px solid rgba(255,255,255,.92);border-radius:14px;background:rgba(255,255,255,.94);box-shadow:0 9px 25px rgba(4,33,39,.14);color:#14383d;pointer-events:none}.maplibre-qa-osm-status b{font-size:11px;font-weight:850}.maplibre-qa-osm-status span{font-size:10px}.maplibre-qa-osm-status small{font-size:8px;color:#506266}
+        .maplibre-qa-osm-detail{position:absolute;z-index:18;left:18px;bottom:100px;display:grid;gap:5px;max-width:min(340px,calc(100% - 36px));padding:14px 18px;border:1px solid #dce8e4;border-radius:15px;background:#fff;box-shadow:0 12px 40px rgba(6,38,42,.22)}.maplibre-qa-osm-detail strong{font-size:14px}.maplibre-qa-osm-detail span{font-size:11px;color:#56706a}.maplibre-qa-osm-detail a{font-size:11px;color:#075e9e;text-decoration:underline}.maplibre-qa-osm-detail button{position:absolute;top:6px;right:8px;width:27px;height:27px;border:0;border-radius:50%;background:#eef2f0;color:#263d3d;font-size:20px}
+        @media(max-width:1023px){.maplibre-qa-osm-status{bottom:300px;left:12px;padding:7px 10px;max-width:min(330px,calc(100% - 24px))}.maplibre-qa-osm-detail{left:12px;bottom:387px}}
         .maplibre-spike-shell{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 372px;grid-template-rows:minmax(0,1fr) 68px;gap:0;height:calc(100svh - 64px);padding:0;background:#e7eeeb;color:#102f32;overflow:hidden}.maplibre-spike-shell[data-maplibre-reserve-rail="false"]{grid-template-columns:minmax(0,1fr)}
         .maplibre-spike-map{position:relative;grid-column:1;grid-row:1;min-width:0;overflow:hidden;border-radius:0;background:#dce8e5}.maplibre-spike-canvas{position:absolute;inset:0}.maplibre-spike-canvas,.maplibre-spike-canvas .maplibregl-map,.maplibre-spike-canvas .maplibregl-canvas-container,.maplibre-spike-canvas canvas{width:100%!important;height:100%!important}.maplibre-spike-canvas canvas{outline:none}.maplibre-spike-map-grade{position:absolute;z-index:2;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(1,38,39,.08) 0%,rgba(7,50,49,.015) 38%,rgba(3,32,34,.08) 100%);mix-blend-mode:multiply}
         .maplibre-spike-dom-labels{position:absolute;z-index:9;inset:0;pointer-events:none;overflow:hidden}.maplibre-spike-neighborhood-label{position:absolute;display:flex;flex-direction:column;align-items:center;gap:7px;transform:translate(-50%,-112%);filter:drop-shadow(0 8px 18px rgb(0 42 43/.28));white-space:nowrap}.maplibre-spike-neighborhood-label span{padding:9px 14px;border:1px solid rgb(255 255 255/.58);border-radius:999px;background:rgb(3 113 108/.92);box-shadow:inset 0 1px 0 rgb(255 255 255/.22);color:#fff;font-size:13px;font-weight:850;letter-spacing:-.01em}.maplibre-spike-neighborhood-label i{display:block;width:10px;height:10px;border:3px solid #fff;border-radius:999px;background:#07928c;box-shadow:0 0 0 4px rgb(5 178 166/.22)}.maplibre-spike-poi-label{position:absolute;display:flex;flex-direction:column;align-items:center;gap:5px;transform:translate(-50%,-100%)}.maplibre-spike-poi-label span{max-width:250px;padding:7px 13px;border:1px solid rgb(255 255 255/.78);border-radius:999px;background:rgb(251 252 249/.9);backdrop-filter:blur(14px);box-shadow:0 8px 20px rgb(14 45 44/.15);color:#254441;font-size:10px;font-weight:780;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.maplibre-spike-poi-label i{display:block;width:9px;height:9px;border:2px solid #fff;border-radius:999px;box-shadow:0 2px 8px rgb(30 46 47/.22)}
