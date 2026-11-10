@@ -400,7 +400,9 @@ export function MapLibreNeighborhood3D({
         filter: ["has", "point_count"], minzoom: 13,
         layout: {
           "text-field": ["get", "point_count_abbreviated"],
-          "text-font": ["Open Sans Regular"],
+          // Match the selected basemap glyph server. Liberty serves Noto Sans,
+          // while keyed CARTO keeps the existing Open Sans stack.
+          "text-font": [basemap.provider === "openfreemap" ? "Noto Sans Regular" : "Open Sans Regular"],
           "text-size": 11, "text-allow-overlap": true,
         },
         paint: { "text-color": "#ffffff" },

@@ -24,3 +24,8 @@
 ## Gates
 - Candidate seulement locale tant que diff/code/tests/clavier/CI HEAD final non vérifiés ; puis mise à jour PR/Notion.
 - PR #1197 Draft, pas de merge, pas de Vercel, pas de DB produit ni tuiles QA publiées.
+
+## J15 clôture CI exacte HEAD 06cd08d620bb8420486deb42f1a6f7721c484a97
+- GitHub Actions : 29 workflows, 27 success / 2 skipped / 0 failure / 0 running, vérifiés le 10 novembre 2026.
+- Playwright layout 4/4, clavier 4/4, Node 24/24, HTTP local 200, source OSM/ODbL et messages faible zoom préservés. Aucun pack privé ni screenshot en Git, checkout propre avant ouverture J16.
+- Code/QA/CI J15 techniquement clos, mais NOT production release : score 9,5/10 et validation humaine non obtenus, frontière centrale non certifiée, lecteur d'écran réel et CDN non audités. Aucun merge/Vercel/DB.
