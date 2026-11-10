@@ -352,9 +352,28 @@ def quality(e: dict, source: dict, as_of: datetime, *, quarantine: bool, serp: b
     }
 
 
+def stable_observation_id(raw_hash: str, base: dict) -> tuple[str, str]:
+    """Keep source-backed V2 IDs; bind source-less observations to the immutable capture.
+
+    Never key a reparse on extracted fields (e.g., district) or current clock.
+    Capture hash includes raw source metadata and content, so a new capture
+    is independently identifiable without claiming two pages are one property.
+    """
+    source = base["source"]
+    if (source.get("identity_state") in ("explicit", "url_candidate")
+            and source.get("domain") and source.get("source_offer_id")
+            and base["extracted"].get("observed_at")):
+        return base["record_id"], "v2_source_id_observation"
+    immutable_basis = ("akarparser-v3-capture-v1:" + raw_hash).encode("ascii")
+    return "observation-" + hashlib.sha256(immutable_basis).hexdigest()[:24], "v3_capture_sha256"
+
+
 def parse_raw(raw: dict, clock: datetime) -> dict:
     row, provenance = adapt(raw)
     base = v2.parse_record(row, generated_at=clock.isoformat())
+    raw_hash = hashlib.sha256(json.dumps(raw, ensure_ascii=False, sort_keys=True,
+                                       default=str).encode("utf-8")).hexdigest()
+    record_id, identity_scheme = stable_observation_id(raw_hash, base)
     e = base["extracted"]
     # Mubawab's schema Sell tag is unreliable for rentals, and V2 may infer
     # sale/rent from incidental marketing text without direct evidence.
@@ -428,9 +447,11 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
                      serp=bool(row.get("query_id") and row.get("source_domain")),
                      review_reasons=tuple(review_reasons))
     return {
-        "version": VERSION, "record_id": base["record_id"], "source": base["source"],
-        "raw_sha256": hashlib.sha256(json.dumps(raw, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")).hexdigest(),
-        "fields": e, "field_evidence": provenance, "quality": {**status, "v2_issues": base["quality"]["issues"]},
+        "version": VERSION, "record_id": record_id,
+        "record_id_scheme": identity_scheme, "source": base["source"],
+        "raw_sha256": raw_hash,
+        "fields": e, "field_evidence": provenance,
+        "quality": {**status, "v2_issues": base["quality"]["issues"]},
     }
 
 
