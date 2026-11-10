@@ -237,3 +237,19 @@ PR #1198 demeure Draft, non fusionnée. Aucun déploiement Vercel, aucune écrit
 **TESTS** : **126/126 tests locaux PASS** (V3 57, V2 69) ; compilation et diff check pass. Branche `feat/akarparser-v3-raw-bulk-20261109` et PR #1198 restent Draft, non fusionnées. **0 annotation indépendante des 100 originaux** : la présence ou cohérence avec les HTML ne certifie ni l'exactitude des annonces ni leur disponibilité.
 
 **NEXT :** poursuivre par lots bornés avec nouvelles villes et hôtes exposant quartier et transaction explicites ; comparer par ville, SHA et détails ; benchmark humain des 100 origines avant tout Neon/product. Pas de merge/Vercel sans gate.
+
+## Q1F V3 — Dédoublonnage inter-lots et contrôle extrêmes, 10/11/2026
+
+**Goal :** 1 000 véritables pages HTML de détail distinctes capturées en privé, sans admission produit ni estimation d'exactitude non prouvée.
+
+**PROOF checkpoint URL/SHA dédoublonné :** `Q1F_PRIVATE_RESULTS/Q1F_ALL_expansion04_DEDUP_HTML_AUDIT_20261110.json` : **694 captures brutes, SHA-256 vérifiés**, **692 URL normalisées distinctes**, **7 détails faux (soft-404/coquilles)** et **2 URL capturées en doublon inter-lots** (Mohammedia #27 vs expansion01). La sélection canonique donne **685 pages HTML de détail uniques acceptées (68,5 % du canary)**. Les doublons sont journalisés dans l'audit privé, aucun fichier brut supprimé, aucun URL compté deux fois.
+
+**PROOF qualité de ces 685 pages :** `Q1F_PRIVATE_RESULTS/Q1F_ALL_expansion04_DEDUP_QUALITY_BRIEF_20261110.json` : **372 `ready_internal`**, **14 `requires_manual_review`**, **299 `partial`** ; présence de champs (pas de vérité terrain) : titre 685, ville 680, quartier **540/685 = 78,8 %**, prix MAD 623, surface 665, type 672, transaction 552. Les lots 24–26 contiennent 7 captures, les lots 27–28 31 captures, et expansion01–04 120 captures. Deux URL de l'expansion01 ont été dédupliquées par choix de leur première version capturée dans Mohammedia #27. Les 4 lots expansion ont respectivement **30 captures**, sans HTTP 401/403/429, et ont rejeté les redirections hors détail. Données privées sur Windows exclusivement.
+
+**Défaut qualité réel identifié :** une annonce Mubawab présente dans sa page HTML `123 457 000 MAD` pour **120 m²**, valeur transmise aussi par le JSON-LD. Nous ne savons pas si le prix est vrai, une erreur de saisie ou un placeholder. **Aucune correction automatique** : le garde-fou `EXTREME_REPORTED_PRICE_PER_M2_REQUIRES_REVIEW` (prix >50 M MAD ET prix/m² >250 000) impose la revue humaine tout en conservant exactement la valeur source. Le titre `à l'achat` (y compris apostrophe typographique) est maintenant reconnu comme mention directe de vente, et un prix normal au m² n'active pas ce motif. Le benchmark humain demeure à **0 annotation indépendante**.
+
+**PROOF tests :** **128/128 tests locaux PASS** (59 V3 + 69 V2) ; compilation Python et diff-check passent. Corpus original 100 retraité en `Q1F_REAL_100_PARSED_v12_EXTREME_REVIEW_20261110` : 69 techniquement prêtes, 3 en revue, 28 partielles, transaction renseignée 89/100, pas d'écriture Neon. Benchmark source-only exécuté mais **non certifiant** en `Q1F_SOURCE_CLAIMS_BENCHMARK_v12_20261110.json`, le même portail constituant la source pour les deux lecteurs.
+
+**Git/CI :** PR #1198 Draft sur `feat/akarparser-v3-raw-bulk-20261109` non fusionnée. Dernier HEAD poussé avant ces deux nouvelles corrections : `2970d36c0cc0e4c5eb9e32cd720cb4f1c59cc9a5`, et ses trois CI `SUCCESS` (Private Raw Bulk #42727316699, Raw Regression #42727316579, Efficiency #42727316512). Les corrections extrême/prix et achat doivent encore être poussées et validées en CI. 0 Neon, 0 Vercel, 0 merge.
+
+**NEXT exact :** poursuivre captures bornées expansion05–08, reparser sans écraser, auditer l'unicité des URL, puis commit/CI et revue de vérité terrain avant admission. DATA MASS historiquement certifié inchangé 9 990/200 000 = 4,995 %.

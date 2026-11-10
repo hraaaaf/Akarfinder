@@ -389,6 +389,12 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
             review_reasons.append("LOW_SALE_PRICE_REQUIRES_REVIEW")
         if isinstance(area, (int, float)) and area > 0 and price / area < 1_000:
             review_reasons.append("LOW_SALE_PRICE_PER_M2_REQUIRES_REVIEW")
+    # Preserve extreme prices as published; even explicit source markup can
+    # contain placeholders. Manual review, never an automatic normalization.
+    if (isinstance(price, (int, float)) and price > 50_000_000
+            and isinstance(area, (int, float)) and area > 0
+            and price / area > 250_000):
+        review_reasons.append("EXTREME_REPORTED_PRICE_PER_M2_REQUIRES_REVIEW")
     if row.get("_mubawab_schema_offer_sell") and e.get("transaction_type") == "rent":
         review_reasons.append("SCHEMA_SELL_CONTRADICTS_RENTAL_TEXT")
     if row.get("_mubawab_title_area_mismatch"):

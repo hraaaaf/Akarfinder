@@ -320,5 +320,43 @@ class TestPortalAdapters(unittest.TestCase):
                       rec["quality"]["review_reasons"])
         self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
 
+    def test_mubawab_explicit_achat_sale_with_extreme_source_price_requires_review(self):
+        import json
+        listing = {"@type": "RealEstateListing",
+                   "name": "Appartement à l’achat à HAMRIA en plein centre",
+                   "offers": {"price": 123457000, "priceCurrency": "MAD",
+                              "businessFunction": "http://purl.org/goodrelations/v1#Sell"}}
+        html = ("<html><head><script type='application/ld+json'>" +
+                json.dumps(listing) + "</script></head><body>" +
+                "<p>Immobilier Meknes</p><p>Appartements Meknes</p>" +
+                "<p>Centre</p><p>Obtenir un financement</p><p>120m²</p></body></html>")
+        rec = v3.parse_raw({"raw_html": html,
+                            "source_url": "https://www.mubawab.ma/fr/a/8442291/hamria",
+                            "fetched_at": "2026-11-09T16:00:00Z"}, NOW)
+        self.assertEqual(rec["fields"]["transaction_type"], "sale")
+        self.assertEqual(rec["fields"]["price_mad"], 123457000)
+        self.assertEqual(rec["fields"]["surface_total_m2"], 120)
+        self.assertIn("EXTREME_REPORTED_PRICE_PER_M2_REQUIRES_REVIEW",
+                      rec["quality"]["review_reasons"])
+        self.assertEqual(rec["quality"]["status"], "requires_manual_review")
+        self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+
+    def test_mubawab_normal_achat_price_no_extreme_review_reason(self):
+        import json
+        listing = {"@type": "RealEstateListing",
+                   "name": "Appartement a l'achat à Agdal",
+                   "offers": {"price": 1450000, "priceCurrency": "MAD"}}
+        html = ("<html><head><script type='application/ld+json'>" +
+                json.dumps(listing) + "</script></head><body>" +
+                "<p>Immobilier Rabat</p><p>Appartements Rabat</p>" +
+                "<p>Agdal</p><p>Obtenir un financement</p><p>120m²</p></body></html>")
+        rec = v3.parse_raw({"raw_html": html,
+                            "source_url": "https://www.mubawab.ma/fr/a/8442300/agdal",
+                            "fetched_at": "2026-11-09T16:00:00Z"}, NOW)
+        self.assertEqual(rec["fields"]["transaction_type"], "sale")
+        self.assertNotIn("EXTREME_REPORTED_PRICE_PER_M2_REQUIRES_REVIEW",
+                         rec["quality"]["review_reasons"])
+        self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+
 if __name__ == "__main__":
     unittest.main()

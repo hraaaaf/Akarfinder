@@ -118,7 +118,7 @@ def enrich(page, row: dict, evidence: dict) -> None:
                 continue
             title = str(node.get("name") or "")
             summary = str(node.get("description") or "")[:360]
-            sale_title = bool(re.search(r"\b(?:(?:à|a)\s+vendre|en\s+vente|(?:à|a)\s+la\s+vente)\b", title, re.I))
+            sale_title = bool(re.search(r"\b(?:(?:à|a)\s+vendre|en\s+vente|(?:à|a)\s+la\s+vente|(?:à|a)\s+l['’]achat)\b", title, re.I))
             rent_title = bool(re.search(r"\b(?:(?:à|a)\s+louer|en\s+location|(?:à|a)\s+la\s+location)\b", title, re.I))
             # Listing-title expressions such as "Location villa ..." and
             # "Studio location longue durée" explicitly offer a rental. Do
