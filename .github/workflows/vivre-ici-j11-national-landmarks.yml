@@ -1,0 +1,28 @@
+name: Vivre Ici J11 National OSM Landmark Index Contracts
+
+on:
+  pull_request:
+    paths:
+      - "scripts/neighborhood-context/national-osm-landmark-index.py"
+      - "scripts/neighborhood-context/fixtures/test_national_osm_landmark_index.py"
+      - ".github/workflows/vivre-ici-j11-national-landmarks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vivre-ici-j11-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  national-osm-index-contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python unit contracts (no PBF, no prod DB)
+        run: python -m unittest discover -s scripts/neighborhood-context/fixtures -p test_national_osm_landmark_index.py -v

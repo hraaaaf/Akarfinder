@@ -15,3 +15,7 @@ Module de projection read-only : scripts/neighborhood-context/indicative-osm-lan
 **Goal :** repères disponibles sur l'ensemble du Maroc depuis une source nationale. **Success :** extraction/index national par tuile ou bbox, sélection performante, rendu réellement vérifié à Casablanca, Rabat et ville supplémentaire, vues 390/430/768/1280. **Proof :** checksum du PBF, tests de sélection, contrôles de performances et rendu réel. Ces preuves end-to-end **ne sont pas encore acquises** par la seule présence du module.
 
 **Next exact :** exécuter ce contrat sur la QA Maârif existante (415 objets), puis implémenter et mesurer un index national source unique et une preview locale sans affichage d'ouverture. Ne pas déployer Vercel ou modifier la DB prod sans autorisation. OSM license : https://www.openstreetmap.org/copyright . Geofabrik Maroc : https://download.geofabrik.de/africa/morocco.html .
+
+## J11 — Index national Geofabrik (10/11/2026)
+
+Nouveau module source scripts/neighborhood-context/national-osm-landmark-index.py, index RTree privé, sans read-model public ni sas de certification commerciale Maârif. Séparation ingestion nationale / sélection viewport. Tests : 7/7 PASS local, smoke OSM réel XML 3/3 avec SHA256 et bbox. L'extraction PBF Maroc entier et la performance multi-villes demandent validation distincte. Aucune activation UI/DB/Vercel. Référence canonique opérationnelle : scripts/neighborhood-context/NATIONAL_OSM_LANDMARK_INDEX_J11.md.
