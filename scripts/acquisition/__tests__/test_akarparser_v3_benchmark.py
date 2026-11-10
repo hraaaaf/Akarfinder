@@ -95,6 +95,30 @@ class TestV3Benchmark(unittest.TestCase):
         self.assertFalse(result["safety"]["certified_for_production"])
         self.assertNotIn("/fixture/", self.output.read_text(encoding="utf-8"))
 
+    def test_explicit_labelled_subset_is_allowed_but_never_full_certification(self):
+        self.labels.pop()
+        self.write_truth()
+        with self.assertRaisesRegex(ValueError,
+                                    "TRUTH_AND_PARSED_INPUTS_MUST_MATCH_EXACTLY"):
+            bench.run(self.raw_parsed, self.aggregate, self.truth_path, self.output)
+        report=bench.run(self.raw_parsed, self.aggregate, self.truth_path,
+                         self.output, allow_subset=True)
+        self.assertEqual(report["record_count"], 1)
+        self.assertEqual(report["parsed_universe_record_count"], 2)
+        self.assertEqual(report["comparison_scope"], "explicit_labelled_subset")
+        self.assertTrue(report["safety"]["subset_is_not_full_validation"])
+        self.assertFalse(report["safety"]["certified_for_production"])
+        self.assertEqual(report["portal_counts"], {"example.test":1})
+
+    def test_subset_rejects_unknown_or_non_matching_parser_reference(self):
+        self.labels=self.labels[:1]
+        self.labels[0]["source_line"]=3
+        self.write_truth()
+        with self.assertRaisesRegex(ValueError,
+                                    "TRUTH_AND_PARSED_INPUTS_MUST_MATCH_EXACTLY"):
+            bench.run(self.raw_parsed, self.aggregate, self.truth_path,
+                      self.output, allow_subset=True)
+
     def test_bad_capture_sha_refused(self):
         self.labels[0]["source_file_sha256"] = "0" * 64
         self.write_truth()

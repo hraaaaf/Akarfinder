@@ -137,7 +137,8 @@ def metrics(values: Counter) -> dict:
     return c
 
 
-def run(parsed: Path, aggregate: Path, truth: Path, output: Path) -> dict:
+def run(parsed: Path, aggregate: Path, truth: Path, output: Path, *,
+        allow_subset: bool = False) -> dict:
     parsed, aggregate, truth, output = map(private, (parsed, aggregate, truth, output))
     if output.exists():
         raise FileExistsError("REPORT_ALREADY_EXISTS")
@@ -171,7 +172,9 @@ def run(parsed: Path, aggregate: Path, truth: Path, output: Path) -> dict:
         label_fields(label)
         labels[key] = label
 
-    if not labels or not records or set(labels) != set(records):
+    matching_scope = (set(labels).issubset(records) if allow_subset
+                      else set(labels) == set(records))
+    if not labels or not records or not matching_scope:
         raise ValueError("TRUTH_AND_PARSED_INPUTS_MUST_MATCH_EXACTLY")
 
     overall = defaultdict(Counter)
@@ -215,7 +218,9 @@ def run(parsed: Path, aggregate: Path, truth: Path, output: Path) -> dict:
 
     result = {
         "schema_version": 1,
-        "record_count": len(records),
+        "record_count": len(labels) if allow_subset else len(records),
+        "parsed_universe_record_count": len(records),
+        "comparison_scope": "explicit_labelled_subset" if allow_subset else "complete_input",
         "portal_counts": dict(sorted(source_count.items())),
         "overall": {f: metrics(c) for f, c in sorted(overall.items())},
         "by_portal": {portal: {f: metrics(c) for f, c in sorted(by_portal[portal].items())}
@@ -227,6 +232,7 @@ def run(parsed: Path, aggregate: Path, truth: Path, output: Path) -> dict:
             "listing_freshness_verified": False,
             "neon_admission_authorized": False,
             "certified_for_production": False,
+            "subset_is_not_full_validation": allow_subset,
         },
         "method": "exact normalized textual/numeric agreement on manually labelled, source-matched observations",
     }
@@ -242,8 +248,11 @@ def main():
     p.add_argument("--manifest", type=Path, required=True, help="V3 aggregate_report.json")
     p.add_argument("--truth", type=Path, required=True, help="independent private truth.jsonl")
     p.add_argument("--out", type=Path, required=True, help="new private aggregate-only report path")
+    p.add_argument("--allow-labelled-subset", action="store_true",
+                   help="compare only explicitly annotated source-matched records; never certify full corpus")
     args = p.parse_args()
-    report = run(args.parsed, args.manifest, args.truth, args.out)
+    report = run(args.parsed, args.manifest, args.truth, args.out,
+                 allow_subset=args.allow_labelled_subset)
     print(json.dumps({"record_count": report["record_count"], "portals": report["portal_counts"],
                       "certified_for_production": False}, sort_keys=True))
 
