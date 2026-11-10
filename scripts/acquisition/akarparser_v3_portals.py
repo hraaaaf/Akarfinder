@@ -120,7 +120,26 @@ def enrich(page, row: dict, evidence: dict) -> None:
             summary = str(node.get("description") or "")[:360]
             sale_title = bool(re.search(r"\b(?:(?:à|a)\s+vendre|en\s+vente|(?:à|a)\s+la\s+vente)\b", title, re.I))
             rent_title = bool(re.search(r"\b(?:(?:à|a)\s+louer|en\s+location|(?:à|a)\s+la\s+location)\b", title, re.I))
-            if sale_title != rent_title:
+            # Listing-title expressions such as "Location villa ..." and
+            # "Studio location longue durée" explicitly offer a rental. Do
+            # NOT match investment or hypothetical future rental language.
+            direct_rental_heading = bool(
+                re.search(r"^\s*location\b", title, re.I)
+                or re.search(
+                    r"^\s*(?:villa|studio|appartement|maison|bureau|riad|local)\b.{0,60}\blocation\b",
+                    title, re.I,
+                )
+            ) and not bool(re.search(
+                r"\b(?:vente|vendre|vendu|vendue|achat|investissement|"
+                r"locatif|rentabilit[eé]|possibilit[eé]|option)\b",
+                title, re.I,
+            ))
+            rent_title = rent_title or direct_rental_heading
+            if sale_title and rent_title:
+                # Two competing *explicit* offers in the title cannot be
+                # resolved from a marketing description or a schema Sell tag.
+                row["_mubawab_title_transaction_ambiguous"] = True
+            elif sale_title != rent_title:
                 _set(row, evidence, "transaction_type", "sale" if sale_title else "rent",
                      "mubawab.jsonld.listing.title.explicit_transaction")
             else:

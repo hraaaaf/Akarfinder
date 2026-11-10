@@ -393,6 +393,8 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
         review_reasons.append("SCHEMA_SELL_CONTRADICTS_RENTAL_TEXT")
     if row.get("_mubawab_title_area_mismatch"):
         review_reasons.append("PRIMARY_AREA_DIFFERS_FROM_TITLE_AREA")
+    if row.get("_mubawab_title_transaction_ambiguous"):
+        review_reasons.append("TITLE_CONTAINS_SALE_AND_RENT")
     status = quality(e, base["source"], clock,
                      quarantine=base["status"] == "quarantine" or invalid_http or foreign_country,
                      serp=bool(row.get("query_id") and row.get("source_domain")),

@@ -262,5 +262,63 @@ class TestPortalAdapters(unittest.TestCase):
         self.assertEqual(rec["fields"]["transaction_type"], "rent")
         self.assertIn("SCHEMA_SELL_CONTRADICTS_RENTAL_TEXT", rec["quality"]["review_reasons"])
 
+    def test_mubawab_explicit_location_in_listing_title_is_rental(self):
+        import json
+        for title in ("Location villa neuve sur Laymoune",
+                      "Studio location longue duree les hopitaux",
+                      "Villa haustanding location Californie"):
+            with self.subTest(title=title):
+                listing = {"@type": "RealEstateListing", "name": title,
+                           "description": "Disponible avec ascenseur et terrasse.",
+                           "offers": {"price": 7900, "priceCurrency": "MAD"}}
+                html = ("<html><head><script type='application/ld+json'>" +
+                        json.dumps(listing) + "</script></head><body>" +
+                        "<p>Immobilier Casablanca</p><p>Appartements Casablanca</p>" +
+                        "<p>Riviera</p><p>Obtenir un financement</p><p>55m²</p>"
+                        "</body></html>")
+                rec = v3.parse_raw({"raw_html": html,
+                                    "source_url": "https://www.mubawab.ma/fr/a/8455112/location",
+                                    "fetched_at": "2026-11-09T16:00:00Z"}, NOW)
+                self.assertEqual(rec["fields"]["transaction_type"], "rent")
+                self.assertEqual(rec["field_evidence"]["transaction_type"]["path"],
+                                 "mubawab.jsonld.listing.title.explicit_transaction")
+                self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+
+    def test_mubawab_investment_sale_does_not_become_rental(self):
+        import json
+        title = "Appartement en vente pour investissement location saisonniere"
+        listing = {"@type": "RealEstateListing", "name": title,
+                   "description": "Bien destiné aux investisseurs.",
+                   "offers": {"price": 2500000, "priceCurrency": "MAD"}}
+        html = ("<html><head><script type='application/ld+json'>" +
+                json.dumps(listing) + "</script></head><body>" +
+                "<p>Immobilier Marrakech</p><p>Appartements Marrakech</p>" +
+                "<p>Gueliz</p><p>Obtenir un financement</p><p>76m²</p>"
+                "</body></html>")
+        rec = v3.parse_raw({"raw_html": html,
+                            "source_url": "https://www.mubawab.ma/fr/a/8455113/investissement",
+                            "fetched_at": "2026-11-09T16:00:00Z"}, NOW)
+        self.assertEqual(rec["fields"]["transaction_type"], "sale")
+        self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+
+    def test_mubawab_dual_sale_rent_title_kept_unknown_and_review_flagged(self):
+        import json
+        listing = {"@type": "RealEstateListing",
+                   "name": "Villa à vendre ou à louer à Casablanca",
+                   "description": "Superbe villa à la vente, visite possible.",
+                   "offers": {"price": 2300000, "priceCurrency": "MAD",
+                              "businessFunction": "http://purl.org/goodrelations/v1#Sell"}}
+        html = ("<html><head><script type='application/ld+json'>" +
+                json.dumps(listing) + "</script></head><body>" +
+                "<p>Immobilier Casablanca</p><p>Villas & maisons de luxe Casablanca</p>" +
+                "<p>Californie</p><p>Obtenir un financement</p><p>300m²</p></body></html>")
+        rec = v3.parse_raw({"raw_html": html,
+                            "source_url": "https://www.mubawab.ma/fr/a/8455114/duale",
+                            "fetched_at": "2026-11-09T16:00:00Z"}, NOW)
+        self.assertIsNone(rec["fields"]["transaction_type"])
+        self.assertIn("TITLE_CONTAINS_SALE_AND_RENT",
+                      rec["quality"]["review_reasons"])
+        self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+
 if __name__ == "__main__":
     unittest.main()
