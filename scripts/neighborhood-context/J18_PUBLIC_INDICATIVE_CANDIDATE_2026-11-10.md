@@ -98,3 +98,25 @@ NEXT EXACT : CI de ce lot, rétablir l'agent de machine, exécuter l'export rée
 **Limites / NO-GO public :** la connexion et les objets privés sont réels, mais aucune URL consultable anonymement, aucune API publique branchée sur ce store, aucune publication sur le site. Le service enrichi public garde anchor_count=0 tant que son ancien seed est expiré. Aucun polygone officiel du quartier central Maârif certifié. Cible visuelle >=9,5/10 non prouvée (~8/10 indicatif précédent), lecteur d'écran réel et réseau mobile/CDN à qualifier. OSM repères = indicatifs : ni commerces ouverts, ni logements, ni frontières officielles déduites.
 
 **Next exact :** préparer et tester une route publique spécifique aux repères indicatifs avec garde explicite de publication, pointeur de version approuvé, expiration source avant tout GET Blob, quotas/cache API, 3 villes x 4 viewports, tests mobile/lecteur d'écran et comparaison BEFORE/AFTER. Human gate distinct avant publication des repères, merge GitHub et déploiement Vercel. J18-E clôturé au niveau stockage privé seulement.
+
+## J18-F — Lecture serveur de Blob privé, NO-GO public (10/11/2026)
+
+**Goal :** lecture des tuiles Geofabrik depuis Vercel Blob privé côté serveur, sans Cloudflare D1, sans identifiants côté navigateur, avec vérification SHA/expiration/cache et garde locale.
+
+**Source et manifeste privés épinglés :** SHA256 PBF 0ba250a5c27319a029b7c6b971e2a96a86b300d459406bb162be4c44a23a730f ; manifeste de 222 179 octets SHA256 e0aca1621c93328ef5dd83ed38d23593839ccf06e71b12e2103d51773b7f4950. PUT sur Blob PRIVATE, GET et SHA identiques à l'original. Le store a 1339 tuiles + 1 manifeste, jamais publics.
+
+**Code :** scripts/neighborhood-context/j18-private-blob-read-model.mjs, j18-blob-review-gate.mjs, déclaration TypeScript, app/api/geo/j18-blob-review/route.ts, dépendance serveur @vercel/blob 2.9.0. Reader SHA-256 avant JSON, TTL source revalidé à chaque requête y compris sur cache hit, cache LRU borné 4 Mo/30 s, bbox max 64 cellules, réponse max 180 repères, sécurité noms/ID/position/claims. Garde NODE_ENV=development avec opt-in, Host et forwarded-host loopback, pinning source/manifest/store. En production, toute configuration = HTTP404. Cache HTTP private no-store, noindex, réponses opaques. Limiteur de revue 24 requêtes/min par instance, INSUFFISANT pour public multi-instance.
+
+**Premières preuves :** 15/15 tests J18-F PASS et tsc --noEmit PASS. Lecture réelle sur Blob privé depuis le PC : 3/3 villes avec 180 repères et provenance/claims conformes. Casablanca 5 GET privés à froid 724,3 ms puis 9,2 ms sur cache ; Rabat 3 GET à froid 311 ms puis 4,4 ms ; Marrakech 4 GET à froid 416,1 ms puis 8,4 ms. Ce sont des latences PC→Blob, pas mobiles ni functions Vercel. Rapport j18-f-real-blob-read-report.json privé sur PC, pas de données individuelles dans Git.
+
+**Avant closeout :** test HTTP local Next avec authentification OIDC QA, restauration de la preview et vérification route 404 par défaut, ensemble des tests/CI exact HEAD GitHub, Notion. Pour une diffusion publique future : cache et quotas durables multi-instance, pointeur de version approuvé, anti-abus, débit mobile réel, lecteur écran, score UX cible >=9,5/10, human gate de publication/merge/Vercel. Aucun déploiement, aucune DB ni merge autorisés.
+
+### J18-F — Validation finale locale de la route (10 novembre 2026)
+
+**Preuves HTTP Next localhost avec vrais Blob privés :** 8/8 PASS. Casablanca 200 / 180 features / 121,4 ms, Rabat 200 / 180 / 319,1 ms, Marrakech 200 / 180 / 305,5 ms, provenance intacte ; bbox large 400, limites 0 et 181 = 400, Host ou X-Forwarded-Host falsifiés = 404. Réponses strictement private no-store/noindex. Il s'agit d'une mesure locale Next dev sur le PC connecté et non d'une preuve CDN / fonction Vercel en production.
+
+**Contrats exhaustifs :** 65/65 Node PASS (J11-J18), TypeScript tsc --noEmit PASS, git diff --check PASS. Tests J18-F nouvellement ajoutés : 15/15 PASS (production systématiquement inaccessible, pin de source/store, rate-limit de QA, TTL/cache, mauvais SHA/claims, bbox, doublons).
+
+**Restitution de l'environnement QA :** le processus Next temporaire utilisant l'OIDC J18 a été arrêté puis la QA locale J11 restaurée sans aucun flag J18 ni jeton OIDC. Preuves : route J18-F 404 par défaut, route J11 QA 200, page /map 200 après recompilation. Fichier de token temporaire .env.local supprimé. Aucune modification live/Vercel, aucun merge ni DB.
+
+**Rapports de preuves hors dépôt** : j18-f-real-blob-read-report.json et j18-f-private-http-report.json dans le dossier QA du PC. Le manifest source ainsi que ses 1339 tuiles sont toujours privés, sans pointeur de publication. Pour une vraie ouverture publique, il faudra une API distincte correctement activée, un rate limit distribué, une stratégie de coûts/quotas, un audit de sécurité et le gate humain avant merge/Vercel.
