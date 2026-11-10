@@ -78,3 +78,11 @@ PowerShell :
 Github PR #1197 : vérifier HEAD, draft, non-merge ; requêter les actions du SHA exact.
 Next technique : J18-G générateur de différentiel offline (aucun upload ni production), tests de non-régression SHA/TTL/quotas, puis GitHub CI et Notion.
 Au terme du prochain lot : résultat -> preuve -> prochaine action -> repères, et mettre à jour Notion.
+
+## 8. UPDATE reprise après J18-G — 10 novembre 2026 (supplante NEXT EXACT §7)
+
+**J18-G code/test local :** scripts/neighborhood-context/j18-differential-plan.mjs et fixtures/j18-differential-plan.test.mjs. Génération hors ligne du manifeste différentiel ; ancien SHA source des tuiles identiques conservé comme blobSourceSha256 (compatible reader J18-F2), nouvelles tuiles seules à transférer. Pas d'appel Blob, pas de token, pas de déploiement. 19/19 contrats propres PASS. Simulation synthétique utilisant 1 339 tuiles anciennes et un prochain snapshot fictif : 1 338 réutilisées, 1 modifiée, 2 PUT minimum (nouvelle tuile + manifest), sorties de simulation supprimées. AUCUNE preuve de futur PBF réel, d'économie mensuelle effective ou de disponibilité des anciennes clés distantes. Rapport privé j18g-national-synthetic-dry-run-report.json.
+
+**Documentation technique nouvelle :** scripts/neighborhood-context/J18G_DIFFERENTIAL_OSM_REVIEW_2026-11-10.md. Fichier canonique J18_A-F conservé : scripts/neighborhood-context/J18_PUBLIC_INDICATIVE_CANDIDATE_2026-11-10.md. Après commit, vérifier le nouvel HEAD, PR Draft, CI et worktree ; ne pas inventer leur état ici.
+
+**Next exact désormais :** nouvelle CI → clôture J18-G → préparation sécurisée de la future API *indicative uniquement* (pointeur d'activation approuvé, quota distribué, expiration, cache, provenance et HTTPS), sans la rendre publique, puis QA mobile/lecteurs d'écran/visuel et gate humain avant publication/merge/Vercel. Pour tout nouveau PBF réel : J18-A source vérifiée, J18-G plan, preuve inventaire privé + quota disponible AVANT le moindre nouvel upload. L'objectif UX >=9,5/10 et la frontière Maârif central demeurent NON certifiés.
