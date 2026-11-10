@@ -25,6 +25,24 @@ def _title_slug(text: str) -> str:
     return " ".join(unquote(text).replace("_", " ").replace("-", " ").split()).title()
 
 
+def primary_unit_rate_equals_amount(description: str, amount: float | None) -> bool:
+    """Primary prose proves an offer amount is a MAD/m² rate, never a total.
+
+    Recognizes currency/surface notation and words (dirhams par mètre carré);
+    other numbers in the description must NOT suppress a different total.
+    """
+    if not isinstance(amount, (int, float)) or not isinstance(description, str):
+        return False
+    values = re.findall(
+        r"(?<!\d)(\d[\d\s\u202f\u00a0.,]{0,16})\s*"
+        r"(?:dhs?|mad|dirhams?)\s*"
+        r"(?:(?:/|par)\s*m(?:²|2)(?!\w)|par\s+m[eè]tres?\s+carr[eé]s?\b)",
+        description[:6000], flags=re.I,
+    )
+    return any((rate := v2.number(v)) is not None and abs(rate - amount) <= 0.01
+               for v in values)
+
+
 def explicit_primary_sentence_transaction(description: str) -> str | None:
     """A direct offer in the listing's first sentence, not an investment idea.
 
@@ -127,17 +145,8 @@ def enrich(page, row: dict, evidence: dict) -> None:
                 # price. Preserve the source value but suppress total price
                 # when the listing itself proves the same figure is per m2.
                 description = str(obj.get("description") or "")
-                unit_rates = re.findall(
-                    r"(?<!\d)([\d\s\u202f\u00a0.,]{2,17})\s*"
-                    r"(?:dhs?|mad|dirhams?)\s*(?:/|par)\s*m(?:²|2)\b",
-                    description, flags=re.I,
-                )
                 offer_price = v2.number(offer.get("price"))
-                if offer_price and any(
-                    (rate := v2.number(raw_rate)) is not None
-                    and abs(rate - offer_price) <= 0.01
-                    for raw_rate in unit_rates
-                ):
+                if primary_unit_rate_equals_amount(description, offer_price):
                     row["_mubawab_unit_price_not_total"] = True
             break
         # A specific 'Studio ...' listing title takes precedence over the

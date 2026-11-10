@@ -356,16 +356,8 @@ def quality(e: dict, source: dict, as_of: datetime, *, quarantine: bool, serp: b
 
 
 def explicit_unit_rate_equals_price(description: str, price: float | None) -> bool:
-    """Only reject a claimed total when the primary text marks *that value* as MAD/m²."""
-    if not isinstance(price, (int, float)) or not isinstance(description, str):
-        return False
-    matches = re.findall(
-        r"(?<!\d)(\d[\d\s\u202f\u00a0.,]{0,16})\s*"
-        r"(?:dhs?|mad|dirhams?)\s*(?:/|par)\s*m(?:²|2)(?!\w)",
-        description[:6000], flags=re.I,
-    )
-    return any((rate := v2.number(value)) is not None
-               and abs(rate - price) <= 0.01 for value in matches)
+    """Shared source-only rule; a price per m² is never a listing total."""
+    return portals.primary_unit_rate_equals_amount(description, price)
 
 
 def stable_observation_id(raw_hash: str, base: dict) -> tuple[str, str]:
