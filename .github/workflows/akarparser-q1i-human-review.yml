@@ -1,0 +1,94 @@
+name: AkarParser Q1I Human Review Safe Gate
+on:
+  pull_request:
+    paths:
+      - "scripts/acquisition/q1i_private_review_gate.py"
+      - "scripts/acquisition/__tests__/test_q1i_private_review_gate.py"
+      - ".github/workflows/akarparser-q1i-human-review.yml"
+  workflow_dispatch:
+    inputs:
+      authorize_readonly_review:
+        type: boolean
+        description: "Explicitly authorize read-only local Q1I A/B integrity check"
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  synthetic-contract:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Synthetic Q1I safety contract (no private sources)
+        run: python -B -Werror::ResourceWarning -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_q1i_private_review_gate.py'
+      - name: AkarParser V3 synthetic regression
+        run: python -B -Werror::ResourceWarning -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v3*.py'
+      # Public CI must never access actual A/B reviews or archived HTML.
+
+  private-readonly:
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      && github.ref == 'refs/heads/main'
+      && github.actor == 'hraaaaf'
+      && inputs.authorize_readonly_review == true
+    runs-on: [self-hosted, windows, akarfinder-private-lake]
+    environment: q1i-private-review
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Fail-closed private path and trust preflight
+        env:
+          Q1I_PACKET_ROOT: ${{ vars.Q1I_PACKET_ROOT }}
+          Q1I_SOURCE_ROOT: ${{ vars.Q1I_SOURCE_ROOT }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($name in @('Q1I_PACKET_ROOT', 'Q1I_SOURCE_ROOT')) {
+            $value = [Environment]::GetEnvironmentVariable($name)
+            if ([string]::IsNullOrWhiteSpace($value)) { throw 'Q1I_LOCAL_PATH_CONFIG_REQUIRED' }
+            if (-not (Test-Path -LiteralPath $value -PathType Container)) {
+              throw 'Q1I_LOCAL_SOURCE_NOT_AVAILABLE'
+            }
+          }
+          $workspace = [System.IO.Path]::GetFullPath($env:GITHUB_WORKSPACE).TrimEnd('\')
+          foreach ($name in @('Q1I_PACKET_ROOT', 'Q1I_SOURCE_ROOT')) {
+            $full = [System.IO.Path]::GetFullPath([Environment]::GetEnvironmentVariable($name)).TrimEnd('\')
+            if ($full -eq $workspace -or
+                $full.StartsWith(($workspace + '\'), [System.StringComparison]::OrdinalIgnoreCase)) {
+              throw 'Q1I_PRIVATE_DATA_INSIDE_REPOSITORY_BLOCKED'
+            }
+          }
+          Write-Host 'Q1I_LOCAL_INPUT_PRECHECK=PASS'
+      - name: Validate original SHA and independent A/B decisions — aggregates only
+        env:
+          Q1I_PACKET_ROOT: ${{ vars.Q1I_PACKET_ROOT }}
+          Q1I_SOURCE_ROOT: ${{ vars.Q1I_SOURCE_ROOT }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          python -B -X utf8 scripts/acquisition/q1i_private_review_gate.py `
+            --packet-root "$env:Q1I_PACKET_ROOT" `
+            --source-root "$env:Q1I_SOURCE_ROOT" `
+            --expected-tasks 76 --expected-pages 75
+          if ($LASTEXITCODE -ne 0) { throw 'Q1I_PRIVATE_REVIEW_GATE_FAILED' }
+          Write-Host 'Q1I_PRIVATE_REVIEW_READ_ONLY=1'
+          Write-Host 'Q1I_PRIVATE_SOURCE_UPLOADS=0'
+          Write-Host 'Q1I_NEON_WRITES=0'
+      # NO artifacts, cache, source/reviewer CSV uploads, network source fetches or DB keys.
+      # GitHub Actions cannot synchronize pending user verdicts from Notion by itself.
