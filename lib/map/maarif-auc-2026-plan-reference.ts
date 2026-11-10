@@ -21,6 +21,30 @@ export const MAARIF_AUC_2026_ARRONDISSEMENT_PLAN_REFERENCE = {
   pdfPages: 1,
   printedScaleDenominator: 5000,
   embeddedRasterPixels: { width: 7234, height: 9083 },
+  // Separate ArcGIS REST service from the printed PDF and from any 103-ha
+  // historic central-sector boundary. Official service snapshot is a raster.
+  // WKID 102191 is Esri Nord_Maroc_Degree; do NOT silently alias to EPSG:26191.
+  aucSeptember2026ArcgisService: {
+    portalItemId: "5fff1840bbce45f5a709f33c2e7d3fba",
+    url: "https://carto.auc.ma/server/rest/services/DOCUMENTS_URBANISME/PA_MAARIF_SEPTEMBRE_2026/MapServer",
+    inspectedAt: "2026-11-10",
+    mapName: "PA_MAARIF_SEPTEMBRE_2026",
+    layerCount: 1,
+    layer: {
+      id: 1,
+      name: "PA MAARIF EDITION CC 2026_CLIP.tif",
+      type: "Raster Layer",
+      geometryType: null,
+    },
+    serviceSpatialReferenceWkid: 102191,
+    serviceSpatialReferenceLabel: "Nord_Maroc_Degree",
+    mapsToEpsg26191WithoutExplicitTransformation: false,
+    centralSectorVectorLayerFound: false,
+    verifiedCentralSectorGeometry: null,
+    serviceCopyrightText: "",
+    reuseRightsVerified: false,
+    publishedMapBoundaryAllowed: false,
+  },
   publicationSourceGeometry: null,
   centralSectorBoundaryCertified: false,
   projectedCoordinateReferenceVerified: false,

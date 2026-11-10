@@ -108,3 +108,25 @@ test("two distinct QA centers do not imply central Maârif membership or a new g
   assert.equal(QACENTERS.centralSectorPolygon,null);
   assert.equal(QACENTERS.mapPublishingAllowed,false);
 });
+
+
+test("AUC Sept 2026 ArcGIS service is explicitly raster-only, never central-sector GeoJSON", () => {
+  const service = PLAN2026.aucSeptember2026ArcgisService;
+  assert.match(service.url, /^https:\/\/carto\.auc\.ma\/server\/rest\/services\/DOCUMENTS_URBANISME\//);
+  assert.equal(service.portalItemId, "5fff1840bbce45f5a709f33c2e7d3fba");
+  assert.equal(service.inspectedAt, "2026-11-10");
+  assert.equal(service.layerCount, 1);
+  assert.equal(service.layer.id, 1);
+  assert.match(service.layer.name, /\.tif$/);
+  assert.equal(service.layer.type, "Raster Layer");
+  assert.equal(service.layer.geometryType, null);
+  assert.equal(service.serviceSpatialReferenceWkid, 102191);
+  assert.equal(service.serviceSpatialReferenceLabel, "Nord_Maroc_Degree");
+  assert.equal(service.mapsToEpsg26191WithoutExplicitTransformation, false);
+  assert.equal(service.centralSectorVectorLayerFound, false);
+  assert.equal(service.verifiedCentralSectorGeometry, null);
+  assert.equal(service.reuseRightsVerified, false);
+  assert.equal(service.publishedMapBoundaryAllowed, false);
+  assert.equal(PLAN2026.projectedCoordinateReferenceVerified, false);
+  assert.equal(SECTOR.geometry, null);
+});
