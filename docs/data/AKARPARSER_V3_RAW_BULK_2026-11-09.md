@@ -253,3 +253,19 @@ PR #1198 demeure Draft, non fusionnée. Aucun déploiement Vercel, aucune écrit
 **Git/CI :** PR #1198 Draft sur `feat/akarparser-v3-raw-bulk-20261109` non fusionnée. Dernier HEAD poussé avant ces deux nouvelles corrections : `2970d36c0cc0e4c5eb9e32cd720cb4f1c59cc9a5`, et ses trois CI `SUCCESS` (Private Raw Bulk #42727316699, Raw Regression #42727316579, Efficiency #42727316512). Les corrections extrême/prix et achat doivent encore être poussées et validées en CI. 0 Neon, 0 Vercel, 0 merge.
 
 **NEXT exact :** poursuivre captures bornées expansion05–08, reparser sans écraser, auditer l'unicité des URL, puis commit/CI et revue de vérité terrain avant admission. DATA MASS historiquement certifié inchangé 9 990/200 000 = 4,995 %.
+
+## Q1F V3 — Preuve canary 805/1000, 10/11/2026
+
+**GOAL :** 1000 HTML de véritables pages de détail, URL normalisées uniques, sans confusion avec les fiches structurées historiques ni insertion produit.
+
+**PROOF AUDIT DÉDOUBLONNÉ :** fichiers privés `Q1F_PRIVATE_RESULTS/Q1F_ALL_expansion08_DEDUP_HTML_AUDIT_20261110.json` et `Q1F_ALL_expansion08_DEDUP_QUALITY_BRIEF_20261110.json`. **814 captures brutes** contrôlées SHA256, **812 URL normalisées uniques**, 7 fausses pages (soft-404 ou application générique), **2 captures supplémentaires d'URL déjà présentes exclues**, résultat **805 pages de détail uniques acceptées (80,5 %)**. Le dédoublonnage est déterministe : première version valide selon `fetched_at` ; chacune des collisions est tracée, aucune capture privée supprimée.
+
+**PROOF extraction sur les 805 pages uniques :** **443 `ready_internal`, 16 `requires_manual_review`, 346 `partial`**. Champs présents uniquement, **NON exactitude** : titre 805, ville 800, quartier **660/805 = 82,0 %**, prix MAD 730, surface 784, type 788, transaction 636. Aucun produit Neon admis, aucun horodatage de publication réellement validé ; aucune annotation humaine indépendante des 100 pages initiales.
+
+**COLLECTE :** découverte publique autorisée Mubawab sur 20 catégories de 10 villes : **425 nouvelles URL candidates** uniques au moment de la découverte, 14 catégories accessibles, 6 HTTP 404 rejetées, aucun contournement. Huit lots `real_1000_canary_expansion_01..08_20261110`, **30 pages HTML chacun**, redirections hors détail non sauvegardées, contrôle robots.txt, 3 secondes minimum entre requêtes, arrêt HTTP 401/403/429, aucun accès compte/proxy. Deux URL collectées aussi en parallèle dans batch27 Mohammedia ont été exclues comme doublons du canary. Les dossiers HTML et le journal restent privés sur Windows, jamais transférés vers GitHub ou Notion.
+
+**GUARD RÉEL :** une annonce HTML et son JSON-LD donnent **123 457 000 MAD / 120 m²** et mentionnent `à l'achat`. La transaction est reconnue comme vente déclarée ; prix extrême **conservé exactement**, ajouté au motif `EXTREME_REPORTED_PRICE_PER_M2_REQUIRES_REVIEW` (prix >50 M MAD ET >250 k MAD/m²). Ce motif indique une nécessité de revue, **pas** une correction ni la preuve d'un prix erroné. Deux tests synthétiques ajoutés, ancienne classe de compatibilité préservée. **128/128 tests locaux PASS** (59 V3 +69 V2), compilation et diff-check pass ; historique 100 HTML reprocessé : 69 ready, 3 review, 28 partial, 89 transactions connues ; benchmark source-only `Q1F_SOURCE_CLAIMS_BENCHMARK_v12_20261110.json` exécuté mais **pas certifiant**.
+
+**POINT DE CONTINUITÉ :** **195 autres HTML uniques acceptés** nécessaires pour le canary 1000. Puis revue indépendante sur échantillon d'origine 100 (dont 35 prioritaires), calculs indépendants par champ/portail et décisions de qualité avant toute importation produit. Aucune preuve de précision réelle ou de disponibilité des offres à ce stade.
+
+**REPO :** PR Draft #1198 `feat/akarparser-v3-raw-bulk-20261109`, pas de merge, pas de Vercel, zéro écriture Neon. DATA MASS produit historique 9990/200000 (4,995 %) **inchangé**. L'état final Git/CI figure au checkpoint Notion de clôture.
