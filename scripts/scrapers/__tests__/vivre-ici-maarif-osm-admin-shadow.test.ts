@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { MAARIF_TARGET_PILOT_BOUNDARY as B } from "../../../lib/map/maarif-osm-arrondissement-shadow.js";
 import { MAARIF_HISTORICAL_CENTRAL_SECTOR_REFERENCE as SECTOR } from "../../../lib/map/maarif-historical-sector-reference.js";
 import { MAARIF_AUC_2026_ARRONDISSEMENT_PLAN_REFERENCE as PLAN2026 } from "../../../lib/map/maarif-auc-2026-plan-reference.js";
+import { MAARIF_QA_REFERENCE_POINTS as QACENTERS } from "../../../lib/map/maarif-qa-reference-centers.js";
 
 test("Maârif relation is an explicit unreviewed OSM shadow, never the central quarter", () => {
   assert.equal(B.status, "shadow-reference");
@@ -91,4 +92,19 @@ test("AUC 2026 plan is verified arrondissement planning raster, never a 103-ha c
   assert.equal(PLAN2026.attributionAndReuseReviewed, false);
   assert.equal(SECTOR.geometry, null);
   assert.equal(B.centralSectorBoundaryClaim, false);
+});
+test("two distinct QA centers do not imply central Maârif membership or a new geofence", () => {
+  assert.equal(QACENTERS.originalRadiusSample.radiusMeters, 1800);
+  assert.equal(QACENTERS.originalRadiusSample.sourceCandidateCountOnPinnedPbf,415);
+  assert.equal(QACENTERS.originalRadiusSample.geofenceEligible,false);
+  assert.equal(QACENTERS.osmCommunityQuarterPoint.osmId,"node/2186618782");
+  assert.equal(QACENTERS.osmCommunityQuarterPoint.osmPlaceTag,"quarter");
+  assert.equal(QACENTERS.osmCommunityQuarterPoint.isCertifiedBoundarySource,false);
+  assert.equal(QACENTERS.osmCommunityQuarterPoint.geometry,null);
+  assert.ok(QACENTERS.qaOnlyComparison.distanceBetweenPointsMetersApprox>950);
+  assert.ok(QACENTERS.qaOnlyComparison.distanceBetweenPointsMetersApprox<975);
+  assert.equal(QACENTERS.qaOnlyComparison.firstSampleCountOutside1800mOfOsmQuarterPoint,76);
+  assert.equal(QACENTERS.qaOnlyComparison.subsetOnly,true);
+  assert.equal(QACENTERS.centralSectorPolygon,null);
+  assert.equal(QACENTERS.mapPublishingAllowed,false);
 });

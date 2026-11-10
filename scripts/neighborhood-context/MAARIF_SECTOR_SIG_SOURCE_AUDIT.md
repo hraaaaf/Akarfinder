@@ -42,3 +42,33 @@ Le PDF officiel `https://www.auc.ma/wp-content/uploads/2020/05/PL-ENS.pdf`, **ef
 **Contrôle de projection exploratoire QA, sans certification du CRS** : le repère de contexte Maârif `(lon=-7.644, lat=33.5898)` donne par `pyproj` **(E=291639, N=334660)** en `EPSG:26191` (Merchich / Nord Maroc), cohérent avec les graduations visibles autour de E=290000–292000 et N≈334000. Le candidat `EPSG:26192` conduit à N≈733769, non cohérent avec ce cadre. Cela justifie **d'étudier EPSG:26191**, mais ne vaut **pas une déclaration officielle du système de coordonnées**, faute de source WKT/CRS jointe et de recalage mesuré sur des intersections de grille. Aucun affine transform ni polygone de quartier n'est publié.
 
 Source structurée ajoutée : `lib/map/maarif-auc-2026-plan-reference.ts`, **métadonnées uniquement** avec `publicationSourceGeometry:null`, `centralSectorBoundaryCertified:false`, `projectedCoordinateReferenceVerified:false` et SHA256 vérifié, pour éviter qu'un composant futur prenne la planche de l'arrondissement pour une couche GeoJSON du secteur central.
+
+### J10 — Centre d'échantillonnage ≠ point de quartier (09/11/2026)
+
+- L'échantillon OSM PBF du premier lot est circonscrit à **1,8 km du point QA arbitraire (33.5898, -7.644)**.
+- L'objet OSM [`place=quarter` Maârif, `node/2186618782`](https://www.openstreetmap.org/node/2186618782) est localisé près de **(33.58363, -7.6367)**. C'est un point de nom de quartier **saisi dans OSM**, ni un centroïde officiel ni un contour.
+- Différence calculée géodésiquement entre les deux références : **963,3 m**. Sur les seuls **415 candidats** de l'échantillon initial, **76** se retrouvent à plus de **1,8 km du point de quartier OSM**, **339** à 1,8 km au plus ; **197** à 1 km au plus. **Ce n'est PAS une estimation exhaustive** des POI d'un nouvel échantillon ou d'une frontière du secteur : le premier cercle exclut des points qui seraient dans le cercle alternatif.
+- Métadonnées `lib/map/maarif-qa-reference-centers.ts` : point QA et point OSM distincts, `centralSectorPolygon:null`, `mapPublishingAllowed:false`, aucune certification administrative. Source QA privée `...\poi-pbf\qualification\maarif-qa-reference-vs-osm-quarter-point-private.json`.
+- Le [site officiel municipal, histoire du Maârif](https://maarif.casablancacity.ma/fr/article/1143/le-maarif-dun-faubourg-europeen-a-un-pole-central) indique que l'appellation « quartier Maârif » est aujourd'hui employée pour **un espace plus étendu** que le noyau historique. Cela renforce la distinction nécessaire entre **secteur historique AUC 103 ha**, **quartier vécu/usuel sans polygone confirmé**, **arrondissement administratif 1 240 ha**.
+- **Conséquence produit :** ni le cercle initial, ni le point OSM, ni le polygone arrondissement ne doivent déterminer le libellé « dans Maârif » ou l'appartenance centrale. Il faut obtenir une définition explicite et une géométrie réellement sourcée du périmètre exposé.
+- Audit reproductible des **six axes de voirie historiques** : `scripts/neighborhood-context/maarif-historical-axis-osm-audit.py` compare des lignes de voirie du PBF, seulement en QA ; `fixtures/test_maarif_historical_axis_qa.py` contrôle le non-publication et les noms. Aucun polygone synthétique, aucune frontière reconnue.
+
+### J10 — préqualification des six axes AUC avec OSM, sans polygone (09/11/2026)
+
+- Analyse du PBF Maroc Geofabrik **épinglé MD5 `c2334c9499b4565a6a16cf2f45624912`**, en QA seulement. Le parseur initial trop lent à **34 millions de callbacks Python par nœud** a été remplacé par l'index de localisations **natif C++ Osmium `locations=True, idx=flex_mem`**. **2 754 090 ways parcourus, exit 0**. Smoke test XML synthétique puis scan national réussis.
+- Résultat brut : 250 fragments potentiels de rues dans une bbox QA large. **22 noms trompeurs écartés**, notamment `Rue Abdeslam Khattabi`, `Rue Corniche d'Anfa`, `Rue Libya`, par un matcher de **boulevards historiques nommés**. Résultat strict : **228 segments de voirie** répartis sur les **6 axes** du texte AUC :
+  - N : **Abdelkrim Khattabi 22**, **Anfa 42** ;
+  - S : **Brahim Roudani 69** ;
+  - E : **Mohamed Zerktouni 65** ;
+  - O : **de Lybie 2** (couverture très faible), **Bir Anzarane 28**.
+- Les tronçons sont des **axes OSM non homologués** ; nombre de ways ≠ continuité topologique ni frontière. La source **ne fournit aucun polygone central officiel**. Le lien `Boulevard de Lybie` n'a que deux fragments retenus, ce qui empêche de prétendre à une géométrie complète à ce stade.
+- Scripts reproductibles `scripts/neighborhood-context/maarif-historical-axis-osm-audit.py`, test `fixtures/test_maarif_historical_axis_qa.py` sur noms faux/valides et sortie `derived_polygon:null`. Rapports privés `...\poi-pbf\qualification\maarif-historical-axes-road-lines-v2-private.json` et `maarif-historical-axes-summary-private.json` (v1 brute conservée pour provenance). **Aucune nouvelle capture UI ni frontière dérivée diffusée.**
+- **Next J10** : demander ou trouver le contour vecteur officiel actuel du secteur central / bien définir le périmètre « quartier usuel ». Recaler les axes sur source primaire, CRS/versions vérifiés, puis test de cohérence et validation humaine avant toute preview de limite. **NO-GO contour.**
+
+### 10/11/2026 — PBF historique : segmentation de voirie ≠ contour SIG
+
+La comparaison QA des **six axes historiques** avec la totalité du PBF Geofabrik Maroc épinglé a été exécutée en lecture seule (Osmium `locations=True`, index natif). Les correspondances sont des **ways routiers OSM individuels**, coupés à la boîte de recherche QA ; nombre par motif :
+- Abdelkrim Khattabi **25**, Anfa **60**, Brahim Roudani **69**, Mohamed Zerktouni **65**, de Lybie **3**, Bir Anzarane **28**.
+- **250 associations nom/way**, sans garantie d'unicité inter-axes, continuité des rues, interprétation « côté de rue » ou topologie du secteur. Il est **interdit** de fermer ces lignes en polygone automatique et de les publier comme tracé central.
+- Rapport complet privé `C:\Users\lenovo\Desktop\AkarFinder-Vivre-Ici-QA-20261109\poi-pbf\qualification\maarif-historical-axes-road-lines-private.json` : `derived_polygon:null`, `2026_central_sector_boundary_certified:false`, `publishable:false`. Fichier source `scripts/neighborhood-context/maarif-historical-axis-osm-audit.py`, test synthétique sans source externe `scripts/neighborhood-context/fixtures/test_maarif_historical_axis_qa.py`.
+- Prochaine preuve nécessaire : couche vectorielle du **secteur central** avec autorité, version, EPSG, géométrie et réutilisation ; sans elle le shadow arrondissement et les rayons restent **non certificatifs**.

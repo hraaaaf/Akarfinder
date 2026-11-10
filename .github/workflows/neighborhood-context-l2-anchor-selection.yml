@@ -9,6 +9,9 @@ on:
       - "scripts/scrapers/__tests__/neighborhood-context-l2-anchor-selection.test.ts"
       - "scripts/scrapers/__tests__/neighborhood-context-l1-l2-availability-gates.test.mjs"
       - "scripts/scrapers/__tests__/vivre-ici-maarif-source-claims-qa.test.mjs"
+      - "scripts/scrapers/__tests__/vivre-ici-maarif-osm-admin-shadow.test.ts"
+      - "scripts/scrapers/__tests__/vivre-ici-maarif-operator-map-hints-qa.test.mjs"
+      - "lib/map/maarif-qa-reference-centers.ts"
       - ".github/workflows/neighborhood-context-l2-anchor-selection.yml"
   workflow_dispatch:
 
@@ -42,6 +45,8 @@ jobs:
           scripts/scrapers/__tests__/neighborhood-context-l1-poi-registry.test.ts
           scripts/scrapers/__tests__/neighborhood-context-l1-l2-availability-gates.test.mjs
           scripts/scrapers/__tests__/vivre-ici-maarif-source-claims-qa.test.mjs
+          scripts/scrapers/__tests__/vivre-ici-maarif-osm-admin-shadow.test.ts
+          scripts/scrapers/__tests__/vivre-ici-maarif-operator-map-hints-qa.test.mjs
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Explicit scope of this status
