@@ -1,0 +1,68 @@
+/* J12-B QA-only keyboard alternative for MapLibre WebGL OSM candidates.
+   The selector is visually hidden until keyboard focus, never display:none.
+   Source candidates remain capped and indicative (no commercial certification). */
+[data-vivre-ici-page] .maplibre-qa-osm-keyboard-list {
+  position: absolute;
+  z-index: 70;
+  left: 12px;
+  top: 250px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+[data-vivre-ici-page] .maplibre-qa-osm-keyboard-list:focus-within {
+  width: min(340px, calc(100% - 24px));
+  height: auto;
+  max-height: 45vh;
+  box-sizing: border-box;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
+  padding: 12px;
+  border: 1px solid #ccdae6;
+  border-radius: 12px;
+  background: rgb(255 255 255 / .97);
+  box-shadow: 0 12px 36px rgb(5 24 48 / .18);
+}
+
+[data-vivre-ici-page] .maplibre-qa-osm-keyboard-list label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+  color: #071b33;
+}
+[data-vivre-ici-page] .maplibre-qa-osm-keyboard-list select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #728ba3;
+  border-radius: 8px;
+  padding: 6px;
+  background: #fff;
+  color: #071b33;
+  font-size: 13px;
+}
+/* The selected POI panel also needs an actual 44 px close target. */
+[data-vivre-ici-page] .maplibre-qa-osm-detail { padding-right: 58px; }
+[data-vivre-ici-page] .maplibre-qa-osm-detail button {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  top: 4px;
+  right: 4px;
+}
+[data-vivre-ici-page] .maplibre-qa-osm-keyboard-list select:focus-visible {
+  outline: 3px solid #0b63ce;
+  outline-offset: 2px;
+}
+@media (min-width: 1024px) {
+  [data-vivre-ici-page] .maplibre-qa-osm-keyboard-list {
+    top: 360px;
+    left: 18px;
+  }
+}

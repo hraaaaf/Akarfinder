@@ -26,9 +26,31 @@ Racine `C:\\Users\\lenovo\\Desktop\\AkarFinder-Vivre-Ici-QA-20261110` :
 - Harnais échoué dû à l'encodage PowerShell archivé sous `j12-attribution-bad-encoding` ; résultat invalide, remplacé par un run UTF-8 vert.
 
 ## Réserves et décision
-- **J12 partiel, pas une certification release** : chaque repère WebGL n'a pas d'équivalent accessible clavier/screen reader en liste ; l'API ne démontre ni débit prod ni cache CDN et limite les résultats à 180 par bbox. Les repères sont indicatifs et non certifiés pour ouverture/adhésion officielle à un quartier.
+- **J12 partiel, pas une certification release** : la sélection de repères WebGL dispose désormais d’une alternative clavier en liste QA (J12-B), mais une certification lecteur d’écran réelle reste à faire ; l'API ne démontre ni débit prod ni cache CDN et limite les résultats à 180 par bbox. Les repères sont indicatifs et non certifiés pour ouverture/adhésion officielle à un quartier.
 - Score visuel indicatif **~8/10**, pas de revendication >=9.5/10 ni d'acceptation humaine finale.
 - Aucune modification Akarparser V3, DB produit, Vercel, publication de tuiles privées ou merge.
 
 ## Suite
 J12-B : alternative clavier explicite pour sélectionner les repères + audit contrastes et réseau/rendu faible zoom sur 3 villes. J13 : closeout docs/PR/CI et cohérence Notion. J14 : gate humain avant merge ou release ; aucun déploiement Vercel sans accord explicite.
+
+## J12-B — Alternative clavier OSM (10/11/2026)
+
+**Goal** : donner un accès clavier non-WebGL aux 152–180 candidats OSM indicatifs de la vue, sans en certifier l'ouverture ou l'appartenance administrative.
+
+**AFTER implementation** : liste HTML native select synchronisée aux filtres et à la fiche POI, au maximum 180 candidats, dévoilée uniquement au focus ; détail aria-live poli et bouton de fermeture 44 px, texte sans overlap. Code limité par QA_OSM_ENABLED, déjà réservé à la preview locale ; aucune promotion du pack privé.
+
+**BEFORE** : aucune alternative clavier aux POI du canvas WebGL. Bouton fermer du détail initialement 27 px ; première bordure de select 2,85:1 contre blanc.
+
+**Preuve AFTER** : Playwright Chromium 4/4 PASS sur 390×844 / 430×932 / 768×900 / 1280×900, navigation Home → Flèche bas → Entrée, sélection d'un vrai ID OSM, détail annoncé aria-live, options 153/177/181/181 dont option vide. À 430 : Écoles 25 options dont l'option vide, reset, fermeture fiche et remise à zéro de la sélection. Focus 3px, cibles du sélecteur et bouton fermer ≥44px, pas de chevauchement titre/fermeture, 0 erreur JavaScript, 0 overflow. Captures AFTER et report.json privés : C:\Users\lenovo\Desktop\AkarFinder-Vivre-Ici-QA-20261110\j12b-keyboard-after. Captures montrées en conversation, aucun screenshot committé.
+
+**Contrastes calculés à partir des couleurs CSS** : texte #071B33/blanc 17,30:1 ; focus #0B63CE/blanc 5,69:1 ; bordure corrigée #728BA3/blanc 3,54:1 (pas un audit WCAG complet).
+
+**Contrats** : Node 22/22 PASS (8 pack + 4 sécurité Host + 5 J11-C2 + 5 J12). Limitations : NVDA/VoiceOver réel non exécuté ; débit réseau/CDN non qualifié ; limites Maârif central non certifiées. Score visuel indicatif ~8/10, pas 9,5/10.
+
+**Gate** : PR Draft, sans merge/Vercel/DB. Vérifier faible zoom, pousser commit, CI exact HEAD, puis J13 closeout et J14 validation humaine.
+
+### J12-B faible zoom — QA desktop locale (10/11/2026)
+
+**Preuve** : à 1280×900, scroll molette depuis Maârif sur MapLibre, mode QA passe de ready (180 candidats) à zoom (0 candidat, sélection clavier retirée), aucun crash, aucune erreur JS ni overflow. Le recentrage revient à ready/180 et au zoom caméra affiché 14.6 après stabilisation. Rapport privé j12b-lowzoom-report.json et capture j12b-lowzoom-1280.png. 1/1 scénario PASS (après correction du harnais, qui avait d'abord ciblé des boutons dézoomer masqués et lu une caméra en animation). La vue élargie montre Casablanca et le littoral : ne pas interpréter cette capture comme une frontière administrative. La valeur data-l3-camera-zoom était temporairement inchangée après la molette ; le test ne la considère pas comme preuve instantanée de la caméra. Les 3 villes sont vérifiées côté API HTTP locale par la QA J12-A, pas comme rendus navigateurs multivilles.
+
+**Next** : revue cohérence et commit J12-B, CI ciblée sur HEAD exact ; ensuite closeout J13 et gate J14 (humain pour publication).

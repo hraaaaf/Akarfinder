@@ -19,6 +19,7 @@ on:
       - "components/map/P4MapDecisionRail.tsx"
       - "app/map/l2d-attribution.css"
       - "app/map/vivre-ici-j12-touch-targets.css"
+      - "app/map/vivre-ici-j12-keyboard-poi.css"
       - "app/map/page.tsx"
       - "scripts/neighborhood-context/fixtures/vivre-ici-j12-ui-contract.test.mjs"
       - ".github/workflows/vivre-ici-j11-national-landmarks.yml"

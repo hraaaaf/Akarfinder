@@ -115,6 +115,7 @@ export function MapLibreNeighborhood3D({
   const [qaCategories, setQaCategories] = useState<LivingHereCategory[]>([]);
   const [qaSelected, setQaSelected] = useState<QaOsmSelection | null>(null);
   const qaFeaturesRef = useRef<any[]>([]);
+  const [qaSelectFeatures, setQaSelectFeatures] = useState<any[]>([]);
   const [renderState, setRenderState] = useState<"loading" | "ready" | "error">("loading");
   const [sourceState, setSourceState] = useState<"loading" | "available" | "unavailable">("loading");
   const [baseFeatureCount, setBaseFeatureCount] = useState(0);
@@ -408,6 +409,7 @@ export function MapLibreNeighborhood3D({
     const clear = () => {
       try { map.getSource(QA_OSM_SOURCE_ID)?.setData(empty); } catch {}
       qaFeaturesRef.current = [];
+      setQaSelectFeatures([]);
       setQaCount(0); setQaShownCount(0); setQaCategories([]); setQaSelected(null);
     };
     const refresh = async () => {
@@ -436,6 +438,7 @@ export function MapLibreNeighborhood3D({
         const source = map.getSource(QA_OSM_SOURCE_ID);
         if (!source) throw new Error("qa_source_missing");
         qaFeaturesRef.current = value.features;
+        setQaSelectFeatures(value.features);
         const selectedCategory = activeQaCategoryRef.current;
         const visible = selectedCategory === "all" ? value.features :
           value.features.filter((f: any) => f?.properties?.category === selectedCategory);
@@ -590,8 +593,39 @@ export function MapLibreNeighborhood3D({
           <small>© OpenStreetMap contributors · ODbL · Ouverture non vérifiée</small>
         </div>
       ) : null}
+      {QA_OSM_ENABLED && qaState === "ready" && qaShownCount > 0 ? (
+        <div className="maplibre-qa-osm-keyboard-list" role="group" aria-label="Alternative clavier aux repères OpenStreetMap indicatifs">
+          <label htmlFor="qa-osm-map-select">Choisir un repère indicatif de la vue (liste limitée à {qaShownCount} candidats OSM, sans certification)</label>
+          <select
+            id="qa-osm-map-select"
+            data-j12-qa-poi-select
+            value={qaSelected?.osmId ?? ""}
+            onChange={(event) => {
+              const selectedId = event.target.value;
+              const feature = qaSelectFeatures.find((item: any) =>
+                item?.properties?.osmId === selectedId &&
+                (activeCategory === "all" || item?.properties?.category === activeCategory));
+              const p = feature?.properties;
+              if (typeof p?.name === "string" && typeof p?.osmId === "string" &&
+                  /^(node|way|relation)\/[1-9]\d*$/.test(p.osmId) && p.category in CATEGORY_META) {
+                setQaSelected({ name: p.name.slice(0, 200), osmId: p.osmId, category: p.category as LivingHereCategory });
+              } else setQaSelected(null);
+            }}
+          >
+            <option value="">Sélectionner un repère…</option>
+            {qaSelectFeatures
+              .filter((item: any) => activeCategory === "all" || item?.properties?.category === activeCategory)
+              .slice(0, 180)
+              .map((item: any) => (
+                <option key={item.properties.osmId} value={item.properties.osmId}>
+                  {item.properties.name} · {CATEGORY_META[item.properties.category as LivingHereCategory]?.label ?? "Repère"}
+                </option>
+              ))}
+          </select>
+        </div>
+      ) : null}
       {QA_OSM_ENABLED && qaSelected ? (
-        <div className="maplibre-qa-osm-detail" data-j11c-selected-osm role="group" aria-label="Repère indicatif">
+        <div className="maplibre-qa-osm-detail" data-j11c-selected-osm role="group" aria-label="Repère indicatif" aria-live="polite">
           <button type="button" aria-label="Fermer le repère" onClick={() => setQaSelected(null)}>×</button>
           <strong>{qaSelected.name}</strong>
           <span>{CATEGORY_META[qaSelected.category]?.label ?? "Repère"} · Position indicative OSM</span>
@@ -637,8 +671,8 @@ export function MapLibreNeighborhood3D({
       </div>
 
       <div className="maplibre-spike-filters" role="group" aria-label={`Filtres des repères de ${districtLabel}`}>
-        <button type="button" aria-pressed={activeCategory === "all"} className={activeCategory === "all" ? "active" : ""} onClick={() => setActiveCategory("all")}>Repères</button>
-        {categories.map((category) => <button type="button" key={category} aria-pressed={activeCategory === category} className={activeCategory === category ? "active" : ""} onClick={() => setActiveCategory(category)}>{CATEGORY_META[category].label}</button>)}
+        <button type="button" aria-pressed={activeCategory === "all"} className={activeCategory === "all" ? "active" : ""} onClick={() => { setActiveCategory("all"); setQaSelected(null); }}>Repères</button>
+        {categories.map((category) => <button type="button" key={category} aria-pressed={activeCategory === category} className={activeCategory === category ? "active" : ""} onClick={() => { setActiveCategory(category); setQaSelected(null); }}>{CATEGORY_META[category].label}</button>)}
       </div>
 
       <div className="maplibre-spike-controls" aria-label="Contrôles de la carte">
