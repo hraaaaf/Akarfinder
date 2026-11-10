@@ -33,3 +33,16 @@ Source : https://download.geofabrik.de/africa/morocco.html ; attribution : https
 - Correctif : filtre natif C++ pyosmium `TagFilter` avec `enable_for(osmium.osm.NODE)` et valeurs des six catégories. Les objets nodes sans tag pertinent ne traversent plus Python ; les locations nécessaires à l'assemblage des ways/areas sont conservées.
 - **Preuve préflight** : 7/7 tests Python verts ; même fixture réelle XML OSM => 3/3 objets, 2 areas, zéro erreur, **1 callback node vs 9 auparavant**, sortie bbox 3/3. Cela ne démontre pas encore le temps du PBF national.
 - Nouveau GO pour un seul nouvel essai de PBF complet sur index privé neuf, rapport daté, sans mutation DB produit. En cas d'échec : diagnostiquer sans transformer des résultats partiels en indicateurs nationaux.
+
+## J11-A — extraction nationale et régression vérifiées (10/11/2026)
+
+**Succès vérifié en QA privée sur le PBF Geofabrik Maroc épinglé** : `morocco-20261109-osm-landmarks.sqlite` final et rapport JSON `ok:true`. Extraction via filtre natif, durée 700,052 s, index 5 550 080 octets, **27 567 repères** répartis en 10 417 transports, 8 129 santé, 4 794 éducation, 1 988 courses, 1 179 parcs/sport, 1 060 shopping. **0 écriture DB produit**. Source MD5 `c2334c9499b4565a6a16cf2f45624912`, SHA-256 `0ba250a5c27319a029b7c6b971e2a96a86b300d459406bb162be4c44a23a730f`.
+
+**Régression Maârif : 415/415 IDs OSM exacts retrouvés ; 0 divergence de catégorie ; 0 dérive de coordonnée au seuil du test** (rapport `morocco-20261109-maarif-415-regression.json`). Benchmark réel, 25 requêtes par ville, 180 éléments retournés/ville, médiane et P95 locaux :
+- Casablanca Maârif : 49,082 / 80,374 ms ;
+- Rabat centre/Agdal : 55,081 / 73,392 ms ;
+- Marrakech centre : 67,753 / 130,244 ms.
+
+**Réserve SIG conservée** : une erreur de géométrie a été enregistrée parmi 1 726 423 surfaces parcourues ; sa cause n'est pas caractérisée. Pas de certification officielle de quartier, d'ouverture commerciale, d'entrée GPS ni de latence réseau. Tous les artefacts sont privés sur le PC QA. Ce lot d'ingestion ne valide pas l'affichage MapLibre.
+
+**Next** : J11-B pack de tuiles QA, J11-C serving/adaptateur et captures ; puis J12 390/430/768/1280, J13 closeout, J14 gate de publication. Aucune DB PROD, fusion ou Vercel.
