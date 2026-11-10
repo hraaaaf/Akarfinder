@@ -357,6 +357,14 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
         if e.get("transaction_type") is not None:
             base["quality"]["issues"].append("MUBAWAB_UNPROVEN_TRANSACTION_SUPPRESSED")
         e["transaction_type"] = None
+    # Mubawab can publish a *unit rate* as offers.price. A value explicitly
+    # identified as MAD/m² in the primary description must never masquerade
+    # as a total listing sale price, even if the schema says #Sell.
+    if strict_mubawab and row.get("_mubawab_unit_price_not_total"):
+        e["price_mad"] = None
+        e["price_amount_raw"] = None
+        e["price_currency_raw"] = None
+        base["quality"]["issues"].append("MUBAWAB_UNIT_RATE_SUPPRESSED_AS_TOTAL")
     # V2 can independently infer a number from description text. For Avito,
     # an undifferentiated 5 002 DH/month financing figure must never become
     # a sale price, even if its source was not picked by the V3 regex.
@@ -382,6 +390,8 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
     # Price plausibility is NOT evidence of an incorrect listing. It is a
     # conservative manual-review gate, never a silent price correction.
     review_reasons = []
+    if strict_mubawab and row.get("_mubawab_unit_price_not_total"):
+        review_reasons.append("UNIT_PRICE_RATE_NOT_TOTAL_REQUIRES_REVIEW")
     price = e.get("price_mad")
     area = e.get("surface_total_m2")
     if e.get("transaction_type") == "sale" and isinstance(price, (int, float)) and price > 0:

@@ -358,5 +358,72 @@ class TestPortalAdapters(unittest.TestCase):
                          rec["quality"]["review_reasons"])
         self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
 
+    def test_mubawab_project_apartment_not_duplex_and_unit_rate_not_total(self):
+        import json
+        listing = {"@type": "RealEstateListing",
+                   "name": "Vivez le luxe à Nador, Appartements piscine privée",
+                   "description": (
+                       "Appartements haut de gamme à vendre à Nador. "
+                       "Prestations exclusives: Duplex au design moderne. "
+                       "Prix à partir de 9500 dhs /m², contactez-nous."
+                   ),
+                   "offers": {"price": 9500, "priceCurrency": "MAD",
+                              "businessFunction": "http://purl.org/goodrelations/v1#Sell"}}
+        html = ("<html><head><script type='application/ld+json'>"+
+                json.dumps(listing,ensure_ascii=False)+
+                "</script></head><body>"+
+                "<div>Immobilier Maroc</div><div>Immobilier Nador</div>"+
+                "<div>Appartements Nador</div><div>Aarid</div>"+
+                "<p>9 500 DH</p><p>Obtenir un financement</p>"+
+                "<p>63m²</p></body></html>")
+        parsed = v3.parse_raw({"raw_html":html,
+                  "source_url":"https://www.mubawab.ma/fr/a/8322208/project",
+                  "fetched_at":"2026-11-09T16:00:00Z"},NOW)
+        self.assertEqual(parsed["fields"]["property_type"],"apartment")
+        self.assertEqual(parsed["fields"]["district"],"Aarid")
+        self.assertEqual(parsed["fields"]["transaction_type"],"sale")
+        self.assertIsNone(parsed["fields"]["price_mad"])
+        self.assertIsNone(parsed["fields"]["price_amount_raw"])
+        self.assertEqual(parsed["fields"]["surface_total_m2"],63.0)
+        self.assertIn("UNIT_PRICE_RATE_NOT_TOTAL_REQUIRES_REVIEW",
+                      parsed["quality"]["review_reasons"])
+        self.assertFalse(parsed["quality"]["neon_product_admission_authorized"])
+
+    def test_mubawab_total_price_survives_different_unit_rate(self):
+        import json
+        listing={"@type":"RealEstateListing",
+                 "name":"Appartement à vendre à Agdal",
+                 "description":"Appartement à vendre, prix moyen 12000 dhs/m².",
+                 "offers":{"price":"2160000", "priceCurrency":"MAD"}}
+        html=("<html><script type='application/ld+json'>"+
+              json.dumps(listing,ensure_ascii=False)+
+              "</script><div>Immobilier Rabat</div>"+
+              "<div>Appartements Rabat</div><div>Agdal</div>"+
+              "<p>Obtenir un financement</p><p>180m²</p></html>")
+        parsed=v3.parse_raw({"raw_html":html,
+                    "source_url":"https://www.mubawab.ma/fr/a/8310001/total",
+                    "fetched_at":"2026-11-09T16:00:00Z"},NOW)
+        self.assertEqual(parsed["fields"]["price_mad"],2160000.0)
+        self.assertEqual(parsed["fields"]["property_type"],"apartment")
+        self.assertNotIn("UNIT_PRICE_RATE_NOT_TOTAL_REQUIRES_REVIEW",
+                         parsed["quality"]["review_reasons"])
+
+    def test_mubawab_explicit_duplex_title_stays_duplex(self):
+        import json
+        listing={"@type":"RealEstateListing",
+                 "name":"Duplex à vendre à Casablanca",
+                 "description":"Duplex contemporain à vendre",
+                 "offers":{"price":3000000,"priceCurrency":"MAD"}}
+        html=("<html><script type='application/ld+json'>"+
+              json.dumps(listing,ensure_ascii=False)+
+              "</script><div>Immobilier Casablanca</div>"+
+              "<div>Appartements Casablanca</div><div>Gauthier</div>"+
+              "<p>Obtenir un financement</p><p>175m²</p></html>")
+        parsed=v3.parse_raw({"raw_html":html,
+                    "source_url":"https://www.mubawab.ma/fr/a/8310002/duplex",
+                    "fetched_at":"2026-11-09T16:00:00Z"},NOW)
+        self.assertEqual(parsed["fields"]["property_type"],"duplex")
+        self.assertEqual(parsed["fields"]["price_mad"],3000000.0)
+
 if __name__ == "__main__":
     unittest.main()

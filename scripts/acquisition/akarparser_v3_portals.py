@@ -65,6 +65,23 @@ def enrich(page, row: dict, evidence: dict) -> None:
                 business_function = str(offer.get("businessFunction") or "")
                 if business_function.endswith("#Sell"):
                     row["_mubawab_schema_offer_sell"] = True
+                # Some adverts incorrectly encode a MAD/m2 unit rate as
+                # offers.price, which V2 would treat as the TOTAL listing
+                # price. Preserve the source value but suppress total price
+                # when the listing itself proves the same figure is per m2.
+                description = str(obj.get("description") or "")
+                unit_rates = re.findall(
+                    r"(?<!\d)([\d\s\u202f\u00a0.,]{2,17})\s*"
+                    r"(?:dhs?|mad|dirhams?)\s*(?:/|par)\s*m(?:²|2)\b",
+                    description, flags=re.I,
+                )
+                offer_price = v2.number(offer.get("price"))
+                if offer_price and any(
+                    (rate := v2.number(raw_rate)) is not None
+                    and abs(rate - offer_price) <= 0.01
+                    for raw_rate in unit_rates
+                ):
+                    row["_mubawab_unit_price_not_total"] = True
             break
         # A specific 'Studio ...' listing title takes precedence over the
         # broad 'Appartements' category. Never broaden it back to apartment.
@@ -90,6 +107,21 @@ def enrich(page, row: dict, evidence: dict) -> None:
                 continue
             _set(row, evidence, "city", city_name, "mubawab.detail_breadcrumb.city")
             _set(row, evidence, "district", district, "mubawab.detail_breadcrumb.district")
+            # The listing's own title outranks incidental marketing text:
+            # a residential *project* may offer duplexes as an option while
+            # the advertised item/category remains "Appartements".
+            listing_title = next((
+                str(node.get("name") or "") for node in page.jsonld
+                if node.get("@type") == "RealEstateListing"
+            ), "")
+            category_text = category.casefold()
+            if "appartements" in category_text:
+                if re.search(r"\bduplex\b", listing_title, re.I):
+                    _set(row, evidence, "property_type", "duplex",
+                         "mubawab.listing.title.duplex_in_apartment_category")
+                elif re.search(r"\bappartements?\b", listing_title, re.I):
+                    _set(row, evidence, "property_type", "apartment",
+                         "mubawab.listing.title_and_breadcrumb.apartment")
             break
         # Primary listing area, displayed just beneath the price in the hero.
         # Prefer this over an incidental surface in title/description (e.g.
