@@ -5,10 +5,15 @@ on:
     paths:
       - "scripts/neighborhood-context/national-osm-landmark-index.py"
       - "scripts/neighborhood-context/national-osm-tile-pack.py"
+      - "scripts/neighborhood-context/private-national-qa-tiles.mjs"
+      - "scripts/neighborhood-context/private-national-qa-tiles.d.mts"
+      - "app/api/geo/qa-national-landmarks/route.ts"
       - "scripts/neighborhood-context/fixtures/test_national_osm_landmark_index.py"
       - "scripts/neighborhood-context/fixtures/test_national_osm_tile_pack.py"
+      - "scripts/neighborhood-context/fixtures/private-national-qa-tiles.test.mjs"
       - ".github/workflows/vivre-ici-j11-national-landmarks.yml"
       - "scripts/neighborhood-context/NATIONAL_OSM_TILE_READMODEL_J11B.md"
+      - "scripts/neighborhood-context/NATIONAL_OSM_LOCAL_PREVIEW_J11C.md"
   workflow_dispatch:
 
 permissions:
@@ -31,3 +36,8 @@ jobs:
         run: |
           python -m unittest discover -s scripts/neighborhood-context/fixtures -p test_national_osm_landmark_index.py -v
           python -m unittest discover -s scripts/neighborhood-context/fixtures -p test_national_osm_tile_pack.py -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: J11-C local-only QA tile reader contracts
+        run: node --test scripts/neighborhood-context/fixtures/private-national-qa-tiles.test.mjs
