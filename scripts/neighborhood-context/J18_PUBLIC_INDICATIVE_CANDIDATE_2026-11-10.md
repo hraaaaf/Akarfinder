@@ -11,7 +11,7 @@ Tests : scripts/neighborhood-context/fixtures/j18-public-indicative-candidate.te
 ## Flux technique
 - Entrées : le pack national J11 « PRIVATE_QA_ONLY » hors dépôt, le **vrai PBF** correspondant, une attestation JSON épinglée avec les clés schema, source, sourceMd5, sourceSha256, pbfReplicationAt (ISO UTC).
 - L'attestation a pour schéma AKARFINDER_J18_PBF_SOURCE_EVIDENCE_V1. Sa date de réplication doit être contrôlée indépendamment depuis l'en-tête source ; le module vérifie la validité, l'âge maximum 30 jours et la cohérence des empreintes, **pas la réalité historique de la date déclarée**.
-- Sortie dans un nouveau dossier **hors repo** et hors public/, générée de façon atomique : schéma AKARFINDER_J18_INDICATIVE_RELEASE_CANDIDATE_V1, état REVIEW_CANDIDATE_ONLY_NOT_PUBLIC, publicationAuthorized=false, publicEndpointEnabled=false, attribution ODbL et horodatage/expiration explicités.
+- Sortie dans un nouveau dossier **hors repo** et hors public/, générée de façon atomique. Le dossier parent de destination doit déjà exister ; son chemin réel (symlinks résolus) est contrôlé contre le chemin réel du repo, en comparaison insensible à la casse sur Windows : schéma AKARFINDER_J18_INDICATIVE_RELEASE_CANDIDATE_V1, état REVIEW_CANDIDATE_ONLY_NOT_PUBLIC, publicationAuthorized=false, publicEndpointEnabled=false, attribution ODbL et horodatage/expiration explicités.
 - Les tuiles candidates ne contiennent que l'ID OSM, le nom, catégorie, coordonnées, lien source et type de point. L'ouverture et l'appartenance au quartier central restent null. Aucune suppression par proximité ; doublons exacts interdits.
 - Aucune écriture DB, API de runtime, URL de distribution, variable NEXT_PUBLIC, Vercel, Cloudflare ni publication automatique.
 

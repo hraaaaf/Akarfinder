@@ -4,7 +4,7 @@
  */
 import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { access, mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, realpath, rename, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -79,6 +79,13 @@ export async function buildJ18ReleaseCandidate({sourceDir,pbfPath,evidencePath,o
   const output=resolve(outDir??"");
   if(!sourceDir||!pbfPath||!evidencePath||!outDir||
      output===ROOT||output.startsWith(ROOT+sep))fail("output_must_be_outside_repo");
+  // Canonicalize the existing parent: symlinks and Windows case must not bypass
+  // the repository/public release gate. Operators create an external parent first.
+  const parentReal=await realpath(dirname(output));
+  const repoReal=await realpath(ROOT);
+  const under=(path,root)=>path.toLowerCase()===root.toLowerCase()||
+    path.toLowerCase().startsWith(root.toLowerCase()+sep);
+  if(under(parentReal,repoReal))fail("output_must_be_outside_repo");
   const staging=output+".part";
   if(await exists(output)||await exists(staging))fail("candidate_output_exists");
   const {json:manifest}=await limitedJson(join(resolve(sourceDir),"manifest.json"));

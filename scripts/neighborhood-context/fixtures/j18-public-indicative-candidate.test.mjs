@@ -1,9 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
-import {mkdtemp,mkdir,readFile,rm,writeFile} from "node:fs/promises";
+import {mkdtemp,mkdir,readFile,rm,symlink,writeFile} from "node:fs/promises";
 import {join} from "node:path";
 import {tmpdir} from "node:os";
+import {fileURLToPath} from "node:url";
 import {buildJ18ReleaseCandidate,QA_SCHEMA,EVIDENCE_SCHEMA,CANDIDATE_SCHEMA,CANDIDATE_STATE}
  from "../j18-public-indicative-candidate.mjs";
 const sha=b=>createHash("sha256").update(b).digest("hex");
@@ -82,4 +83,17 @@ test("J18 forbids output inside repository including public folder",async()=>{
  await assert.rejects(buildJ18ReleaseCandidate({
  sourceDir:"/invalid",pbfPath:"/invalid",evidencePath:"/invalid",outDir:url.pathname,
  now:new Date(t)}),/j18_output_must_be_outside_repo/);
+});
+
+test("J18 rejects symlinked external path pointing into repository",async()=>{
+ const folder=await mkdtemp(join(tmpdir(),"j18-path-guard-"));
+ const link=join(folder,"repo-alias");
+ try{
+   const repository=fileURLToPath(new URL("../../../",import.meta.url));
+   await symlink(repository,link,"dir");
+   await assert.rejects(buildJ18ReleaseCandidate({
+     sourceDir:"/invalid",pbfPath:"/invalid",evidencePath:"/invalid",
+     outDir:join(link,"accidental-public"),now:new Date(t)
+   }),/j18_output_must_be_outside_repo/);
+ }finally{await rm(folder,{recursive:true,force:true});}
 });
