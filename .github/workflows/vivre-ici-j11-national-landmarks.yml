@@ -6,6 +6,9 @@ on:
       - "scripts/neighborhood-context/national-osm-landmark-index.py"
       - "scripts/neighborhood-context/national-osm-tile-pack.py"
       - "scripts/neighborhood-context/private-national-qa-tiles.mjs"
+      - "scripts/neighborhood-context/j18-public-indicative-candidate.mjs"
+      - "scripts/neighborhood-context/fixtures/j18-public-indicative-candidate.test.mjs"
+      - "scripts/neighborhood-context/J18_PUBLIC_INDICATIVE_CANDIDATE_2026-11-10.md"
       - "scripts/neighborhood-context/private-qa-host-guard.mjs"
       - "scripts/neighborhood-context/private-qa-host-guard.d.mts"
       - "scripts/neighborhood-context/private-national-qa-tiles.d.mts"
@@ -56,4 +59,4 @@ jobs:
         with:
           node-version: "22"
       - name: J11-C local-only QA tile reader contracts
-        run: node --test scripts/neighborhood-context/fixtures/private-national-qa-tiles.test.mjs scripts/neighborhood-context/fixtures/private-qa-host-guard.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j11c-ui-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j12-ui-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j15-density-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j16-glyph-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j17-a11y-contract.test.mjs
+        run: node --test scripts/neighborhood-context/fixtures/private-national-qa-tiles.test.mjs scripts/neighborhood-context/fixtures/private-qa-host-guard.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j11c-ui-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j12-ui-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j15-density-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j16-glyph-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j17-a11y-contract.test.mjs scripts/neighborhood-context/fixtures/j18-public-indicative-candidate.test.mjs
