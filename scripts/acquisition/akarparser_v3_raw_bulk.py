@@ -345,6 +345,9 @@ def quality(e: dict, source: dict, as_of: datetime, *, quarantine: bool, serp: b
     return {
         "score": score, "score_breakdown": score_parts, "status": status,
         "review_reasons": list(review_reasons),
+        # A partial listing may still carry a safety flag. Never let its
+        # status hide it from the human-review queue.
+        "human_review_required": bool(review_reasons),
         "missing_fields": missing, "freshness_status": freshness, "observation_age_days": age,
         "freshness_independently_verified": False, "rights_verified": False,
         "availability_verified": False, "physical_uniqueness_verified": False,
@@ -466,6 +469,8 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
         review_reasons.append("PRIMARY_AREA_DIFFERS_FROM_TITLE_AREA")
     if row.get("_mubawab_title_transaction_ambiguous"):
         review_reasons.append("TITLE_CONTAINS_SALE_AND_RENT")
+    if row.get("_mubawab_primary_transaction_conflict"):
+        review_reasons.append("PRIMARY_TITLE_DESCRIPTION_TRANSACTION_CONFLICT")
     status = quality(e, base["source"], clock,
                      quarantine=base["status"] == "quarantine" or invalid_http or foreign_country,
                      serp=bool(row.get("query_id") and row.get("source_domain")),

@@ -25,6 +25,29 @@ def _title_slug(text: str) -> str:
     return " ".join(unquote(text).replace("_", " ").replace("-", " ").split()).title()
 
 
+def explicit_primary_sentence_transaction(description: str) -> str | None:
+    """A direct offer in the listing's first sentence, not an investment idea.
+
+    This is a source *claim*, not an independently verified transaction.
+    Return unknown for competing sale/rent claims or investment hypotheticals.
+    """
+    first = re.split(r"[.!?\r\n]", str(description or "").strip(), maxsplit=1)[0][:260]
+    sale = bool(re.search(
+        r"\b(?:en\s+vente|(?:à|a)\s+la\s+vente|(?:à|a)\s+vendre)\b", first, re.I,
+    ))
+    rent = bool(re.search(
+        r"\b(?:en\s+location|(?:à|a)\s+la\s+location|(?:à|a)\s+louer)\b",
+        first, re.I,
+    ))
+    if rent and re.search(
+        r"\b(?:option|possibilit[eé]|projet|investissement|rentabilit[eé]|"
+        r"rendement|revenus\s+locatifs?)\b.{0,65}\ben\s+location\b",
+        first, re.I,
+    ):
+        rent = False
+    return "sale" if sale and not rent else "rent" if rent and not sale else None
+
+
 def enrich(page, row: dict, evidence: dict) -> None:
     source_url = row.get("source_url")
     if not isinstance(source_url, str):
@@ -196,6 +219,9 @@ def enrich(page, row: dict, evidence: dict) -> None:
             summary = str(node.get("description") or "")[:360]
             sale_title = bool(re.search(r"\b(?:(?:à|a)\s+vendre|en\s+vente|(?:à|a)\s+la\s+vente|(?:à|a)\s+l['’]achat)\b", title, re.I))
             rent_title = bool(re.search(r"\b(?:(?:à|a)\s+louer|en\s+location|(?:à|a)\s+la\s+location)\b", title, re.I))
+            sale_title = sale_title or bool(re.match(r"^\s*Vente\b", title, re.I))
+            if re.search(r"^\s*Vente\b.{0,30}(?:\bou\b|/|\bet\b)\s*location\b", title, re.I):
+                rent_title = True  # "Vente ou location" is not a sale-only offer.
             # Listing-title expressions such as "Location villa ..." and
             # "Studio location longue durée" explicitly offer a rental. Do
             # NOT match investment or hypothetical future rental language.
@@ -211,16 +237,30 @@ def enrich(page, row: dict, evidence: dict) -> None:
                 title, re.I,
             ))
             rent_title = rent_title or direct_rental_heading
+            first_sentence_offer = explicit_primary_sentence_transaction(summary)
+            title_offer = "sale" if sale_title and not rent_title else "rent" if rent_title and not sale_title else None
             if sale_title and rent_title:
                 # Two competing *explicit* offers in the title cannot be
                 # resolved from a marketing description or a schema Sell tag.
                 row["_mubawab_title_transaction_ambiguous"] = True
-            elif sale_title != rent_title:
-                _set(row, evidence, "transaction_type", "sale" if sale_title else "rent",
+            elif title_offer and first_sentence_offer and title_offer != first_sentence_offer:
+                # Never silently prefer a title saying rent to a primary
+                # description explicitly advertising the same item for sale.
+                row["_mubawab_primary_transaction_conflict"] = True
+            elif title_offer:
+                _set(row, evidence, "transaction_type", title_offer,
                      "mubawab.jsonld.listing.title.explicit_transaction")
             else:
-                sale_body = bool(re.search(r"\b(?:(?:à|a)\s+la\s+vente|mis\s+en\s+vente|(?:à|a)\s+vendre)\b", summary, re.I))
+                sale_body = bool(re.search(
+                    r"\b(?:(?:à|a)\s+la\s+vente|mis\s+en\s+vente|(?:à|a)\s+vendre|"
+                    r"(?:je\s+mets|nous\s+mettons)\s+en\s+vente)\b",
+                    summary, re.I,
+                ))
                 rent_body = bool(re.search(r"\b(?:(?:à|a)\s+la\s+location|(?:à|a)\s+louer|mis\s+en\s+location)\b", summary, re.I))
+                if first_sentence_offer == "sale":
+                    sale_body = True
+                elif first_sentence_offer == "rent":
+                    rent_body = True
                 if sale_body != rent_body:
                     _set(row, evidence, "transaction_type", "sale" if sale_body else "rent",
                          "mubawab.jsonld.listing.description.explicit_transaction")
