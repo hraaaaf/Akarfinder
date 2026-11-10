@@ -157,7 +157,13 @@ def build(pbf,md5_file,index,report):
         create_schema(db)
         writer=Writer(db)
         handler=create_osmium_handler(writer)
-        handler.apply_file(str(pbf),locations=True,idx="flex_mem")
+        # TagFilter executes in native Osmium before the Python node callback.
+        # The C++ location cache still receives every PBF node needed for areas.
+        import osmium
+        wanted=[(key,value) for rules in TAGS.values()
+                for key,values in rules.items() for value in values]
+        native_filter=osmium.filter.TagFilter(*wanted).enable_for(osmium.osm.NODE)
+        handler.apply_file(str(pbf),locations=True,idx="flex_mem",filters=[native_filter])
         writer.finish()
         total=sum(writer.counts.values())
         if total<1:raise ValueError("No named OSM landmarks found")
@@ -172,7 +178,8 @@ def build(pbf,md5_file,index,report):
         os.replace(temp,index)
         summary={"schema":INDEX_SCHEMA,"ok":True,"featureCount":total,
                  "byCategory":dict(writer.counts),"rejections":dict(writer.rejections),
-                 "nodesVisited":handler.nodes_visited,"areasVisited":handler.areas_visited,
+                 "nodeCallbacksAfterNativeFilter":handler.nodes_visited,
+                 "nativeTagFilterEnabled":True,"areasVisited":handler.areas_visited,
                  "areaGeometryErrors":handler.geometry_errors,"md5":actual,"sha256":sha256,
                  "indexBytes":index.stat().st_size,
                  "elapsedSeconds":round(time.perf_counter()-t,3),

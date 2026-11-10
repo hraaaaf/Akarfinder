@@ -19,3 +19,6 @@ Module de projection read-only : scripts/neighborhood-context/indicative-osm-lan
 ## J11 — Index national Geofabrik (10/11/2026)
 
 Nouveau module source scripts/neighborhood-context/national-osm-landmark-index.py, index RTree privé, sans read-model public ni sas de certification commerciale Maârif. Séparation ingestion nationale / sélection viewport. Tests : 7/7 PASS local, smoke OSM réel XML 3/3 avec SHA256 et bbox. L'extraction PBF Maroc entier et la performance multi-villes demandent validation distincte. Aucune activation UI/DB/Vercel. Référence canonique opérationnelle : scripts/neighborhood-context/NATIONAL_OSM_LANDMARK_INDEX_J11.md.
+
+### J11 performance nationale — filtre natif Osmium (10/11/2026)
+Le parcours initial de tous les nodes Python a été arrêté après 1084,94 s sans rapport final. Version préparée : filtre compilé Osmium sur tags node, conservation des areas, 7/7 tests + smoke 3/3 PASS. Le résultat de ce premier scan partiel ne vaut pas validation nationale ; seul l'essai final et ses mesures multivilles peuvent certifier J11-A. Référence `NATIONAL_OSM_LANDMARK_INDEX_J11.md`.

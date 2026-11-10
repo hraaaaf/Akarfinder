@@ -25,3 +25,11 @@ python -m unittest discover -s scripts/neighborhood-context/fixtures -p test_nat
 - Pas d'UI, d'API publique, de DB produit, de merge ni de Vercel dans cette tranche.
 
 Source : https://download.geofabrik.de/africa/morocco.html ; attribution : https://www.openstreetmap.org/copyright.
+
+## Optimisation avant preuve nationale — 10/11/2026
+
+- Premier parcours national non filtré : **interrompu volontairement après 1084,94 s**, processus Python arrêté (exit 1), fichier SQLite partiel supprimé. Les ~8 000 lignes temporairement commitées **ne sont pas un résultat national**. N'annoncer aucune couverture ni vitesse sur la base de ce run interrompu.
+- Cause observée : callback Python invoqué sur chaque node de la source (dizaines de millions), trop coûteux pour les mises à jour répétées.
+- Correctif : filtre natif C++ pyosmium `TagFilter` avec `enable_for(osmium.osm.NODE)` et valeurs des six catégories. Les objets nodes sans tag pertinent ne traversent plus Python ; les locations nécessaires à l'assemblage des ways/areas sont conservées.
+- **Preuve préflight** : 7/7 tests Python verts ; même fixture réelle XML OSM => 3/3 objets, 2 areas, zéro erreur, **1 callback node vs 9 auparavant**, sortie bbox 3/3. Cela ne démontre pas encore le temps du PBF national.
+- Nouveau GO pour un seul nouvel essai de PBF complet sur index privé neuf, rapport daté, sans mutation DB produit. En cas d'échec : diagnostiquer sans transformer des résultats partiels en indicateurs nationaux.
