@@ -4,8 +4,11 @@ on:
   pull_request:
     paths:
       - "scripts/neighborhood-context/national-osm-landmark-index.py"
+      - "scripts/neighborhood-context/national-osm-tile-pack.py"
       - "scripts/neighborhood-context/fixtures/test_national_osm_landmark_index.py"
+      - "scripts/neighborhood-context/fixtures/test_national_osm_tile_pack.py"
       - ".github/workflows/vivre-ici-j11-national-landmarks.yml"
+      - "scripts/neighborhood-context/NATIONAL_OSM_TILE_READMODEL_J11B.md"
   workflow_dispatch:
 
 permissions:
@@ -25,4 +28,6 @@ jobs:
         with:
           python-version: "3.12"
       - name: Python unit contracts (no PBF, no prod DB)
-        run: python -m unittest discover -s scripts/neighborhood-context/fixtures -p test_national_osm_landmark_index.py -v
+        run: |
+          python -m unittest discover -s scripts/neighborhood-context/fixtures -p test_national_osm_landmark_index.py -v
+          python -m unittest discover -s scripts/neighborhood-context/fixtures -p test_national_osm_tile_pack.py -v
