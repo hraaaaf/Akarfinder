@@ -18,3 +18,7 @@ Ne jamais ajouter ces variables au Vercel ni envoyer le pack QA sur Internet.
 - **J12** : QA performance mobile/réseau/cache et UX 3 modes Maârif ; puis J13 closeout et J14 gate release.
 
 **Interdictions :** pas de déploiement Vercel, de merge, de DB PROD ni de publication des tuiles privées.
+
+## J11-C1 durcissement accès local
+
+En mode QA, le hostname de la requête doit également être loopback (`localhost`, `127.0.0.1`, `::1`) ; même un serveur Next de développement accessible sur le LAN ne doit pas distribuer ces données privées sur une autre adresse. L’échec donne HTTP 404, sans fuite de chemin local.

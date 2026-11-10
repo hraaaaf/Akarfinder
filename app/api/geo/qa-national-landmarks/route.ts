@@ -10,11 +10,12 @@ export async function GET(request: NextRequest) {
     "Cache-Control": "private, no-store, max-age=0",
     "X-Robots-Tag": "noindex, nofollow",
   };
+  const localHostname = ["localhost", "127.0.0.1", "[::1]", "::1"].includes(request.nextUrl.hostname.toLowerCase());
   const dir = process.env.AKAR_VIVRE_ICI_QA_TILE_PACK_DIR;
   const sha = process.env.AKAR_VIVRE_ICI_QA_EXPECTED_SHA256;
   if (process.env.NODE_ENV !== "development" ||
       process.env.AKAR_VIVRE_ICI_LOCAL_POI_PREVIEW !== "true" ||
-      !dir || !sha) {
+      !localHostname || !dir || !sha) {
     return NextResponse.json({ status: "unavailable" }, { status: 404, headers });
   }
   try {
