@@ -86,3 +86,11 @@ Au terme du prochain lot : résultat -> preuve -> prochaine action -> repères, 
 **Documentation technique nouvelle :** scripts/neighborhood-context/J18G_DIFFERENTIAL_OSM_REVIEW_2026-11-10.md. Fichier canonique J18_A-F conservé : scripts/neighborhood-context/J18_PUBLIC_INDICATIVE_CANDIDATE_2026-11-10.md. Après commit, vérifier le nouvel HEAD, PR Draft, CI et worktree ; ne pas inventer leur état ici.
 
 **Next exact désormais :** nouvelle CI → clôture J18-G → préparation sécurisée de la future API *indicative uniquement* (pointeur d'activation approuvé, quota distribué, expiration, cache, provenance et HTTPS), sans la rendre publique, puis QA mobile/lecteurs d'écran/visuel et gate humain avant publication/merge/Vercel. Pour tout nouveau PBF réel : J18-A source vérifiée, J18-G plan, preuve inventaire privé + quota disponible AVANT le moindre nouvel upload. L'objectif UX >=9,5/10 et la frontière Maârif central demeurent NON certifiés.
+
+## 9. UPDATE J18-H — 2026-11-10 (supplante NEXT EXACT §8 après validation CI)
+
+J18-G HEAD b6627cba2936da54dec11379d46873ef92443f72 : 29/29 workflows conclus = 27 SUCCESS, 2 SKIPPED, 0 failure. J18-H développe un contrôle de publication cryptographique offline, sans diffusion des données. New files : scripts/neighborhood-context/j18-public-release-policy.mjs et .d.mts, fixtures/j18-public-release-policy.test.mjs, app/api/geo/indicative-landmarks/route.ts, doc J18H_INDICATIVE_RELEASE_GATE_2026-11-10.md ; workflow J11 mis à jour.
+
+Preuves pré-commit : 17/17 tests J18-H PASS, typecheck --noEmit PASS, route HTTP Next localhost 404 et carte existante 200. Politique hypothétique signée Ed25519/approbation bornée/quota atomique injecté testé, mais *aucune* signature réelle et *aucun* quota distribué prêt ; la nouvelle route ne lit pas Blob et reste désactivée dans le code. Aucune variable d'environnement ne peut la rendre active, et Vercel ne déploie pas ce code sans gate humain.
+
+Prochain : obtenir HEAD exact après commit, CI de ce HEAD, puis J18-I évaluation et essais de quota multi-instance à coût plafonné, préparation du mécanisme réel d'approbation et intégration privée, QA mobile/accessibilité/UX, gate humain séparé avant publication/merge/Vercel. Aucun % global prouvé.
