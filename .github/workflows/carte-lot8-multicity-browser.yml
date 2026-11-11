@@ -17,6 +17,8 @@ permissions:
 jobs:
   multiville-browser:
     runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.0-noble
     timeout-minutes: 35
     env:
       BASE_URL: http://127.0.0.1:3205
@@ -29,7 +31,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright --version && test -d /ms-playwright
       - name: Production build
         run: npm run build
       - name: Start production server

@@ -24,6 +24,8 @@ concurrency:
 jobs:
   certify-national-neighborhoods-n2:
     runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.0-noble
     timeout-minutes: 25
     env:
       BASE_URL: http://127.0.0.1:3213
@@ -41,7 +43,7 @@ jobs:
       - name: Production build
         run: npm run build
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright --version && test -d /ms-playwright
       - name: Start production server
         shell: bash
         run: |

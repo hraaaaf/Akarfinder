@@ -53,6 +53,8 @@ concurrency:
 jobs:
   certify-national-journey-n3:
     runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.0-noble
     timeout-minutes: 25
     env:
       BASE_URL: http://127.0.0.1:3213
@@ -88,7 +90,7 @@ jobs:
         run: npm run build
       - name: Install Chromium
         if: steps.scope.outputs.run_heavy == 'true'
-        run: npx playwright install --with-deps chromium
+        run: npx playwright --version && test -d /ms-playwright
       - name: Start production server
         if: steps.scope.outputs.run_heavy == 'true'
         shell: bash

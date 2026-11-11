@@ -31,3 +31,13 @@ Goal : préparer sans publier un quota atomique distribué pour l'éventuelle ro
 3. **J18 release** : source/manifeste/pinning vérifiés, signature humaine véritable, reader serveur J18-F, autorisations ODbL, QA 3 villes×4 viewports, mobile/VoiceOver/NVDA, géométrie Maârif central, score UX ≥9,5 ; gates humains distincts avant merge, publication et Vercel.
 
 **Progrès global Akarfinder non certifié ; aucun pourcentage inventé.**
+
+## 2026-11-11 — CI visuelle : changement d'environnement (sous-lot QA)
+
+Incident confirmé sur 11 workflows de certifications visuelles au HEAD `400d7211` : 16 CI SUCCESS, 2 SKIPPED, 11 FAILURES. Les 11 erreurs ont la même cause visible dans les logs : `npx playwright install --with-deps chromium` déclenchait APT et échouait à résoudre `azure.archive.ubuntu.com` (code 100). Ces échecs ont empêché la capture et la certification ; il serait inexact de déclarer l'UX validée.
+
+Correction candidate : passage des 11 jobs concernés sur l'image Microsoft Playwright **`mcr.microsoft.com/playwright:v1.61.0-noble`** incluant navigateurs et dépendances Ubuntu. La version est strictement alignée sur `package-lock.json` : `playwright=1.61.0` et `playwright-core=1.61.0`. Remplacement du step fragile par `npx playwright --version && test -d /ms-playwright` (aucun APT), sans modification des tests d'application. Le job `scope` de ANN-L12 reste sur le runner initial, seul le job de visualisation est mis en conteneur. Un run pilote isolé dans le dépôt de QA privé [#43104698376](https://github.com/hraaaaf/engineering-governance/actions/runs/43104698376) **SUCCESS** : image officielle pullable, Node disponible, Chromium préinstallé et exécutable démarré, sans APT. Cette preuve du pilote **ne vaut pas certification des 11 parcours métier** ; les workflows de PR doivent être exécutés et leurs captures contrôlées sur le HEAD final.
+
+Sécurité : la route J18-H reste source OFF / HTTP 404, le fichier `vercel.mjs` global `git.deploymentEnabled=false` demeure inchangé. Protection supplémentaire projet Vercel `previewDeploymentsDisabled=true` demandée avant tout push. Pas de merge/publication/Vercel. Si les captures échouent pour des causes d'application ou serveur, diagnostiquer sans déclarer GO. Si Chromium lance en conteneur mais échoue sur DNS/assets, distinguer blocage externe et régression UI. Suivre les résultats GitHub Actions sur le commit qui contient cette correction et produire les preuves visuelles.
+
+Next exact : vérification des 11 jobs sur HEAD GitHub, récupération des artifacts de captures au même viewport lorsque disponibles, évaluation UX/comparaison BEFORE→AFTER et reprise des gates source/signature/reader/WAF sans publication. Aucune progression globale certifiée.
