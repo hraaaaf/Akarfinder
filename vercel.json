@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "feat/vivre-ici-maarif-modes-clarity-20261108": false
+    }
+  }
+}
