@@ -60,8 +60,6 @@ jobs:
     needs: scope
     if: needs.scope.outputs.relevant == 'true'
     runs-on: ubuntu-24.04
-    container:
-      image: mcr.microsoft.com/playwright:v1.61.0-noble
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
@@ -93,7 +91,7 @@ jobs:
       - name: Production build
         run: npm run build
       - name: Install Chromium
-        run: npx playwright --version && test -d /ms-playwright
+        run: npx playwright install --with-deps chromium
       - name: Start ANN-L12 production server
         shell: bash
         run: |

@@ -21,8 +21,6 @@ permissions:
 jobs:
   audit-national-market-before:
     runs-on: ubuntu-24.04
-    container:
-      image: mcr.microsoft.com/playwright:v1.61.0-noble
     timeout-minutes: 35
     env:
       BASE_URL: http://127.0.0.1:3211
@@ -47,7 +45,7 @@ jobs:
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Install Chromium
-        run: npx playwright --version && test -d /ms-playwright
+        run: npx playwright install --with-deps chromium
       - name: Production build
         run: npm run build
       - name: Start production server
