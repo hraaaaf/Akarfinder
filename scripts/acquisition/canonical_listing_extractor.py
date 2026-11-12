@@ -298,6 +298,13 @@ def extract_canonical(source_url: str, html: str) -> dict[str, Any]:
 
     if (urlparse(source_url).hostname or "").removeprefix("www.") == "agenz.ma" and "data-old-price" in html:
         # Original real DOM may expose a struck historical price as microdata.
+        # L4 is also loaded standalone by importlib; explicitly locate its
+        # adjacent trusted module rather than assuming caller PYTHONPATH.
+        import sys
+        from pathlib import Path
+        module_dir = str(Path(__file__).resolve().parent)
+        if module_dir not in sys.path:
+            sys.path.insert(0, module_dir)
         from akarparser_v3_portals import agenz_explicit_discounted_price
         current = agenz_explicit_discounted_price(html)
         if current is None:
