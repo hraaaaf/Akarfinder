@@ -1,0 +1,19 @@
+# NOT ACTIVE: install only after explicit LIVE + staging-write approvals.
+[Unit]
+Description=Akarfinder Radar10 private ingestion
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=akarfinder-radar
+WorkingDirectory=/var/lib/akarfinder/v646
+EnvironmentFile=/etc/akarfinder/radar10.env
+ExecStart=/opt/akarfinder/.venv/bin/python /opt/akarfinder/scripts/acquisition/radar10/run_cycle.py --v646-root /var/lib/akarfinder/v646 --collect-v646 --commit-private-staging
+TimeoutStartSec=8min
+MemoryMax=512M
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/akarfinder/v646
