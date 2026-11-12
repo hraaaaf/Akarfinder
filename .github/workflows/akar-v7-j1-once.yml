@@ -1,0 +1,69 @@
+name: Akar V7 J1 One-Page HTML Evidence Canary
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/akar-v7-j1-once.yml'
+      - '.github/v7-j1-once-enabled'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  j1-one-page-capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR under review, no credentials persisted
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Inspect one-shot marker (fail closed on absence)
+        id: marker
+        shell: bash
+        run: |
+          if test -f .github/v7-j1-once-enabled; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "J1_ONESHOT_AUTHORIZED_MARKER_PRESENT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "J1_ONESHOT_DISABLED"
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.marker.outputs.enabled == 'true'
+        with:
+          python-version: '3.11'
+      - name: Install local parser dependencies
+        if: steps.marker.outputs.enabled == 'true'
+        run: python -m pip install "beautifulsoup4==4.14.3"
+      - name: Capture ONE approved Agenz detail HTML, fail on redirect or denied request
+        if: steps.marker.outputs.enabled == 'true'
+        env:
+          AKAR_SOURCE_NETWORK_APPROVED: approved
+          PYTHONPATH: scripts/acquisition
+        run: |
+          python scripts/acquisition/v7_multisource/snapshot_evidence.py \
+            --capture-url "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291" \
+            --private-output .private-j1-source \
+            --capture-approved-once
+      - name: Verify SHA-256 manifest and run real L4 / V3 offline
+        if: steps.marker.outputs.enabled == 'true'
+        env:
+          PYTHONPATH: scripts/acquisition
+        run: |
+          python scripts/acquisition/v7_multisource/snapshot_evidence.py \
+            --verify-folder .private-j1-source
+      - name: Store original evidence in PRIVATE short-lived artifact, no raw log
+        if: steps.marker.outputs.enabled == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: akar-v7-j1-agenz-source-private
+          path: |
+            .private-j1-source/source.html
+            .private-j1-source/source.manifest.json
+          retention-days: 1
+          if-no-files-found: error
