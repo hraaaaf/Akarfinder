@@ -1,0 +1,42 @@
+name: Akar V646 to V3 Hermetic Integration
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/akarparser_v3_v646_bridge.py'
+      - 'scripts/acquisition/__tests__/test_akarparser_v3_v646_e2e.py'
+      - '.github/workflows/akar-v646-v3-e2e.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hermetic-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout AkarParser V3 under review
+        uses: actions/checkout@v4
+        with:
+          path: v3
+          persist-credentials: false
+      - name: Checkout immutable V646 offline producer and fixtures
+        uses: actions/checkout@v4
+        with:
+          ref: 4022a9a7dd3c47391ab01246f010bdc8a6433344
+          path: v646
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install offline parser fixture dependency
+        run: python -m pip install beautifulsoup4
+      - name: Signed V646 fixture -> bridge -> real V3 batch, no network or DB writes
+        env:
+          V646_OFFLINE_DIR: ${{ github.workspace }}/v646/scripts/pilots/mubawab-v646
+        run: python v3/scripts/acquisition/__tests__/test_akarparser_v3_v646_e2e.py
