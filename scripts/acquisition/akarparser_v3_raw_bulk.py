@@ -471,6 +471,8 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
         review_reasons.append("EXTREME_REPORTED_PRICE_PER_M2_REQUIRES_REVIEW")
     if row.get("_mubawab_schema_offer_sell") and e.get("transaction_type") == "rent":
         review_reasons.append("SCHEMA_SELL_CONTRADICTS_RENTAL_TEXT")
+    if row.get("_agenz_neighborhood_claim_conflicts_with_route"):
+        review_reasons.append("AGENZ_EXPLICIT_NEIGHBORHOOD_CONFLICT_REQUIRES_REVIEW")
     if row.get("_mubawab_title_area_mismatch"):
         review_reasons.append("PRIMARY_AREA_DIFFERS_FROM_TITLE_AREA")
     if row.get("_mubawab_title_transaction_ambiguous"):

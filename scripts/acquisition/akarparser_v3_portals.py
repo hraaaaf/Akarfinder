@@ -167,6 +167,29 @@ def enrich(page, row: dict, evidence: dict) -> None:
                 _set(row, evidence, "transaction_type", "sale", "agenz.regional_url.transaction")
                 _set(row, evidence, "property_type", "apartment", "agenz.regional_url.property_type")
 
+
+        # A page can display a route district but explicitly name a different
+        # neighborhood in its OWN listing description. Retain route location
+        # and force manual review rather than choosing either as truth.
+        summary = str(page.meta.get("og:description") or page.meta.get("description") or "")
+        route_district = row.get("district")
+        if route_district and summary:
+            claim = re.search(
+                r"\bquartier\s+(?:de\s+|d['’])([A-ZÀ-Ÿ][\wÀ-ÿ'’-]{1,40}"
+                r"(?:\s+[A-ZÀ-Ÿ][\wÀ-ÿ'’-]{1,40}){0,2})\b",
+                summary[:800],
+            )
+            if claim:
+                route_norm = " ".join(str(route_district).casefold().replace("-", " ").split())
+                claim_norm = " ".join(claim.group(1).casefold().replace("-", " ").split())
+                if route_norm != claim_norm:
+                    row["_agenz_neighborhood_claim_conflicts_with_route"] = True
+                    evidence["district_conflict"] = {
+                        "path": "agenz.html.meta.description.explicit_quartier",
+                        "method": "compare_explicit_claim_to_route",
+                        "verified": False,
+                    }
+
     elif host == "mubawab.ma":
         if not re.match(r"^/fr/a/\d+/", path):
             return
