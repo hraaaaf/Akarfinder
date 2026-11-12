@@ -33,7 +33,7 @@ jobs:
       - name: Checkout immutable reviewed orchestration (no untrusted PR code)
         uses: actions/checkout@v4
         with:
-          ref: 252d45dd6312e30bc04be3663388c8184a66ec6a
+          ref: 323d178fd9e07ef105f2e208d18f2ad0f89b9beb
           persist-credentials: false
       - name: Checkout immutable AkarParser V3 H1 code - Draft 1198
         uses: actions/checkout@v4
