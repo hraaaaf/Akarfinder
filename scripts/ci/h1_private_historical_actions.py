@@ -102,6 +102,35 @@ def execute(secret: str, source: Path, parent: Path) -> None:
     sys.path.insert(0, str(source / "scripts" / "acquisition"))
     import akarparser_v3_historical_neon_batches as h1
 
+    # SQL three-valued logic: NOT (priority_predicate) drops NULL rows.
+    # Preserve immutable V3 source, but ensure remaining means IS NOT TRUE.
+    original_select_sql = h1.select_sql
+
+    def null_safe_select_sql(mode: str, cursor: int, highwater: int, limit: int) -> str:
+        sql = original_select_sql(mode, cursor, highwater, limit)
+        if mode == "remaining":
+            old_predicate = "NOT (" + h1.PRIORITY + ")"
+            required(sql.count(old_predicate) == 1, "H1_REMAINING_QUERY_CONTRACT_CHANGED")
+            sql = sql.replace(old_predicate, "(" + h1.PRIORITY + ") IS NOT TRUE")
+        return sql
+
+    h1.select_sql = null_safe_select_sql
+
+    # Fail before the 1000-record canary if missing source identity would make
+    # the unmodified V3 normalizer reject any remaining rows.
+    db_env = h1.checked_env(secret)
+    identity_sql = """
+    SELECT COUNT(*) FROM public.property_listings p
+    JOIN public.listing_sources s ON s.property_listing_id = p.id
+    WHERE (""" + h1.PRIORITY + """) IS NOT TRUE
+    AND (COALESCE(BTRIM(p.title),'') = ''
+      OR COALESCE(BTRIM(p.city),'') = ''
+      OR COALESCE(BTRIM(s.listing_url),'') = '');
+    """
+    bad_identity = h1.psql_lines(identity_sql, db_env)
+    required(len(bad_identity) == 1 and bad_identity[0].isdigit()
+             and int(bad_identity[0]) == 0, "H1_REMAINING_MISSING_IDENTITY_NEEDS_REVIEW")
+
     priority = parent / "h1-20261112-priority"
     remaining = parent / "h1-20261112-remaining"
     if priority.exists():
