@@ -8,6 +8,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import akarparser_v3_raw_bulk as v3
@@ -71,7 +72,7 @@ class NormalizeTests(unittest.TestCase):
         self.assertTrue(run_cycle.target_is_pinned(
             "postgresql://postgres:p@db.mgqsckxsqdqbzqwkgvwo.supabase.co/postgres"))
         with self.assertRaises(PermissionError):
-            with unittest.mock.patch.dict(os.environ, {"RADAR_STAGING_WRITE_ENABLED": ""}):
+            with patch.dict(os.environ, {"RADAR_STAGING_WRITE_ENABLED": ""}):
                 run_cycle.perform(Path("/this/path/must/not/exist"), commit=True)
 
 
