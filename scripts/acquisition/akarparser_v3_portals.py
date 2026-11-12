@@ -66,6 +66,34 @@ def explicit_primary_sentence_transaction(description: str) -> str | None:
     return "sale" if sale and not rent else "rent" if rent and not sale else None
 
 
+
+
+def agenz_explicit_discounted_price(html: str) -> int | None:
+    """Only Agenz primary struck-old-price immediately followed by current DH.
+
+    Fail closed on zero/multiple contradictory matches. Never mine unrelated
+    financing, syndic fees, or listing cards for a price.
+    """
+    if not isinstance(html, str):
+        return None
+    matches = re.findall(
+        r"<p(?:\s[^>]*)?>\s*(\d[\d\s\u00a0\u202f.,]{2,18})"
+        r"\s*<s(?:\s[^>]*)?>\s*(?:DH|MAD)\s*</s>\s*</p>"
+        r"\s*<p(?:\s[^>]*)?>\s*(\d[\d\s\u00a0\u202f.,]{2,18})"
+        r"\s*(?:DH|MAD)\s*</p>",
+        html[:180_000], flags=re.I,
+    )
+    candidates = set()
+    for old_text, current_text in matches:
+        old = v2.number(old_text)
+        current = v2.number(current_text)
+        if (not isinstance(old, (int, float)) or not isinstance(current, (int, float))
+                or not (1000 <= current < old <= 1e9)):
+            continue
+        candidates.add(round(current))
+    return next(iter(candidates)) if len(candidates) == 1 else None
+
+
 def enrich(page, row: dict, evidence: dict) -> None:
     source_url = row.get("source_url")
     if not isinstance(source_url, str):

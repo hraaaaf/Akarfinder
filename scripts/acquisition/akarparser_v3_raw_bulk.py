@@ -280,6 +280,20 @@ def adapt(raw: dict) -> tuple[dict, dict]:
                         evidence["district"] = {"path": "domio.listing_hero.location",
                                                "method": "hero_label", "verified": False}
         portals.enrich(page, row, evidence)
+        # Discounted Agenz primary offer: the old price is struck through.
+        # Explicit HTML element order is essential; avoid first-number regex.
+        host = (urlparse(str(row.get("source_url") or "")).hostname or "").removeprefix("www.")
+        if host == "agenz.ma" and isinstance(html, str):
+            current = portals.agenz_explicit_discounted_price(html)
+            if current is not None:
+                row["price_mad"] = current
+                row["price"] = current  # also override stale JSON-LD old offer
+                row["price_currency"] = "MAD"
+                evidence["price_mad"] = {
+                    "path": "agenz.detail_primary.discounted_current_price",
+                    "method": "explicit_struck_old_followed_by_current",
+                    "verified": False,
+                }
         body = "\n".join(x.strip() for x in "".join(page.text).splitlines() if x.strip())[:250000]
     else:
         body = str(raw.get("raw_text") or raw.get("text") or "")[:250000]

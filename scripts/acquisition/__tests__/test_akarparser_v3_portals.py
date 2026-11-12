@@ -69,6 +69,25 @@ class TestPortalAdapters(unittest.TestCase):
         self.assertIsNone(fields["surface_total_m2"])
         self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
 
+    def test_agenz_discounted_price_is_current_not_struck_or_syndic(self):
+        html = """<html><body><h1>Appartement à vendre</h1>
+        <p>1 100 000<s>DH</s></p><p>980 000 DH</p>
+        <p>Salé – Al Qods</p><p>Frais de syndic : 100 DH / mois</p>
+        <p>104 m²</p></body></html>"""
+        rec = v3.parse_raw({"raw_html": html,
+                            "source_url": "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291"}, NOW)
+        self.assertEqual(rec["fields"]["price_mad"], 980000.0)
+        self.assertEqual(rec["field_evidence"]["price_mad"]["path"],
+                         "agenz.detail_primary.discounted_current_price")
+        self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+
+    def test_agenz_no_strike_cannot_invent_discounted_current_price(self):
+        html = "<html><body><p>1 100 000 DH</p><p>980 000 DH</p></body></html>"
+        from akarparser_v3_portals import agenz_explicit_discounted_price
+        self.assertIsNone(agenz_explicit_discounted_price(html))
+        bad = "<p>1 100 000<s>DH</s></p><p>980 000 DH</p><p>1 100 000<s>DH</s></p><p>950 000 DH</p>"
+        self.assertIsNone(agenz_explicit_discounted_price(bad))
+
     def test_mubawab_neighborhood_from_primary_breadcrumb_only(self):
         html = """<html><head><title>Appartement vente</title></head><body>
         <p>Immobilier Maroc</p><p>Immobilier Casablanca</p>
