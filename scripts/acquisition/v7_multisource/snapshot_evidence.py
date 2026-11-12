@@ -18,7 +18,7 @@ import urllib.error
 import urllib.request
 from urllib.parse import urlsplit
 
-from detail_compare import _domain, compare_supplied_html, DetailBenchmarkError
+from v7_multisource.detail_compare import _domain, compare_supplied_html, DetailBenchmarkError
 
 MAX_RAW_HTML_BYTES = 2_000_000
 MAX_MANIFEST_BYTES = 12_000
