@@ -1,0 +1,42 @@
+name: AkarParser V3 Raw Bulk Regression
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/akarparser_v2.py'
+      - 'scripts/acquisition/akarparser_v3_raw_bulk.py'
+      - 'scripts/acquisition/akarparser_v3_benchmark.py'
+      - 'scripts/acquisition/akarparser_v3_blind_review.py'
+      - 'scripts/acquisition/akarparser_v3_counter_reader.py'
+      - 'scripts/acquisition/akarparser_v3_source_comparison.py'
+      - 'scripts/acquisition/akarparser_v3_portals.py'
+      - 'scripts/acquisition/akarparser_v3_public_capture.py'
+      - 'scripts/acquisition/__tests__/test_akarparser_v2*.py'
+      - 'scripts/acquisition/__tests__/test_akarparser_v3*.py'
+      - '.github/workflows/akarparser-v3-raw-bulk-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Syntax check
+        run: python -m py_compile scripts/acquisition/akarparser_v2.py scripts/acquisition/akarparser_v3_raw_bulk.py scripts/acquisition/akarparser_v3_benchmark.py scripts/acquisition/akarparser_v3_blind_review.py scripts/acquisition/akarparser_v3_counter_reader.py scripts/acquisition/akarparser_v3_source_comparison.py scripts/acquisition/akarparser_v3_portals.py scripts/acquisition/akarparser_v3_public_capture.py
+      - name: V2 + V3 offline regression
+        run: |
+          python -m unittest discover -q -s scripts/acquisition/__tests__ -p 'test_akarparser_v2*.py'
+          python -m unittest discover -q -s scripts/acquisition/__tests__ -p 'test_akarparser_v3*.py'
