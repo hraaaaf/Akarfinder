@@ -158,3 +158,33 @@ sur jeu de vérité étiqueté; garantir idempotence dédup provenance puis
 préparer un canary privé sécurisé. Ne pas réutiliser les anciens fetchers
 pour live sans contrôle de robots/conditions et nouveau GO source.
 Cron 10 min reste NO-GO / hors main. Aucun déploiement Vercel.
+
+
+## Sous-lot snapshots HTML L4 / V3 — préparation technique du 12 novembre 2026
+
+Goal: comparer de façon déterministe le canonical listing extractor L4 et
+AkarParser V3 avec exactement les mêmes octets HTML de détail.
+
+Code préparé: v7_multisource/detail_compare.py et
+__tests__/test_v7_detail_compare.py. Entrées: snapshots HTML explicitement
+fournis, URL source et référence de capture facultative. Sorties: SHA256 HTML,
+comparaison L4/V3 pour 7 champs, contradictions, qualité V3. Aucune requête
+HTTP, aucune DB, zéro promotion publique, aucun droit ni fraîcheur présumés.
+
+Indices externes indexés, NON des snapshots HTML:
+- https://www.feenway.com/listings/258638 : fiche Rabat, 4,35M DH, 169 m²,
+  indique Source mubawab. L'URL source Mubawab originale n'est pas certifiée.
+- https://www.feenway.com/listings/256946 : fiche Rabat, 5,5M DH, 165 m²,
+  indique Source Avito. Pas de preuve d'URL originale ni de disponibilité.
+- FeenWay utilise « Première apparition / Détectée » : pas date éditoriale.
+- Agenz publie aussi des chemins récents /fr/annonces-achat/... selon son
+  robots.txt, alors que la V7 actuelle reconnaît essentiellement
+  /fr/annonces/immo-... . Étendre les routes seulement après preuve réelle.
+
+L'utilisateur arbitre les conditions d'accès; le lot ici est technique,
+hors ligne et sans contournement ni prétendue capture de page réelle.
+
+Les 5 tests du nouveau module vérifient le contrat synthétique, pas la
+précision sur des snapshots réels. Next exact: collecter un corpus permis
+et horodaté de fiches individuelles, comparer l'extraction des 7 champs
+source par source, corriger les divergences, puis canary privé sous GO.
