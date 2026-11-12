@@ -86,6 +86,8 @@ class NormalizeTests(unittest.TestCase):
     def test_fail_closed_flags_and_dsn_pin(self):
         self.assertFalse(run_cycle.target_is_pinned("postgresql://u:p@localhost/db"))
         self.assertTrue(run_cycle.target_is_pinned(
+            "postgresql://radar10_runtime:p@db.mgqsckxsqdqbzqwkgvwo.supabase.co/postgres"))
+        self.assertFalse(run_cycle.target_is_pinned(
             "postgresql://postgres:p@db.mgqsckxsqdqbzqwkgvwo.supabase.co/postgres"))
         with self.assertRaises(PermissionError):
             with patch.dict(os.environ, {"RADAR_STAGING_WRITE_ENABLED": ""}):

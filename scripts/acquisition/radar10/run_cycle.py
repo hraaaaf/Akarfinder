@@ -28,9 +28,9 @@ def target_is_pinned(dsn: str) -> bool:
         if parts.scheme not in ("postgres", "postgresql") or not parts.password:
             return False
         if parts.hostname == f"db.{PROJECT_REF}.supabase.co":
-            return True
+            return parts.username == "radar10_runtime"
         return bool(parts.hostname and parts.hostname.endswith(".pooler.supabase.com")
-                    and parts.username == f"postgres.{PROJECT_REF}")
+                    and parts.username == f"radar10_runtime.{PROJECT_REF}")
     except ValueError:
         return False
 

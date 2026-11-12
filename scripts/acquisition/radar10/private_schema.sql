@@ -51,3 +51,31 @@ BEGIN
    EXECUTE 'REVOKE ALL ON ALL TABLES IN SCHEMA acquisition FROM authenticated';
  END IF;
 END $$;
+
+-- Least-privilege non-login group: runtime login and secret provisioned separately.
+DO $$
+BEGIN
+ IF to_regrole('radar10_ingest') IS NULL THEN
+   CREATE ROLE radar10_ingest NOLOGIN;
+ END IF;
+END $$;
+ALTER TABLE acquisition.radar_candidates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE acquisition.radar_runs ENABLE ROW LEVEL SECURITY;
+GRANT USAGE ON SCHEMA acquisition TO radar10_ingest;
+GRANT SELECT, INSERT, UPDATE ON acquisition.radar_candidates TO radar10_ingest;
+GRANT INSERT ON acquisition.radar_runs TO radar10_ingest;
+DROP POLICY IF EXISTS radar10_candidates_read ON acquisition.radar_candidates;
+CREATE POLICY radar10_candidates_read ON acquisition.radar_candidates
+  FOR SELECT TO radar10_ingest USING (true);
+DROP POLICY IF EXISTS radar10_candidates_insert ON acquisition.radar_candidates;
+CREATE POLICY radar10_candidates_insert ON acquisition.radar_candidates
+  FOR INSERT TO radar10_ingest
+  WITH CHECK (publication_eligible = false AND freshness_independently_verified = false);
+DROP POLICY IF EXISTS radar10_candidates_update ON acquisition.radar_candidates;
+CREATE POLICY radar10_candidates_update ON acquisition.radar_candidates
+  FOR UPDATE TO radar10_ingest
+  USING (true)
+  WITH CHECK (publication_eligible = false AND freshness_independently_verified = false);
+DROP POLICY IF EXISTS radar10_runs_insert ON acquisition.radar_runs;
+CREATE POLICY radar10_runs_insert ON acquisition.radar_runs
+  FOR INSERT TO radar10_ingest WITH CHECK (public_writes = 0);

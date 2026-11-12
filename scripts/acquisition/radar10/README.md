@@ -58,3 +58,12 @@ Do not enable the timer before the separate live-source and staging-write gates.
 - Database outage and concurrent lock fail closed; new source run after repair.
 - Human gate before DB staging activation, and independent gate before any
   public listing promotion or site deployment.
+
+## Dedicated Postgres role (still an unapproved proposal)
+The schema creates non-login role radar10_ingest with SELECT/INSERT/UPDATE
+only on private candidates and INSERT on private run logs, protected by RLS.
+A separately provisioned login radar10_runtime must inherit that role.
+Do NOT use the Supabase postgres administrator DSN for this persistent service:
+the CLI rejects that username. Provision login/password, SSL server CA file
+(RADAR_DB_CA_CERT) and the pinned project DSN only after a human gate.
+No production role or login was created by this PR.
