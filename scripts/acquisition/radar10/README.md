@@ -67,3 +67,11 @@ Do NOT use the Supabase postgres administrator DSN for this persistent service:
 the CLI rejects that username. Provision login/password, SSL server CA file
 (RADAR_DB_CA_CERT) and the pinned project DSN only after a human gate.
 No production role or login was created by this PR.
+
+## Runner fixture and filesystem trust
+CI additionally invokes the actual runner against an HMAC-authenticated V646
+offline fixture from the pinned V646 commit. This still is not a live crawl.
+Code files in the V646 runtime directory must be owned by root and immutable
+to the service account; only SQLite/export state is writable. The outside
+trusted-head directory requires separate secure write permissions and true
+rollback protection (local signed file alone is NOT that protection).

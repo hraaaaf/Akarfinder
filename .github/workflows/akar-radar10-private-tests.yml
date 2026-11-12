@@ -30,10 +30,17 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     env:
+      V646_OFFLINE_DIR: ${{ github.workspace }}/v646-pinned/scripts/pilots/mubawab-v646
       RADAR_TEST_DSN: postgresql://postgres:testpass@127.0.0.1:5432/radar10_ci
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
+      - name: Checkout immutable V646 offline source for hermetic canary
+        uses: actions/checkout@v4
+        with:
+          ref: 4022a9a7dd3c47391ab01246f010bdc8a6433344
+          path: v646-pinned
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
