@@ -1,5 +1,0 @@
-Akarfinder V7 J1 single page capture gate
-Target URL: https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291
-Only ONE HTTPS GET per workflow attempt. No redirects, no retry, no proxy, no DB writes.
-Created after user GO J1; remove this marker after first verified run.
-No Vercel, no production import, no merge.
