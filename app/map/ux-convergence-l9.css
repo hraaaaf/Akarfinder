@@ -220,3 +220,11 @@
 [data-vivre-ici-page] [data-p4-map-canvas]:has([data-akarfinder-national-map][data-akarfinder-national-view="city"]) > .vivre-ici-territory-back {
   display: none !important;
 }
+
+/* City fallback already explains missing local evidence in the district decision
+ * sheet; the extra unavailable-POI pill was covering its primary city CTA.
+ * Hide only that redundant empty-state pill in fallback, keeping genuine POI
+ * filters on supported maps and the city decision copy visible. */
+[data-vivre-ici-page] [data-p4-map-canvas]:has([data-akarfinder-national-map][data-akarfinder-national-view="city"]) [data-neighborhood-context-poi-unavailable] {
+  display: none !important;
+}
