@@ -56,6 +56,19 @@ class TestPortalAdapters(unittest.TestCase):
         self.assertEqual(fields["property_type"], "apartment")
         self.assertEqual(item["quality"]["status"], "ready_internal")
 
+    def test_agenz_regional_url_portal_evidence(self):
+        url = "https://agenz.ma/fr/annonces-achat/appartement/rabat-sale-kenitra/sale/tabriquet/appartement-a-vendre-259645"
+        html = "<html><head><title>Appartement a vendre</title></head><body>Fiche de test</body></html>"
+        rec = v3.parse_raw({"source_url": url, "raw_html": html}, NOW)
+        fields = rec["fields"]
+        self.assertEqual(fields["city"], "Sale")
+        self.assertEqual(fields["district"], "Tabriquet")
+        self.assertEqual(fields["property_type"], "apartment")
+        self.assertEqual(fields["transaction_type"], "sale")
+        self.assertIsNone(fields["price_mad"])
+        self.assertIsNone(fields["surface_total_m2"])
+        self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+
     def test_mubawab_neighborhood_from_primary_breadcrumb_only(self):
         html = """<html><head><title>Appartement vente</title></head><body>
         <p>Immobilier Maroc</p><p>Immobilier Casablanca</p>

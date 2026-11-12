@@ -85,6 +85,13 @@ class CanonicalListingExtractorTests(unittest.TestCase):
         out = MODULE.extract_canonical("https://www.sarouty.ma/property-details/", "<html><body>Fiche</body></html>")
         self.assertEqual(out["page_kind"], "unknown")
 
+    def test_agenz_regional_detail_url_recognized(self):
+        url = "https://agenz.ma/fr/annonces-achat/appartement/rabat-sale-kenitra/sale/tabriquet/appartement-a-vendre-259645"
+        html = "<html><head><title>Appartement à vendre</title></head><body>Surface 85 m² - 700 000 DH</body></html>"
+        out = MODULE.extract_canonical(url, html)
+        self.assertEqual(out["page_kind"], "listing_detail")
+        self.assertIn("detail_url_pattern", out["classification_reasons"])
+
     def test_discovery_page_is_not_promoted_to_listing(self):
         html = """
         <html><head><title>Appartements à vendre au Maroc</title></head>

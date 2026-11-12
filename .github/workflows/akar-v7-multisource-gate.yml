@@ -8,6 +8,11 @@ on:
       - 'scripts/acquisition/__tests__/test_v7_multisource.py'
       - 'scripts/acquisition/__tests__/test_v7_legacy_url_intake.py'
       - 'scripts/acquisition/__tests__/test_v7_detail_compare.py'
+      - 'scripts/acquisition/__tests__/agenz-source-first.test.mjs'
+      - 'scripts/acquisition/__tests__/test_akarparser_v3_portals.py'
+      - 'scripts/acquisition/__tests__/test_canonical_listing_extractor.py'
+      - 'scripts/acquisition/akarparser_v3_portals.py'
+      - 'scripts/acquisition/canonical_listing_extractor.py'
       - 'scripts/acquisition/__tests__/v7-legacy-candidate-bridge.test.mjs'
       - 'scripts/acquisition/agenz-source-first.mjs'
       - 'scripts/acquisition/avito-sitemap-enumerator.mjs'
@@ -80,7 +85,11 @@ jobs:
         with:
           node-version: '22'
       - name: Validate reused legacy collectors without portal network
-        run: node --test scripts/acquisition/__tests__/v7-legacy-candidate-bridge.test.mjs
+        run: node --test scripts/acquisition/__tests__/v7-legacy-candidate-bridge.test.mjs scripts/acquisition/__tests__/agenz-source-first.test.mjs
+      - name: Regional Agenz route in actual V3 portal and L4 canonical extractor
+        run: |
+          python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v3_portals.py'
+          python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_canonical_listing_extractor.py'
       - name: Cross-language L8 URLs to true V3 quarantine (no DB)
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_legacy_url_intake.py'
       - name: Compare supplied detail HTML with existing L4 + V3 parsers

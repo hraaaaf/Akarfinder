@@ -67,6 +67,15 @@ class RegistryAndAdapterTests(unittest.TestCase):
         with self.assertRaises(SourceNotSupported):
             bridge_multisource("feenway.com", {"source_url": "https://www.feenway.com/immobilier"})
 
+    def test_regional_agenz_url_identity_and_observation(self):
+        url = "https://agenz.ma/fr/annonces-achat/appartement/rabat-sale-kenitra/sale/tabriquet/appartement-a-vendre-259645"
+        self.assertEqual(canonical_identity(url), ("agenz.ma", "259645", url))
+        row = agenz("259645")
+        row.update(source_url=url, evidence_url=url)
+        normalized = bridge_agenz_record(row)
+        self.assertEqual(normalized["source_offer_id"], "259645")
+        self.assertEqual(normalized["source_url"], url)
+
     def test_agenz_normalizes_and_v3_guards_publication(self):
         row = bridge_agenz_record(agenz())
         self.assertEqual(row["source_url"], agenz()["source_url"])

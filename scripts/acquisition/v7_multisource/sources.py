@@ -71,6 +71,11 @@ def canonical_identity(url: str) -> tuple[str, str, str]:
     else:
         raise SourceNotSupported("SOURCE_NOT_INTEGRATED")
     match = SOURCE_IDS[portal].fullmatch(p.path)
+    if portal == "agenz.ma" and not match:
+        match = re.fullmatch(
+            r"/(?:fr/)?annonces-achat/appartement/[a-z0-9-]+/[a-z0-9-]+/[a-z0-9-]+/appartement-a-vendre-(\d{5,12})/?",
+            p.path,
+        )
     if not match:
         raise SourceNotSupported("INDIVIDUAL_URL_REQUIRED")
     canonical_url = f"https://{portal}{p.path.rstrip('/')}"

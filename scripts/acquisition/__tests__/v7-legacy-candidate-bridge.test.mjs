@@ -45,6 +45,14 @@ test('legacy output stays URL-only; not five classified or fresh properties', ()
   assert.equal(summary.source_fetches_by_bridge, 0);
 });
 
+test('recognizes newer Agenz regional listing identity via existing collector', () => {
+  const url = 'https://agenz.ma/fr/annonces-achat/appartement/rabat-sale-kenitra/sale/tabriquet/appartement-a-vendre-259645';
+  const result = adaptLegacyReport('agenz.ma', good([url]));
+  assert.equal(result.url_only_count, 1);
+  assert.equal(result.candidates[0].source_offer_id, '259645');
+  assert.equal(result.candidates[0].eligible_for_private_detail_staging, false);
+});
+
 test('blocks FeenWay mirrors and unmerged Yakeey collector', () => {
   assert.throws(() => adaptLegacyReport('feenway.com', good([
     'https://www.feenway.com/immobilier/foo',

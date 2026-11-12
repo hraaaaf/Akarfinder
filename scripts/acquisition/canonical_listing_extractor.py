@@ -200,7 +200,12 @@ def _known_portal_detail_url(source_url: str) -> bool:
         return bool(re.search(r"-\d{5,9}/?$", path, re.I))
 
     if host == "agenz.ma":
-        return bool(re.search(r"^/fr/annonces/immo-[^/]+/(?:vente|location)-[^/]+/[^/]+/\d+/?$", path, re.I))
+        legacy = bool(re.search(r"^/fr/annonces/immo-[^/]+/(?:vente|location)-[^/]+/[^/]+/\d+/?$", path, re.I))
+        regional = bool(re.search(
+            r"^/(?:fr/)?annonces-achat/appartement/[^/]+/[^/]+/[^/]+/appartement-a-vendre-\d{5,12}/?$",
+            path, re.I,
+        ))
+        return legacy or regional
 
     return False
 

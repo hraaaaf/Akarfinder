@@ -125,6 +125,19 @@ def enrich(page, row: dict, evidence: dict) -> None:
                       "terrains": "land", "studios": "studio", "bureaux": "office"}
             _set(row, evidence, "property_type", mapped.get(ptype.lower()),
                  "agenz.detail_url.property_type")
+        else:
+            # Current Agenz regional URLs, distinct from the legacy route.
+            # Only route tokens are inferred; no price, area or publication.
+            modern = re.fullmatch(
+                r"/(?:fr/)?annonces-achat/appartement/([^/]+)/([^/]+)/([^/]+)/appartement-a-vendre-(\d{5,12})/?",
+                path, flags=re.I,
+            )
+            if modern:
+                _region, city, district, _offer = modern.groups()
+                _set(row, evidence, "city", _title_slug(city), "agenz.regional_url.city")
+                _set(row, evidence, "district", _title_slug(district), "agenz.regional_url.district")
+                _set(row, evidence, "transaction_type", "sale", "agenz.regional_url.transaction")
+                _set(row, evidence, "property_type", "apartment", "agenz.regional_url.property_type")
 
     elif host == "mubawab.ma":
         if not re.match(r"^/fr/a/\d+/", path):
