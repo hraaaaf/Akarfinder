@@ -436,6 +436,13 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
         e["price_amount_raw"] = None
         e["price_currency_raw"] = None
         base["quality"]["issues"].append("DOMIO_UNIT_RATE_SUPPRESSED_AS_TOTAL")
+    if host == "agenz.ma" and row.get("_agenz_discounted_current_price_ambiguous"):
+        # Even if V3 dropped obsolete price, V2 may independently reparse it
+        # from page prose. Do not re-admit this historic price as current.
+        e["price_mad"] = None
+        e["price_amount_raw"] = None
+        e["price_currency_raw"] = None
+        base["quality"]["issues"].append("AGENZ_STRUCK_OLD_PRICE_SUPPRESSED")
     # V2 can independently infer a number from description text. For Avito,
     # an undifferentiated 5 002 DH/month financing figure must never become
     # a sale price, even if its source was not picked by the V3 regex.
