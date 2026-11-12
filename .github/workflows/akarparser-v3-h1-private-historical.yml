@@ -1,49 +1,104 @@
-name: AkarParser V3 H1 Historical Neon DEV Private
+name: AkarParser V3 H1 private historical recovery
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/akarparser-v3-h1-private-historical.yml"
+      - "scripts/ci/h1_github_hosted_private.py"
+      - "scripts/ci/__tests__/test_h1_github_hosted_private.py"
+      - "docs/data/AKARPARSER_V3_H1_GITHUB_HOSTED_PRIVATE_EXECUTION.md"
   workflow_dispatch:
     inputs:
       authorize_h1_readonly:
-        description: "Authorize private 1000 canary, then DEV-only 151900 historical rows if green"
+        description: "Authorize private H1 DEV-only read-only recovery"
         type: boolean
         required: true
         default: false
+      resume_run_id:
+        description: "Optional prior Actions run ID whose private S3 checkpoint should resume"
+        type: string
+        required: false
+        default: ""
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-h1-neon-dev
+  group: h1-private-${{ github.event.pull_request.number || inputs.resume_run_id || github.run_id }}
   cancel-in-progress: false
 
 jobs:
-  historical-h1:
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.actor == 'hraaaaf' && inputs.authorize_h1_readonly == true
-    runs-on: [self-hosted, windows, akarfinder-private-lake]
-    environment: q1e-neon-readonly
-    timeout-minutes: 360
-    defaults:
-      run:
-        shell: pwsh
-    env:
-      Q1E_NEON_RECOVERY_READONLY_URL: ${{ secrets.Q1E_NEON_RECOVERY_READONLY_URL }}
-      H1_PRIVATE_OUTPUT_PARENT: ${{ vars.H1_PRIVATE_OUTPUT_PARENT }}
-      H1_APPROVED_RUNNER_NAME: ${{ vars.H1_APPROVED_RUNNER_NAME }}
+  h1-contract-tests:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
     steps:
-      - name: Checkout immutable reviewed orchestration (no untrusted PR code)
-        uses: actions/checkout@v4
+      - name: Checkout PR code without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: 323d178fd9e07ef105f2e208d18f2ad0f89b9beb
           persist-credentials: false
-      - name: Checkout immutable AkarParser V3 H1 code - Draft 1198
-        uses: actions/checkout@v4
+      - name: Checkout immutable V3 parser source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: 3eb2b8a7b7ec78832e764e014b387eabd5e74058
           path: trusted-v3-source
           persist-credentials: false
-      - name: Private fail-closed gate then SHA-verified historical canary, priority and remaining
+      - name: Run offline H1 GitHub-hosted and persistence contracts
+        env:
+          H1_TRUSTED_SOURCE: trusted-v3-source
+        run: python3 -m unittest discover -s scripts/ci/__tests__ -p "test_h1_github_hosted_private.py" -v
+
+  h1-private-recovery:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.actor == 'hraaaaf' && inputs.authorize_h1_readonly == true
+    runs-on: ubuntu-24.04
+    environment: q1e-neon-readonly
+    timeout-minutes: 360
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      H1_STORAGE_RUN_ID: ${{ inputs.resume_run_id || github.run_id }}
+      H1_PRIVATE_S3_PREFIX: akarfinder/h1
+      H1_PRIVATE_S3_BUCKET: ${{ vars.H1_PRIVATE_S3_BUCKET }}
+      H1_PRIVATE_S3_KMS_KEY_ARN: ${{ vars.H1_PRIVATE_S3_KMS_KEY_ARN }}
+      H1_PRIVATE_AWS_REGION: eu-central-1
+      H1_PRIVATE_AWS_ROLE_NAME: ${{ vars.H1_PRIVATE_AWS_ROLE_NAME }}
+      H1_PRIVATE_AWS_ACCOUNT_ID: ${{ vars.H1_PRIVATE_AWS_ACCOUNT_ID }}
+    steps:
+      - name: Checkout exact authorized main revision without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Checkout immutable reviewed V3 parser source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: 3eb2b8a7b7ec78832e764e014b387eabd5e74058
+          path: trusted-v3-source
+          persist-credentials: false
+      - name: Verify GitHub-hosted Linux dependencies
         run: |
-          $ErrorActionPreference = 'Stop'
-          & python scripts/ci/h1_private_historical_actions.py --source "$env:GITHUB_WORKSPACE/trusted-v3-source"
-          if ($LASTEXITCODE -ne 0) { throw 'H1_DEV_PRIVATE_RECOVERY_ABORTED' }
-      # Do not upload artifacts, cache records, expose row-level data, import into PROD or deploy.
+          set -euo pipefail
+          test "$(uname -s)" = Linux
+          test "${RUNNER_ENVIRONMENT:-}" = github-hosted
+          command -v python3 >/dev/null
+          command -v psql >/dev/null
+          command -v aws >/dev/null
+          python3 --version >/dev/null
+          psql --version >/dev/null
+          aws --version >/dev/null 2>&1
+      - name: Assume the narrowly scoped private storage role using GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.H1_PRIVATE_AWS_ROLE_ARN }}
+          role-session-name: h1-${{ github.run_id }}
+          role-duration-seconds: 43200
+          aws-region: eu-central-1
+          allowed-account-ids: ${{ vars.H1_PRIVATE_AWS_ACCOUNT_ID }}
+      - name: Canary, gated continuation, and resumable private checkpoints
+        env:
+          Q1E_NEON_RECOVERY_READONLY_URL: ${{ secrets.Q1E_NEON_RECOVERY_READONLY_URL }}
+        run: python3 scripts/ci/h1_github_hosted_private.py --source trusted-v3-source
+      # No Actions artifacts/cache, no checkout credentials, and no row-level stdout.
