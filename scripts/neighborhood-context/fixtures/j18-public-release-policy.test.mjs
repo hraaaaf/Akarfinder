@@ -160,3 +160,16 @@ test("J18-H public route has immutable 404 and no Blob read nor publish switch",
  assert.match(route,/noindex/);
  assert.doesNotMatch(route,/@vercel\/blob|NEXT_PUBLIC_|process\.env\.AKAR_VIVRE_ICI_J18_PUBLIC|evaluateJ18Release/);
 });
+
+
+test("J18 release gate keeps exactly one Vercel config and Git deployment disabled", async () => {
+  const {existsSync} = await import("node:fs");
+  const root = new URL("../../../", import.meta.url);
+  const configurations = ["vercel.mjs", "vercel.ts", "vercel.json"];
+  const present = configurations.filter(filename => existsSync(new URL(filename, root)));
+  assert.deepEqual(present, ["vercel.mjs"],
+    "Multiple Vercel configuration files caused a real preview build failure");
+  const config = readFileSync(new URL("vercel.mjs", root), "utf8");
+  assert.match(config, /deploymentEnabled\s*:\s*false\b/,
+    "Vercel Git auto-deploy must remain disabled before human release approval");
+});
