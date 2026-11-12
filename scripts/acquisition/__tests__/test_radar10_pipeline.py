@@ -67,6 +67,22 @@ class NormalizeTests(unittest.TestCase):
             self.assertEqual(sum(report["rejected"].values()), 1)
             self.assertEqual(len(rows), 1)
 
+    def test_same_cycle_selection_excludes_stale_observations(self):
+        start = datetime(2026, 11, 12, 17, tzinfo=timezone.utc)
+        end = datetime(2026, 11, 12, 17, 1, tzinfo=timezone.utc)
+        old = {"last_seen": "2026-11-11T15:00:00+00:00", "id": "old"}
+        fresh = {"last_seen": "2026-11-12T17:00:10+00:00", "id": "current"}
+        self.assertEqual(run_cycle.current_cycle_only([old, fresh], start, end), [fresh])
+        with self.assertRaises(ValueError):
+            run_cycle.current_cycle_only([old], start, end)
+        with self.assertRaises(ValueError):
+            run_cycle.current_cycle_only([{"last_seen": "2026-11-12T18:00:00+00:00"}], start, end)
+
+    def test_staging_denies_old_snapshot_even_if_write_switch_is_present(self):
+        with patch.dict(os.environ, {"RADAR_STAGING_WRITE_ENABLED": "approved"}):
+            with self.assertRaisesRegex(PermissionError, "NEW_SOURCE_CYCLE"):
+                run_cycle.perform(Path("/missing"), commit=True, collect=False)
+
     def test_fail_closed_flags_and_dsn_pin(self):
         self.assertFalse(run_cycle.target_is_pinned("postgresql://u:p@localhost/db"))
         self.assertTrue(run_cycle.target_is_pinned(
