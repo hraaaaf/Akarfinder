@@ -212,3 +212,11 @@
   line-height: 1.55 !important;
   overflow-wrap: normal !important;
 }
+
+/* J18 UI: the source-honest city fallback already has a labelled native
+ * “Return to Morocco” arrow in its territory header. Hide only the redundant
+ * floating Maroc link to prevent it covering the city CTA or search field.
+ * Qualified neighborhood MapLibre views keep their floating back control. */
+[data-vivre-ici-page] [data-p4-map-canvas]:has([data-akarfinder-national-map][data-akarfinder-national-view="city"]) > .vivre-ici-territory-back {
+  display: none !important;
+}
