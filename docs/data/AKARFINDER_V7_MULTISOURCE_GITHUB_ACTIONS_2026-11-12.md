@@ -66,3 +66,27 @@ La priorité décrit l'ordre d'évaluation/intégration, **pas** la couverture a
 - [CI Workflow Efficiency #43311153313](https://github.com/hraaaaf/Akarfinder/actions/runs/43311153313) : SUCCESS.
 - **Bilan :** 11 cibles inventoriées, seulement 2 adaptateurs offline, FeenWay reste non intégré. Aucune activation source, DB, cron live, merge ou Vercel.
 - **Next exact :** évaluer l'identification et les URLs originelles des fiches FeenWay avant la création d'un adaptateur (le choix d'un agrégateur comme premier portail augmente le risque de doublons).
+
+## Contre-audit historique GitHub — EXISTANT À RÉUTILISER (12 novembre 2026)
+
+**Décision prioritaire : REUSE FIRST, pas redéveloppement des collecteurs L8.**
+Sur `main`, le document canonique `docs/AKARFINDER_MOROCCO_WEB_ACQUISITION.md` porte déjà L1-L7 « CLOSED », et le code source correspondant existe effectivement. Il ne prouve pas pour autant une collecte actuellement active sur les portails.
+
+| Fonction historique | PR | État GitHub vérifié | Code déjà dans main | Preuve historique / limite |
+| --- | --- | --- | --- | --- |
+| Multi-source discovery | #966 | merged | `scripts/audits/morocco-web-real-estate-discovery-canary.mjs` | 5 849 candidates / 3 sources, URLs seulement |
+| Sarouty public + sitemap | #968, #990 | merged | `scripts/acquisition/sarouty-public-adapter.mjs`, `sarouty-property-sitemap-enumerator.mjs` | 5 025 / 5 064 IDs historiques, pas état actuel |
+| Mubawab / MarocAnnonces | #971, #988, #992 | merged | `mubawab-exhaustive-enumerator.mjs`, `marocannonces-source-first.mjs` | contrôles source-first déjà codés |
+| Avito | #989 | merged | `avito-sitemap-enumerator.mjs` | sitemap HTTP 403 lors du test live cité : ne pas contourner |
+| Agenz | #993 | merged | `agenz-source-first.mjs` | 4 466 IDs en exécution partielle, puis hard-block ; arrêt obligatoire |
+| Canonical extractor detail URL | #994 | merged | `canonical_listing_extractor.py` | Avito/Sarouty/Agenz reconnus, 8 tests historiques |
+| Cross-source physical dedupe | #978 | merged | `cross_source_dedupe.py` | 6 observations → 4 clusters sur fixture |
+| Freshness/revisit | #980 | merged | `freshness_revisit_engine.py` | logique de revisite, non preuve de fraîcheur active |
+| Staging writer L7 | #982 | merged | `bounded_production_ingestion.py` | garde explicite pour écriture PROD ; NE PAS appeler |
+| Avito IDs via Kaynly | #1016 | OPEN Draft | dans PR non fusionnée | 5 807 IDs candidats historiques, 0 preuve de fiches encore actives |
+| Liens Yakeey/Sarouty/Avito via Kaynly | #1146 | OPEN Draft | `scripts/acquisition/kaynly-open-links/collector.py` dans branche Draft | 20 pages / 180 URLs dont 28 Yakeey ; URLs candidates |
+| FeenWay | aucune ancienne intégration avérée | NOT_INTEGRATED | seulement nouvelle entrée V7 | portail agrégateur : ne pas compter les miroirs comme originaux |
+
+**Correction d'interprétation :** « 2 adaptateurs offline » désigne seulement le NOUVEAU module V7 #1204 (V646/Mubawab + observations Agenz), pas les collecteurs déjà présents dans `main`. « 9 non intégrés » signifie non câblés dans le NOUVEAU pipeline V7, et non pas absents du dépôt. Éviter de créer un deuxième système concurrent de découverte et de revisite.
+
+**NEXT EXACT :** comparer les interfaces et formats de sortie de ces modules `main` contre les entrées V3/Radar10, réutiliser le code au moyen d'un adaptateur de compatibilité et de tests isolés, conserver l'inventaire utilisateur FeenWay→Agenz→Avito→Yakeey→Sarouty, sans collecte LIVE ni suppression/replacement prématuré. FeenWay doit être étudié en priorité en vérifiant les URL/ID sources originales, pas en aspirant une base miroir. Après tests, gate humain avant source network, migration, cron main et PROD. Aucun Vercel.
