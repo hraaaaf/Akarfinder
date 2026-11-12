@@ -6,8 +6,8 @@ import json
 import math
 from pathlib import Path
 import re
-from urllib.parse import urlsplit
 from uuid import uuid4
+from v7_multisource.sources import canonical_identity, SourceNotSupported
 
 PROJECT_REF = "mgqsckxsqdqbzqwkgvwo"
 MAX_ROWS = 1000
@@ -62,19 +62,18 @@ def normalize(record):
     url = src.get("source_url")
     if not isinstance(url, str) or len(url) > 2048:
         raise InvalidCandidate("SOURCE_URL_INVALID")
-    parsed = urlsplit(url)
-    if (parsed.scheme != "https" or parsed.hostname not in ("mubawab.ma", "www.mubawab.ma") or
-        parsed.username or parsed.password or parsed.port is not None or parsed.query or parsed.fragment):
-        raise InvalidCandidate("SOURCE_HOST_INVALID")
+    try:
+        domain, path_id, canonical_url = canonical_identity(url)
+    except SourceNotSupported as exc:
+        raise InvalidCandidate("SOURCE_HOST_OR_PATH_INVALID") from exc
     offer_id = _text(src.get("source_offer_id"), 64)
-    match = SOURCE_ID_RX.search(parsed.path)
-    if not match or match.group(1) != offer_id:
+    if not offer_id or offer_id != path_id:
         raise InvalidCandidate("SOURCE_ID_MISMATCH")
     raw_hash = record.get("raw_sha256")
     if not isinstance(raw_hash, str) or not SHA_RX.fullmatch(raw_hash):
         raise InvalidCandidate("RAW_SHA_INVALID")
     row = dict(
-        source_url=url, source_domain="mubawab.ma", source_offer_id=offer_id,
+        source_url=canonical_url, source_domain=domain, source_offer_id=offer_id,
         title=_text(fields.get("title")), city=_text(fields.get("city"), 120),
         district=_text(fields.get("district"), 120),
         price_mad=_num(fields.get("price_mad"), integer=True),
