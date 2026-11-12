@@ -294,6 +294,13 @@ def adapt(raw: dict) -> tuple[dict, dict]:
                     "method": "explicit_struck_old_followed_by_current",
                     "verified": False,
                 }
+            elif "data-old-price" in html:
+                # Fail-closed: microdata first price is the obsolete value.
+                row["price_mad"] = None
+                row["price"] = None
+                row["price_currency"] = None
+                evidence.pop("price_mad", None)
+                row["_agenz_discounted_current_price_ambiguous"] = True
         body = "\n".join(x.strip() for x in "".join(page.text).splitlines() if x.strip())[:250000]
     else:
         body = str(raw.get("raw_text") or raw.get("text") or "")[:250000]
@@ -473,6 +480,8 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
         review_reasons.append("SCHEMA_SELL_CONTRADICTS_RENTAL_TEXT")
     if row.get("_agenz_neighborhood_claim_conflicts_with_route"):
         review_reasons.append("AGENZ_EXPLICIT_NEIGHBORHOOD_CONFLICT_REQUIRES_REVIEW")
+    if row.get("_agenz_discounted_current_price_ambiguous"):
+        review_reasons.append("AGENZ_DISCOUNT_CURRENT_PRICE_AMBIGUOUS")
     if row.get("_mubawab_title_area_mismatch"):
         review_reasons.append("PRIMARY_AREA_DIFFERS_FROM_TITLE_AREA")
     if row.get("_mubawab_title_transaction_ambiguous"):

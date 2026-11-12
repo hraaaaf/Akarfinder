@@ -69,28 +69,56 @@ def explicit_primary_sentence_transaction(description: str) -> str | None:
 
 
 def agenz_explicit_discounted_price(html: str) -> int | None:
-    """Only Agenz primary struck-old-price immediately followed by current DH.
+    """Current Agenz listing price next to an explicitly struck old price.
 
-    Fail closed on zero/multiple contradictory matches. Never mine unrelated
-    financing, syndic fees, or listing cards for a price.
+    Extract from the same nearest price block. The original real site HTML
+    displays old amount in data-old-price and current amount in data-price,
+    repeated for mobile/desktop. Never count syndicated finance widgets.
     """
     if not isinstance(html, str):
         return None
-    matches = re.findall(
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(html[:2_000_000], "html.parser")
+    candidates: set[int] = set()
+    for old_tag in soup.select("[data-old-price]")[:20]:
+        if old_tag.parent is None or old_tag.parent.select_one("s,del") is None:
+            continue
+        old = v2.number(str(old_tag.get("data-old-price") or ""))
+        displayed_old = v2.number(old_tag.get_text(" ", strip=True))
+        if not isinstance(old, (int, float)) or old != displayed_old:
+            continue
+        # Bound to nearest common ancestor with the current price, avoiding
+        # unrelated mortgage and similar-listings areas of a full document.
+        for ancestor in list(old_tag.parents)[:6]:
+            if ancestor.name not in ("div", "section"):
+                continue
+            current_tags = ancestor.select("[data-price]")
+            if not current_tags:
+                continue
+            if len(ancestor.select("[data-old-price]")) != 1 or len(current_tags) != 1:
+                break
+            new_tag = current_tags[0]
+            current = v2.number(str(new_tag.get("data-price") or ""))
+            displayed = v2.number(new_tag.get_text(" ", strip=True))
+            if (isinstance(current, (int, float)) and current == displayed
+                    and 1000 <= current < old <= 1_000_000_000
+                    and "DH" in ancestor.get_text(" ", strip=True).upper()):
+                candidates.add(round(current))
+            break
+    # Backward compatibility for legacy primary price paragraphs.
+    legacy = re.findall(
         r"<p(?:\s[^>]*)?>\s*(\d[\d\s\u00a0\u202f.,]{2,18})"
         r"\s*<s(?:\s[^>]*)?>\s*(?:DH|MAD)\s*</s>\s*</p>"
         r"\s*<p(?:\s[^>]*)?>\s*(\d[\d\s\u00a0\u202f.,]{2,18})"
         r"\s*(?:DH|MAD)\s*</p>",
-        html[:180_000], flags=re.I,
+        html[:2_000_000], flags=re.I,
     )
-    candidates = set()
-    for old_text, current_text in matches:
+    for old_text, current_text in legacy:
         old = v2.number(old_text)
         current = v2.number(current_text)
-        if (not isinstance(old, (int, float)) or not isinstance(current, (int, float))
-                or not (1000 <= current < old <= 1e9)):
-            continue
-        candidates.add(round(current))
+        if (isinstance(old, (int, float)) and isinstance(current, (int, float))
+                and 1000 <= current < old <= 1_000_000_000):
+            candidates.add(round(current))
     return next(iter(candidates)) if len(candidates) == 1 else None
 
 

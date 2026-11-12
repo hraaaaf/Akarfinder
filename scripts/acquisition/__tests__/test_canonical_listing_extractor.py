@@ -85,6 +85,27 @@ class CanonicalListingExtractorTests(unittest.TestCase):
         out = MODULE.extract_canonical("https://www.sarouty.ma/property-details/", "<html><body>Fiche</body></html>")
         self.assertEqual(out["page_kind"], "unknown")
 
+    def test_agenz_original_dom_price_marker_overrides_old_microdata(self):
+        url = "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291"
+        html = """<html><head><title>Appartement à vendre</title></head>
+        <body><div><span><span item-prop="price"
+        data-old-price="1100000">1 100 000</span><s>DH</s></span>
+        <span><span data-price="980000">980 000</span> DH</span></div>
+        <p>104 m² à Salé</p></body></html>"""
+        result = MODULE.extract_canonical(url, html)
+        self.assertEqual(result["fields"]["offer.price_amount"]["value"], 980000)
+
+    def test_agenz_bad_discounts_dont_keep_old_price(self):
+        url = "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291"
+        html = """<html><head><title>Appartement à vendre</title></head>
+        <body><span><span item-prop="price"
+        data-old-price="1100000">1 100 000</span><s>DH</s></span>
+        <span><span data-price="980000">950 000</span> DH</span>
+        <p>104 m²</p></body></html>"""
+        result = MODULE.extract_canonical(url, html)
+        self.assertNotIn("offer.price_amount", result["fields"])
+        self.assertIn("agenz:discounted_current_price_ambiguous", result["rejected"])
+
     def test_agenz_regional_detail_url_recognized(self):
         url = "https://agenz.ma/fr/annonces-achat/appartement/rabat-sale-kenitra/sale/tabriquet/appartement-a-vendre-259645"
         html = "<html><head><title>Appartement à vendre</title></head><body>Surface 85 m² - 700 000 DH</body></html>"

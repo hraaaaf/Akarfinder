@@ -296,6 +296,18 @@ def extract_canonical(source_url: str, html: str) -> dict[str, Any]:
         if fact and 1_000 <= fact.value <= 1_000_000_000:
             fields["offer.price_amount"] = fact
 
+    if (urlparse(source_url).hostname or "").removeprefix("www.") == "agenz.ma" and "data-old-price" in html:
+        # Original real DOM may expose a struck historical price as microdata.
+        from akarparser_v3_portals import agenz_explicit_discounted_price
+        current = agenz_explicit_discounted_price(html)
+        if current is None:
+            fields.pop("offer.price_amount", None)
+            result["rejected"].append("agenz:discounted_current_price_ambiguous")
+        else:
+            fields["offer.price_amount"] = FieldFact(
+                current, Evidence(source_url, "agenz.primary:data-old-price+data-price",
+                                  str(current)))
+
     floor_size, floor_key = _first_jsonld(nodes, ("floorSize",))
     if isinstance(floor_size, dict):
         value = floor_size.get("value")

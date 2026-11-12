@@ -81,6 +81,35 @@ class TestPortalAdapters(unittest.TestCase):
                          "agenz.detail_primary.discounted_current_price")
         self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
 
+    def test_agenz_real_dom_markup_repeated_does_not_select_old(self):
+        html = """<html><head><title>Appartement à vendre</title>
+        <meta property="og:description" content="dans le quartier de Tabriquet">
+        </head><body>
+        <div><span><span item-prop="price" data-old-price="1100000">1 100 000</span><s>DH</s></span>
+        <span><span data-price="980000">980 000</span> DH</span></div>
+        <div><span><span item-prop="price" data-old-price="1100000">1 100 000</span><s>DH</s></span>
+        <span><span data-price="980000">980 000</span> DH</span></div>
+        <p>104 m²</p></body></html>"""
+        rec = v3.parse_raw({"source_url":
+            "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291",
+            "raw_html": html}, NOW)
+        self.assertEqual(rec["fields"]["price_mad"], 980000.0)
+        self.assertIn("AGENZ_EXPLICIT_NEIGHBORHOOD_CONFLICT_REQUIRES_REVIEW",
+                      rec["quality"]["review_reasons"])
+
+    def test_agenz_unverifiable_current_price_forces_review(self):
+        html = """<html><head><title>Appartement à vendre</title></head>
+        <body><div><span><span item-prop="price"
+        data-old-price="1100000">1 100 000</span><s>DH</s></span>
+        <span><span data-price="980000">950 000</span> DH</span></div>
+        <p>104 m²</p></body></html>"""
+        rec = v3.parse_raw({"source_url":
+            "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291",
+            "raw_html": html}, NOW)
+        self.assertIsNone(rec["fields"]["price_mad"])
+        self.assertIn("AGENZ_DISCOUNT_CURRENT_PRICE_AMBIGUOUS",
+                      rec["quality"]["review_reasons"])
+
     def test_agenz_no_strike_cannot_invent_discounted_current_price(self):
         html = "<html><body><p>1 100 000 DH</p><p>980 000 DH</p></body></html>"
         from akarparser_v3_portals import agenz_explicit_discounted_price
