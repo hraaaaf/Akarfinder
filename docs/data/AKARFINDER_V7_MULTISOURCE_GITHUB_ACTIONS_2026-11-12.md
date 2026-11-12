@@ -282,3 +282,63 @@ Quatre autres workflows à ce même SHA : V3 regression #43329012652 SUCCESS, V3
 Preuve VALIDÉE : intégrité octet par octet d'un document HTML fourni, manifeste SHA256 + date UTC + URL + statut HTTP, refus falsification/symlink, replay sur vrai L4/V3; mode réseau disabled par défaut et double opt-in obligatoire. Preuve NON VALIDÉE : aucun fichier HTML source brut d'annonce réelle n'a été archivé, aucun benchmark de précision terrain, ni URL source FeenWay originale certifiée.
 GOAL lot live non atteint. Machine distante DESKTOP-3MAJEEH offline, DNS direct agenz.ma bloqué côté container; le lecteur de pages a uniquement fourni HTML sémantique rendu. Les fixtures Yakeey du repo sont des indices de prix au m², pas des détails d'annonces.
 Next exact : dès qu'un accès réseau autorisé aux pages source est disponible, commande opérateur de capture unitaire avec les deux gates et stockage privé; vérifier hash+UTC+HTTP 200; annoter 7 champs et comparer V3/L4, puis canary staging isolé. Le cron Actions main, Supabase, merge et Vercel exigent des autorisations distinctes.
+
+## J1 — CLOSEOUT preuve réelle / 1 fiche Agenz / 7 champs
+
+**GOAL J1 : atteint au niveau technique limité à une fiche réelle**, et
+aucune couverture multi-site certifiée. Conserver le statut « validation
+terrain non représentative » (seulement 1 source).
+
+**Preuve brute :** URL Agenz /fr/annonces/immo-sale/vente-appartements/al-qods/444291,
+capture GitHub Actions [#43330609367](https://github.com/hraaaaf/Akarfinder/actions/runs/43330609367)
+du 12 novembre 2026 à 23:39:02Z, statut HTTP 200,
+237450 octets, SHA-256
+`788355d9050f4b3ee6061c51ebf259c89acff19bb583a03a895ab8889ece6d61`
+recalculé localement sur le HTML ZIP / manifeste, archive GitHub privée
+[#13993958357](https://github.com/hraaaaf/Akarfinder/actions/runs/43330609367/artifacts/13993958357)
+(rétention 1 jour seulement).
+Deuxième capture réelle : [#43331534434](https://github.com/hraaaaf/Akarfinder/actions/runs/43331534434),
+23:45:46Z, 237450 octets, SHA différent
+`4bc28c2ca3eeaf74353290fc075f3fc228cd00d619d51daad08b20930f2cc241`
+avec attributs chiffrés de carte changeants ; même site-ID.
+Le deuxième GET provient d'un ancien marquage pull_request déclenché à
+nouveau par un commit, **non prévu**. Ce mécanisme a été supprimé au
+commit `617295768363426b57cf3e3accb738334b219688`. Le workflow J1
+actuel est uniquement OFFLINE REPLAY : **aucun nouveau GET au site**.
+
+**Diagnostic initial :** L4 et V3 lisaient incorrectement 1 100 000 DH
+(prix barré, `data-old-price`) ; la source HTML affiche 980 000 DH
+(`data-price`) comme prix courant. Deux correctifs successifs :
+validation des marqueurs source old/new + suppression fallback V2 vers
+l'ancien prix, sans dépendance externe BS4 nouvelle dans les pipelines
+historiques. L4 sait fonctionner en import autonome.
+
+**Résultat après correction sur les octets réels :**
+- [J1 offline replay #43331725808](https://github.com/hraaaaf/Akarfinder/actions/runs/43331725808)
+  SUCCESS: **L4=980 000**, **V3=980 000**, surface **104 m²**,
+  statut conflit de quartier (Al Qods vs Tabriquet) en révision.
+- [CI V7 #43332395922](https://github.com/hraaaaf/Akarfinder/actions/runs/43332395922)
+  SUCCESS: **99/99 tests**, dont tests structure DOM source.
+- [J1 offline replay #43332395921](https://github.com/hraaaaf/Akarfinder/actions/runs/43332395921)
+  SUCCESS ; [V3 raw #43332395915](https://github.com/hraaaaf/Akarfinder/actions/runs/43332395915),
+  [V3 private #43332395962](https://github.com/hraaaaf/Akarfinder/actions/runs/43332395962),
+  [Radar10 #43332395996](https://github.com/hraaaaf/Akarfinder/actions/runs/43332395996)
+  et [CI Policy #43332395928](https://github.com/hraaaaf/Akarfinder/actions/runs/43332395928)
+  sont également tous SUCCESS au code SHA `415659ded1e68e2ab54aaf06873b189918af93db`.
+
+**Comparaison des sept champs :** titre, prix, surface, type, transaction
+= accord L4/V3 (5/7). L4 ne remplit pas ville/quartier (V3=Sale et
+Al Qods), avec mention contradictoire Tabriquet dans la description.
+**5/7 n'est PAS la précision certifiée d'un corpus ni une validation
+géographique** : l'annotation indépendante reste une tâche de qualité
+pour J2/J3. L'admission publique demeure bloquée, disponibilité/fraîcheur
+non vérifiées, DB écriture=0.
+
+**Preuve détaillée et procédure de reprise :**
+`docs/data/AKARFINDER_V7_J1_REAL_HTML_AGENZ_444291_2026-11-12.md`.
+
+**Séquence restante :** J2 FeenWay provenance/URLs originales →
+J3 Agenz multi-exemples, ville/quartier & exactitude terrain →
+J4 Avito/Yakeey/Sarouty → J5 autres sources →
+J6 staging privé durable/anti-rejeu → J7 canarys/cron 10min sous GO,
+monitoring 24h. Aucun merge/Vercel/Supabase PROD/cron live.
