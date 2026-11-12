@@ -1,0 +1,49 @@
+name: AkarParser V3 H1 Historical Neon DEV Private
+
+on:
+  workflow_dispatch:
+    inputs:
+      authorize_h1_readonly:
+        description: "Authorize private 1000 canary, then DEV-only 151900 historical rows if green"
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-h1-neon-dev
+  cancel-in-progress: false
+
+jobs:
+  historical-h1:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.actor == 'hraaaaf' && inputs.authorize_h1_readonly == true
+    runs-on: [self-hosted, windows, akarfinder-private-lake]
+    environment: q1e-neon-readonly
+    timeout-minutes: 360
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      Q1E_NEON_RECOVERY_READONLY_URL: ${{ secrets.Q1E_NEON_RECOVERY_READONLY_URL }}
+      H1_PRIVATE_OUTPUT_PARENT: ${{ vars.H1_PRIVATE_OUTPUT_PARENT }}
+      H1_APPROVED_RUNNER_NAME: ${{ vars.H1_APPROVED_RUNNER_NAME }}
+    steps:
+      - name: Checkout immutable reviewed orchestration (no untrusted PR code)
+        uses: actions/checkout@v4
+        with:
+          ref: 252d45dd6312e30bc04be3663388c8184a66ec6a
+          persist-credentials: false
+      - name: Checkout immutable AkarParser V3 H1 code - Draft 1198
+        uses: actions/checkout@v4
+        with:
+          ref: 3eb2b8a7b7ec78832e764e014b387eabd5e74058
+          path: trusted-v3-source
+          persist-credentials: false
+      - name: Private fail-closed gate then SHA-verified historical canary, priority and remaining
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & python scripts/ci/h1_private_historical_actions.py --source "$env:GITHUB_WORKSPACE/trusted-v3-source"
+          if ($LASTEXITCODE -ne 0) { throw 'H1_DEV_PRIVATE_RECOVERY_ABORTED' }
+      # Do not upload artifacts, cache records, expose row-level data, import into PROD or deploy.
