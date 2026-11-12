@@ -126,3 +126,35 @@ If red, diagnose and fix before closeout.
 data contracts for the old collectors and plan the bridging step V3 details.
 No sources may be turned on or staging schema migrated without separate
 approvals. Retain FeenWay as highest *research* priority, not as already wired.
+
+
+## Closeout du pont L8 vers V3 — preuve CI immuable
+
+**Code SHA:** 7bb57989eb6abb683bca995d6a1e43c243e9c27f.
+**PR:** #1204 Draft, empilée sur #1202, sans merge.
+
+- [V7 Offline Gate run 43314672333](https://github.com/hraaaaf/Akarfinder/actions/runs/43314672333): SUCCESS. Preuve exacte dans le job multi-portal-offline : 7 tests Node 22 PASS (fonctions L8 réelles importées) + 5 tests Python PASS (handoff Node vers vrai AkarParser V3, classement source_snippet_only) + 11 tests V7 PASS (V646 HMAC synthetic + V3 + PG17) + 13 tests Radar10 PASS = **36/36, zéro échec**. Le job schedule ten-minute-gate est volontairement SKIPPED.
+- [Radar10 Private Staging 43314672332](https://github.com/hraaaaf/Akarfinder/actions/runs/43314672332): SUCCESS (13 tests Radar10 séparés).
+- [CI Workflow Efficiency 43314672314](https://github.com/hraaaaf/Akarfinder/actions/runs/43314672314): SUCCESS.
+
+**Critère observable atteint, limité:** cinq anciens collecteurs de main
+(Agenz, Avito, Sarouty, Mubawab, MarocAnnonces) réutilisés par fonctions
+réelles d'identité d'URL, leur sortie listingUrls est conservée comme
+**candidat URL-only** puis inspectée par le parseur V3 comme
+source_snippet_only. Le pont échoue fermement sur hard-block / HTTP 429 /
+rapport suspect, sans inférer fraîcheur ou prix. Les snippets URL-only ne
+sont **JAMAIS** injectés dans les tables de détail de Radar10, ni PROD.
+
+**Non atteint:** une collecte réelle multi-sources sur GitHub Actions,
+un gisement de nouvelles fiches prouvées, un convertisseur full-detail
+à partir de pages sources autorisées, le raccord FeenWay/Yakeey, une
+migration SQL privée ou des permissions source certifiées. Les nombres
+historiques d'URLs observées sur L8 ne sont pas des fiches fraîches.
+
+**NEXT exact (vrai gate):** pour passer de URL-only à fiches :
+trouver/autoriser des pages individuelles source et produire snapshots
+réels vérifiables; comparer extrait canonique L4 / AkarParser V3 par source
+sur jeu de vérité étiqueté; garantir idempotence dédup provenance puis
+préparer un canary privé sécurisé. Ne pas réutiliser les anciens fetchers
+pour live sans contrôle de robots/conditions et nouveau GO source.
+Cron 10 min reste NO-GO / hors main. Aucun déploiement Vercel.
