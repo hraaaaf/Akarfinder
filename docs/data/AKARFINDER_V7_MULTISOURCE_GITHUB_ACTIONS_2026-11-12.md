@@ -252,3 +252,8 @@ PR non merged, 0 Vercel et aucune modification Supabase.
 ## Correctif Agenz prix barré — 12 novembre 2026
 
 Code SHA 4b4205e2d6b200153ce20124ed1c024014d70d53 : comparaison stricte de prix actuel suivant un ancien prix barré, dans le HTML Agenz. Le parseur conserve le prix actuel 980000 DH quand le prix antérieur 1100000 DH est barré, ne confond pas les frais syndic 100 DH et rejette les séquences contradictoires. Tests synthétiques ajoutés dans test_akarparser_v3_portals.py. HTML véritable non archivé : qualité de la règle sur des captures brutes non certifiée. Quartier Al Qods / Tabriquet à revoir, sans correction automatique. Vérifier CI au code SHA ; aucune collecte LIVE, staging privé ou PROD, cron, merge ou Vercel. Next : capture HTML brute avec hash et vérité annotée par portail.
+
+
+## Closeout CI prix barré — preuves exactes
+
+SHA code 4b4205e2d6b200153ce20124ed1c024014d70d53, cinq jobs GitHub vérifiés COMPLETED SUCCESS : V7 #43322027038 = 18 tests Node + 25 V3 portails + 9 L4 + 5 pont URL + 5 benchmark comparatif + 12 V7 + 13 Radar10 = 87/87 PASS ; V3 regression #43322027114 SUCCESS ; CI efficiency #43322027013 SUCCESS ; Radar10 #43322026928 SUCCESS ; V3 private #43322026927 SUCCESS. Aucun test de source réelle ni de date de publication indépendamment certifiée. Cron 10min toujours désactivé. Prochaine action technique : archiver un vrai HTML brut de page individuelle avec SHA et comparaison L4/V3 des sept champs, notamment prix barré et quartier contradictoire ; FeenWay origine dupliquée à confirmer. Pas de merge, DB, Vercel.
