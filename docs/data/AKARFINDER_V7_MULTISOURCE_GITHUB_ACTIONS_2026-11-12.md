@@ -214,3 +214,36 @@ aucune migration/staging/production. Nouvelle preuve CI exigée au HEAD source
 **Next exact:** confirmer CI HEAD, corriger les divergences et ne traiter
 des fiches réelles qu'avec HTML brut réellement obtenu et provenance
 originale démontrée. Aucun cron live ou Vercel.
+
+
+## CLOSEOUT — compatibilité Agenz régionale (code 1001f165) — 5 CI PASS
+
+**Run exact au HEAD c4cb255998e5f0781a04156213839764e38d9bfc :**
+- [V7 + legacy + L4/V3 + PG17 #43317609873](https://github.com/hraaaaf/Akarfinder/actions/runs/43317609873) SUCCESS. Dans le job : Node 18/18, V3 portal 23/23, L4 canonical 9/9, cross-language V3 5/5, comparateur détail 5/5, V7 12/12, Radar10 13/13 = **85/85 tests**. 10min schedule probe skipped intentionnellement.
+- [AkarParser V3 Raw Bulk #43317609870](https://github.com/hraaaaf/Akarfinder/actions/runs/43317609870) SUCCESS.
+- [AkarParser V3 Private Raw Bulk #43317609905](https://github.com/hraaaaf/Akarfinder/actions/runs/43317609905) SUCCESS.
+- [Radar10 Private Staging #43317609898](https://github.com/hraaaaf/Akarfinder/actions/runs/43317609898) SUCCESS.
+- [CI Workflow Efficiency Policy #43317609944](https://github.com/hraaaaf/Akarfinder/actions/runs/43317609944) SUCCESS.
+
+**Lecture unique d'une fiche Agenz officielle (observation publique,
+pas fixture brute conservée) :**
+- https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291
+- Le HTML sémantique rendu expose prix ACTUEL 980 000 DH (ancien 1 100 000),
+  surface 104 m², « Salé – Al Qods », 3 chambres, 2 SDB.
+- La description parle aussi de « quartier de Tabriquet » ; il y a
+  deux désignations de quartier à examiner, sans correction automatique.
+- Source publiée et disponibilité active indépendamment vérifiées : NON.
+- Le lecteur de pages n'a pas fourni une archive HTML brute immuable
+  sous contrôle du repo. Ne PAS présenter cette observation comme un
+  benchmark de précision L4/V3 sur vrais octets HTML.
+
+**État de vérité :** route Agenz régionale et ancienne route reconnues
+par source L8 + V7 + V3 + L4. Tests synthétiques 85/85 PASS, mais
+aucun inventaire d'annonces nouvelles n'est importé. FeenWay demeure
+indexé (quelques exemples montrent badges sources Avito/Mubawab), aucune
+URL source originale indépendante certifiée, aucun connecteur FeenWay.
+
+**Next exact :** jeux d'échantillons bruts horodatés de fiches détails
+originelles; benchmark champ par champ et qualité de quartier/ancien prix,
+puis raccordement contrôlé à staging privé. GH Actions cron 10min non actif,
+PR non merged, 0 Vercel et aucune modification Supabase.
