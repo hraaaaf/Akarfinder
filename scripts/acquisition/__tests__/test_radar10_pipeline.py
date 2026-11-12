@@ -146,6 +146,21 @@ class PostgreSQLTests(unittest.TestCase):
                     ingest.apply_batch(self.conn, [ingest.normalize(sample())], self.audit())
         self.assertEqual(self.conn.execute("SELECT count(*) FROM acquisition.radar_candidates").fetchone()[0], 0)
 
+    def test_restricted_nonlogin_role_and_rls(self):
+        import psycopg
+        role = self.conn.execute("SELECT rolcanlogin FROM pg_roles WHERE rolname='radar10_ingest'").fetchone()
+        self.assertEqual(role, (False,))
+        rls = self.conn.execute(
+            "SELECT relrowsecurity FROM pg_class "
+            "WHERE oid IN ('acquisition.radar_candidates'::regclass, "
+            "'acquisition.radar_runs'::regclass)").fetchall()
+        self.assertEqual(rls, [(True,), (True,)])
+        with psycopg.connect(TEST_DSN, autocommit=True) as restricted:
+            restricted.execute("SET ROLE radar10_ingest")
+            restricted.execute("SELECT count(*) FROM acquisition.radar_candidates").fetchone()
+            with self.assertRaises(psycopg.errors.InsufficientPrivilege):
+                restricted.execute("DELETE FROM acquisition.radar_candidates")
+
     def test_publication_columns_cannot_be_true(self):
         ingest.apply_batch(self.conn, [ingest.normalize(sample())], self.audit())
         with self.assertRaises(Exception):
