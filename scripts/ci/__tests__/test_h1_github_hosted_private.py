@@ -236,6 +236,8 @@ class TestReadOnlyAndWorkflowContracts(unittest.TestCase):
         self.assertIn("inputs.authorize_h1_readonly == true", workflow)
         self.assertIn("github.ref == 'refs/heads/main'", workflow)
         self.assertIn("environment: q1e-neon-readonly", workflow)
+        self.assertIn("group: ${{ github.workflow }}-${{ github.event.pull_request.number || inputs.resume_run_id || github.run_id }}", workflow)
+        self.assertIn("cancel-in-progress: ${{ github.event_name == 'pull_request' }}", workflow)
         self.assertIn("persist-credentials: false", workflow)
 
     @unittest.skipUnless(os.environ.get("H1_TRUSTED_SOURCE"), "immutable V3 source checkout not provided")

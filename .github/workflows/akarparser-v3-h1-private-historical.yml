@@ -24,8 +24,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: h1-private-${{ github.event.pull_request.number || inputs.resume_run_id || github.run_id }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || inputs.resume_run_id || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   h1-contract-tests:
