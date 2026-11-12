@@ -33,3 +33,11 @@ NEXT EXACT:
 6. Fusion/promotions publiques/Vercel seulement après gates distincts.
 
 Aucun pourcentage global inventé.
+
+## Premières preuves CI exactes — commit b4ca24dc
+
+- [V7 + V646 signed fixture + V3 + PostgreSQL #43309455047](https://github.com/hraaaaf/Akarfinder/actions/runs/43309455047) : **SUCCESS**, 10 tests V7 PASS et 13 tests Radar10 PASS, 0 échec.
+- [Radar10 Private Staging #43309455115](https://github.com/hraaaaf/Akarfinder/actions/runs/43309455115) : **SUCCESS**.
+- [CI Workflow Efficiency Policy #43309454974](https://github.com/hraaaaf/Akarfinder/actions/runs/43309454974) : **SUCCESS**.
+- Le commit suivant renforce la validation de netloc HTTP : sa propre CI doit être observée avant clôture finale.
+- Ces exécutions sont entièrement OFFLINE sur données fictives et PostgreSQL 17 éphémère, **pas** une preuve de collecte nationale ni de lecture réelle Agenz.

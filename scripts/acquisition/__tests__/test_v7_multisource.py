@@ -86,6 +86,7 @@ class RegistryAndAdapterTests(unittest.TestCase):
             "http://agenz.ma/fr/annonces/immo-rabat/vente-appartements/agdal/246810",
             "https://evil-agenz.ma/fr/annonces/immo-rabat/vente-appartements/agdal/246810",
             "https://agenz.ma:444/fr/annonces/immo-rabat/vente-appartements/agdal/246810",
+            "https://agenz.ma:/fr/annonces/immo-rabat/vente-appartements/agdal/246810",
             "https://agenz.ma/fr/acheter/vente-appartements",
             "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/agdal/%32246810",
             "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/agdal/246810?utm=1",

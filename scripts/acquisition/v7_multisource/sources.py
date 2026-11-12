@@ -48,6 +48,7 @@ def canonical_identity(url: str) -> tuple[str, str, str]:
     except ValueError as exc:
         raise SourceNotSupported("URL_INVALID") from exc
     if (p.scheme != "https" or p.username or p.password or port is not None
+            or p.netloc not in ("mubawab.ma", "www.mubawab.ma", "agenz.ma", "www.agenz.ma")
             or p.query or p.fragment or p.path.startswith("//")
             or "%" in p.path or "\\" in p.path or "//" in p.path
             or p.path != p.path.lower()):
