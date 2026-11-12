@@ -75,3 +75,13 @@ Code files in the V646 runtime directory must be owned by root and immutable
 to the service account; only SQLite/export state is writable. The outside
 trusted-head directory requires separate secure write permissions and true
 rollback protection (local signed file alone is NOT that protection).
+
+## Immutable code / writable data separation
+When --collect-v646 is enabled, RADAR_V646_CODE_ROOT must point to an
+immutable root-owned checkout outside --v646-root (the writable SQLite/export
+state directory). The runner refuses a LIVE source when both paths overlap.
+The service template pins code in /opt/akarfinder and source data in
+/var/lib/akarfinder/v646; maintain script SHA and access permissions during
+any separately approved release.
+Canonical source hostname for the candidate identity is mubawab.ma even if
+the original captured URL uses www.mubawab.ma, preventing alias duplicates.

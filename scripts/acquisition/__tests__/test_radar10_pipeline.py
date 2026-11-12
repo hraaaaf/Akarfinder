@@ -78,6 +78,17 @@ class NormalizeTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             run_cycle.current_cycle_only([{"last_seen": "2026-11-12T18:00:00+00:00"}], start, end)
 
+    def test_live_cannot_execute_writable_scraper_code(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for name in ("akarfinder_scraper.py", "verify_v646_publication.py"):
+                (Path(tmp) / name).write_text("raise AssertionError('must not execute')\n")
+            with patch.dict(os.environ, {
+                "RADAR_LIVE_COLLECTION_APPROVED": "approved",
+                "RADAR_V646_CODE_ROOT": tmp,
+            }):
+                with self.assertRaisesRegex(PermissionError, "IMMUTABLE_CODE_ROOT"):
+                    run_cycle.verified_v646(Path(tmp), collect=True)
+
     def test_staging_denies_old_snapshot_even_if_write_switch_is_present(self):
         with patch.dict(os.environ, {"RADAR_STAGING_WRITE_ENABLED": "approved"}):
             with self.assertRaisesRegex(PermissionError, "NEW_SOURCE_CYCLE"):

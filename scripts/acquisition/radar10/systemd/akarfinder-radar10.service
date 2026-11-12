@@ -9,6 +9,7 @@ Type=oneshot
 User=akarfinder-radar
 WorkingDirectory=/var/lib/akarfinder/v646
 EnvironmentFile=/etc/akarfinder/radar10.env
+Environment=RADAR_V646_CODE_ROOT=/opt/akarfinder/scripts/pilots/mubawab-v646
 ExecStart=/opt/akarfinder/.venv/bin/python /opt/akarfinder/scripts/acquisition/radar10/run_cycle.py --v646-root /var/lib/akarfinder/v646 --collect-v646 --commit-private-staging
 TimeoutStartSec=8min
 MemoryMax=512M

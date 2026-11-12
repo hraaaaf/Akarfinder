@@ -59,9 +59,12 @@ def current_cycle_only(rows: list[dict], started_at: datetime, ended_at: datetim
 
 def verified_v646(root: Path, *, collect: bool) -> list[dict]:
     root = root.resolve()
-    source, reader = root / "akarfinder_scraper.py", root / "verify_v646_publication.py"
+    code_root = Path(os.getenv("RADAR_V646_CODE_ROOT", str(root))).resolve()
+    source, reader = code_root / "akarfinder_scraper.py", code_root / "verify_v646_publication.py"
     if not source.is_file() or not reader.is_file():
         raise ValueError("V646_PINNED_INSTALLATION_REQUIRED")
+    if collect and (code_root == root or code_root.is_relative_to(root) or root.is_relative_to(code_root)):
+        raise PermissionError("SEPARATE_IMMUTABLE_CODE_ROOT_REQUIRED")
     if collect:
         started_at = datetime.now(timezone.utc)
         if os.getenv("RADAR_LIVE_COLLECTION_APPROVED") != "approved":

@@ -74,7 +74,7 @@ def normalize(record):
     if not isinstance(raw_hash, str) or not SHA_RX.fullmatch(raw_hash):
         raise InvalidCandidate("RAW_SHA_INVALID")
     row = dict(
-        source_url=url, source_domain=parsed.hostname, source_offer_id=offer_id,
+        source_url=url, source_domain="mubawab.ma", source_offer_id=offer_id,
         title=_text(fields.get("title")), city=_text(fields.get("city"), 120),
         district=_text(fields.get("district"), 120),
         price_mad=_num(fields.get("price_mad"), integer=True),
