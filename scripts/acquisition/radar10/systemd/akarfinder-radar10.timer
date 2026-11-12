@@ -1,0 +1,12 @@
+# NOT ENABLED. Requires approval and online Linux runner.
+[Unit]
+Description=Run Akarfinder Radar10 every ten minutes
+
+[Timer]
+OnCalendar=*-*-* *:0/10:00
+AccuracySec=1min
+Persistent=true
+Unit=akarfinder-radar10.service
+
+[Install]
+WantedBy=timers.target
