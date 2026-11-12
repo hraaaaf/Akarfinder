@@ -6,7 +6,7 @@ separately approved, and never reuses unverified exporter files.
 """
 from __future__ import annotations
 import argparse
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import json
 import os
 from pathlib import Path
@@ -35,12 +35,35 @@ def target_is_pinned(dsn: str) -> bool:
         return False
 
 
+def current_cycle_only(rows: list[dict], started_at: datetime, ended_at: datetime) -> list[dict]:
+    """V646 last_seen identifies this producer cycle, NEVER publication freshness."""
+    if started_at.tzinfo is None or ended_at.tzinfo is None:
+        raise ValueError("NAIVE_CLOCK")
+    selected = []
+    for item in rows:
+        value = item.get("last_seen")
+        if not isinstance(value, str):
+            raise ValueError("SOURCE_OBSERVATION_TIMESTAMP_MISSING")
+        try:
+            observed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ValueError("SOURCE_OBSERVATION_TIMESTAMP_INVALID") from exc
+        if observed.tzinfo is None or observed > ended_at + timedelta(seconds=5):
+            raise ValueError("SOURCE_OBSERVATION_TIMESTAMP_INVALID")
+        if observed >= started_at - timedelta(seconds=2):
+            selected.append(item)
+    if not selected:
+        raise ValueError("NO_SAME_CYCLE_OBSERVATIONS")
+    return selected
+
+
 def verified_v646(root: Path, *, collect: bool) -> list[dict]:
     root = root.resolve()
     source, reader = root / "akarfinder_scraper.py", root / "verify_v646_publication.py"
     if not source.is_file() or not reader.is_file():
         raise ValueError("V646_PINNED_INSTALLATION_REQUIRED")
     if collect:
+        started_at = datetime.now(timezone.utc)
         if os.getenv("RADAR_LIVE_COLLECTION_APPROVED") != "approved":
             raise PermissionError("LIVE_SOURCE_NO_GO")
         result = subprocess.run([sys.executable, str(source), "--engine", "http"],
@@ -55,10 +78,12 @@ def verified_v646(root: Path, *, collect: bool) -> list[dict]:
     data = json.loads(result.stdout)
     if not isinstance(data, list) or len(data) > 1000:
         raise ValueError("SNAPSHOT_SHAPE_OR_SIZE")
-    return data
+    return current_cycle_only(data, started_at, datetime.now(timezone.utc)) if collect else data
 
 
 def perform(root: Path, *, collect: bool = False, commit: bool = False) -> dict:
+    if commit and not collect:
+        raise PermissionError("STAGING_REQUIRES_NEW_SOURCE_CYCLE")
     if commit and os.getenv("RADAR_STAGING_WRITE_ENABLED") != "approved":
         raise PermissionError("PRIVATE_STAGING_NO_GO")
     dsn = os.getenv("RADAR_DATABASE_URL", "")
@@ -85,7 +110,11 @@ def perform(root: Path, *, collect: bool = False, commit: bool = False) -> dict:
         if not commit:
             return {**summary, "db_writes": 0}
         import psycopg
+        cert = Path(os.getenv("RADAR_DB_CA_CERT", ""))
+        if not cert.is_file():
+            raise PermissionError("DATABASE_CA_CERT_REQUIRED")
         with psycopg.connect(dsn, connect_timeout=6, autocommit=True,
+                             sslmode="verify-full", sslrootcert=str(cert),
                              application_name="akarfinder-radar10") as conn:
             return {**summary, **apply_batch(conn, rows, audit)}
 
