@@ -48,3 +48,19 @@ Le commit `2406d2e61c378817eeecc95389946bfec44604b1` ajoutait l'image Playwright
 **Décision de sécurité :** restauration des 11 fichiers de workflow à leur contenu vérifié avant ce correctif (Git blobs identiques à ceux du HEAD `400d721100e41060682d7a6af0637d7d203d4fa3`), tout en conservant les 7 fichiers J18-I et le verrou historique `vercel.mjs git.deploymentEnabled=false`. Cette restauration est volontaire : le workflow de branche ne doit pas violer la politique CI pour « passer au vert ». Le pilote isolé d'image Playwright [#43104698376](https://github.com/hraaaaf/engineering-governance/actions/runs/43104698376) reste SUCCESS mais ne valide pas les 11 audits UI.
 
 **Statut :** CI visuelle globale NON VALIDÉE. **Next exact :** travail d'effort élevé pour isoler la certification browser sur un dépôt/runner QA hors PR, branché sur un SHA exact et des artefacts de captures, puis reconfigurer le workflow post-merge conformément à la politique, sans Vercel, merge ni données prod. Ne pas relancer des workflows lourds identiques tant que l'infrastructure DNS n'est pas fiabilisée. Préserver la route J18-H en 404 et les gates de publication.
+
+## 2026-11-12 — Fès/Tanger : intégration CSS et double verrou Vercel (QA validée)
+
+**GOAL** : supprimer les superpositions dans les cartes de Fès et Tanger sans régression des autres villes, sans déclencher de preview Vercel.
+
+**Avant** : chevauchement « Maroc » / CTA de 1 972,97 px² sur mobile et 2 318,63 px² sur desktop. Le déplacement du bouton était rejeté car il recouvrait ensuite la recherche. Le fallback ville possède déjà une flèche native de retour.
+
+**Code intégré** : `app/map/ux-convergence-l9.css` masque uniquement sur le fallback national en vue ville le retour flottant redondant et la pastille POI « indisponible » redondante, tout en conservant le texte explicatif. Le bouton reste visible sur Casablanca, Marrakech et Agadir dans les modes qualifiés. Le commit candidat `ecdf143040f0b0c02bc621171be769ee0a9d8508` a été intégré à la branche de la PR [#1197](https://github.com/hraaaaf/Akarfinder/pull/1197), avec `vercel.json` (git.deploymentEnabled=false) au commit `61cb40495e22d8c75e5de08c51f2a3bf74152fd2`. Avancement de ref effectué par fast-forward avec SHA attendu, sans force.
+
+**Sécurité déploiement** : réglage projet Vercel `previewDeploymentsDisabled=true` écrit puis relu à `true` via API authentifiée ; `vercel.json` constitue un deuxième verrou. Le vieux `vercel.mjs` reste inchangé, mais ne doit pas servir à lui seul de preuve. Après push, Vercel ne montre aucun déploiement du HEAD `61cb4049` ; dernier historique observé : `dpl_6VqqL4ot3NXf8JNb2cZuHatTuoDz` (ERROR, SHA historique `5af7058`). Aucun merge, déploiement volontaire ni modification de DB.
+
+**Preuves** : QA compilée isolée sur le candidat `ecdf143` : [run #43253919089](https://github.com/hraaaaf/engineering-governance/actions/runs/43253919089) SUCCESS, 11/11 parcours LOT8, 12/12 contrôles CSS, 6/6 flèches natives, 0 finding et hash SHA256 des 12 captures concordant. CI GitHub Actions du HEAD PR **`61cb4049` : 29 workflows, 27 SUCCESS / 2 SKIPPED / 0 FAILURE / 0 RUNNING**. La CI couvre le HEAD intégrant le verrou ; la QA visuelle détaillée reste celle du commit candidat, dont le CSS est inchangé.
+
+**Closeout sous-lot** : correctif Fès/Tanger intégré et testé ; pas de release. Les autres gates J18 restent ouverts : vérification source/pinning/signatures réelles, distribution/CDN/quotas, identité/WAF, accessibilité avec lecteur d'écran réel, géométrie Maârif central certifiée, qualité UX globale >=9,5/10 et décision humaine. **NO-GO merge / publication / Vercel sans GO distinct**. La PR est toujours Draft.
+
+**Next exact** : après cet addendum documentaire, vérifier la nouvelle CI éventuelle créée par le seul commit de documentation et l'absence de nouveau déploiement ; puis passer aux gates J18 indépendants. Ne pas appeler tous les gates J18 « terminés ».
