@@ -257,3 +257,12 @@ Code SHA 4b4205e2d6b200153ce20124ed1c024014d70d53 : comparaison stricte de prix 
 ## Closeout CI prix barré — preuves exactes
 
 SHA code 4b4205e2d6b200153ce20124ed1c024014d70d53, cinq jobs GitHub vérifiés COMPLETED SUCCESS : V7 #43322027038 = 18 tests Node + 25 V3 portails + 9 L4 + 5 pont URL + 5 benchmark comparatif + 12 V7 + 13 Radar10 = 87/87 PASS ; V3 regression #43322027114 SUCCESS ; CI efficiency #43322027013 SUCCESS ; Radar10 #43322026928 SUCCESS ; V3 private #43322026927 SUCCESS. Aucun test de source réelle ni de date de publication indépendamment certifiée. Cron 10min toujours désactivé. Prochaine action technique : archiver un vrai HTML brut de page individuelle avec SHA et comparaison L4/V3 des sept champs, notamment prix barré et quartier contradictoire ; FeenWay origine dupliquée à confirmer. Pas de merge, DB, Vercel.
+
+## 12 novembre 2026 — Conflit de quartier Agenz => revue manuelle
+
+Goal : comparer le quartier issu de la route Agenz à une assertion explicite du champ meta description de la fiche, et bloquer toute fausse certitude.
+Code SHA cea6e6d405c55c10b092573fda18bdfbf1deb8af : akarparser_v3_portals.py detecte pour Agenz uniquement un quartier de X explicite dans og:description / meta description et le compare au quartier de la route. En cas de contradiction, akarparser_v3_raw_bulk.py signale AGENZ_EXPLICIT_NEIGHBORHOOD_CONFLICT_REQUIRES_REVIEW et human_review_required. La valeur de quartier n'est pas réécrite arbitrairement.
+Deux tests supplémentaires : quartier Al Qods dans route contre Tabriquet dans description = revue ; Al Qods contre Al Qods = pas de revue.
+Source de constat : la fiche publique Agenz /fr/annonces/immo-sale/vente-appartements/al-qods/444291 consultée antérieurement, prix courant 980000 DH, ancien barré 1100000 DH, surface 104m2, quartier Al Qods affiché, Tabriquet mentionné dans la description.
+Limite : seul HTML rendu sémantique disponible par le lecteur, aucun snapshot source brut immuable conservé, qualité sur vrais HTML non certifiée. CI exact SHA à vérifier. 0 source live GitHub, 0 DB writes, aucune fusion/cron/Vercel.
+Next : CI → snapshots HTML originaux hachés et datés → benchmark 7 champs L4/V3 → correctifs → canary staging privé et validations distinctes.
