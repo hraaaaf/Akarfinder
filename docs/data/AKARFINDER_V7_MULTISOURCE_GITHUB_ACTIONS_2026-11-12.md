@@ -188,3 +188,29 @@ Les 5 tests du nouveau module vérifient le contrat synthétique, pas la
 précision sur des snapshots réels. Next exact: collecter un corpus permis
 et horodaté de fiches individuelles, comparer l'extraction des 7 champs
 source par source, corriger les divergences, puis canary privé sous GO.
+
+
+## Compatibilité route régionale Agenz — code SHA 1001f165, CI à vérifier
+
+**Motif :** le robots.txt public d'Agenz mentionne le format de fiche
+régionale /fr/annonces-achat/appartement/rabat-sale-kenitra/sale/tabriquet/
+appartement-a-vendre-259645. Les routes de fiches déjà indexées de type
+/fr/annonces/immo-sale/vente-appartements/al-qods/444291 continuent aussi.
+
+**Corrigé en code:** agenz-source-first.mjs, V7 sources.py,
+akarparser_v3_portals.py et canonical_listing_extractor.py comprennent les
+deux formats (URL/ID et labels city/district/type/transaction dérivés des
+segments explicites). Les validateurs d'URLs rejettent toujours les pages de
+recherche. Régressions source L8 Node, pont Node vers V3, V3 portails et L4
+canonical ajoutées à la CI GitHub V7.
+
+**Contrat de preuve :** des chemins mentionnés dans un fichier robots ne
+certifient PAS qu'une annonce est en ligne ou son contenu. Les tests
+utilisent une URL illustrative observée dans ce fichier et HTML
+synthétique. Pas de requête d'annonce, pas de données vendues/prix inventés,
+aucune migration/staging/production. Nouvelle preuve CI exigée au HEAD source
+1001f165b5bd284f4652c87133dfdc2b0930cf5c.
+
+**Next exact:** confirmer CI HEAD, corriger les divergences et ne traiter
+des fiches réelles qu'avec HTML brut réellement obtenu et provenance
+originale démontrée. Aucun cron live ou Vercel.
