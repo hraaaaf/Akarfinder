@@ -12,18 +12,28 @@ from urllib.parse import urlsplit
 from akarparser_v3_v646_bridge import bridge_v646_row
 
 # Inventory != supported collection. Unimplemented sites remain disabled.
+# Priorities indicate onboarding/review order, NOT current collection coverage.
+# FeenWay is an aggregator: always retain upstream original URL + portal ID
+# independently, or flag for review; never treat mirrored pages as new inventory.
+SOURCE_PRIORITY: tuple[str, ...] = (
+    "feenway.com", "agenz.ma", "avito.ma", "yakeey.com", "sarouty.ma",
+    "mubawab.ma", "marocannonces.com", "masaken.ma",
+    "immoneuf.avito.ma", "immo.mitula.ma", "maportail-immobilier.ma",
+)
 PORTALS: dict[str, dict[str, str]] = {
-    "mubawab.ma": {"adapter": "v646_authenticated_snapshot", "status": "offline_tested"},
+    "feenway.com": {"adapter": "", "status": "not_integrated"},
     "agenz.ma": {"adapter": "individual_observation", "status": "offline_tested"},
     "avito.ma": {"adapter": "", "status": "not_integrated"},
-    "sarouty.ma": {"adapter": "", "status": "not_integrated"},
-    "marocannonces.com": {"adapter": "", "status": "not_integrated"},
     "yakeey.com": {"adapter": "", "status": "not_integrated"},
-    "immo.mitula.ma": {"adapter": "", "status": "not_integrated"},
-    "immoneuf.avito.ma": {"adapter": "", "status": "not_integrated"},
+    "sarouty.ma": {"adapter": "", "status": "not_integrated"},
+    "mubawab.ma": {"adapter": "v646_authenticated_snapshot", "status": "offline_tested"},
+    "marocannonces.com": {"adapter": "", "status": "not_integrated"},
     "masaken.ma": {"adapter": "", "status": "not_integrated"},
+    "immoneuf.avito.ma": {"adapter": "", "status": "not_integrated"},
+    "immo.mitula.ma": {"adapter": "", "status": "not_integrated"},
     "maportail-immobilier.ma": {"adapter": "", "status": "not_integrated"},
 }
+assert tuple(PORTALS) == SOURCE_PRIORITY
 SOURCE_IDS = {
     "mubawab.ma": re.compile(r"/fr/a/([0-9]{5,})(?:/[a-z0-9-]+)?/?\Z"),
     "agenz.ma": re.compile(

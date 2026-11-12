@@ -14,8 +14,8 @@ sys.path.insert(0, str(HERE))
 import akarparser_v3_raw_bulk as v3
 from radar10 import ingest, run_cycle
 from v7_multisource.sources import (
-    PORTALS, SourceNotSupported, canonical_identity, bridge_agenz_record,
-    bridge_multisource,
+    PORTALS, SOURCE_PRIORITY, SourceNotSupported, canonical_identity,
+    bridge_agenz_record, bridge_multisource,
 )
 from v7_multisource.pipeline import prepare, read_individual_records
 
@@ -49,12 +49,23 @@ def mubawab(offer="9961000"):
 
 class RegistryAndAdapterTests(unittest.TestCase):
     def test_explicit_inventory_not_confused_with_live_support(self):
-        self.assertGreaterEqual(len(PORTALS), 10)
+        self.assertEqual(len(PORTALS), 11)
+        self.assertEqual(tuple(PORTALS), SOURCE_PRIORITY)
         self.assertEqual(
-            [x for x, v in PORTALS.items() if v["status"] == "offline_tested"],
-            ["mubawab.ma", "agenz.ma"],
+            SOURCE_PRIORITY[:5],
+            ("feenway.com", "agenz.ma", "avito.ma", "yakeey.com", "sarouty.ma"),
         )
+        self.assertEqual(
+            {x for x, v in PORTALS.items() if v["status"] == "offline_tested"},
+            {"mubawab.ma", "agenz.ma"},
+        )
+        self.assertEqual(PORTALS["feenway.com"]["status"], "not_integrated")
+        self.assertEqual(PORTALS["feenway.com"]["adapter"], "")
         self.assertEqual(PORTALS["avito.ma"]["status"], "not_integrated")
+
+    def test_feenway_aggregator_remains_disabled_for_staging(self):
+        with self.assertRaises(SourceNotSupported):
+            bridge_multisource("feenway.com", {"source_url": "https://www.feenway.com/immobilier"})
 
     def test_agenz_normalizes_and_v3_guards_publication(self):
         row = bridge_agenz_record(agenz())

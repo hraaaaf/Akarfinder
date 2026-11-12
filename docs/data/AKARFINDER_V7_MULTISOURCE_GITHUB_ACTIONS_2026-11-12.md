@@ -10,7 +10,7 @@ scripts/acquisition/v7_multisource/README.md pour le runbook.
 PÉRIMÈTRE RÉEL:
 - Deux adaptateurs OFFLINE: Mubawab (V6.4.6 snapshot HMAC signé), Agenz
   (observation individuelle fournie et non authentifiée côté portail).
-- Huit sites enregistrés comme NON intégrés, pas comme couverts.
+- Neuf sites enregistrés comme NON intégrés, pas comme couverts.
 - Pas de connexion live à un portail et pas d'import Supabase PROD.
 - Workflow GitHub Actions porte un cron 10 min, mais n'est pas sur main.
   Sa seule voie schedule est un probe NO-NETWORK OFF par défaut.
@@ -50,3 +50,11 @@ Aucun pourcentage global inventé.
 - Supabase active : lecture SQL confirme schéma `acquisition` absent et deux tables publiques `property_listings` / `listing_sources` toujours à 0 lignes après tests. Aucun réseau source réel utilisé par les tests.
 - PR V7 #1204 **Draft / non fusionnée**. Le cron Actions 10 minutes est déclaré mais **pas activé**, n'offre aucune ponctualité garantie et ne possède que le status probe OFF-LINE. Les 8 autres portails demeurent NOT_INTEGRATED.
 - Phase LIVE : bloquée sur autorisations source spécifiques, supports réels, serveur d'état de confiance HMAC monotone, secrets DB staging, validation via canarys et installation volontaire sur main. Le lot code/offline est clos, pas la mise en service multi-sites.
+
+## Décision de priorité utilisateur — 12 novembre 2026
+
+Ordre de traitement demandé : **1 FeenWay → 2 Agenz → 3 Avito → 4 Yakeey → 5 Sarouty → 6 Mubawab → 7 MarocAnnonces → 8 Masaken → 9 Immoneuf Avito → 10 Mitula → 11 Portail-Immobilier**.
+
+La priorité décrit l'ordre d'évaluation/intégration, **pas** la couverture active. Le domaine FeenWay `feenway.com` est ajouté au registre, statut `not_integrated`, sans connecteur ni HTTP. FeenWay se présente publiquement comme agrégateur d'annonces issues notamment de Mubawab, Agenz, Yakeey, Sarouty : nécessité d'identifier les URLs et IDs sources originaux, sans compter deux fois la même annonce.
+
+**Next exact** : vérifier CI sur la modification de l'ordre, puis évaluer le format de fiches FeenWay et leur traçabilité avant un connecteur privé autorisé. Aucun collecteur nouveau en service, cron 10 min toujours OFF, Supabase inchangée et aucun merge/Vercel.

@@ -11,20 +11,28 @@ V6.4.6 is reused as a signed Mubawab snapshot producer; Agenz accepts
 externally supplied observations of individual pages with an exact URL/ID.
 Neither adapter establishes freshness, rights, availability or site coverage.
 
-## Source registry, not a coverage claim
+## Source priorities (onboarding order, NOT live coverage)
 
-| Portal | Adapter status | Unresolved gate |
-| --- | --- | --- |
-| Mubawab | offline HMAC snapshot | approved live source + durable trusted-head |
-| Agenz | offline individual observation | independent live source verification |
-| Avito | NOT integrated | source onboarding |
-| Sarouty | NOT integrated | source onboarding |
-| MarocAnnonces | NOT integrated | source onboarding |
-| Yakeey | NOT integrated | source onboarding |
-| Mitula | NOT integrated | aggregator/dedup review |
-| Immoneuf Avito | NOT integrated | program-neuf strategy |
-| Masaken | NOT integrated | source onboarding |
-| Portail-Immobilier | NOT integrated | source onboarding |
+| Priority | Portal | Adapter status | Important constraint |
+| --- | --- | --- | --- |
+| 1 | FeenWay | NOT integrated | Aggregator; use upstream URLs and IDs, avoid duplicates |
+| 2 | Agenz | offline individual observation | independent live source verification |
+| 3 | Avito | NOT integrated | source onboarding |
+| 4 | Yakeey | NOT integrated | source onboarding |
+| 5 | Sarouty | NOT integrated | source onboarding |
+| 6 | Mubawab | offline HMAC snapshot | approved live source + durable trusted-head |
+| 7 | MarocAnnonces | NOT integrated | source onboarding |
+| 8 | Masaken | NOT integrated | source onboarding |
+| 9 | Immoneuf Avito | NOT integrated | program-neuf category |
+| 10 | Mitula | NOT integrated | aggregator/dedup review |
+| 11 | Portail-Immobilier | NOT integrated | source onboarding |
+
+FeenWay's official site describes it as aggregating ads from other portals,
+including Mubawab, Agenz, Yakeey and Sarouty. Reviewing it first does not
+justify relabeling its mirror pages as original newly published properties.
+Canonical upstream URL+site ID and a cross-site physical-duplicate review
+are essential before any private ingestion. Site inventory is not permission
+to copy or re-publish, not guaranteed coverage and not LIVE certification.
 
 Other agency/developer portals may be onboarded after evidence and a
 specific source adapter. This inventory is NOT an assertion of exhaustive
@@ -91,7 +99,7 @@ Critical unsolved blockers for live ingestion on GitHub-hosted runners:
   a tamper-resistant trusted HMAC generation log between runs without
   separately designed and reviewed persistent external state.
 - Source-specific live acquisition is not implemented/certified for Agenz
-  or the other eight inventoried portals; current V646 source limits
+  or the other nine inventoried portals; current V646 source limits
   and source site restrictions still apply.
 - Notion's hourly ChatGPT discovery radar is separate. There is no
   approved live feed that promotes its observations into V7.
