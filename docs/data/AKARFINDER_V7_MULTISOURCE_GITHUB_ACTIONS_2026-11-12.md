@@ -90,3 +90,39 @@ Sur `main`, le document canonique `docs/AKARFINDER_MOROCCO_WEB_ACQUISITION.md` p
 **Correction d'interprétation :** « 2 adaptateurs offline » désigne seulement le NOUVEAU module V7 #1204 (V646/Mubawab + observations Agenz), pas les collecteurs déjà présents dans `main`. « 9 non intégrés » signifie non câblés dans le NOUVEAU pipeline V7, et non pas absents du dépôt. Éviter de créer un deuxième système concurrent de découverte et de revisite.
 
 **NEXT EXACT :** comparer les interfaces et formats de sortie de ces modules `main` contre les entrées V3/Radar10, réutiliser le code au moyen d'un adaptateur de compatibilité et de tests isolés, conserver l'inventaire utilisateur FeenWay→Agenz→Avito→Yakeey→Sarouty, sans collecte LIVE ni suppression/replacement prématuré. FeenWay doit être étudié en priorité en vérifiant les URL/ID sources originales, pas en aspirant une base miroir. Après tests, gate humain avant source network, migration, cron main et PROD. Aucun Vercel.
+
+
+## Reuse L8 → V3 compatibility slice (new code; CI still to verify)
+
+**Goal:** connect existing merged L8 URL enumerator outputs to V7 without
+a second collection system or false promotion of source URLs as listings.
+
+**Source of truth:** directly imported 5 existing merged module validators:
+Agenz #993; Avito #989; Sarouty #990; Mubawab #988;
+MarocAnnonces #992. Input: returned listingUrls in their successful,
+zero-write reports. FeenWay and Yakeey are not wired in this slice.
+
+**New path in Draft #1204:**
+- scripts/acquisition/v7_multisource/legacy_candidate_bridge.mjs
+- scripts/acquisition/v7_multisource/legacy_url_intake.py
+- scripts/acquisition/__tests__/v7-legacy-candidate-bridge.test.mjs
+- scripts/acquisition/__tests__/test_v7_legacy_url_intake.py
+- workflow .github/workflows/akar-v7-multisource-gate.yml updated with
+  Node 22 and Python cross-language actual V3 checks.
+
+**Proof boundary:** only URLs and source IDs, no detail snapshots. Therefore
+AkarParser V3 classifies such inputs as source_snippet_only; 0 records
+to private Radar10 detail candidates and 0 to public. No source fetch, no
+DB credentials, no publication or freshness claims. A report stopped by
+HTTP 429, 403, hard-block or inconsistent ID is rejected in full.
+No revival of banned access patterns and no live automatic 10-min schedule.
+
+**Success test:** independently observe CI (Node reuse regression,
+Python node-to-V3 contract and pre-existing Radar10/PostgreSQL tests).
+No PASS declaration before exact HEAD CI. PR remains Draft.
+If red, diagnose and fix before closeout.
+
+**Next exact:** after green CI, identify safe, genuine authorized detail-page
+data contracts for the old collectors and plan the bridging step V3 details.
+No sources may be turned on or staging schema migrated without separate
+approvals. Retain FeenWay as highest *research* priority, not as already wired.

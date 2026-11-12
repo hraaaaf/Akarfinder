@@ -6,6 +6,13 @@ on:
       - 'scripts/acquisition/v7_multisource/**'
       - 'scripts/acquisition/radar10/ingest.py'
       - 'scripts/acquisition/__tests__/test_v7_multisource.py'
+      - 'scripts/acquisition/__tests__/test_v7_legacy_url_intake.py'
+      - 'scripts/acquisition/__tests__/v7-legacy-candidate-bridge.test.mjs'
+      - 'scripts/acquisition/agenz-source-first.mjs'
+      - 'scripts/acquisition/avito-sitemap-enumerator.mjs'
+      - 'scripts/acquisition/sarouty-sitemap-enumerator.mjs'
+      - 'scripts/acquisition/mubawab-exhaustive-enumerator.mjs'
+      - 'scripts/acquisition/marocannonces-source-first.mjs'
       - '.github/workflows/akar-v7-multisource-gate.yml'
   workflow_dispatch:
   schedule:
@@ -62,8 +69,17 @@ jobs:
           python -m py_compile
           scripts/acquisition/v7_multisource/sources.py
           scripts/acquisition/v7_multisource/pipeline.py
+          scripts/acquisition/v7_multisource/legacy_url_intake.py
+          scripts/acquisition/__tests__/test_v7_legacy_url_intake.py
           scripts/acquisition/radar10/ingest.py
           scripts/acquisition/__tests__/test_v7_multisource.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate reused legacy collectors without portal network
+        run: node --test scripts/acquisition/__tests__/v7-legacy-candidate-bridge.test.mjs
+      - name: Cross-language L8 URLs to true V3 quarantine (no DB)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_legacy_url_intake.py'
       - name: V7 source and actual V3 PostgreSQL tests
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_multisource.py'
       - name: Existing Radar10 private staging regression

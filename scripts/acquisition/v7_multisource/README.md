@@ -119,3 +119,44 @@ Critical unsolved blockers for live ingestion on GitHub-hosted runners:
    then verify 24h schedule and actual new URL yield.
 6. Only then retire the hourly ChatGPT radar and consider separate
    public admission/merge/Vercel approvals.
+
+
+## Existing L8 collectors: reusable URL-only contract (new V7 bridge)
+
+**Do not rewrite the already merged L8 collection modules.** Import their
+existing individual-URL validators and consume their returned listingUrls,
+without invoking any network enumerator. This is a separate candidate path
+from the authenticated V646 / Agenz detail-observation V7 path above.
+
+- legacy_candidate_bridge.mjs (Node 22) imports real functions from:
+  agenz-source-first.mjs (#993), avito-sitemap-enumerator.mjs (#989),
+  sarouty-sitemap-enumerator.mjs (#990),
+  mubawab-exhaustive-enumerator.mjs (#988), and
+  marocannonces-source-first.mjs (#992). All are already on main.
+- adaptLegacyReport(source, existingEnumeratorReport) insists on
+  zeroDbWrites=true, no stoppedEarly, a bounded listingUrls array and exact
+  source URL / numeric ID evidence. URL-only records are deduplicated strictly
+  by (portal, ID); contradictory ID+URL pairs halt the whole batch.
+- legacy_url_intake.py feeds only validated source URL / ID observations into
+  actual AkarParser V3, as a URL-only source snippet. It asserts the V3 status
+  source_snippet_only. No detailed record passes to Radar10 private SQL.
+- FeenWay, Yakeey and non-integrated portals intentionally have no source
+  validator in this bridge. FeenWay-origin mirrors must first be traced back
+  to original portal URLs and IDs. The Kaynly Yakeey lane #1146 is Draft.
+- Source-specific output reports are **not authenticated input** by this
+  bridge and never prove permission, active status, freshness, physical
+  property uniqueness, or source field accuracy. No live calls are made.
+- The pre-existing source collectors may produce partial or hard-blocked
+  output: fail closed rather than counting their URL list as new usable ads.
+- No caller may transform a URL-only record into a V3 detailed observation
+  by inventing title, city, price, surface, transaction or publication date.
+
+**Safe data flow:**
+old L8 collectors (authorized, separately approved run) → report listingUrls
+→ V7 legacy URL-candidate bridge → V3 source_snippet_only preview (0 DB)
+→ separately authorized individual-page capture and real evidence →
+AkarParser V3 detail parsing → Radar10 private staging (separate gates).
+
+CI exercises the real legacy JS functions offline with adversarial URL and
+source ID cases, then executes actual V3 via a Python/Node cross-language
+test. This is the first *compatibility* slice, not a live 5-source service.
