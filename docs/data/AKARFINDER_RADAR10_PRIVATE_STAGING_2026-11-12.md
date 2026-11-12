@@ -54,3 +54,30 @@ Timer: scripts/acquisition/radar10/systemd/akarfinder-radar10.timer
   replay, pannes/quotas, journaux, observation pendant 24 h.
 - Human gate supplémentaire avant promotion des fiches dans public et toute
   mise en ligne Vercel; puis documentation de closeout avec preuves exactes.
+
+## Closeout du code testé (2026-11-12 17:57 UTC)
+- SHA code exact: d579702625dce8d15e28bb4acc4d307c4172c57e.
+- CI ciblée: https://github.com/hraaaaf/Akarfinder/actions/runs/43274748054 — SUCCESS,
+  13 tests / 13 PASS / 0 SKIP / 0 FAIL; PostgreSQL 17 éphémère;
+  exécution du vrai runner sur source V646 HMAC synthétique avec vrai V3.
+- CI Efficiency: https://github.com/hraaaaf/Akarfinder/actions/runs/43274748147 — SUCCESS.
+- Contrôle Supabase en lecture seule après les tests: schéma acquisition absent,
+  public.property_listings=0 et public.listing_sources=0.
+- Rôle SQL prévu: radar10_ingest NOLOGIN, policies RLS, login d'exécution
+  radar10_runtime à créer après approbation, pas de credentials admin.
+- Sécurité exploit: TLS verify-full avec CA, code V646 immuable séparé des états
+  modifiables et fenêtre de collecte effectivement observée à chaque cycle;
+  le nouveau snapshot n'est jamais réinterprété comme date de publication.
+- Artefacts service/timer non installés, aucune exécution planifiée, aucune
+  migration Supabase, aucun merge, aucune collecte LIVE, aucun Vercel.
+- Ce lot est CLOSE côté code/CI privé, NO_GO_LIVE et NO_GO_PROD maintenus.
+
+## Gate opérateur restant
+1. Source V646: validation officielle des accès réseau, captures, robots,
+   limites et procédure HMAC/anti-rollback réellement protégée.
+2. Supabase: approuver puis appliquer la migration privée, créer le login
+   limité radar10_runtime, attribuer les secrets/certificats sur l'hôte.
+3. Runner: installer Linux permanent, puis activer timer seulement après
+   les 2 autorisations LIVE_SOURCE et PRIVATE_STAGING, tests canary 1/10/100.
+4. Mesurer 24h de cycles réels, fraîcheur éditoriale et couverture nationale
+   avant toute décision de diffusion dans public. Gate Vercel séparé.
