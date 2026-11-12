@@ -80,3 +80,77 @@ jobs:
           Write-Host "Q1F_PRODUCTION_NEON_WRITES=0"
           Write-Host "Q1F_INDEPENDENT_PRECISION_CERTIFIED=0"
       # NO cache, artifacts, uploads, cloud credentials, or untrusted PR execution.
+
+
+  historical-neon-h1-priority-1000:
+    name: H1 Neon Recovery 1000 real records — read-only
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'hraaaaf/Akarfinder' && github.head_ref == 'feat/akarparser-v3-raw-bulk-20261109'
+    runs-on: ubuntu-latest
+    environment: q1e-neon-readonly
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    env:
+      Q1E_NEON_RECOVERY_READONLY_URL: ${{ secrets.Q1E_NEON_RECOVERY_READONLY_URL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify immutable H1 extractor and read-only secret presence
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git hash-object scripts/acquisition/akarparser_v3_historical_neon_batches.py)" = '06a99ed9daa1a7fcfe1c293729b440e6caa32930'
+          test -n "$Q1E_NEON_RECOVERY_READONLY_URL" || { echo 'H1_READONLY_CREDENTIAL_MISSING'; exit 1; }
+          command -v psql >/dev/null || { echo 'H1_PSQL_CLIENT_MISSING'; exit 1; }
+      - name: Parse exactly 1000 historic priority rows using actual V3 (private ephemeral scratch)
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          scratch="$(mktemp -d "$RUNNER_TEMP/akarfinder-h1.XXXXXXXX")"
+          trap 'rm -rf "$scratch"' EXIT
+          python -B scripts/acquisition/akarparser_v3_historical_neon_batches.py \
+            --out "$scratch/out" --mode priority --batch-size 1000 --max-batches 1 \
+            > "$scratch/stdout.json"
+          python - "$scratch" <<'PY'
+          import hashlib, json, pathlib, sys
+          scratch = pathlib.Path(sys.argv[1])
+          result = json.loads((scratch/'stdout.json').read_text(encoding='utf-8'))
+          root = scratch/'out'
+          manifest = json.loads((root/'manifest.json').read_text(encoding='utf-8'))
+          assert result['mode'] == 'priority' and result['processed'] == 1000
+          assert result['batches'] == 1 and result['db_writes'] == 0
+          assert manifest['processed'] == 1000 and len(manifest['batches']) == 1
+          assert manifest['snapshot']['total'] == 151900
+          assert manifest['snapshot']['priority_count'] == 53083
+          assert manifest['db_writes'] == 0 and manifest['source_requests'] == 0
+          assert manifest['publication_authorized'] is False
+          batch = manifest['batches'][0]
+          raw = root/'inputs'/batch['input_file']
+          report_file = root/'parsed'/batch['id']/'aggregate_report.json'
+          assert hashlib.sha256(raw.read_bytes()).hexdigest() == batch['input_sha256']
+          assert hashlib.sha256(report_file.read_bytes()).hexdigest() == batch['report_sha256']
+          report = json.loads(report_file.read_text(encoding='utf-8'))
+          assert report['input_count'] == 1000
+          assert report['status_counts'].get('errors', 0) == 0
+          assert report['safety']['db_writes'] == 0
+          assert report['safety']['network_requests'] == 0
+          assert report['safety']['neon_admission_authorized'] is False
+          assert report['input_files'][raw.name]['sha256'] == batch['input_sha256']
+          print('H1_REAL_NEON_V3_CANARY='+json.dumps({
+              'real_records': result['processed'],
+              'planned_priority': manifest['snapshot']['priority_count'],
+              'planned_remaining': manifest['snapshot']['remaining_count'],
+              'batch_count': result['batches'],
+              'statuses': {k:v for k,v in report['status_counts'].items() if k != 'input'},
+              'field_presence_not_accuracy': report['field_presence_not_accuracy'],
+              'input_sha256': batch['input_sha256'],
+              'report_sha256': batch['report_sha256'],
+              'db_writes': 0, 'publication_authorized': False
+          }, sort_keys=True))
+          PY
+      # The private scratch is deleted on exit. No artifacts/cache/raw listing logs.
