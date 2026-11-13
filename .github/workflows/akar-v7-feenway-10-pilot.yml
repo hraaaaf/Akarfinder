@@ -1,0 +1,53 @@
+name: Akar V7 FeenWay ten source links - one-shot
+
+on:
+  push:
+    branches:
+      - feat/akar-v7-feenway-offline-provenance-20261113
+    paths:
+      - '.github/workflows/akar-v7-feenway-10-pilot.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: akar-v7-feenway-10-source-once
+  cancel-in-progress: false
+
+jobs:
+  bounded-original-link-pilot:
+    if: github.repository == 'hraaaaf/Akarfinder' && github.ref == 'refs/heads/feat/akar-v7-feenway-offline-provenance-20261113'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      PYTHONPATH: scripts/acquisition
+      AKAR_SOURCE_NETWORK_APPROVED: approved
+    steps:
+      - name: Checkout only branch under review
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install V7 parser requirements
+        run: python -m pip install 'psycopg[binary]==3.3.8' 'beautifulsoup4==4.14.3'
+      - name: Test ten-page pilot guardrails offline
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_actions_pilot.py'
+      - name: Capture at most ten public FeenWay listing pages with robots gate
+        run: >-
+          python scripts/acquisition/v7_multisource/feenway_actions_pilot.py
+          --urls scripts/acquisition/v7_multisource/feenway_pilot_10_urls.json
+          --output pilot-github
+          --approved-10
+      - name: Upload ONLY non-admissible observations (never raw HTML/images)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-10-observations-quarantine
+          path: |
+            pilot-github/report_QUARANTINE.json
+            pilot-github/observations_QUARANTINE.jsonl
+          if-no-files-found: ignore
+          retention-days: 1
