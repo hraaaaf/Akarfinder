@@ -672,10 +672,14 @@ export function MapLibreNeighborhood3D({
 
       </div>
 
-      <div className="maplibre-spike-filters" role="group" aria-label={`Filtres des repères de ${districtLabel}`}>
-        <button type="button" aria-pressed={activeCategory === "all"} className={activeCategory === "all" ? "active" : ""} onClick={() => { setActiveCategory("all"); setQaSelected(null); }}>Repères</button>
-        {categories.map((category) => <button type="button" key={category} aria-pressed={activeCategory === category} className={activeCategory === category ? "active" : ""} onClick={() => { setActiveCategory(category); setQaSelected(null); }}>{CATEGORY_META[category].label}</button>)}
-      </div>
+      {/* A public filter with no verified anchors is a misleading, non-functional control.
+          Preserve all filters for sourced context and explicit private QA runs. */}
+      {QA_OSM_ENABLED || (context?.anchor_count ?? 0) > 0 ? (
+        <div className="maplibre-spike-filters" role="group" aria-label={`Filtres des repères de ${districtLabel}`}>
+          <button type="button" aria-pressed={activeCategory === "all"} className={activeCategory === "all" ? "active" : ""} onClick={() => { setActiveCategory("all"); setQaSelected(null); }}>Repères</button>
+          {categories.map((category) => <button type="button" key={category} aria-pressed={activeCategory === category} className={activeCategory === category ? "active" : ""} onClick={() => { setActiveCategory(category); setQaSelected(null); }}>{CATEGORY_META[category].label}</button>)}
+        </div>
+      ) : null}
 
       <div className="maplibre-spike-controls" aria-label="Contrôles de la carte">
         <button type="button" className="maplibre-spike-control-primary" onClick={restoreCamera} aria-label="Recentrer sur le quartier"><LocateFixed size={18} /></button>
