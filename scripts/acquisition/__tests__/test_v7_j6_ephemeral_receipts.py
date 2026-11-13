@@ -269,6 +269,14 @@ class J6EphemeralReceiptTests(unittest.TestCase):
                 "SELECT pg_get_userbyid(proowner) FROM pg_proc "
                 "WHERE oid=%s::regprocedure",(signature,)
             ).fetchone()[0],"v7_capture_owner")
+            safe_path = self.admin.execute(
+                "SELECT proconfig FROM pg_proc WHERE oid=%s::regprocedure",
+                (signature,)
+            ).fetchone()[0]
+            self.assertIn(
+                "search_path=pg_catalog, v7_capture, pg_temp",
+                safe_path,
+            )
         self.assertIsNone(self.admin.execute(
             "SELECT to_regclass('public.property_listings')"
         ).fetchone()[0])
