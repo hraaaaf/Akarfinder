@@ -111,6 +111,23 @@ class UpstreamPilotTests(unittest.TestCase):
         from v7_multisource.feenway_upstream_10_audit import _wire_url
         self.assertEqual(_wire_url(CASES[4]["original_url"]), CASES[4]["original_url"])
 
+
+    def test_real_agenz_v3_result_contract_fields_not_extracted(self):
+        """A genuine V3 parse_raw returns 'fields', not 'extracted'."""
+        from v7_multisource.feenway_upstream_10_audit import _source_parser_summary
+        url = next(x["original_url"] for x in CASES if x["source_domain_hint"] == "agenz.ma")
+        html = ('<!doctype html><html><head><title>Appartement à louer</title>'
+                '<link rel="canonical" href="' + url + '"></head>'
+                '<body><h1>Appartement à louer</h1></body></html>')
+        actual = _source_parser_summary(url, html)
+        self.assertEqual(actual["status"], "V3_PARSER_OBSERVATION_ONLY")
+        self.assertEqual(actual["fields"]["transaction_type"], "rent")
+        self.assertEqual(actual["fields"]["property_type"], "apartment")
+        self.assertEqual(actual["fields"]["price_mad"], None)
+        self.assertEqual(actual["fields"]["surface_total_m2"], None)
+        self.assertTrue(str(actual["field_evidence_paths"]["transaction_type"]).startswith("agenz."))
+        self.assertTrue(str(actual["field_evidence_paths"]["property_type"]).startswith("agenz."))
+
     def test_no_network_before_gate(self):
         with tempfile.TemporaryDirectory() as d:
             dest = Path(d) / "out"

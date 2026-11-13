@@ -189,13 +189,14 @@ def _source_parser_summary(url, raw_html):
     try:
         from akarparser_v3_raw_bulk import parse_raw
         row = parse_raw({"source_url": url, "raw_html": raw_html}, datetime.now(timezone.utc))
-        e = row.get("extracted") or {}
+        e = row.get("fields") or {}
         fields = {}
         for key in ("price_mad", "surface_total_m2", "property_type", "transaction_type"):
             v = e.get(key)
             fields[key] = v if (v is None or isinstance(v, (int, float, str, bool))) else None
         q = row.get("quality") or {}
         return {"status": "V3_PARSER_OBSERVATION_ONLY", "fields": fields,
+                "field_evidence_paths": {k: (row.get("field_evidence", {}).get(k) or {}).get("path") for k in fields},
                 "quality_status": q.get("status"), "human_review_required": bool(q.get("human_review_required")),
                 "review_reasons": [x for x in (q.get("review_reasons") or []) if isinstance(x, str)][:10]}
     except Exception as e:
