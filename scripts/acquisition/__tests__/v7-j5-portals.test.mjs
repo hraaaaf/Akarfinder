@@ -46,3 +46,49 @@ test('no listing should be fabricated for empty inputs', () => {
   assert.equal(x.detailed_listings,0);
   assert.equal(x.unintegrated.length,4);
 });
+
+test('global J5 raw batch bound holds across two individually acceptable L8 reports', () => {
+  const mub=Array.from({length:601},(_,i)=>'https://www.mubawab.ma/fr/a/'+(9961000+i)+'/flat');
+  const maroc=Array.from({length:400},(_,i)=>'https://www.marocannonces.com/annonce/'+(987654+i)+'/appartement.html');
+  assert.throws(()=>assessJ5({'mubawab.ma':report(mub),'marocannonces.com':report(maroc)}),
+    /J5_AGGREGATE_URL_LIMIT/);
+  const atLimit=assessJ5({'mubawab.ma':report(mub.slice(0,600)),
+    'marocannonces.com':report(maroc)});
+  assert.equal(atLimit.candidates_count,1000);
+  assert.equal(atLimit.raw_source_url_count,1000);
+  assert.equal(atLimit.duplicate_raw_url_count,0);
+  assert.equal(atLimit.db_writes,0);
+});
+
+test('J5 duplicate raw links do not become additional candidates or physical-property proof', () => {
+  const url='https://www.mubawab.ma/fr/a/9961000/flat';
+  const r=assessJ5({'mubawab.ma':report([url,url,url])});
+  assert.equal(r.raw_source_url_count,3);
+  assert.equal(r.candidates_count,1);
+  assert.equal(r.duplicate_raw_url_count,2);
+  assert.deepEqual(r.candidate_counts_by_source,
+    {'mubawab.ma':1,'marocannonces.com':0});
+  assert.equal(r.source_url_candidates[0].original_html_sha256_verified,false);
+  assert.equal(r.source_url_candidates[0].source_report_authenticated,false);
+  assert.equal(r.physical_uniqueness_verified,false);
+  assert.equal(r.detailed_listings,0);
+});
+
+test('J5 output order stable regardless of original reports object insertion', () => {
+  const mab='https://www.mubawab.ma/fr/a/9961000/flat';
+  const mar='https://www.marocannonces.com/annonce/987654/appartement.html';
+  const a=assessJ5({'marocannonces.com':report([mar]),'mubawab.ma':report([mab])});
+  const b=assessJ5({'mubawab.ma':report([mab]),'marocannonces.com':report([mar])});
+  assert.deepEqual(a.source_url_candidates,b.source_url_candidates);
+  assert.deepEqual(a.candidate_counts_by_source,b.candidate_counts_by_source);
+  assert.equal(a.candidates_count,2);
+});
+
+test('J5 rejects raw batch overflow even if source URL repeats identically', () => {
+  const url='https://www.mubawab.ma/fr/a/9961000/flat';
+  assert.throws(()=>assessJ5({
+    'mubawab.ma':report(Array(700).fill(url)),
+    'marocannonces.com':report(Array(301).fill(
+      'https://www.marocannonces.com/annonce/987654/appartement.html'))
+  }),/J5_AGGREGATE_URL_LIMIT/);
+});
