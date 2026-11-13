@@ -19,11 +19,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
           persist-credentials: false
       - name: Require exact activation commit, never grant by PR diff alone
         run: |
-          test "$(git rev-parse HEAD^2)" = "${{ github.event.pull_request.head.sha }}"
-          test "$(git log -1 --format=%s HEAD^2)" = 'J5_COMMONCRAWL_WARC_GO_20261113'
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+          test "$(git log -1 --format=%s)" = 'J5_COMMONCRAWL_WARC_GO_20261113'
           test -f scripts/acquisition/v7_parallel/fixtures/j5_cc_8205911_index.json
       - uses: actions/setup-python@v5
         with:
