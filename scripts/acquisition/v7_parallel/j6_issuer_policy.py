@@ -161,6 +161,16 @@ def review_with_operator_issuer_policy(
         "operator_registry_generation": registry["generation"],
         "issuer_key_scope_and_window_matched": True,
         "issuer_credential_status": "active_at_review_time",
+        "review_receipt_intent": {
+            # This is ONLY a bounded argument set for the offline/isolated
+            # ledger, never an automatic DB call nor an admission grant.
+            "registry_generation": registry["generation"],
+            "registry_sha256": operator_pinned_registry_sha256,
+            "attestation_mac_sha256": attestation["mac_sha256"],
+            "source_domain": attestation["source_domain"],
+            "source_offer_id": attestation["source_offer_id"],
+            "html_sha256": attestation["html_sha256"],
+        },
         # A pinned registry proves conformance to OPERATOR POLICY, not
         # independent legal identity, property truth, or a trustworthy source.
         "issuer_independently_vetted_here": False,
