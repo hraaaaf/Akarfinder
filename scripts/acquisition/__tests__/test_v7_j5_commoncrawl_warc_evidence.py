@@ -18,10 +18,14 @@ BASE_INDEX={'crawl':'CC-MAIN-2026-39','timestamp':'20260905210142','url':URL,
             'status':'200','mime':'text/html','digest':'', 'length':0,'offset':767799442,
             'filename':'crawl-data/CC-MAIN-2026-39/segments/1788492699608.30/warc/CC-MAIN-20260905194534-20260905224534-00967.warc.gz'}
 
-def fixture(html=HTML,url=URL,warc_date='2026-09-05T21:01:42Z',http_status=200):
+def fixture(html=HTML,url=URL,warc_date='2026-09-05T21:01:42Z',http_status=200,
+            repeated_headers=False, duplicate_critical=False):
     sha1=base64.b32encode(hashlib.sha1(html).digest()).decode().rstrip('=')
-    http=(f'HTTP/1.1 {http_status} OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n').encode()+html
-    warc=(f'WARC/1.1\r\nWARC-Type: response\r\nWARC-Target-URI: {url}\r\n'
+    extra_http=('Set-Cookie: key=a\r\nSet-Cookie: key=b\r\n' if repeated_headers else '')
+    http=(f'HTTP/1.1 {http_status} OK\r\nContent-Type: text/html; charset=UTF-8\r\n'+extra_http+'\r\n').encode()+html
+    extra_warc=('WARC-Protocol: h2\r\nWARC-Protocol: tls/1.2\r\n' if repeated_headers else '')
+    critical=('WARC-Target-URI: '+url+'\r\n' if duplicate_critical else '')
+    warc=(f'WARC/1.1\r\nWARC-Type: response\r\nWARC-Target-URI: {url}\r\n'+critical+extra_warc+
           f'WARC-Date: {warc_date}\r\nWARC-Payload-Digest: sha1:{sha1}\r\n'
           f'Content-Length: {len(http)}\r\nContent-Type: application/http; msgtype=response\r\n\r\n').encode()+http+b'\r\n\r\n'
     compressed=gzip.compress(warc,mtime=0)
@@ -77,6 +81,20 @@ class CommonCrawlSourceTests(unittest.TestCase):
         raw,index=fixture(warc_date='2026-09-06T21:01:42Z')
         with self.assertRaisesRegex(ArchiveRejected,'WARC_CAPTURE_TIME_CONFLICT'):
             inspect_record(raw,index)
+    def test_repeated_noncritical_warc_protocol_and_cookies_allowed(self):
+        # Real Common Crawl WARC #8205911 repeats WARC-Protocol, and the
+        # archived HTTP reply repeats Set-Cookie; neither is identity.
+        raw,index=fixture(repeated_headers=True)
+        report,body=inspect_record(raw,index)
+        self.assertTrue(report['warc_sha1_payload_index_match'])
+        self.assertEqual(body,HTML)
+        self.assertFalse(report['eligible_for_private_detail_staging'])
+
+    def test_duplicate_critical_warc_target_rejected(self):
+        raw,index=fixture(duplicate_critical=True)
+        with self.assertRaisesRegex(ArchiveRejected,'WARC_HEADER_DUPLICATE_OR_INVALID'):
+            inspect_record(raw,index)
+
     def test_no_network_without_approval(self):
         raw,index=fixture()
         with tempfile.TemporaryDirectory() as tmp:
