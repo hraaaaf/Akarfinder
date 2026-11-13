@@ -38,3 +38,11 @@
 **LIMITES :** cette barrière protège l'enregistrement d'un marqueur dans la même DB transactionnelle ; elle ne garantit **pas** le fencing d'effets externes (requête HTTP/source, écriture dans une autre DB, side effect), ni la reprise automatique après crash. Le ledger de CI ne persiste pas entre runs ; les clés, la séparation de l'émetteur, le registre J6 et l'admission des vrais biens ne sont pas raccordés. Exiger un audit de sécurité de la migration réelle, puis un opérateur GO séparé pour DB/cron. J7 reste ouvert.
 
 **Preuve à vérifier** : SQL code SHA 988d5fa6c70796de89ff49f9141eecc4bcbec479 ; tests code SHA 8450a27a5aca7fc69a92b9a107fa1325521c7b30. Ne pas déclarer PASS sans logs GitHub au SHA exact. Aucun merge, import, activation, secrets, Vercel.
+
+## Clôture CI propriétaire non-superuser et marqueur J7 — 13/11/2026
+
+**Code corrigé SHA :** 55f349e231085d0f8d214f2c436eb1c3a29656c6. [J7 PostgreSQL 17 CI #43463575848](https://github.com/hraaaaf/Akarfinder/actions/runs/43463575848) **COMPLETED SUCCESS : 21/21 tests** (9 tests UTC/SQLite, 12 tests PostgreSQL 17, dont 4 nouveaux de token/fencing/permissions/ownership), [policy #43463575793](https://github.com/hraaaaf/Akarfinder/actions/runs/43463575793) SUCCESS. Tous les tests SQL utilisent exclusivement la DB éphémère localhost/akarfinder_v7_j7_ci.
+
+**Débogage traçable :** premier run [#43462772218](https://github.com/hraaaaf/Akarfinder/actions/runs/43462772218) FAILED : dollar-quoting et regex SQL corrompus lors de l'assemblage du patch ; second [#43463294729](https://github.com/hraaaaf/Akarfinder/actions/runs/43463294729) FAILED sur ambiguïté PL/pgSQL marker_name dans ON CONFLICT (11/12 tests PG déjà verts). Correctifs successifs puis run final vert.
+
+**Sous-lot clos :** SECURITY DEFINER appartient au rôle NOLOGIN non-superuser avec FORCE RLS explicite ; worker et observateur n'ont aucune permission de table directe ; marqueur UNIQUE attesté **dans la transaction DB** seulement pour le token actif et avant finish/fail. Ne pas confondre avec un fencing d'effet externe, ni une reprise durable de runners. **J7 complet ouvert** : pas de DB partagée durable, aucun cron live, aucune source admissible, aucun observabilité 24h, aucune approbation d'activation/merge/Vercel. V7 = 2/8 jalons clos.
