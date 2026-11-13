@@ -4,6 +4,8 @@ on:
     paths:
       - 'scripts/acquisition/v7_parallel/j5_remaining_portals.mjs'
       - 'scripts/acquisition/__tests__/v7-j5-portals.test.mjs'
+      - 'scripts/acquisition/v7_parallel/j5_commercial_mirror_review.mjs'
+      - 'scripts/acquisition/__tests__/v7-j5-commercial-mirror-review.test.mjs'
       - 'scripts/acquisition/__tests__/test_v7_j5_real_v3_handoff.py'
       - '.github/workflows/akar-v7-j5-portals.yml'
 concurrency:
@@ -23,8 +25,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Six merged/research portal registry checks, 0 portal requests, 0 DB
-        run: node --test scripts/acquisition/__tests__/v7-j5-portals.test.mjs
+      - name: J5 L8 URL-only and commercial mirror observations (NO HTTP)
+        run: node --test scripts/acquisition/__tests__/v7-j5-portals.test.mjs scripts/acquisition/__tests__/v7-j5-commercial-mirror-review.test.mjs
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
