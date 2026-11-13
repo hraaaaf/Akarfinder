@@ -155,8 +155,9 @@ try {
       const privateQa = await shell.getAttribute("data-j11c-qa-enabled") === "true";
       const publicAnchors = Number(await shell.getAttribute("data-maplibre-anchor-count"));
       if (viewport.width >= 1024 && !privateQa && publicAnchors === 0) {
-        const emptyRail = rail.locator('[data-vivre-ici-empty-context="true"]');
-        await emptyRail.waitFor({ state: "visible", timeout: 10000 });
+        await page.waitForFunction(() =>
+          document.querySelector('[data-p4-map-decision-rail]')?.getAttribute("data-vivre-ici-empty-context") === "true",
+        null, { timeout: 10000 });
         const disclosure = rail.locator('[data-vivre-ici-source-details]');
         if (await disclosure.count() !== 1) throw new Error(`${viewport.name}: collapsed provenance details missing`);
         const detailsOpen = await disclosure.evaluate((node) => node.open);
@@ -176,6 +177,8 @@ try {
         }
         await summary.press("Enter");
         await page.waitForFunction(() => document.querySelector('[data-vivre-ici-source-details]')?.open === false);
+        // Overwrite the initial capture only after the empty public context is resolved.
+        await page.screenshot({ path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`, fullPage: false, animations: "disabled" });
       }
       const filters = shell.locator(".maplibre-spike-filters");
       if (!privateQa && publicAnchors === 0 && await filters.count() !== 0) {
