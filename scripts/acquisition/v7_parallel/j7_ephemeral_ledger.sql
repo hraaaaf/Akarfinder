@@ -125,7 +125,7 @@ BEGIN
  END IF;
  INSERT INTO v7_schedule.fenced_markers(slot_index, marker_name, evidence_sha256)
  VALUES (requested_slot, marker_name, evidence_sha256)
- ON CONFLICT (slot_index, marker_name) DO NOTHING;
+ ON CONFLICT ON CONSTRAINT fenced_markers_pkey DO NOTHING;
  RETURN FOUND;
 END;
 $$;
