@@ -11,6 +11,8 @@ on:
       - 'scripts/acquisition/__tests__/test_v7_j6_sarouty_capture.py'
       - 'scripts/acquisition/v7_parallel/j6_issuer_policy.py'
       - 'scripts/acquisition/__tests__/test_v7_j6_issuer_policy.py'
+      - 'scripts/acquisition/v7_parallel/j6_ed25519_capture.py'
+      - 'scripts/acquisition/__tests__/test_v7_j6_ed25519_capture.py'
       - 'scripts/acquisition/v7_parallel/j6_ephemeral_receipt_ledger.sql'
       - 'scripts/acquisition/__tests__/test_v7_j6_ephemeral_receipts.py'
       - 'scripts/acquisition/__tests__/test_v7_j6_postgres_isolation.py'
@@ -49,10 +51,10 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install isolated PostgreSQL test client
-        run: python -m pip install "psycopg[binary]==3.3.8" "beautifulsoup4==4.14.3"
+        run: python -m pip install "psycopg[binary]==3.3.8" "beautifulsoup4==4.14.3" "cryptography==50.0.2"
       - name: Compile readiness gate without network or DB
         run: |
-          python -m py_compile scripts/acquisition/v7_parallel/j6_staging_readiness.py scripts/acquisition/__tests__/test_v7_j6_staging_readiness.py scripts/acquisition/v7_parallel/j6_source_evidence.py scripts/acquisition/__tests__/test_v7_j6_source_evidence.py scripts/acquisition/v7_parallel/j6_authenticated_capture.py scripts/acquisition/__tests__/test_v7_j6_authenticated_capture.py scripts/acquisition/__tests__/test_v7_j6_sarouty_capture.py scripts/acquisition/v7_parallel/j6_issuer_policy.py scripts/acquisition/__tests__/test_v7_j6_issuer_policy.py scripts/acquisition/__tests__/test_v7_j6_ephemeral_receipts.py scripts/acquisition/__tests__/test_v7_j6_postgres_isolation.py
+          python -m py_compile scripts/acquisition/v7_parallel/j6_staging_readiness.py scripts/acquisition/__tests__/test_v7_j6_staging_readiness.py scripts/acquisition/v7_parallel/j6_source_evidence.py scripts/acquisition/__tests__/test_v7_j6_source_evidence.py scripts/acquisition/v7_parallel/j6_authenticated_capture.py scripts/acquisition/__tests__/test_v7_j6_authenticated_capture.py scripts/acquisition/__tests__/test_v7_j6_sarouty_capture.py scripts/acquisition/v7_parallel/j6_issuer_policy.py scripts/acquisition/__tests__/test_v7_j6_issuer_policy.py scripts/acquisition/v7_parallel/j6_ed25519_capture.py scripts/acquisition/__tests__/test_v7_j6_ed25519_capture.py scripts/acquisition/__tests__/test_v7_j6_ephemeral_receipts.py scripts/acquisition/__tests__/test_v7_j6_postgres_isolation.py
       - name: Actual V3 + Radar10 negative-admission contracts
         run: |
           python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j6_staging_readiness.py' -v
@@ -67,5 +69,7 @@ jobs:
         run: python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j6_issuer_policy.py' -v
       - name: Check isolated PostgreSQL RLS, roles, transaction rollback
         run: python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j6_postgres_isolation.py' -v
+      - name: Ed25519 asymmetric source signatures and anti-downgrade (NO REAL KEY)
+        run: python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j6_ed25519_capture.py' -v
       - name: PostgreSQL17 operator policy generation and one-time capture receipt (CI ONLY)
         run: python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j6_ephemeral_receipts.py' -v
