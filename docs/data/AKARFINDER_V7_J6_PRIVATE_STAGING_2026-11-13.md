@@ -35,3 +35,13 @@ Le premier commit J6 `2b44c1533bfc3761128ab6f5b1763adcc28bbfaf` a obtenu [CI J6 
 **Hardening ultérieur :** `review_with_verified_bytes` (dans le module J6) relie le contrôle HTML et l'inventaire quarantine en une fonction sans DB, retourne toujours `eligible_for_private_staging=False`; test ciblé ajouté. Le workflow est renommé pour signaler honnêtement que les tests écrivent seulement dans un PostgreSQL **éphémère CI**, et non « zéro DB write » absolu. Ce code complémentaire nécessite sa propre CI HEAD avant closeout.
 
 **État jalon :** la conception et preuve de sécurité en CI n'autorisent pas une activation du staging privé. Reste nécessaire : registre d'attestations authentifiées, autorisation des sources et identité d'accès, preuve de champs indépendants, mécanisme de promotion explicite, puis gate humain. Maintenir J6 ouvert ; V7 = 2/8 jalons clôturés.
+
+## J6 — Closeout du sous-lot preuve+PostgreSQL isolé (13 novembre 2026)
+
+**Preuve exacte validée :** code HEAD `746dfc8d3aed1b9d07e79506e6bcfa9b5b0e4612`; [GitHub Actions J6 #43397919469](https://github.com/hraaaaf/Akarfinder/actions/runs/43397919469) **SUCCESS, 23/23 tests** : 10 readiness avec SHA d'inventaire sensible au contenu, 7 vérifications SHA/rejeu V3 incluant la fonction d'orchestration read-only, 6 tests PostgreSQL 17 éphémère. [CI Efficiency Policy #43397919504](https://github.com/hraaaaf/Akarfinder/actions/runs/43397919504) **SUCCESS**.
+
+**Résultat exact :** la fonction `review_with_verified_bytes` combine vérification du HTML + quarantaine sans jamais produire de ligne admissible ni appeler une base. Les tests PostgreSQL montrent une transaction Radar10 en rôle limité dans une base CI et les rejets de permissions/RLS, **non l'exécution d'une admission réelle**. Le registre externe pouvant fournir l'empreinte indépendante n'est pas authentifié ; faux sentiment de certification interdit.
+
+**Sous-lot clos :** architecture et contrôle CI de sécurité du staging isolé **validés sur données synthétiques**. **J6 complet pas clôturé** tant que preuves sources indépendantes, authentification du registre, décision d'admission et gate opérateur ne sont pas implémentés et certifiés. Source fetchs=0, DB externe=0, migration extérieure=0, cron actif=0, Vercel=0, merge=0.
+
+**Passage de relais :** laisser les annonces non vérifiées en quarantaine et poursuivre les tâches de roadmap V7 indépendantes (préparation J7 dry-run sans activation). V7 demeure 2/8 jalons clos, progrès global non certifié.
