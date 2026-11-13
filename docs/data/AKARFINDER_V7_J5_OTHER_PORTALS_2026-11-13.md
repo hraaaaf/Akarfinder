@@ -19,3 +19,13 @@
 **Nouveaux tests :** 1001 URLs brutes rejetées / 1000 acceptées, répétitions dédupliquées, ordre invariant et 1001 entrées rejetées même avec de nombreux doublons. Tests synthétiques, 0 réseau/DB. **La CI du nouveau commit est à vérifier** ; ancienne CI [J5 #43335602494](https://github.com/hraaaaf/Akarfinder/actions/runs/43335602494) prouvait seulement les six tests initiaux.
 
 **NEXT :** valider la CI, maintenir les quatre autres portails non intégrés et ne collecter de vrais HTML qu'avec source autorisée ; aucun merge, Vercel, staging ni cron.
+
+## Closeout du sous-lot de durcissement — 13 novembre 2026
+
+**Code exact :** `91c00e5927bf35505b28df783a6724145c902539`. [CI J5 #43400589933](https://github.com/hraaaaf/Akarfinder/actions/runs/43400589933) **SUCCESS, 10/10 tests Node PASS (0 FAIL / 0 SKIP)** ; [CI Policy #43400590398](https://github.com/hraaaaf/Akarfinder/actions/runs/43400590398) **SUCCESS**. Contrôle de code réalisé avec les véritables adaptateurs L8 réutilisés hors ligne, et tests d'entrée adversariaux synthétiques.
+
+**Décision :** le sous-lot de bornage/traçabilité est certifié pour le contrat **URL-only**. Cela ne valide ni HTML d'origine, ni véracité des annonces, ni identité de bien physique, ni disponibilité/fraîcheur, ni droit de publication. Le jalon J5 complet reste **OUVERT**, car les pages originales et un contrôle indépendant des champs ne sont toujours pas établis.
+
+**Aucun effet de bord :** pas de requêtes réseau vers les portails, pas de DB, pas de staging, pas de cron live, pas de merge et aucun déploiement Vercel. Les changements sont uniquement sur la Draft PR.
+
+**NEXT exact :** conserver les sources non qualifiées en quarantaine et reprendre l'audit d'HTML source direct par un canal permis ; à défaut, poursuivre les travaux V7 indépendants, sans promouvoir les URL candidates.
