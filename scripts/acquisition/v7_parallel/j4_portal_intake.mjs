@@ -5,6 +5,9 @@ import { adaptLegacyReports, LegacyCandidateError } from '../v7_multisource/lega
 
 export const J4_SCHEMA = 'akarfinder-v7-parallel-source-v1';
 const TWO_MERGED = new Set(['avito.ma', 'sarouty.ma']);
+const J4_SOURCE_ORDER = Object.freeze(['avito.ma', 'sarouty.ma']);
+// Python V7 legacy_url_intake.inspect_url_only_candidates accepts <=1000 TOTAL.
+export const J4_MAX_RAW_URLS_PER_BATCH = 1000;
 const MAX_YAKEEY = 50;
 
 /** Based on the exact historical #1146 Kaynly output shape (DRAFT).
@@ -92,6 +95,18 @@ export function assessJ4({ mergedReports = {}, yakeeyDraftLinks = [], yakeeyDraf
     if (!TWO_MERGED.has(portal)) throw new LegacyCandidateError('J4_SOURCE_NOT_WIRED');
   }
   const legacy = adaptLegacyReports(mergedReports);
+  // Each merged L8 report allows 1000. The DOWNSTREAM V7 intake allows
+  // 1000 in total; reject the raw aggregate, including duplicate URLs.
+  const submitted = Object.values(mergedReports).reduce(
+    (count, report) => count + report.listingUrls.length, 0);
+  if (submitted > J4_MAX_RAW_URLS_PER_BATCH) {
+    throw new LegacyCandidateError('J4_AGGREGATE_URL_LIMIT');
+  }
+  const mergedL8 = [...legacy.records].sort((a,b)=>
+    J4_SOURCE_ORDER.indexOf(a.source_domain) - J4_SOURCE_ORDER.indexOf(b.source_domain)
+    || a.source_offer_id.localeCompare(b.source_offer_id));
+  const perSource = Object.fromEntries(J4_SOURCE_ORDER.map(domain=>
+    [domain, mergedL8.filter(x=>x.source_domain===domain).length]));
   const yakeey = reviewYakeeyDraftLinks(yakeeyDraftLinks);
   const imported = reviewKaynlyDraftRecords(yakeeyDraftRecords);
   const merged = new Map();
@@ -116,13 +131,19 @@ export function assessJ4({ mergedReports = {}, yakeeyDraftLinks = [], yakeeyDraf
   }
   return {
     schema_version: J4_SCHEMA,
-    merged_url_only_candidates: legacy.records.map(x => ({
+    merged_url_only_candidates: mergedL8.map(x => ({
       schema_version: J4_SCHEMA,
       portal: x.source_domain, source_url: x.source_url,
       original_listing_id: x.source_offer_id,
       evidence_kind: 'merged_L8_url_only',
+      source_report_authenticated: false, original_html_sha256_verified: false,
       private_detail_staging: false, public_admission: false,
     })),
+    raw_merged_source_url_count: submitted,
+    duplicate_raw_merged_url_count: submitted - mergedL8.length,
+    merged_candidate_counts_by_source: perSource,
+    // The Yakeey links below are a separate, NON-integrated quarantine lane,
+    // and MUST NEVER be appended to the V7 1000-row L8 intake.
     yakeey_draft_unverified_links: [...merged.values()],
     detailed_records: 0,
     unique_physical_properties: null,

@@ -37,3 +37,13 @@ La [PR Draft #1146](https://github.com/hraaaaf/Akarfinder/pull/1146) possède d�
 **Aucun effet de bord :** pas de requêtes réseau vers les portails, pas de DB, pas de staging, pas de cron live, pas de merge et aucun déploiement Vercel. Les changements sont uniquement sur la Draft PR.
 
 **NEXT exact :** conserver les sources non qualifiées en quarantaine et reprendre l'audit d'HTML source direct par un canal permis ; à défaut, poursuivre les travaux V7 indépendants, sans promouvoir les URL candidates.
+
+## J4 — Contrat multi-portail conforme à la limite réelle du V7 (13 novembre 2026)
+
+**Défaut prouvé par lecture code :** `adaptLegacyReports` ne borne qu'à 1000 **par rapport** : l'ancien `assessJ4` pouvait retourner 601 Avito + 400 Sarouty = 1001 URLs candidates alors que `v7_multisource/legacy_url_intake.py` refuse tout batch dépassant **1000 au total**.
+
+**Correctif sans collecte :** `J4_MAX_RAW_URLS_PER_BATCH=1000` refuse le total **brut soumis**, même si les URL sont répétées, avec code `J4_AGGREGATE_URL_LIMIT`. La sortie `merged_url_only_candidates` a désormais un ordre déterministe Avito→Sarouty puis identifiant croissant. Les métriques `raw_merged_source_url_count`, `duplicate_raw_merged_url_count`, `merged_candidate_counts_by_source` distinguent tentatives brutes et candidats de source dédupliqués. Deux marqueurs explicites `source_report_authenticated=false`, `original_html_sha256_verified=false` protègent contre la confusion entre URL correctement formatée et page originale vérifiée. Les liens Yakeey historiques restent une **liste de quarantaine indépendante non raccordée au V7 L8 intake** et ne deviennent pas des candidats de mise en staging.
+
+**Preuves attendues :** quatre nouveaux tests adversariaux : 1001 refusé/1000 autorisé, refus en présence de répétitions, ordre stable indépendant des clés d'input, et séparation de la quarantaine historique. La CI du commit exact doit confirmer avant tout qualificatif PASS.
+
+**Frontière :** aucun HTTP source, aucune DB réelle, aucune admission V3/Radar10 ou publication, aucun cron live/merge/Vercel. Les portails J4 ne sont pas certifiés par ce seul contrat URL-only ; J4 jalon complet reste ouvert.
