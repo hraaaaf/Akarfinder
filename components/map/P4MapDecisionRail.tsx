@@ -128,6 +128,10 @@ export function P4MapDecisionRail() {
       data-p4-map-decision-rail
       data-vivre-ici-premium-context
       data-vivre-ici-empty-context={isEmptyVerifiedContext ? "true" : "false"}
+      data-neighborhood-context-converged={localContext?.canonical_neighborhood_id ?? "unavailable"}
+      data-neighborhood-context-coverage={localContext?.coverage_status ?? "unavailable"}
+      data-neighborhood-context-anchor-count={localContext?.anchor_count ?? 0}
+      data-neighborhood-context-poi-ids={localContext?.anchors.map((anchor) => anchor.poi_id).join(",") ?? ""}
       data-j11c-qa-rail={QA_INDICATIVE_OSM ? "true" : "false"}
       data-sheet-expanded={sheetExpanded ? "true" : "false"}
       aria-label="Vivre ici : territoire, vie locale et biens"
