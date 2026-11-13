@@ -409,4 +409,20 @@ monitoring 24h. Aucun merge/Vercel/Supabase PROD/cron live.
 
 **Décision** : sous-lot J4 HTML original vérifié + contrôle geo source validé. J4 métier reste **OUVERT** (district et identité géographique indépendante/fraîcheur/autres portails non certifiés), J5 **OUVERT**. V7 reste **J0/J1 seuls clos = 2/8 jalons**, aucun staging/DB, cron source live, publication, merge ni Vercel.
 
-**Next** : via autre canal autorisé obtenir un HTML natif Mubawab certifié sans répéter le GET qui a échoué ; réconcilier labels Sarouty source et attestation géographique indépendante ; puis J6/J7 registre durable et gates opérateur. 
+**Next** : via autre canal autorisé obtenir un HTML natif Mubawab certifié sans répéter le GET qui a échoué ; réconcilier labels Sarouty source et attestation géographique indépendante ; puis J6/J7 registre durable et gates opérateur.
+
+
+## 13/11/2026 — J5 syndication commerciale réellement recoupée, sans capture Mubawab
+
+**CI parent au HEAD précédent :** SHA b32505c1c13db5ea663e9082b35bf65e9411d20c, **6/6 workflows COMPLETED/SUCCESS** (dont [contrat V7 #43477316657](https://github.com/hraaaaf/Akarfinder/actions/runs/43477316657), CI policy #43477316554, AkarParser V3 privé #43477316441, Radar10 privé #43477316671). Ces runs n'admettent aucune annonce.
+
+**Avancement J5 (PR Draft #1208)** : après le HTML brut Sarouty J4, un vrai rapprochement inter-portails **commercial uniquement** est désormais documenté sur deux références encore visibles dans des pages directes, pas des données de test inventées :
+
+- **SAL-TA-1007** : [Agenz #77532](https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/77532) ↔ [Mubawab #8422456](https://www.mubawab.ma/fr/a/8422456/appartement-%C3%A0-vendre-106-m%C2%B2-3-chambres-al-qods-sal%C3%A9), **1 350 000 DH / 106 m² / 3 chambres**, Al Qods Salé, 2e étage.
+- **SAL-TA-1009** : [Agenz #175885](https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/175885) ↔ [Mubawab #8429897](https://www.mubawab.ma/fr/a/8429897/appartement-%C3%A0-vendre-143-m%C2%B2-2-chambres-al-qods-sal%C3%A9), **1 595 000 DH / 143 m² / 2 chambres**, Al Qods Salé. La **source Agenz elle-même** contredit caractéristiques (143 m², 5e étage) et description (145 m², 4e étage), contradiction reprise par Mubawab.
+
+**Code source-only** : scripts/acquisition/v7_parallel/j5_commercial_mirror_review.mjs compare référence commerciale + identité de portail/URL/ID + 5 champs déclarés pour produire une classe de **revue de syndication**, jamais de preuve d'unicité physique, de géographie, d'original HTML ou d'admission. Source d'observation = **rendu sémantique non authentifié** ; fail-closed sur divergences, faux domaine, ID, marqueurs d'admission forgés et entrées hors limite. [J5 CI #43479222455](https://github.com/hraaaaf/Akarfinder/actions/runs/43479222455) **22/22 tests Node et 3/3 Python PASS, 25/25**, [policy #43479222666](https://github.com/hraaaaf/Akarfinder/actions/runs/43479222666) SUCCESS au code SHA e76d0c6cde2b782c8b131fbd51ef036160431b55. Documentation J5 [SHA 2b3eb6e](https://github.com/hraaaaf/Akarfinder/commit/2b3eb6ecb13b47ba08be394580f5228d82d3f1da), CI du HEAD documentaire à confirmer indépendamment.
+
+**Portée et gates :** 2 liens commerciaux à examiner, 0 même bien physique certifié, 0 droit à recopier une localisation, 0 HTML HTTP original Mubawab, 0 admission. J5 **OUVERT**, J4 source Sarouty limitée, J6/J7 restent des gates avec registre durable/attestation indépendante à établir. V7 **2/8 jalons métier clôturés** ; pas de merge, DB, cron source LIVE, Vercel.
+
+**NEXT exact** : vérifier HEAD de J5/documentation et CI du HEAD V7 canonique ; puis acquérir un vrai original Mubawab via export/partage autorisé (et non répéter les deux GET rejetés), certifier les sept champs, et utiliser les rapprochements commerciaux uniquement dans une revue de dédup avant gate J6.
