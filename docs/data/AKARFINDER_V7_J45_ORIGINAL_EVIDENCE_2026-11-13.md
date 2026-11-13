@@ -21,3 +21,7 @@ Le premier code SHA 8bceb223da64813c388752f6ca488e2f7b3707cd a obtenu 5 workflow
 Nouveau garde-fou ajouté : une réponse HTML HTTP200 peut être un CAPTCHA/page de blocage et non une annonce malgré une route valide. Le benchmark remonte maintenant les raisons L4 de classification ; le gate J4/J5 exige une fiche detail et au moins une raison de contenu (structured_listing_type ou listing_fact_density), pas seulement detail_url_pattern. Nouveau test négatif challenge HTML. Cette classification ne vaut toujours pas preuve indépendante des faits.
 
 Nouveau HEAD code et CI : à observer séparément avant de revendiquer PASS.
+
+## Sarouty — Route détail à requête strictement typée (13 novembre 2026)
+
+Le validateur L8 fusionné reconnaît une variante d'annonce individuelle Sarouty /property-details?listing_id=123456, mais le lecteur de manifestes V7 refusait jusqu'ici tout querystring, laissant cette route non testable dans le gate J4. Le contrat de snapshot accepte uniquement la forme Sarouty exacte : chemin /property-details, query unique listing_id=5 à 9 chiffres, domaine Sarouty et HTTPS sans port. Tous les paramètres de tracking, doublons, query sur d'autres routes ou portails restent rejetés. Deux tests supplémentaires sont ajoutés : route admise en analyse hors ligne sans staging, et variantes malicieuses interdites. La route est une preuve syntaxique de type annonce, pas une capture réelle.

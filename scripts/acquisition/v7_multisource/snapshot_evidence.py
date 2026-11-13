@@ -39,8 +39,18 @@ def _url(url: str) -> str:
         parsed = urlsplit(url)
     except (DetailBenchmarkError, ValueError) as exc:
         raise EvidenceError("INVALID_SOURCE_URL") from exc
+    # Sarouty L8 allows ONE typed property-details query. A general query,
+    # tracking parameter or cross-portal query is never source evidence.
+    safe_sarouty_query = (
+        not parsed.query or (
+            parsed.netloc in {"sarouty.ma", "www.sarouty.ma"}
+            and parsed.path == "/property-details"
+            and re.fullmatch(r"listing_id=[0-9]{5,9}", parsed.query) is not None
+        )
+    )
     if (not isinstance(url, str) or not (24 <= len(url) <= 2048)
-            or parsed.query or parsed.fragment or parsed.username or parsed.password
+            or not safe_sarouty_query
+            or parsed.fragment or parsed.username or parsed.password
             or parsed.netloc not in {
                 "feenway.com", "www.feenway.com", "agenz.ma", "www.agenz.ma",
                 "avito.ma", "www.avito.ma", "yakeey.com", "www.yakeey.com",

@@ -72,6 +72,26 @@ class J45SourceTests(unittest.TestCase):
                 self.assertFalse(r["eligible_for_public_admission"])
                 self.assertEqual((r["source_network_requests"],r["db_writes"]),(0,0))
 
+    def test_sarouty_bounded_property_details_query_is_supported(self):
+        url="https://www.sarouty.ma/property-details?listing_id=123456"
+        self.write(url)
+        r=self.gate("sarouty.ma",record=candidate("sarouty.ma",url))
+        self.assertEqual(r["source_offer_id"],"123456")
+        self.assertFalse(r["external_pin_registry_authenticated"])
+        self.assertFalse(r["eligible_for_private_detail_staging"])
+
+    def test_sarouty_query_parameters_cannot_inject_other_routes(self):
+        from v7_multisource.snapshot_evidence import _url
+        for url in (
+            "https://www.sarouty.ma/property-details?listing_id=123456&utm=1",
+            "https://www.sarouty.ma/property-details?listing_id=123456&listing_id=999999",
+            "https://www.sarouty.ma/property-details?listing_id=1",
+            "https://www.sarouty.ma/fr/plp/acheter/appartement-avec-balcon-123456.html?listing_id=123456",
+            "https://www.mubawab.ma/fr/a/9961000/flat?listing_id=123456",
+        ):
+            with self.subTest(url=url), self.assertRaises(EvidenceError):
+                _url(url)
+
     def test_forged_offer_id_rejected(self):
         self.write(URLS["avito.ma"])
         c=candidate("avito.ma")
