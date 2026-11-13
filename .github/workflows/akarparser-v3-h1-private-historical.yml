@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/workflows/akarparser-v3-h1-private-historical.yml"
       - "scripts/ci/h1_github_hosted_private.py"
+      - "scripts/ci/h1_supabase_storage.py"
       - "scripts/ci/__tests__/test_h1_github_hosted_private.py"
       - "docs/data/AKARPARSER_V3_H1_GITHUB_HOSTED_PRIVATE_EXECUTION.md"
   workflow_dispatch:
@@ -15,7 +16,7 @@ on:
         required: true
         default: false
       resume_run_id:
-        description: "Optional prior Actions run ID whose private S3 checkpoint should resume"
+        description: "Optional prior Actions run ID whose private Supabase checkpoint should resume"
         type: string
         required: false
         default: ""
@@ -57,15 +58,12 @@ jobs:
     timeout-minutes: 360
     permissions:
       contents: read
-      id-token: write
     env:
       H1_STORAGE_RUN_ID: ${{ inputs.resume_run_id || github.run_id }}
-      H1_PRIVATE_S3_PREFIX: akarfinder/h1
-      H1_PRIVATE_S3_BUCKET: ${{ vars.H1_PRIVATE_S3_BUCKET }}
-      H1_PRIVATE_S3_KMS_KEY_ARN: ${{ vars.H1_PRIVATE_S3_KMS_KEY_ARN }}
-      H1_PRIVATE_AWS_REGION: eu-central-1
-      H1_PRIVATE_AWS_ROLE_NAME: ${{ vars.H1_PRIVATE_AWS_ROLE_NAME }}
-      H1_PRIVATE_AWS_ACCOUNT_ID: ${{ vars.H1_PRIVATE_AWS_ACCOUNT_ID }}
+      H1_SUPABASE_PROJECT_REF: mgqsckxsqdqbzqwkgvwo
+      H1_SUPABASE_BUCKET: h1-historical-evidence
+      H1_SUPABASE_PUBLISHABLE_KEY: ${{ vars.H1_SUPABASE_PUBLISHABLE_KEY }}
+      H1_SUPABASE_AUTH_USER_ID: ${{ vars.H1_SUPABASE_AUTH_USER_ID }}
     steps:
       - name: Checkout exact authorized main revision without persisted credentials
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -85,20 +83,12 @@ jobs:
           test "${RUNNER_ENVIRONMENT:-}" = github-hosted
           command -v python3 >/dev/null
           command -v psql >/dev/null
-          command -v aws >/dev/null
           python3 --version >/dev/null
           psql --version >/dev/null
-          aws --version >/dev/null 2>&1
-      - name: Assume the narrowly scoped private storage role using GitHub OIDC
-        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
-        with:
-          role-to-assume: ${{ vars.H1_PRIVATE_AWS_ROLE_ARN }}
-          role-session-name: h1-${{ github.run_id }}
-          role-duration-seconds: 21600 # IAM role MaxSessionDuration MUST be >= 21600 (6h)
-          aws-region: eu-central-1
-          allowed-account-ids: ${{ vars.H1_PRIVATE_AWS_ACCOUNT_ID }}
       - name: Canary, gated continuation, and resumable private checkpoints
         env:
           Q1E_NEON_RECOVERY_READONLY_URL: ${{ secrets.Q1E_NEON_RECOVERY_READONLY_URL }}
+          H1_SUPABASE_AUTH_EMAIL: ${{ secrets.H1_SUPABASE_AUTH_EMAIL }}
+          H1_SUPABASE_AUTH_PASSWORD: ${{ secrets.H1_SUPABASE_AUTH_PASSWORD }}
         run: python3 scripts/ci/h1_github_hosted_private.py --source trusted-v3-source
       # No Actions artifacts/cache, no checkout credentials, and no row-level stdout.
