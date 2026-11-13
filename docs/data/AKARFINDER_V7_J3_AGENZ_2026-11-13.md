@@ -63,3 +63,20 @@
 **Succès précis du sous-lot :** cinq annonces originales Agenz ont une archive HTML brute SHA256+UTC unique et une comparaison L4/V3 sans divergence. **Limite :** la concordance sur sept colonnes peut inclure deux valeurs `null` et ne certifie ni complétude, ni précision indépendante, ni date réelle de publication ou statut actif. Les valeurs doivent être étiquetées indépendamment sur les vrais documents pour prétendre à une qualité certifiée. Aucune propriété en DB/PROD.
 
 **NEXT exact :** audit indépendant des sept champs, quantification `present/missing/correct/incorrect` par source, puis décision de validation du lot J3 ; continuer J4 et J5 en parallèle. Toutes les activations réseau périodiques, SQL staging, merge et Vercel restent non autorisées.
+
+## Audit indépendant des valeurs affichées — 13 novembre 2026 (CI additionnelle en vérification)
+
+**GOAL :** comparer les 35 champs (5 fiches × 7 champs) à des annotations produites par lecture directe des HTML originaux **sans dériver les labels de L4 ni V3**. Les cinq ZIP privés ont été retéléchargés le 13/11 ; les SHA-256 des fichiers `source.html` concordent tous avec les manifestes historiques déjà consignés.
+
+**Données annotées hors parseurs :** `scripts/acquisition/v7_parallel/j3_independent_labels.json` contient pour chaque ID le titre exact HTML, prix courant affiché, surface totale affichée, ville, quartier de l'en-tête, type et vente. Les 35 valeurs sont présentes dans les sources ; comparaison automatique avec L4/V3 ajoutée dans `j3_source_label_audit.py` et `akar-v7-j3-corpus-replay.yml`. La concordance calculée doit encore être établie par le run exact du nouveau HEAD, pas seulement par le précédent replay inter-parseurs.
+
+**Contradictions internes à Agenz (blocage pour géolocalisation réelle) :**
+- **#444291** : en-tête `Al Qods`, description `Tabriquet`.
+- **#387448** : en-tête `Zone industrielle Tabriquet`, description `Hay Rahma`.
+- **#500006** : en-tête `Assonboula`, description `Bab Lamrissa`.
+
+Le contrôle compare la **fidélité aux champs visibles dans l'en-tête** ; il normalise les diacritiques/casse pour comparer les toponymes (ex. `Sale` vs `Salé`), sans interpréter cette normalisation comme précision géographique indépendante. Trois quartiers restent **contestés dans la source même**. La date de publication, disponibilité, réalité géographique et représentativité sont **non certifiées**. Ne pas confondre `35 valeurs annotées` avec `35 valeurs correctes`.
+
+**Preuve prévue :** CI du nouveau commit avec replay des 5 mêmes ZIP privés SHA-pinnés, contrôle des 70 comparaisons individuelles (2 extracteurs × 35 labels) et liste des éventuels écarts. Le script échoue sur valeur manquante ou erronée par rapport à la **source affichée**, mais n'autorise **aucun staging** même si le contrôle passe.
+
+**Statut :** J3 reste avancé, non clôturé. J0–J1 clôturés ; V7 = 2/8 jalons, et non 25 % du travail. Aucun DB, activation cron, capture réseau, merge ou déploiement Vercel. Next : lire les nouveaux logs, corriger les écarts démontrés, documenter les trois ambiguïtés et décider du gate J3.
