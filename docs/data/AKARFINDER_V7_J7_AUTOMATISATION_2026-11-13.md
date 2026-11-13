@@ -25,3 +25,16 @@
 **Closeout du seul sous-lot :** clé 10 min UTC + preuve de collision au niveau DB isolée validées. **J7 complet reste NON clôturé** ; ni cron réel activé, ni cadence mesurée, ni rendement de collecte démontré. J6 admission privée n'est pas non plus clôturée. V7 toujours 2/8 jalons clos (pas 25 % du travail total).
 
 **Next exact :** choix d'un stockage durable partagé au périmètre Akarfinder, owner/migration non-superuser et test d'identité externe, avant tout déploiement du registre ; qualification réelle d'au moins une source J2–J5 ; gate humain sur calendrier et collecte. Tant que ces preuves n'existent pas, poursuivre les travaux de qualification hors ligne sans activer le live.
+
+
+## J7 — Isolation propriétaire SQL et marqueur sous fencing en CI (13 novembre 2026)
+
+**GOAL :** fermer deux faiblesses concrètes de la proposition précédente, sans prétendre avoir un registre de production partagé : fonctions SECURITY DEFINER appartenant au superuser PostgreSQL CI et absence de primitive d'écriture conditionnée par un claim actif.
+
+**CODE :** j7_ephemeral_ledger.sql crée désormais un rôle v7_schedule_owner NOLOGIN/NOSUPERUSER/NOBYPASSRLS, lui transfère la propriété du schéma/tables/fonctions et force RLS avec politiques explicites pour ce propriétaire. Les rôles worker/observer restent sans accès direct aux tables. La nouvelle table fenced_markers (slot_index + marker_name unique, evidence_sha256 obligatoire) n'enregistre que des marqueurs transactionnels, jamais des données de bien. La fonction SECURITY DEFINER record_fenced_marker prend un jeton UUID exact, verrouille le créneau revendiqué via SELECT ... FOR UPDATE et refuse un jeton étranger, un créneau terminé, un doublon et des données invalides. Tous les chemins de code V7 actuels restent déconnectés de ce contrat.
+
+**TESTS AJOUTÉS :** (1) marqueur accepté seulement pendant un claim actif au token correct, (2) valeurs invalides et créneaux inexistants refusés, (3) rôle propriétaire non-superuser et RLS forcé sur les deux tables, (4) worker/observateur sans accès direct ni exécution non autorisée. Ces quatre scénarios complètent les huit tests PostgreSQL existants ; CI GitHub PostgreSQL 17 éphémère uniquement, aucune migration réelle.
+
+**LIMITES :** cette barrière protège l'enregistrement d'un marqueur dans la même DB transactionnelle ; elle ne garantit **pas** le fencing d'effets externes (requête HTTP/source, écriture dans une autre DB, side effect), ni la reprise automatique après crash. Le ledger de CI ne persiste pas entre runs ; les clés, la séparation de l'émetteur, le registre J6 et l'admission des vrais biens ne sont pas raccordés. Exiger un audit de sécurité de la migration réelle, puis un opérateur GO séparé pour DB/cron. J7 reste ouvert.
+
+**Preuve à vérifier** : SQL code SHA 988d5fa6c70796de89ff49f9141eecc4bcbec479 ; tests code SHA 8450a27a5aca7fc69a92b9a107fa1325521c7b30. Ne pas déclarer PASS sans logs GitHub au SHA exact. Aucun merge, import, activation, secrets, Vercel.
