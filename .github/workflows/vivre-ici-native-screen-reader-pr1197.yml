@@ -1,0 +1,86 @@
+name: Vivre Ici J18 Native Screen Readers PR1197
+
+on:
+  pull_request:
+    branches: [feat/akarfinder-supabase-unified-20261108]
+    paths:
+      - ".github/workflows/vivre-ici-native-screen-reader-pr1197.yml"
+      - "scripts/audits/vivre-ici-native-screen-reader.spec.mjs"
+      - "scripts/audits/vivre-ici-native-screen-reader.config.mjs"
+      - "scripts/ci/validate-workflow-efficiency.mjs"
+      - "scripts/ci/validate-workflow-efficiency.test.mjs"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-reader:
+    if: github.event.pull_request.number == 1197 && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            reader: nvda
+            browser: chromium
+          - os: macos-15
+            reader: voiceover
+            browser: webkit
+    env:
+      BASE_URL: http://127.0.0.1:3205
+      NATIVE_READER: ${{ matrix.reader }}
+      NATIVE_BROWSER: ${{ matrix.browser }}
+      PLAYWRIGHT_BROWSERS_PATH: "0"
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install locked project dependencies
+        run: npm ci
+      - name: Install pinned disposable native screen-reader tooling
+        run: npm install --no-save --package-lock=false @guidepup/guidepup@0.40.0 @guidepup/playwright@0.21.0 @guidepup/setup@0.29.3 @playwright/test@1.65.0
+      - name: Install headed Playwright browser
+        run: npx playwright install ${{ matrix.browser }}
+      - name: Configure real screen reader in ephemeral runner
+        run: npx @guidepup/setup setup --ci
+      - name: Install reader assets matched to Guidepup version
+        run: npx @guidepup/setup install
+      - name: Build candidate locally without any deployment
+        run: npm run build
+      - name: Test real NVDA or VoiceOver on local candidate
+        shell: bash
+        run: |
+          mkdir -p artifacts/native-sr
+          npm run start -- -p 3205 > artifacts/native-sr/next.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in {1..75}; do
+            if curl -fsS 'http://127.0.0.1:3205/map?city=casablanca&district=maarif&layer=explore' >/dev/null; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" != "1" ]; then
+            cat artifacts/native-sr/next.log
+            exit 1
+          fi
+          npx playwright test --config scripts/audits/vivre-ici-native-screen-reader.config.mjs
+      - name: Upload reader logs and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vivre-ici-native-sr-${{ matrix.reader }}-${{ github.run_id }}
+          path: artifacts/native-sr/
+          if-no-files-found: warn
+          retention-days: 14

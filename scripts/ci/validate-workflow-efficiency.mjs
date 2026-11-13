@@ -27,6 +27,25 @@ export function validateWorkflow(file, source) {
   const heavy = /\b(?:playwright\s+install|playwright\s+test|chromium|npm\s+run\s+build|next\s+build|npm\s+(?:run\s+)?test:scrapers|npm\s+test|visual.certification|full.page.certification|full.matrix|full.*benchmark|load.test|k6\s+run)\b/i.test(text);
   const topConcurrency = /^concurrency:\s*$/m.test(text);
   const cancellation = /^  cancel-in-progress:\s*(?:true|\$\{\{)/m.test(text);
+  // One-off J18 certification for PR #1197 only: exact 2 OS runners and
+  // isolated/read-only permissions. Never exempt other heavy PR workflows.
+  const nativeScreenReader = file === ".github/workflows/vivre-ici-native-screen-reader-pr1197.yml"
+    && /^name: Vivre Ici J18 Native Screen Readers PR1197$/m.test(text)
+    && /^  pull_request:\s*\n    branches: \[feat\/akarfinder-supabase-unified-20261108\]\s*\n    paths:/m.test(text)
+    && !/^  (?:push|workflow_dispatch|pull_request_target|repository_dispatch|schedule|workflow_run):/m.test(text)
+    && /^permissions:\s*\n  contents: read\s*$/m.test(text)
+    && /^  native-reader:\s*\n    if: github\.event\.pull_request\.number == 1197 && github\.event\.pull_request\.head\.repo\.full_name == github\.repository$/m.test(text)
+    && /^    timeout-minutes: 40$/m.test(text)
+    && /^    runs-on: \$\{\{ matrix\.os \}\}$/m.test(text)
+    && /os: windows-2022/m.test(text) && /os: macos-15/m.test(text)
+    && /reader: nvda/m.test(text) && /reader: voiceover/m.test(text)
+    && /npx @guidepup\/setup setup --ci/m.test(text)
+    && /npx playwright test --config scripts\/audits\/vivre-ici-native-screen-reader\.config\.mjs/m.test(text)
+    && /- ".github\/workflows\/vivre-ici-native-screen-reader-pr1197.yml"/m.test(text)
+    && /- "scripts\/audits\/vivre-ici-native-screen-reader.spec.mjs"/m.test(text)
+    && !/^[ \t]+(?:id-token|actions|checks|pull-requests): write$/m.test(text)
+    && ((text.split(/^jobs:\s*$/m)[1] || "").match(/^  [a-zA-Z0-9_-]+:\s*$/gm) || []).length === 1;
+
   if (pr) {
     if (!/^    paths:\s*$/m.test(text) && !requiredMainGate) errors.push('PR trigger must have targeted paths');
     const group = text.match(/^  group:\s*(.*)$/m)?.[1] || '';
@@ -34,7 +53,7 @@ export function validateWorkflow(file, source) {
         !/(?:github\.event\.pull_request\.number|github\.head_ref)/.test(group)) {
       errors.push('PR trigger requires per-PR top-level concurrency with cancel-in-progress');
     }
-    if (heavy) errors.push('heavy suite/build/Chromium must not run on pull_request; use post-merge main');
+    if (heavy && !nativeScreenReader) errors.push('heavy suite/build/Chromium must not run on pull_request; use post-merge main');
   }
   if (heavy) {
     if (!topConcurrency) errors.push('heavy workflow requires top-level concurrency');

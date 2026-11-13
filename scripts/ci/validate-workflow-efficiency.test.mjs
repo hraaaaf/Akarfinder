@@ -56,3 +56,56 @@ test('permanent status check exception is restricted to the real required gate',
   assert.ok(validateWorkflow('.github/workflows/required-pr-gate.yml', alwaysOnGate.replace('    branches: [main]', '    branches: [other]')).some(x => x.includes('targeted paths')));
   assert.ok(validateWorkflow('.github/workflows/required-pr-gate.yml', alwaysOnGate + '      - run: npm run build\n').some(x => x.includes('heavy suite')));
 });
+
+
+const nativeReaderPath = ".github/workflows/vivre-ici-native-screen-reader-pr1197.yml";
+const nativeReaderWorkflow = [
+  "name: Vivre Ici J18 Native Screen Readers PR1197",
+  "on:",
+  "  pull_request:",
+  "    branches: [feat/akarfinder-supabase-unified-20261108]",
+  "    paths:",
+  '      - ".github/workflows/vivre-ici-native-screen-reader-pr1197.yml"',
+  '      - "scripts/audits/vivre-ici-native-screen-reader.spec.mjs"',
+  "permissions:",
+  "  contents: read",
+  "concurrency:",
+  '  group: \${{ github.workflow }}-\${{ github.event.pull_request.number || github.ref }}',
+  "  cancel-in-progress: true",
+  "jobs:",
+  "  native-reader:",
+  "    if: github.event.pull_request.number == 1197 && github.event.pull_request.head.repo.full_name == github.repository",
+  "    runs-on: \${{ matrix.os }}",
+  "    timeout-minutes: 40",
+  "    strategy:",
+  "      matrix:",
+  "        include:",
+  "          - os: windows-2022",
+  "            reader: nvda",
+  "          - os: macos-15",
+  "            reader: voiceover",
+  "    steps:",
+  "      - run: npm run build",
+  "      - run: npx @guidepup/setup setup --ci",
+  "      - run: npx playwright test --config scripts/audits/vivre-ici-native-screen-reader.config.mjs",
+  "",
+].join("\n");
+
+test("one-off heavy real-reader exception is limited to Vivre Ici PR1197", () => {
+  assert.deepEqual(validateWorkflow(nativeReaderPath, nativeReaderWorkflow), []);
+  const forbidden = [
+    nativeReaderWorkflow.replace("number == 1197", "number == 1198"),
+    nativeReaderWorkflow.replace("os: macos-15", "os: ubuntu-24.04"),
+    nativeReaderWorkflow.replace("  contents: read", "  contents: write"),
+    nativeReaderWorkflow.replace("    timeout-minutes: 40", "    timeout-minutes: 120"),
+    nativeReaderWorkflow.replace("    branches: [feat/akarfinder-supabase-unified-20261108]", "    branches: [main]"),
+    nativeReaderWorkflow.replace(" && github.event.pull_request.head.repo.full_name == github.repository", ""),
+    nativeReaderWorkflow + "  workflow_dispatch:\n",
+    nativeReaderWorkflow.replace("  native-reader:", "  second-reader:"),
+  ];
+  for (const candidate of forbidden) {
+    assert.ok(validateWorkflow(nativeReaderPath, candidate).some(e => e.includes("heavy suite")),
+      "strict one-off exception must reject expanded privileges");
+  }
+  assert.ok(validateWorkflow("another.yml", nativeReaderWorkflow).some(e => e.includes("heavy suite")));
+});
