@@ -145,6 +145,7 @@ jobs:
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_agenz_v3_replay.py'
       - name: Agenz source HTML scoped price-description conflict safety offline
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_agenz_primary_scope.py'
+      # J2 FeenWay: full V7 + PG17 + Radar10 gate must include real V3 review propagation.
       - name: V3 source evidence conflict review propagation (offline)
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v3_source_review_gate.py'
       - name: Existing Radar10 private staging regression
