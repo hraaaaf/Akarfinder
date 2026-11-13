@@ -418,3 +418,10 @@ Important : cette contradiction est encore bloquée **dans V7** mais `V3.parse_r
 Source du conflit déjà **vérifiée** par [Agenz GH one-shot #43454575703](https://github.com/hraaaaf/Akarfinder/actions/runs/43454575703) : source Agenz 169490 / FeenWay 186197, **7 500 vs 7 700 DH/mois** dans deux blocs originaux, 84 m², 0 admission. La clarification de la valeur réelle, sa disponibilité et la dédup demeurent des gates distincts ; 82 166 candidats restent en quarantaine, 0 DB/merge/Vercel.
 
 **Jalons de reprise issus de ce fichier, inchangés :** J2 FeenWay en cours → J3 Agenz multi-exemples et exactitude terrain → J4 Avito/Yakeey/Sarouty → J5 autres sources → J6 staging privé anti-rejeu → J7 canarys/cron 10 min et surveillance 24 h, sous GO. État connu V7 **2/8** jalons clos, avancement global non mesuré.
+
+
+## 13/11/2026 — J2 FeenWay → V3 : une cause de revue prouvée sur code réel, 55/55 tests
+
+[One-shot GH Actions #43465539660](https://github.com/hraaaaf/Akarfinder/actions/runs/43465539660) SUCCESS au commit `2e026a2fcaa9aa7a2ec09efbea28862f3454cbb4` : **7 tests de gate V3 + 9 de V7→V3 + 10 de preuve Agenz + 29 régressions V3 = 55/55 PASS**. La contradiction de la même fiche Agenz 169490 (7 500 vs 7 700 DH/mois), prouvée précédemment sur HTML original [Agenz #43454575703](https://github.com/hraaaaf/Akarfinder/actions/runs/43454575703), est maintenant transmise via le chemin interne V7 à V3 `quality.status=requires_manual_review`, `human_review_required=true`, motif `AGENZ_PRIMARY_VS_DESCRIPTION_RENT_PRICE_CONFLICT`. Tests de rejets des motifs inconnus ou non-Agenz inclus. **Pas d'auto-détection dans le V3 appelé seul.**
+
+Limites : run ciblé sans réseau/DB, CI complète PostgreSQL/Radar10 **non redéclenchée** à ce SHA ; pas de propagation en prod ; aucun prix réel confirmé ni fraîcheur attestée. J2 reste EN COURS, 82 166 candidats quarantaine, 0 DB/merge/Vercel/cron live. Séquence J2 FeenWay → J3 Agenz multi-exemples → J4 Avito/Yakeey/Sarouty → J5 autres sources → J6 staging privé durable anti-rejeu → J7 canary et cron sous GO + surveillance 24h. **2/8 jalons clôturés**.

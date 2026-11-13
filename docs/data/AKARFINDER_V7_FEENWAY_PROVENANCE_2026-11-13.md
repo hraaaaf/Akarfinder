@@ -207,3 +207,16 @@ AkarParser V3 extrait sur cette réponse : `price_mad=7500.0`, `surface_total_m2
 **Preuve CI de ce SHA :** à renseigner seulement après run GitHub sur le vrai code V7 + V3 (état non encore établi au moment d'écrire ce closeout documentaire). Aucune DB, merge, activation cron live ni Vercel.
 
 **Roadmap canonique inchangée :** J2 FeenWay EN COURS → J3 Agenz multi-exemples → J4 Avito/Yakeey/Sarouty → J5 autres sources → J6 staging privé durable anti-rejeu → J7 canarys/cron 10 min avec GO distinct et 24 h d'observation. L'état de référence **2/8 jalons clôturés** ne change pas ; ce sous-lot n'est pas équivalent à une mise en service de FeenWay.
+
+
+## 13 novembre 2026 — Closeout probant du sous-lot J2 FeenWay V7 → V3 : 55 tests PASS
+
+**Goal effectivement rempli (périmètre étroit) :** lorsqu'un contrôle HTML premier portail constate `AGENZ_PRIMARY_VS_DESCRIPTION_RENT_PRICE_CONFLICT`, le chemin V7 FeenWay transmet le motif au vrai parseur V3 et celui-ci doit classer la fiche dans `requires_manual_review` avec `human_review_required=true`. Cette mutation n'est **jamais** une preuve que l'annonce est fraîche ou que 7 500 DH prime sur 7 700 DH.
+
+**Preuve GitHub Actions au SHA exact du workflow** `2e026a2fcaa9aa7a2ec09efbea28862f3454cbb4` : [Run #43465539660](https://github.com/hraaaaf/Akarfinder/actions/runs/43465539660) **SUCCESS**, vrai code du dépôt sous Python 3.11, compilation PASS, **55 tests OFFLINE PASS** : 7 contrats V3 du motif/allowlist/human-review ; 9 tests V7→V3 replay ; 10 tests des sections Agenz ; 29 tests de non-régression des adaptateurs de portails AkarParser V3. Logs : 0 échec, 0 erreur. **Aucun GET, aucun accès DB/PostgreSQL ni annonce originale revisitée pendant ce run**. Le workflow est one-shot sur son YAML propre, sans schedule et sans activation sur main. Code fonctionnel déjà dans la PR au SHA `2fb3359edf54ef0de5f79d09ee2e5a89d5113fe0` ; doc canonique au SHA `29787374b31bef7bf7657cb48dadad73717abe52`.
+
+**Conservation des limites** : moteur V3 brut, lorsqu'il est appelé seul *sans source_review_reasons*, ne peut pas inférer le conflit à partir de son parseur générique ; le chemin V7 FeenWay est obligatoire pour cette source. Le garde n'invente ni prix officiel ni disponibilité. **La CI complète V7 avec PostgreSQL et Radar10 n'a pas été redéclenchée à ce nouveau code via PR** ; elle demeure une validation requise avant tout staging/merge et ne doit pas être marquée PASS à ce SHA. Le run ciblé 55/55 est suffisant pour certifier la correction de propagation, pas pour certifier l'architecture entière.
+
+**Frontière J2** : le conflit source demeure non résolu tant que le portail/annonceur ne confirme pas le vrai montant, la fraîcheur et l'activité ne sont pas indépendamment certifiées et le rapprochement des autres portails n'est pas complet. Les 82 166 FeenWay restent en quarantaine, aucune admission V3/Radar10, 0 DB, 0 merge, 0 cron live, 0 Vercel. **Roadmap V7 reste 2/8 jalons clos, J2 en cours.**
+
+**Next exact** : obtenir une clarification source exploitable 7 500 vs 7 700 DH/mois, ou maintenir la fiche NO-GO ; poursuivre J2 par jeux de source primaire autorisés et revue/anti-doublon, puis exécuter full V7/V3/PostgreSQL/Radar10 sur une CI non saturée avant tout staging privé. Puis J3 → J4 → J5 → J6 → J7 selon roadmap.
