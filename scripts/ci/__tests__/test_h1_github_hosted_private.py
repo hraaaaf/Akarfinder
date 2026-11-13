@@ -211,6 +211,43 @@ class TestCanaryAndStorage(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "FAKE_OBJECT_INTEGRITY_FAILURE"):
             store.verify_object(item)
 
+    def test_checkpoint_rejects_cross_run_files_and_mismatched_sha(self):
+        digest_a, digest_b = "a" * 64, "b" * 64
+        root = "akarfinder/h1/run-123456/batches/000"
+        valid = {
+            "id": "batch-000", "index": 0, "count": 3, "first_id": 1, "last_id": 3,
+            "input_sha256": digest_a, "report_sha256": digest_b,
+            "files": [
+                {"key": root + "/input/rows.jsonl.gz", "kind": "raw_input",
+                 "sha256": digest_a, "size": 12},
+                {"key": root + "/parsed/aggregate_report.json", "kind": "aggregate_report",
+                 "sha256": digest_b, "size": 55},
+            ],
+        }
+        h1.verify_batch_record(valid, 0, "123456")
+        cross_run = json.loads(json.dumps(valid))
+        cross_run["files"][1]["key"] = cross_run["files"][1]["key"].replace("run-123456", "run-999999")
+        with self.assertRaisesRegex(RuntimeError, "H1_CHECKPOINT_KEY_INVALID"):
+            h1.verify_batch_record(cross_run, 0, "123456")
+        wrong_sha = json.loads(json.dumps(valid))
+        wrong_sha["report_sha256"] = "c" * 64
+        with self.assertRaisesRegex(RuntimeError, "H1_CHECKPOINT_RECORDED_SHA_MISMATCH"):
+            h1.verify_batch_record(wrong_sha, 0, "123456")
+        duplicate_key = json.loads(json.dumps(valid))
+        duplicate_key["files"].append(dict(duplicate_key["files"][1]))
+        with self.assertRaisesRegex(RuntimeError, "H1_CHECKPOINT_KEY_INVALID"):
+            h1.verify_batch_record(duplicate_key, 0, "123456")
+
+    def test_storage_owner_and_kms_arn_must_match(self):
+        store = h1.S3PrivateStore("akar-h1-private-test", 
+                                  "arn:aws:kms:eu-central-1:123456789012:key/example",
+                                  "eu-central-1", "123456789012")
+        self.assertEqual(store.account, "123456789012")
+        with self.assertRaisesRegex(RuntimeError, "H1_PRIVATE_KMS_KEY_INVALID"):
+            h1.S3PrivateStore("akar-h1-private-test",
+                              "arn:aws:kms:eu-central-1:999999999999:key/example",
+                              "eu-central-1", "123456789012")
+
 
 class TestReadOnlyAndWorkflowContracts(unittest.TestCase):
     def test_report_gate_rejects_mutations_network_and_rights_claims(self):
