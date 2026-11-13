@@ -7,6 +7,7 @@ import sys
 import unicodedata
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from v7_multisource.snapshot_evidence import offline_benchmark
+from v7_parallel.j3_geo_qualification import qualify_geo_claim
 
 FIELDS = ("title", "price_mad", "surface_total_m2", "city", "district",
           "property_type", "transaction_type")
@@ -20,7 +21,7 @@ def equivalent(field, actual, expected):
     if field in ("city", "district") and isinstance(actual, str) and isinstance(expected, str):
         def normalized(s):
             s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode("ascii")
-            return re.sub(r"\\s+", " ", s.casefold()).strip()
+            return re.sub(r"\s+", " ", s.casefold()).strip()
         return normalized(actual) == normalized(expected)
     return actual == expected
 
@@ -36,7 +37,9 @@ def audit(label_path, private_root):
          "parser_missing":[],"parser_incorrect_vs_source_hero":[],
          "normalization_only_differences":[], "unresolved_district_source_conflicts":[],
          "location_reality_verified":False,"availability_or_freshness_verified":False,
-         "representative_accuracy_certified":False,"authorized_for_private_staging":False}
+         "representative_accuracy_certified":False,"authorized_for_private_staging":False,
+         "geo_conflict_quarantined_count":0,"geo_unverified_source_claim_count":0,
+         "geo_publication_eligible_count":0,"geo_qualifications":[]}
     for entry in entries:
         id_=entry["id"]
         expected=entry["expected"]
@@ -51,6 +54,14 @@ def audit(label_path, private_root):
             out["unresolved_district_source_conflicts"].append(
                 {"id":id_,"hero_district":expected["district"],
                  "description_district":entry["district_description_conflict"]})
+        geo=qualify_geo_claim(
+            city_label=expected["city"], district_label=expected["district"],
+            conflicting_description_district=entry["district_description_conflict"],
+            sha256_verified=proof["evidence_verified"])
+        out["geo_qualifications"].append({"id":id_, **geo})
+        out["geo_conflict_quarantined_count"]+=int(geo["status"]=="source_internal_conflict")
+        out["geo_unverified_source_claim_count"]+=int(geo["status"]=="source_claim_unverified")
+        out["geo_publication_eligible_count"]+=int(geo["eligible_for_geo_publication"])
         for field in FIELDS:
             out["independent_source_visible_labels"]+=1
             values=proof["field_comparison"][field]
@@ -73,7 +84,8 @@ def main():
     label_path=Path(__file__).with_name("j3_independent_labels.json")
     result=audit(label_path,Path.cwd())
     print(json.dumps(result,ensure_ascii=False,sort_keys=True))
-    return 1 if result["parser_missing"] or result["parser_incorrect_vs_source_hero"] else 0
+    return 1 if (result["parser_missing"] or result["parser_incorrect_vs_source_hero"]
+                 or result["geo_publication_eligible_count"] != 0) else 0
 
 if __name__=="__main__":
     raise SystemExit(main())

@@ -7,6 +7,8 @@ on:
       - 'scripts/acquisition/__tests__/test_canonical_listing_extractor.py'
       - 'scripts/acquisition/v7_parallel/j3_independent_labels.json'
       - 'scripts/acquisition/v7_parallel/j3_source_label_audit.py'
+      - 'scripts/acquisition/v7_parallel/j3_geo_qualification.py'
+      - 'scripts/acquisition/__tests__/test_v7_j3_geo_qualification.py'
 permissions:
   contents: read
   actions: read
@@ -158,4 +160,5 @@ jobs:
           assert equivalent("surface_total_m2", 150.0, 150)
           assert not equivalent("surface_total_m2", None, 150)
           PY
+          python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j3_geo_qualification.py' -v
           python scripts/acquisition/v7_parallel/j3_source_label_audit.py
