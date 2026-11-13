@@ -9,6 +9,7 @@ on:
       - 'scripts/acquisition/__tests__/test_v7_feenway_provenance.py'
       - 'scripts/acquisition/__tests__/test_v7_feenway_snapshot_links.py'
       - 'scripts/acquisition/__tests__/test_v7_feenway_photo_id_hints.py'
+      - 'scripts/acquisition/__tests__/test_v7_feenway_actions_pilot.py'
       - 'scripts/acquisition/__tests__/test_v7_legacy_url_intake.py'
       - 'scripts/acquisition/__tests__/test_v7_detail_compare.py'
       - 'scripts/acquisition/__tests__/test_v7_snapshot_evidence.py'
@@ -84,6 +85,7 @@ jobs:
           scripts/acquisition/v7_multisource/feenway_provenance.py
           scripts/acquisition/v7_multisource/feenway_snapshot_links.py
           scripts/acquisition/v7_multisource/feenway_photo_id_hints.py
+          scripts/acquisition/v7_multisource/feenway_actions_pilot.py
           scripts/acquisition/v7_multisource/pipeline.py
           scripts/acquisition/v7_multisource/legacy_url_intake.py
           scripts/acquisition/v7_multisource/detail_compare.py
@@ -96,6 +98,7 @@ jobs:
           scripts/acquisition/__tests__/test_v7_feenway_provenance.py
           scripts/acquisition/__tests__/test_v7_feenway_snapshot_links.py
           scripts/acquisition/__tests__/test_v7_feenway_photo_id_hints.py
+          scripts/acquisition/__tests__/test_v7_feenway_actions_pilot.py
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -121,6 +124,8 @@ jobs:
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_snapshot_links.py'
       - name: FeenWay private Mubawab CDN-hint review, no admission
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_photo_id_hints.py'
+      - name: FeenWay GitHub Actions pilot safety regressions offline (no network)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_actions_pilot.py'
       - name: Existing Radar10 private staging regression
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_radar10_*.py'
 

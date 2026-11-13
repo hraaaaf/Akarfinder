@@ -375,3 +375,10 @@ Un correctif **local, non commité dans cette PR** a été livré en ZIP privé 
 **Next exact :** pilote borné de 10 URLs depuis un nouveau dossier, contrôle des liens originaux et des prix/types/périodes, puis seulement GO/NO-GO sur une capture source plus large et staging privé V3/Radar10. La PR #1211 demeure Draft ; FeenWay non intégré, V7 2/8. Aucun cron live, merge ou Vercel.
 
 **Addendum test final FeenWay :** correctif privé révisé (22/22 tests offline PASS, hash final ci-dessus) : contrôle robots.txt de `/listings/` et de l'User-Agent, arrêt sur redirections et liens non sûrs, conservation de liens inconnus *seulement pour revue* ; aucune collecte réseau lancée et aucune source V7 admise.
+
+
+## FeenWay pilote GitHub Actions 10/10 — 13/11/2026
+
+Le blocage « PC Windows offline » **n'est plus bloquant pour le pilote**. [Run de capture FeenWay #43440398205](https://github.com/hraaaaf/Akarfinder/actions/runs/43440398205) SUCCESS au SHA `4b388e7d9c178b646dd20e9ea40d3dc64ce8654c` : 14 tests de sécurité PASS, 10/10 pages FeenWay capturées, 10/10 URLs/IDs amont observés via leurs liens explicites. Résultat contrôlé par [artefact #14046020698](https://github.com/hraaaaf/Akarfinder/actions/runs/43440398205/artifacts/14046020698), ZIP SHA256 `28b49a0bb5c2331c92483f7dd12c440b971f6025dc5da9b49db52baae2f2c539` et CRC PASS. [V7 CI #43440408179](https://github.com/hraaaaf/Akarfinder/actions/runs/43440408179) SUCCESS et [CI Policy #43440408276](https://github.com/hraaaaf/Akarfinder/actions/runs/43440408276) SUCCESS.
+
+Workflow limité au premier push de sa définition sur la branche de la PR #1211, 10 URLs fixes, robots contrôlé, redirections/accès refusés, **pas de schedule/DB/portails amont**. La suite peut rester sur GitHub Actions mais l'admission requiert une validation indépendante des vraies fiches amont (état, prix et période, type, transaction, dédup). 10/10 est un échantillon ciblé, non représentatif. FeenWay pas encore intégré aux annonces publiques ; **82 166 en quarantaine, V7 2/8**.
