@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""GitHub-hosted H1 runner with private S3 checkpoints; never logs row data."""
+"""GitHub-hosted H1 runner with private Supabase checkpoints; no raw logs."""
 from __future__ import annotations
 
 import argparse
-import base64
 from collections import Counter
 from datetime import datetime, timezone
 import gzip
@@ -18,6 +17,7 @@ import subprocess
 import sys
 import tempfile
 from typing import Any
+from h1_supabase_storage import SupabasePrivateStore, MAX_RUN_BYTES, PROJECT_REF, BUCKET
 
 IMMUTABLE_SOURCE_SHA = "3eb2b8a7b7ec78832e764e014b387eabd5e74058"
 EXPECTED = {"total": 151900, "priority_count": 53083, "remaining_count": 98817}
@@ -25,8 +25,8 @@ BATCH_SIZE = 1000
 TOTAL_BATCHES = (EXPECTED["total"] + BATCH_SIZE - 1) // BATCH_SIZE
 REMAINING_BATCHES_AFTER_CANARY = TOTAL_BATCHES - 1  # 151, final batch = 900 rows
 APPROVAL_ACTOR = "hraaaaf"
-S3_PREFIX = "akarfinder/h1"
-MANIFEST_VERSION = "akarparser-v3-github-hosted-h1-v1"
+STORAGE_PREFIX = "akarfinder/h1"
+MANIFEST_VERSION = "akarparser-v3-h1-supabase-v1"
 
 
 def require(condition: bool, code: str) -> None:
@@ -70,7 +70,7 @@ def object_key(run_id: str, suffix: str) -> str:
     path = PurePosixPath(suffix)
     require(not path.is_absolute() and ".." not in path.parts and "" not in path.parts,
             "H1_STORAGE_KEY_INVALID")
-    return f"{S3_PREFIX}/run-{run_id}/{path.as_posix()}"
+    return f"{STORAGE_PREFIX}/run-{run_id}/{path.as_posix()}"
 
 
 def gate_parser_report(report: dict[str, Any], expected_count: int) -> None:
@@ -132,97 +132,9 @@ def verify_batch_record(record: dict[str, Any], index: int, run_id: str) -> None
             "H1_CHECKPOINT_RECORDED_SHA_MISMATCH")
 
 
-class S3PrivateStore:
-    """Small AWS CLI wrapper. All stdout/stderr is captured and suppressed."""
-
-    def __init__(self, bucket: str, kms_key: str, region: str, account: str):
-        require(bool(re.fullmatch(r"[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]", bucket)),
-                "H1_PRIVATE_BUCKET_INVALID")
-        require(kms_key.startswith(f"arn:aws:kms:eu-central-1:{account}:key/"),
-                "H1_PRIVATE_KMS_KEY_INVALID")
-        require(region == "eu-central-1" and bool(re.fullmatch(r"[0-9]{12}", account)),
-                "H1_PRIVATE_STORAGE_REGION_OR_ACCOUNT_INVALID")
-        self.bucket, self.kms_key, self.region, self.account = bucket, kms_key, region, account
-
-    def _aws(self, args: list[str], *, expect_json: bool = False) -> Any:
-        require(bool(args) and args[0] == "s3api", "H1_PRIVATE_STORAGE_ACTION_INVALID")
-        # Reject any accidental cross-account bucket or KMS routing.
-        args = [*args, "--expected-bucket-owner", self.account]
-        result = subprocess.run(["aws", *args, "--region", self.region, "--no-cli-pager"],
-                                capture_output=True, text=True, check=False)
-        require(result.returncode == 0, "H1_PRIVATE_STORAGE_OPERATION_FAILED")
-        if not expect_json:
-            return None
-        try:
-            return json.loads(result.stdout)
-        except (ValueError, TypeError):
-            raise RuntimeError("H1_PRIVATE_STORAGE_RESPONSE_INVALID") from None
-
-    def exists(self, key: str) -> bool:
-        result = self._aws(["s3api", "list-objects-v2", "--bucket", self.bucket,
-                            "--prefix", key, "--max-keys", "1"], expect_json=True)
-        return any(x.get("Key") == key for x in result.get("Contents", []))
-
-    def head(self, key: str) -> dict[str, Any]:
-        return self._aws(["s3api", "head-object", "--bucket", self.bucket,
-                          "--key", key, "--checksum-mode", "ENABLED"], expect_json=True)
-
-    def verify_object(self, item: dict[str, Any]) -> None:
-        head = self.head(item["key"])
-        expected_checksum = base64.b64encode(bytes.fromhex(item["sha256"])).decode("ascii")
-        require(int(head.get("ContentLength", -1)) == int(item["size"]), "H1_REMOTE_OBJECT_SIZE_MISMATCH")
-        require(head.get("ChecksumSHA256") == expected_checksum, "H1_REMOTE_OBJECT_SHA_MISMATCH")
-        require(head.get("ServerSideEncryption") == "aws:kms"
-                and head.get("SSEKMSKeyId") == self.kms_key, "H1_REMOTE_OBJECT_ENCRYPTION_MISMATCH")
-
-    def put_file(self, path: Path, key: str) -> dict[str, Any]:
-        size = path.stat().st_size
-        require(size <= 5 * 1024**3, "H1_OBJECT_EXCEEDS_SINGLE_PUT_LIMIT")
-        digest = sha256_file(path)
-        checksum = base64.b64encode(bytes.fromhex(digest)).decode("ascii")
-        self._aws(["s3api", "put-object", "--bucket", self.bucket, "--key", key,
-                   "--body", str(path), "--server-side-encryption", "aws:kms",
-                   "--ssekms-key-id", self.kms_key, "--checksum-algorithm", "SHA256",
-                   "--checksum-sha256", checksum])
-        item = {"key": key, "sha256": digest, "size": size}
-        self.verify_object(item)
-        return item
-
-    def put_bytes(self, data: bytes, key: str, temp_root: Path) -> dict[str, Any]:
-        path = temp_root / ("object-" + sha256_bytes(key.encode("utf-8"))[:16])
-        path.write_bytes(data)
-        return self.put_file(path, key)
-
-    def download(self, key: str, path: Path, expected_sha: str | None = None) -> bytes:
-        head = self.head(key)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        self._aws(["s3api", "get-object", "--bucket", self.bucket, "--key", key,
-                   "--checksum-mode", "ENABLED", str(path)], expect_json=True)
-        data = path.read_bytes()
-        actual = sha256_bytes(data)
-        if expected_sha is not None:
-            require(actual == expected_sha, "H1_PRIVATE_DOWNLOAD_SHA_MISMATCH")
-        checksum = base64.b64encode(bytes.fromhex(actual)).decode("ascii")
-        require(head.get("ChecksumSHA256") == checksum and int(head.get("ContentLength", -1)) == len(data),
-                "H1_PRIVATE_DOWNLOAD_CHECKSUM_MISMATCH")
-        require(head.get("ServerSideEncryption") == "aws:kms"
-                and head.get("SSEKMSKeyId") == self.kms_key, "H1_REMOTE_OBJECT_ENCRYPTION_MISMATCH")
-        return data
-
-    def put_manifest(self, manifest: dict[str, Any], key: str, temp_root: Path) -> dict[str, Any]:
-        data = canonical_json(manifest)
-        return self.put_bytes(data, key, temp_root)
-
-    def get_manifest(self, key: str, temp_root: Path) -> tuple[dict[str, Any], str] | None:
-        if not self.exists(key):
-            return None
-        path = temp_root / ("manifest-" + sha256_bytes(key.encode("utf-8"))[:16] + ".json")
-        data = self.download(key, path)
-        try:
-            manifest = json.loads(data)
-        except ValueError:
-            raise RuntimeError("H1_PRIVATE_MANIFEST_INVALID") from None
-        return manifest, sha256_bytes(data)
+def checkpoint_key(run_id: str, index: int) -> str:
+    require(0 <= index <= TOTAL_BATCHES + 1, "H1_CHECKPOINT_INDEX_INVALID")
+    return object_key(run_id, f"checkpoints/{index:03d}.json")
 
 
 def load_source(source: Path):
@@ -275,7 +187,7 @@ def make_storage_manifest(run_id: str, snapshot: dict[str, Any], batches: list[d
     }
 
 
-def verify_checkpoint(store: S3PrivateStore, manifest: dict[str, Any], run_id: str,
+def verify_checkpoint(store: SupabasePrivateStore, manifest: dict[str, Any], run_id: str,
                       snapshot: dict[str, Any], temp_root: Path) -> list[dict[str, Any]]:
     require(manifest.get("version") == MANIFEST_VERSION and manifest.get("run_id") == run_id,
             "H1_RESUME_MANIFEST_VERSION_OR_RUN_MISMATCH")
@@ -324,7 +236,7 @@ def query_snapshot(h1: Any, secret: str) -> tuple[dict[str, str], dict[str, Any]
 
 
 def execute_batch(h1: Any, parse_batch: Any, env: dict[str, str], snapshot: dict[str, Any],
-                  index: int, temp_root: Path, store: S3PrivateStore, run_id: str) -> dict[str, Any]:
+                  index: int, temp_root: Path, store: SupabasePrivateStore, run_id: str) -> dict[str, Any]:
     expected = batch_count(index)
     cursor = 0 if index == 0 else int(snapshot.get("last_id_before_batch", 0))
     # Resume cursor is provided by the previous verified batch by the caller.
@@ -349,7 +261,7 @@ def execute_batch(h1: Any, parse_batch: Any, env: dict[str, str], snapshot: dict
             for row in rows:
                 zipped.write((json.dumps(row, ensure_ascii=False, sort_keys=True,
                                          separators=(",", ":")) + "\n").encode("utf-8"))
-    report = parse_batch(raw_path, output_dir, as_of=datetime.now(timezone.utc))
+    report = parse_batch(raw_path, output_dir, as_of=datetime.fromisoformat(snapshot['as_of']))
     gate_parser_report(report, expected)
     require(report.get("input_count") == expected, "H1_BATCH_REPORT_COUNT_INVALID")
     files = []
@@ -376,7 +288,7 @@ def execute_batch(h1: Any, parse_batch: Any, env: dict[str, str], snapshot: dict
     }
     verify_batch_record(record, index, run_id)
     # Only one bounded batch is staged on the ephemeral runner at a time.
-    # The private S3 objects and checkpoint are the durable recovery state.
+    # The immutable private Supabase objects and checkpoints are durable.
     shutil.rmtree(directory)
     return record
 
@@ -408,10 +320,9 @@ def emit_github_output(name: str, value: str) -> None:
             stream.write(f"{name}={value}\n")
 
 
-def run_h1(source: Path, store: S3PrivateStore, run_id: str, secret: str) -> dict[str, Any]:
+def run_h1(source: Path, store: SupabasePrivateStore, run_id: str, secret: str) -> dict[str, Any]:
     h1, parse_batch = load_source(source)
     env, snapshot = query_snapshot(h1, secret)
-    root_key = object_key(run_id, "checkpoint.json")
     final_key = object_key(run_id, "final-manifest.json")
     workspace = Path(os.environ["GITHUB_WORKSPACE"]).resolve(strict=True)
     runner_temp = Path(os.environ["RUNNER_TEMP"]).resolve(strict=True)
@@ -419,29 +330,56 @@ def run_h1(source: Path, store: S3PrivateStore, run_id: str, secret: str) -> dic
         temp_root = Path(tmp).resolve(strict=True)
         require(temp_root != workspace and workspace not in temp_root.parents
                 and runner_temp in temp_root.parents, "H1_TEMP_DIRECTORY_BOUNDARY_FAILED")
-        existing = store.get_manifest(root_key, temp_root)
-        if existing is None:
+        initial = store.get_manifest(checkpoint_key(run_id, 0), temp_root)
+        if initial is None:
+            snapshot = dict(snapshot, as_of=datetime.now(timezone.utc).isoformat())
             manifest = make_storage_manifest(run_id, snapshot, [], complete=False)
-            store.put_manifest(manifest, root_key, temp_root)
-            batches: list[dict[str, Any]] = []
+            store.put_manifest(manifest, checkpoint_key(run_id, 0), temp_root)
         else:
-            manifest, _ = existing
-            batches = verify_checkpoint(store, manifest, run_id, snapshot, temp_root)
+            manifest, _ = initial
+            saved = manifest.get("snapshot") or {}
+            as_of = saved.get("as_of")
+            try:
+                stamp = datetime.fromisoformat(as_of)
+                require(stamp.tzinfo is not None, "H1_SNAPSHOT_TIMESTAMP_INVALID")
+            except Exception:
+                raise RuntimeError("H1_SNAPSHOT_TIMESTAMP_INVALID") from None
+            snapshot = dict(snapshot, as_of=as_of)
+            verify_checkpoint(store, manifest, run_id, snapshot, temp_root)
+        # Only create immutable checkpoint/version objects, never replace existing.
+        # Complete checkpoint index is TOTAL_BATCHES + 1.
+        for index in range(1, TOTAL_BATCHES + 2):
+            existing = store.get_manifest(checkpoint_key(run_id, index), temp_root)
+            if existing is None:
+                break
+            candidate, _ = existing
+            require(len(candidate.get("batches") or []) == min(index, TOTAL_BATCHES),
+                    "H1_CHECKPOINT_PREFIX_INVALID")
+            manifest = candidate
+        batches = verify_checkpoint(store, manifest, run_id, snapshot, temp_root)
+        # Conservative budget on resumed runs; includes retained historical manifests.
+        committed = sum(int(x["size"]) for batch in batches for x in batch["files"])
+        store.bytes_used = max(store.bytes_used, committed +
+                               (len(batches) + 2) * len(canonical_json(manifest)))
+        require(store.bytes_used <= MAX_RUN_BYTES, "H1_SUPABASE_FREE_QUOTA_GUARD")
         if batches:
             print(f"H1_RESUME_CHECKPOINT batches={len(batches)} rows={manifest['processed']}", flush=True)
         if not batches:
             record = execute_batch(h1, parse_batch, env, snapshot, 0, temp_root, store, run_id)
             require(record["count"] == BATCH_SIZE, "H1_CANARY_COUNT_INVALID")
+            # Projection is only a fail-closed capacity gate, not a final size claim.
+            first_size = sum(int(x["size"]) for x in record["files"])
+            require(first_size * TOTAL_BATCHES + 80 * 1024**2 <= MAX_RUN_BYTES,
+                    "H1_SUPABASE_CANARY_SIZE_ESTIMATE_EXCEEDS_QUOTA")
             batches.append(record)
             manifest = make_storage_manifest(run_id, snapshot, batches, complete=False)
-            store.put_manifest(manifest, root_key, temp_root)
+            store.put_manifest(manifest, checkpoint_key(run_id, 1), temp_root)
             print(f"H1_CANARY_PASS rows={record['count']} parser_errors=0 db_writes=0 publication=0", flush=True)
             emit_github_output("canary_passed", "true")
         else:
             require(batches[0].get("canary_passed") is True, "H1_CANARY_CHECKPOINT_NOT_PASSED")
             emit_github_output("canary_passed", "true")
-        start_index = len(batches)
-        for index in range(start_index, TOTAL_BATCHES):
+        for index in range(len(batches), TOTAL_BATCHES):
             cursor = int(batches[-1]["last_id"])
             page_snapshot = dict(snapshot)
             page_snapshot["last_id_before_batch"] = cursor
@@ -449,49 +387,35 @@ def run_h1(source: Path, store: S3PrivateStore, run_id: str, secret: str) -> dic
             require(record["first_id"] > cursor, "H1_COHORT_CURSOR_OVERLAP")
             batches.append(record)
             manifest = make_storage_manifest(run_id, snapshot, batches, complete=False)
-            store.put_manifest(manifest, root_key, temp_root)
+            store.put_manifest(manifest, checkpoint_key(run_id, index + 1), temp_root)
             print(f"H1_BATCH_CHECKPOINT_COMPLETE index={index} rows={record['count']} total={manifest['processed']}",
                   flush=True)
         manifest = make_storage_manifest(run_id, snapshot, batches, complete=True)
         validate_final(manifest)
         final_object = store.put_manifest(manifest, final_key, temp_root)
-        # Mark the resumable checkpoint complete only after final manifest verification.
-        store.put_manifest(manifest, root_key, temp_root)
+        store.put_manifest(manifest, checkpoint_key(run_id, TOTAL_BATCHES + 1), temp_root)
         emit_github_output("complete", "true")
         print(f"H1_COMPLETE rows={manifest['processed']} batches={len(batches)} "
               f"final_manifest_sha256={final_object['sha256']} db_writes=0 publication=0", flush=True)
         return manifest
 
 
-def check_runtime() -> tuple[str, S3PrivateStore, str]:
+def check_runtime() -> tuple[str, SupabasePrivateStore, str]:
     require(platform.system() == "Linux" and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted",
             "H1_GITHUB_HOSTED_LINUX_REQUIRED")
-    actor = os.environ.get("GITHUB_ACTOR", "")
-    require(actor == APPROVAL_ACTOR, "H1_ACTOR_NOT_AUTHORIZED")
+    require(os.environ.get("GITHUB_ACTOR", "") == APPROVAL_ACTOR, "H1_ACTOR_NOT_AUTHORIZED")
     secret = os.environ.get("Q1E_NEON_RECOVERY_READONLY_URL", "")
     require(bool(secret), "H1_READONLY_CREDENTIAL_REQUIRED")
     run_id = validate_run_id(os.environ.get("H1_STORAGE_RUN_ID", ""))
-    bucket = os.environ.get("H1_PRIVATE_S3_BUCKET", "")
-    kms_key = os.environ.get("H1_PRIVATE_S3_KMS_KEY_ARN", "")
-    region = os.environ.get("H1_PRIVATE_AWS_REGION", "")
-    prefix = os.environ.get("H1_PRIVATE_S3_PREFIX", "")
-    require(prefix == S3_PREFIX, "H1_PRIVATE_STORAGE_PREFIX_INVALID")
-    expected_account = os.environ.get("H1_PRIVATE_AWS_ACCOUNT_ID", "")
-    expected_role = os.environ.get("H1_PRIVATE_AWS_ROLE_NAME", "")
-    require(bool(re.fullmatch(r"[0-9]{12}", expected_account)) and bool(expected_role),
-            "H1_PRIVATE_AWS_ROLE_CONFIGURATION_ABSENT")
-    identity = subprocess.run(["aws", "sts", "get-caller-identity", "--output", "json", "--no-cli-pager"],
-                             capture_output=True, text=True, check=False)
-    require(identity.returncode == 0, "H1_AWS_OIDC_IDENTITY_FAILED")
-    try:
-        caller = json.loads(identity.stdout)
-    except ValueError:
-        raise RuntimeError("H1_AWS_OIDC_IDENTITY_INVALID") from None
-    expected_arn_prefix = f"arn:aws:sts::{expected_account}:assumed-role/{expected_role}/"
-    require(caller.get("Account") == expected_account
-            and str(caller.get("Arn", "")).startswith(expected_arn_prefix),
-            "H1_AWS_OIDC_ROLE_MISMATCH")
-    return secret, S3PrivateStore(bucket, kms_key, region, expected_account), run_id
+    store = SupabasePrivateStore(
+        os.environ.get("H1_SUPABASE_PROJECT_REF", ""),
+        os.environ.get("H1_SUPABASE_BUCKET", ""),
+        os.environ.get("H1_SUPABASE_PUBLISHABLE_KEY", ""),
+        os.environ.get("H1_SUPABASE_AUTH_EMAIL", ""),
+        os.environ.get("H1_SUPABASE_AUTH_PASSWORD", ""),
+        os.environ.get("H1_SUPABASE_AUTH_USER_ID", ""),
+    )
+    return secret, store, run_id
 
 
 def main() -> None:
@@ -501,7 +425,7 @@ def main() -> None:
     try:
         secret, store, run_id = check_runtime()
         source = args.source.resolve(strict=True)
-        print("H1_PRIVATE_PREFLIGHT_OK runner=github-hosted-linux storage=s3-kms", flush=True)
+        print("H1_PRIVATE_PREFLIGHT_OK runner=github-hosted-linux storage=supabase-private", flush=True)
         run_h1(source, store, run_id, secret)
     except Exception as exc:
         code = str(exc) if isinstance(exc, RuntimeError) and re.fullmatch(r"H1_[A-Z0-9_]+", str(exc)) else "H1_UNEXPECTED_PRIVATE_FAILURE"
