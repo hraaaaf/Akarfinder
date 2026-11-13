@@ -106,6 +106,34 @@ class CanonicalListingExtractorTests(unittest.TestCase):
         self.assertNotIn("offer.price_amount", result["fields"])
         self.assertIn("agenz:discounted_current_price_ambiguous", result["rejected"])
 
+    def test_agenz_detail_path_location_only_as_unverified_fallback(self):
+        url="https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291"
+        html="<html><title>Appartement à vendre</title><body>Appartement à vendre, 104 m², 980 000 DH</body></html>"
+        r=MODULE.extract_canonical(url,html)
+        self.assertEqual(r["fields"]["location.city"]["value"],"Sale")
+        self.assertEqual(r["fields"]["location.neighborhood"]["value"],"Al Qods")
+        self.assertEqual(r["fields"]["location.neighborhood"]["evidence"]["method"],
+                         "agenz.detail_url.district")
+
+    def test_agenz_region_path_location_fallback(self):
+        url="https://agenz.ma/fr/annonces-achat/appartement/rabat-sale-kenitra/sale/tabriquet/appartement-a-vendre-259645"
+        html="<html><title>Appartement à vendre</title><body>Appartement à vendre, 85 m², 700 000 DH</body></html>"
+        r=MODULE.extract_canonical(url,html)
+        self.assertEqual(r["fields"]["location.city"]["value"],"Sale")
+        self.assertEqual(r["fields"]["location.neighborhood"]["value"],"Tabriquet")
+
+    def test_agenz_structured_address_not_overridden_by_route_fallback(self):
+        url="https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291"
+        html="""<html><head><title>Appartement à vendre</title>
+        <script type="application/ld+json">
+        {"@type":"Apartment","offers":{"price":980000},
+        "address":{"addressLocality":"Rabat","streetAddress":"Agdal"}}
+        </script></head><body>Appartement à vendre 104 m²</body></html>"""
+        r=MODULE.extract_canonical(url,html)
+        self.assertEqual(r["fields"]["location.city"]["value"],"Rabat")
+        self.assertEqual(r["fields"]["location.neighborhood"]["value"],"Agdal")
+        self.assertTrue(r["fields"]["location.neighborhood"]["evidence"]["method"].startswith("jsonld:"))
+
     def test_agenz_regional_detail_url_recognized(self):
         url = "https://agenz.ma/fr/annonces-achat/appartement/rabat-sale-kenitra/sale/tabriquet/appartement-a-vendre-259645"
         html = "<html><head><title>Appartement à vendre</title></head><body>Surface 85 m² - 700 000 DH</body></html>"

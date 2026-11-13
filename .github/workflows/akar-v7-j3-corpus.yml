@@ -26,3 +26,5 @@ jobs:
         run: python -m pip install "beautifulsoup4==4.14.3"
       - name: Snapshot corpus contracts; synthetic fixtures, 0 HTTP, 0 DB
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_j3_agenz.py'
+      - name: L4 canonical detail URL fallback regression without network
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_canonical_listing_extractor.py'

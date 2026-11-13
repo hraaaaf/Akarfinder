@@ -1,0 +1,80 @@
+name: Akar V7 J3 Five Real HTML Offline Replay (NO PORTAL REQUESTS)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/akar-v7-j3-corpus-replay.yml'
+      - 'scripts/acquisition/canonical_listing_extractor.py'
+      - 'scripts/acquisition/__tests__/test_canonical_listing_extractor.py'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  five-snapshot-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install only existing local parser dependency
+        run: python -m pip install "beautifulsoup4==4.14.3"
+      - uses: actions/download-artifact@v4
+        with:
+          name: akar-v7-j1-agenz-source-private
+          run-id: 43330609367
+          github-token: ${{ github.token }}
+          path: .private-j3-444291
+      - uses: actions/download-artifact@v4
+        with:
+          name: akar-v7-j3-agenz-445495-private
+          run-id: 43339490949
+          github-token: ${{ github.token }}
+          path: .private-j3-445495
+      - uses: actions/download-artifact@v4
+        with:
+          name: akar-v7-j3-agenz-420510-private
+          run-id: 43339490949
+          github-token: ${{ github.token }}
+          path: .private-j3-420510
+      - uses: actions/download-artifact@v4
+        with:
+          name: akar-v7-j3-agenz-387448-private
+          run-id: 43339490949
+          github-token: ${{ github.token }}
+          path: .private-j3-387448
+      - uses: actions/download-artifact@v4
+        with:
+          name: akar-v7-j3-agenz-500006-private
+          run-id: 43339490949
+          github-token: ${{ github.token }}
+          path: .private-j3-500006
+      - name: Replay exact 5 source HTML bytes against updated L4 and existing V3
+        env:
+          PYTHONPATH: scripts/acquisition
+        run: |
+          python - <<'PY'
+          from v7_parallel.j3_agenz_corpus import assess_corpus
+          import json
+          ids=["444291","445495","420510","387448","500006"]
+          r=assess_corpus([{"folder":".private-j3-"+x, "expected":{}} for x in ids])
+          assert r["snapshots"]==5 and r["independent_source_ids"]==5
+          assert r["status"]=="corpus_ready_for_human_labels"
+          assert r["disagreements_by_field"].get("city",0)==0, "L4_V3_CITY_STILL_DIVERGE"
+          assert r["disagreements_by_field"].get("district",0)==0, "L4_V3_DISTRICT_STILL_DIVERGE"
+          assert r["db_writes"]==0 and not r["representative_accuracy_certified"]
+          print(json.dumps({
+            "snapshots":r["snapshots"],
+            "source_ids":[x["source_offer_id"] for x in r["results"]],
+            "source_hashes":[x["sha256"] for x in r["results"]],
+            "disagreements_by_field":r["disagreements_by_field"],
+            "capture_network_requests":0,
+            "db_writes":0,
+            "representative_accuracy_certified":False,
+          },sort_keys=True))
+          PY
