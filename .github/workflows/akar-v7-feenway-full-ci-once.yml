@@ -1,0 +1,133 @@
+name: Akar V7 J2 FeenWay full PostgreSQL and Radar10 - one shot
+
+on:
+  push:
+    branches:
+      - feat/akar-v7-feenway-offline-provenance-20261113
+    paths:
+      - '.github/workflows/akar-v7-feenway-full-ci-once.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  multi-portal-offline:
+    if: ${{ github.event_name != 'schedule' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: akarfinder_v7_ci
+          POSTGRES_PASSWORD: testpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d akarfinder_v7_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      V646_OFFLINE_DIR: ${{ github.workspace }}/v646-pinned/scripts/pilots/mubawab-v646
+      RADAR_TEST_DSN: postgresql://postgres:testpass@127.0.0.1:5432/akarfinder_v7_ci
+    steps:
+      - name: Checkout code under review (not main)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout immutable V646 signer and fixtures
+        uses: actions/checkout@v4
+        with:
+          ref: 4022a9a7dd3c47391ab01246f010bdc8a6433344
+          path: v646-pinned
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install offline parser and isolated PostgreSQL client
+        run: python -m pip install "psycopg[binary]==3.3.8" "beautifulsoup4==4.14.3"
+      - name: Compile V7 and private staging Python
+        run: >-
+          python -m py_compile
+          scripts/acquisition/v7_multisource/sources.py
+          scripts/acquisition/v7_multisource/feenway_provenance.py
+          scripts/acquisition/v7_multisource/feenway_snapshot_links.py
+          scripts/acquisition/v7_multisource/feenway_photo_id_hints.py
+          scripts/acquisition/v7_multisource/feenway_actions_pilot.py
+          scripts/acquisition/v7_multisource/feenway_upstream_10_audit.py
+          scripts/acquisition/v7_multisource/feenway_agenz_v3_replay.py
+          scripts/acquisition/v7_multisource/feenway_agenz_primary_scope.py
+          scripts/acquisition/akarparser_v3_raw_bulk.py
+          scripts/acquisition/v7_multisource/pipeline.py
+          scripts/acquisition/v7_multisource/legacy_url_intake.py
+          scripts/acquisition/v7_multisource/detail_compare.py
+          scripts/acquisition/v7_multisource/snapshot_evidence.py
+          scripts/acquisition/__tests__/test_v7_snapshot_evidence.py
+          scripts/acquisition/__tests__/test_v7_detail_compare.py
+          scripts/acquisition/__tests__/test_v7_legacy_url_intake.py
+          scripts/acquisition/radar10/ingest.py
+          scripts/acquisition/__tests__/test_v7_multisource.py
+          scripts/acquisition/__tests__/test_v7_feenway_provenance.py
+          scripts/acquisition/__tests__/test_v7_feenway_snapshot_links.py
+          scripts/acquisition/__tests__/test_v7_feenway_photo_id_hints.py
+          scripts/acquisition/__tests__/test_v7_feenway_actions_pilot.py
+          scripts/acquisition/__tests__/test_v7_feenway_upstream_10_audit.py
+          scripts/acquisition/__tests__/test_v7_feenway_agenz_v3_replay.py
+          scripts/acquisition/__tests__/test_v7_feenway_agenz_primary_scope.py
+          scripts/acquisition/__tests__/test_akarparser_v3_source_review_gate.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate reused legacy collectors without portal network
+        run: node --test scripts/acquisition/__tests__/v7-legacy-candidate-bridge.test.mjs scripts/acquisition/__tests__/agenz-source-first.test.mjs
+      - name: Regional Agenz route in actual V3 portal and L4 canonical extractor
+        run: |
+          python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v3_portals.py'
+          python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_canonical_listing_extractor.py'
+      - name: Cross-language L8 URLs to true V3 quarantine (no DB)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_legacy_url_intake.py'
+      - name: Compare supplied detail HTML with existing L4 + V3 parsers
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_detail_compare.py'
+      - name: Verify immutable raw HTML evidence and safety gates
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_snapshot_evidence.py'
+      - name: J4/J5 original HTML and actual merged L8 identity tests (offline)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_j45_original_snapshot.py'
+      - name: V7 source and actual V3 PostgreSQL tests
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_multisource.py'
+      - name: FeenWay archive provenance quarantine (offline only)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_provenance.py'
+      - name: FeenWay immutable HTML source-link evidence (offline only)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_snapshot_links.py'
+      - name: FeenWay private Mubawab CDN-hint review, no admission
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_photo_id_hints.py'
+      - name: FeenWay GitHub Actions pilot safety regressions offline (no network)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_actions_pilot.py'
+      - name: FeenWay original portals 10 source audit safety offline
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_upstream_10_audit.py'
+      - name: FeenWay Agenz V3 fields contract regression offline
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_agenz_v3_replay.py'
+      - name: Agenz source HTML scoped price-description conflict safety offline
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_agenz_primary_scope.py'
+      # J2 FeenWay: full V7 + PG17 + Radar10 gate must include real V3 review propagation.
+      - name: V3 source evidence conflict review propagation (offline)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v3_source_review_gate.py'
+      - name: Existing Radar10 private staging regression
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_radar10_*.py'
+
+  # Copied from the canonical V7 test-only gate; this workflow has no schedule.
+  ten-minute-gate:
+    if: ${{ github.event_name == 'schedule' && vars.AKAR_V7_SCHEDULE_PROBE_APPROVED == 'approved' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: No-network scheduled gate only
+        run: |
+          echo "V7_GATE_ONLY: schedule triggered, LIVE_SOURCE_NO_GO"
+          echo "Two offline adapters are not proof of live multi-site coverage"
+          echo "0 source fetches, 0 database writes, no listing publication"
