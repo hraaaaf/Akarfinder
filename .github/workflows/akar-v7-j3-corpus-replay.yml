@@ -109,3 +109,36 @@ jobs:
              "capture_network_requests":0,"db_writes":0,
           },ensure_ascii=False,sort_keys=True))
           PY
+
+      - name: Inspect bounded surface label contexts from #445495 real HTML (offline)
+        env:
+          PYTHONPATH: scripts/acquisition
+        run: |
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          from bs4 import BeautifulSoup
+          from v7_multisource.snapshot_evidence import verify_evidence
+          root=Path(".private-j3-445495")
+          data=verify_evidence(root/"source.html", root/"source.manifest.json")
+          soup=BeautifulSoup(data["raw_html"],"html.parser")
+          for tag in soup(["script","style"]): tag.decompose()
+          text=" ".join(soup.stripped_strings)
+          result={}
+          for num in (105,150):
+              sample=[]
+              for m in re.finditer(r"(?<!\d)"+str(num)+r"\s*m(?:²|2)(?!\w)",text,re.I):
+                  left=text[max(0,m.start()-90):m.start()]
+                  right=text[m.end():m.end()+70]
+                  snippet=(left+" ["+str(num)+"m2] "+right).strip()
+                  snippet=re.sub(r"\b\d{8,}\b","[number-redacted]",snippet)
+                  if snippet not in sample: sample.append(snippet)
+                  if len(sample)>=5:break
+              result[str(num)]={"occurrences_limited":len(sample),"nearby_labels":sample}
+          print(json.dumps({
+              "source_offer_id":"445495",
+              "sha256":data["manifest"]["html_sha256"],
+              "contexts":result,
+              "network_requests":0,"db_writes":0
+          },ensure_ascii=False,sort_keys=True))
+          PY
