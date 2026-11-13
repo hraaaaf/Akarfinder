@@ -7,7 +7,7 @@ permissions:
   contents: read
 concurrency:
   group: akar-v7-j45-one-shot-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   individual-original:
     if: >-
