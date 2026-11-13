@@ -366,3 +366,13 @@ PR roadmap : #902. Lots : #904, #906, #907, #913.
 
 **Gates** : L1/L2/L6 pour données fraîches, J18 OSM non publié et OFF ; PR #1197 Draft/non mergée ; pas de merge ou Vercel sans deux GO séparés. Pas de certification exhaustive WCAG ni de score 9,5 déclaré. NEXT : CI du HEAD réparé, vérification native, retours humains sur capture et admission indépendante de sources.
 
+### 2026-11-13 — Lot 5/L6 : sas d'admission institutionnelle fail-closed
+
+**GOAL** : préparer la qualification des nouveaux jeux institutionnels sans confondre date d'upload et fraîcheur d'un établissement. Sources primaires identifiées : quatre jeux MENPS « Juillet 2026 » (primaire, collégial, qualifiant, privé), portail modifié le 16/09/2026 ; hôpitaux MSPS fichier 2025, portail modifié le 29/10/2026. Détails et liens dans `scripts/neighborhood-context/LOT5_SOURCE_CANDIDATES_2026-11-13.md`. Les ressources XLSX brutes n'ont pas été téléchargées/inspectées dans cette session.
+
+**Implémentation candidate** : `lib/neighborhood-context/institutional-admission.ts` établit le catalogue officiel et valide les dossiers de POI individuels ; vérifie identité, coordonnées GPS, source/licence, SHA du fichier, `individual_verified_at` inférieur ou égal à 30 jours, preuve indépendante, relation territoriale et validation humaine. Le module **n'admet et ne publie jamais directement** une ligne sans contrôle externe ; documente le risque de `fetchedAt` pris pour `observed_at` dans l'adaptateur Overpass existant, sans modifier sa production.
+
+**PREUVE attendue** : tests adversariaux L7 (pas de GPS, preuve périmée, fichier absent, pseudo-approbation, source non indépendante, URL mal formée) et rapport `institutional-source-admission.json` généré par le workflow L7 existant, **sans toucher au YAML**, afin de prouver le résultat **5 sources catalogue / 0 fichier source vérifié / 0 POI publié**. La certification des POI réels L1/L2/L6 reste NON atteinte ; source J18 OSM public OFF, aucun seed/DB/endpoint modifié.
+
+**NEXT** : CI exacte du commit, rapport d'artefact, acquisition hors rendu de ressources institutionnelles versionnées, preuve récente de l'existence et GPS de chaque objet, admission après validation. Aucun GO merge ni Vercel implicite, Lot 5 demeure ACTIVE.
+

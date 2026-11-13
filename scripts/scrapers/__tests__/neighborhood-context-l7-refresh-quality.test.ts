@@ -2,6 +2,12 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { getAnnL5CertifiedSeedPois } from "@/lib/neighborhood-context/certified-seed";
+import {
+  INSTITUTIONAL_DATASETS_2026,
+  buildInstitutionalAdmissionReport,
+  reviewInstitutionalPoiV1,
+  type InstitutionalPoiReviewV1,
+} from "@/lib/neighborhood-context/institutional-admission";
 import { buildNeighborhoodContextNationalBaseline } from "@/lib/neighborhood-context/national-baseline";
 import {
   NEIGHBORHOOD_CONTEXT_L7_CANARY_IDS,
@@ -192,5 +198,83 @@ describe("Neighborhood Context L7-B — quality and regression", () => {
     assert.equal(findings.some((finding) => finding.kind === "anchor_drop" && finding.canonical_neighborhood_id === "district_rabat_agdal"), true);
     assert.equal(findings.some((finding) => finding.kind === "fresh_evidence_lost" && finding.canonical_neighborhood_id === "district_rabat_agdal"), true);
     assert.deepEqual(detectNeighborhoodContextBaselineRegressions(before, before), []);
+  });
+});
+
+
+describe("NCI L5/L7 — 2026 institutional source admission, fail-closed", () => {
+  const CHECK_DATE = new Date("2026-11-13T12:00:00.000Z");
+  const source = INSTITUTIONAL_DATASETS_2026[0];
+  const candidate: InstitutionalPoiReviewV1 = {
+    dataset_id: source.id,
+    source_entity_id: "synthetic:test-school-1",
+    name: "SYNTHETIC TEST ONLY — no real school",
+    latitude: 33.99,
+    longitude: -6.85,
+    individual_verified_at: "2026-11-12T12:00:00.000Z",
+    independent_evidence_url: "https://example.org/test-independent-evidence",
+    independent_evidence_method: "official_entity_record",
+    territorial_relation: "near_certified_reference",
+    territorial_proof_url: "https://example.org/test-territorial-proof",
+    reviewer_approval_id: "TEST-FAKE-NOT-A-SIGNATURE",
+  };
+
+  it("records July 2026 official sources but never treats dataset date as POI freshness", () => {
+    const report = buildInstitutionalAdmissionReport(CHECK_DATE);
+    assert.equal(report.schema, "NCI_L5_INSTITUTIONAL_ADMISSION_PREFLIGHT_V1");
+    assert.equal(report.source_count, 5);
+    assert.equal(report.accepted, 0);
+    assert.equal(report.source_files_downloaded_and_hashed, 0);
+    assert.equal(report.entity_rows_individually_verified, 0);
+    assert.equal(report.public_publish_allowed, false);
+    assert.equal(report.source_updated_date_is_not_entity_verified_at, true);
+    assert.equal(INSTITUTIONAL_DATASETS_2026.filter((entry) =>
+      entry.publisher === "MENPS" && entry.dataset_as_of === "2026-07").length, 4);
+  });
+
+  it("refuses missing coordinates even if portal metadata and entity date appear fresh", () => {
+    const actual = reviewInstitutionalPoiV1(source, { ...candidate, latitude: null }, CHECK_DATE);
+    assert.equal(actual.status, "rejected");
+    assert.ok(actual.reasons.includes("coordinates_missing_or_outside_morocco"));
+    assert.equal(actual.public_publish_allowed, false);
+  });
+
+  it("refuses a stale individual observation despite newer catalogue upload", () => {
+    const actual = reviewInstitutionalPoiV1(source, {
+      ...candidate, individual_verified_at: "2026-09-16T15:00:00.000Z",
+    }, CHECK_DATE);
+    assert.equal(actual.status, "rejected");
+    assert.ok(actual.reasons.includes("individual_observation_stale_or_future"));
+  });
+
+  it("never promotes an uninspected source file, even with a synthetic recent row", () => {
+    const actual = reviewInstitutionalPoiV1(source, candidate, CHECK_DATE);
+    assert.equal(actual.status, "manual_review");
+    assert.ok(actual.reasons.includes("source_file_uninspected_or_unhashed"));
+    assert.equal(actual.public_publish_allowed, false);
+  });
+
+  it("cannot auto-admit even if every field is filled using a fake reviewer ID", () => {
+    const reviewed = { ...source, source_file_inspected: true, resource_sha256: "a".repeat(64) };
+    const actual = reviewInstitutionalPoiV1(reviewed, candidate, CHECK_DATE);
+    assert.equal(actual.status, "manual_review");
+    assert.ok(actual.reasons.includes("external_signed_admission_required"));
+    assert.equal(actual.public_publish_allowed, false);
+  });
+
+  it("treats different www spelling of data.gov.ma as the same non-independent origin", () => {
+    const reviewed = { ...source, source_file_inspected: true, resource_sha256: "b".repeat(64) };
+    const actual = reviewInstitutionalPoiV1(reviewed, {
+      ...candidate, independent_evidence_url: "https://www.data.gov.ma/data/fr/dataset/fixture",
+    }, CHECK_DATE);
+    assert.equal(actual.status, "manual_review");
+    assert.ok(actual.reasons.includes("non_independent_source_host"));
+  });
+
+  it("rejects invalid institution URL rather than throwing on URL comparison", () => {
+    const invalid = { ...source, dataset_url: "not-a-url" };
+    const actual = reviewInstitutionalPoiV1(invalid, candidate, CHECK_DATE);
+    assert.equal(actual.status, "rejected");
+    assert.ok(actual.reasons.includes("invalid_source_provenance"));
   });
 });

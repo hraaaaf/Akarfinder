@@ -3,6 +3,7 @@ import path from "node:path";
 import { performance } from "node:perf_hooks";
 
 import { buildNeighborhoodContextNationalBaseline } from "@/lib/neighborhood-context/national-baseline";
+import { buildInstitutionalAdmissionReport } from "@/lib/neighborhood-context/institutional-admission";
 import { buildNeighborhoodContextRuntimeCatalog } from "@/lib/neighborhood-context/read-model";
 import {
   NEIGHBORHOOD_CONTEXT_L7_FRESHNESS_MAX_AGE_MS,
@@ -137,6 +138,14 @@ async function main() {
 
   await mkdir(OUTPUT_DIR, { recursive: true });
   await writeFile(path.join(OUTPUT_DIR, "quality-report.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  // Strict, zero-network candidate catalogue. This is a provenance preflight,
+  // NOT an admission of live POI or a replacement for L1/L2 coverage gates.
+  const institutionalPreflight = buildInstitutionalAdmissionReport(now);
+  await writeFile(
+    path.join(OUTPUT_DIR, "institutional-source-admission.json"),
+    `${JSON.stringify(institutionalPreflight, null, 2)}\n`,
+    "utf8",
+  );
   console.log(JSON.stringify(report, null, 2));
 }
 
