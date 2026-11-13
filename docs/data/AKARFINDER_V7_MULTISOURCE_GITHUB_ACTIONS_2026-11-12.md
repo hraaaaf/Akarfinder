@@ -342,3 +342,18 @@ J3 Agenz multi-exemples, ville/quartier & exactitude terrain →
 J4 Avito/Yakeey/Sarouty → J5 autres sources →
 J6 staging privé durable/anti-rejeu → J7 canarys/cron 10min sous GO,
 monitoring 24h. Aucun merge/Vercel/Supabase PROD/cron live.
+
+
+## FeenWay priorité 1 — sous-lot d'adaptateurs de provenance OFFLINE (13 novembre 2026)
+
+Le fichier source privé fourni `feenway_akarfinder_import.zip` contient **82 166 observations FeenWay et 0 URL/ID d'annonce des portails originaux**. FeenWay est un agrégateur : les domaines CDN des photos ne constituent **jamais** une identité de source et ne permettent pas une promotion vers les bases produit.
+
+[PR Draft #1211](https://github.com/hraaaaf/Akarfinder/pull/1211) empilée sur cette V7 : nouveau module d'audit ZIP `feenway_provenance.py` (7 tests), et nouveau `feenway_snapshot_links.py` (12 tests) qui **réutilise** `v7_multisource.snapshot_evidence.verify_evidence` pour un HTML original fourni de fiche FeenWay. SHA256 + manifeste + pin attendu, canonical/og:url exacts, unique lien explicite « Voir sur <portail> », URL/ID source analysés conservativement, aucun accès réseau/DB. Sortie `SUPPLIED_HTML_SELF_DECLARED_LINK_QUARANTINE_ONLY` ; `eligible_for_public_admission=false` et `eligible_for_radar10_private_staging=false`.
+
+**CI du commit de code** `5c6166d92c32306874188c6a86cf100ad2171ac8` : [V7 run #43421661472](https://github.com/hraaaaf/Akarfinder/actions/runs/43421661472) SUCCESS, FeenWay 12/12 tests HTML PASS contre véritable V7, tests initiaux FeenWay et régressions V3/PostgreSQL/Radar10 PASS, cron SKIPPED ; [CI policy #43421661482](https://github.com/hraaaaf/Akarfinder/actions/runs/43421661482) SUCCESS.
+
+**Vérification limitée (non extrapolable)** : 10/10 fiches FeenWay consultées fournissent un lien vers site original ; 6/8 destinations vérifiées sont des fiches accessibles, 1 Avito redirigée vers catégorie, 1 Sarouty HTTP 410. Des anomalies métier bloquent l'admission (FeenWay 180678 3 900 DH/mois contre Masaken 14564 3 900 DH/jour ; FeenWay 222666 Appartement vente contre titre Mubawab Terrain location). Les 12 tests automatiques sont synthétiques et **aucune vraie capture HTML immuable FeenWay n'est encore fournie**.
+
+**BLOCAGE EXTERNE** : fichiers bruts de la collecte initiale inaccessibles ; Windows AI Machine Bridge en mode heartbeat sans accès fichiers, Desktop Commander offline. Préférer extraction/ réexport du collecteur original avec liens et IDs source plutôt que revisiter 82 166 pages sur FeenWay. En alternative, obtenir des HTML bruts individuels traçables et SHA indépendants. Ensuite rapprocher les vraies fiches sources, prix et période, dédoublonner et tester les adaptateurs V7 → AkarParser V3 / Radar10 privé ; gate distinct avant DB / merge / cron / Vercel.
+
+**Décision :** 82 166/82 166 en quarantaine, 0 admission, 0 HTTP massif, 0 DB, 0 merge, 0 Vercel. **V7 reste 2/8 jalons clôturés** ; aucune couverture FeenWay ou fraîcheur source certifiée. Rapport détaillé : `docs/data/AKARFINDER_V7_FEENWAY_PROVENANCE_2026-11-13.md`.
