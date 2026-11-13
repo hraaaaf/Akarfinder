@@ -188,3 +188,22 @@ AkarParser V3 extrait sur cette réponse : `price_mad=7500.0`, `surface_total_m2
 **Qualificatif indispensable :** le V3 `parse_raw` proprement dit déclare encore `human_review_required=false` et `quality.status=complete_requires_freshness` car cette contradiction est désormais détectée dans le **contrat de provenance V7 FeenWay**, pas encore dans le moteur V3 générique. **Interdire tout bypass du garde V7 lors du futur staging privé** ; une intégration finale devra propager la raison de revue à V3 avant la moindre admission. L'annonce Agenz 169490 / FeenWay 186197 reste **NO-GO** pour staging et publication. Les **82 166** candidates FeenWay sont toujours en quarantaine ; 0 DB/merge/cron live/Vercel.
 
 **NEXT exact** : traiter cette contradiction à la source (correction ou statut officiel du propriétaire/annonceur) puis contrôler l'extraction structurée des champs et propager la revue V7 à V3 avant un pilote privé ; pour les autres sites, uniquement sources originales permises (flux/export/source HTML première partie), pas de GET répété sur les 403/robots indisponibles. V7 demeure **2/8 jalons clos**, projet global non quantifié.
+
+
+## 13/11/2026 — J2 FeenWay : propagation NO-GO prix source V7 → AkarParser V3
+
+**GOAL :** s'assurer qu'un prix contradictoire dans le source original Agenz ne disparaisse pas entre la preuve scopée V7 et la décision d'admission/tri V3, y compris si tous les champs de l'annonce semblent complets.
+
+**Précédent prouvé sur le vrai HTML Agenz 169490 (FeenWay 186197) :** `primary_rent_mad=7500`, `description_long_term_rent_mad=7700`, tous deux `month`, `characteristics_surface_m2=84`, garde V7 `AGENZ_PRIMARY_VS_DESCRIPTION_RENT_PRICE_CONFLICT` actif. [Source one-shot #43454575703](https://github.com/hraaaaf/Akarfinder/actions/runs/43454575703) SUCCESS et [CI V7 #43454588305](https://github.com/hraaaaf/Akarfinder/actions/runs/43454588305) SUCCESS au code SHA `8176617589b30a0e60ac123f76aca71cb3295b0c`. L'ancien V3 `human_review_required=false` résultait de l'absence de propagation et **non** d'une confirmation de prix.
+
+**Code du premier garde de propagation (SHA `2fb3359edf54ef0de5f79d09ee2e5a89d5113fe0`, PR Draft #1211) :**
+- `akarparser_v3_raw_bulk.parse_raw(..., source_review_reasons=())` ajoute un **paramètre interne explicite**. Autorise uniquement le motif `AGENZ_PRIMARY_VS_DESCRIPTION_RENT_PRICE_CONFLICT`, pour `agenz.ma` avec HTML source original fourni ; type et nombre stricts, rejette les raisons inconnues et les domaines étrangers. Ce paramètre est **uniquement dégradant** : il n'augmente ni prix ni score ni autorisations d'admission.
+- Le motif est ajouté à `quality.review_reasons`, `human_review_required=true` et, hors statut préalablement plus strict (`quarantine` ou `source_snippet_only`), `quality.status=requires_manual_review`, même si la classification précédente était `complete_requires_freshness`. Le statut de revue permet l'orientation vers le bucket V3 `review` au lieu d'un traitement `ready_internal`.
+- Le replay source `feenway_agenz_v3_replay.py` appelle d'abord `agenz_primary_scope.evidence(html)`, puis transmet exclusivement le **conflit effectivement extrait** à `_source_parser_summary` → vrai `parse_raw` V3 ; il échoue fermé si le résultat V3 ne signale pas `requires_manual_review` et le motif exact.
+- Tests dédiés `test_akarparser_v3_source_review_gate.py` (7 scénarios) + `test_v7_feenway_agenz_v3_replay.py` (preuve synthétique passage V7→V3) et compilation/étape dédiée CI V7. **Le test n'a pas besoin de reconsulter Agenz ni les cinq portails restreints.**
+
+**Frontière de vérité :** le paramètre de revue est fourni par un **appel interne de V7 après observation de source** ; un appel direct à V3 sans le contrôle de provenance V7 ne certifie pas automatiquement l'absence de contradiction. L'intégration source-first J2 doit imposer ce chemin avant tout staging. Les 82 166 annonces restent en quarantaine et la contradiction 7500/7700 n'est pas résolue par le code.
+
+**Preuve CI de ce SHA :** à renseigner seulement après run GitHub sur le vrai code V7 + V3 (état non encore établi au moment d'écrire ce closeout documentaire). Aucune DB, merge, activation cron live ni Vercel.
+
+**Roadmap canonique inchangée :** J2 FeenWay EN COURS → J3 Agenz multi-exemples → J4 Avito/Yakeey/Sarouty → J5 autres sources → J6 staging privé durable anti-rejeu → J7 canarys/cron 10 min avec GO distinct et 24 h d'observation. L'état de référence **2/8 jalons clôturés** ne change pas ; ce sous-lot n'est pas équivalent à une mise en service de FeenWay.
