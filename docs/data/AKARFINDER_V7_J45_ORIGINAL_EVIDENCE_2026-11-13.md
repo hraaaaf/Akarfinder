@@ -57,3 +57,17 @@ Au **SHA documentaire d9876922adc892f193d84e562cb7df7ea1ee0792**, six workflows 
 **Tests synthétiques ajoutés :** HTML sans canonical, canonical d'une autre fiche, `og:url` contradictoire, fausse balise canonical dans le corps ; les quatre fixtures auparavant employées comportent désormais canonical + OG déclarés, sans prétendre être des sources originales.
 
 **Critère de succès :** CI au SHA code exact ; toujours 0/4 vrais HTML J4/J5 certifiés, aucun déploiement ni collecte live.
+
+## Closeout canonical HTML-source identity — 13 novembre 2026
+
+**Résultat exact de ce sous-lot :** vérification hors ligne de l'URL canonique déclarée dans le document HTML lui-même, complémentaire de l'identité URL/ID L8, du manifeste SHA-256 et des sept comparaisons L4/V3.
+
+**Code testé SHA :** `ef89fc691b2bd732757ec2354690f839a7bf433e`. [GitHub Actions V7 #43407955228](https://github.com/hraaaaf/Akarfinder/actions/runs/43407955228) **SUCCESS, 17/17 tests ciblés** (y compris canonical absent, canonical d'une autre annonce, `og:url` contradictoire et balise canonical dans le corps). **Six workflows SUCCESS au même SHA** : [V7 #43407955228](https://github.com/hraaaaf/Akarfinder/actions/runs/43407955228), [Radar10 #43407955223](https://github.com/hraaaaf/Akarfinder/actions/runs/43407955223), [V3 regression #43407955222](https://github.com/hraaaaf/Akarfinder/actions/runs/43407955222), [V3 privé #43407955348](https://github.com/hraaaaf/Akarfinder/actions/runs/43407955348), [J1 replay #43407955354](https://github.com/hraaaaf/Akarfinder/actions/runs/43407955354), [CI policy #43407955218](https://github.com/hraaaaf/Akarfinder/actions/runs/43407955218).
+
+**Contrat strict :** `<head><link rel=canonical href=...>` doit être présent dans le HTML et coïncider exactement avec l'URL candidate validée ; `<meta property=og:url>` est vérifié s'il existe. Les différences alias `www`, slash et query ne sont pas normalisées par supposition : en cas de divergence, revoir à partir d'un vrai original plutôt que contourner la règle. Une déclaration de la page elle-même peut être forgée, donc `self_declaration_is_independent_proof=false` dans la réponse. Ce contrôle ne prouve ni provenance réseau ni vérité des champs, et n'active pas le staging.
+
+**Contrôle d'inventaire :** dans la Library privée `/AkarFinder/V7/private`, seul le bundle Agenz J3 `AKARFINDER_V7_J3_AGENZ_ARCHIVES_PRIVEES_2026-11-13.zip` est disponible (199159 octets). Le tree GitHub du chantier ne contient pas de HTML original J4/J5. Recherche publique ponctuelle : la page catégorie MarocAnnonces a répondu par challenge `Please wait while your request is being verified` ; les pages Sarouty récupérées sont des catégories, pas des attestations d'annonce individuelle. **Aucune capture HTML originale J4/J5 nouvellement qualifiée : 0/4 portails**, zéro annonce réelle admise. Aucune relance HTTP du blocage Avito ni du challenge MarocAnnonces.
+
+**Statut :** sous-lot de **préparation du gate** clos sur la preuve de CI. Les jalons portails J4 et J5 restent ouverts ; le jalon V7 complet demeure **2/8** (J0 et J1 seulement). Pas de DB réelle, source LIVE, staging, cron actif, merge, publication ou déploiement Vercel.
+
+**Next exact :** obtenir par un canal explicitement autorisé le premier `source.html` original d'une annonce individuelle J4/J5, accompagné de son URL, SHA256, horodatage UTC, et attestation externe de provenance ; faire tourner le gate puis labelliser les sept champs indépendamment. Aucune capture fiable = **NO-GO**, ne pas remplir le manque par un échantillon synthétique.
