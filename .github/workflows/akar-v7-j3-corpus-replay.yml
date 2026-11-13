@@ -9,6 +9,8 @@ on:
       - 'scripts/acquisition/v7_parallel/j3_source_label_audit.py'
       - 'scripts/acquisition/v7_parallel/j3_geo_qualification.py'
       - 'scripts/acquisition/__tests__/test_v7_j3_geo_qualification.py'
+      - 'scripts/acquisition/v7_parallel/j3_source_internal_consistency.py'
+      - 'scripts/acquisition/__tests__/test_v7_j3_consistency.py'
 permissions:
   contents: read
   actions: read
@@ -162,3 +164,28 @@ jobs:
           PY
           python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j3_geo_qualification.py' -v
           python scripts/acquisition/v7_parallel/j3_source_label_audit.py
+
+      - name: J3 real source internal consistency + map provenance (NO PORTAL REQUESTS)
+        env:
+          PYTHONPATH: scripts/acquisition
+        run: |
+          python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j3_consistency.py' -v
+          python - <<'PY'
+          import json
+          from v7_parallel.j3_source_internal_consistency import audit_verified_snapshot
+          ids = ("444291", "445495", "420510", "387448", "500006")
+          results = {k: audit_verified_snapshot(".private-j3-" + k) for k in ids}
+          mismatches = [k for k, result in results.items() if result["source_bedroom_count_disagreement"]]
+          assert mismatches == ["387448"], mismatches
+          assert results["387448"]["title_bedrooms"] == 4
+          assert results["387448"]["characteristics_bedrooms"] == 3
+          assert all(result["source_map_attribute_kind"] ==
+              "source_encrypted_coordinates_not_independent_proof" for result in results.values())
+          assert all(not result["independent_physical_location_attestation"] and
+              not result["eligible_for_private_staging"] for result in results.values())
+          print(json.dumps({"checked_source_ids": list(ids), "source_room_conflicts": mismatches,
+                            "encrypted_map_coordinate_sets": len(ids),
+                            "independent_geolocations_verified": 0,
+                            "private_staging_admissions": 0, "network_requests": 0,
+                            "db_writes": 0}, sort_keys=True))
+          PY
