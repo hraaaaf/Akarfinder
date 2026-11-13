@@ -73,6 +73,13 @@ class PrivateStageGateTests(unittest.TestCase):
         self.assertEqual(b["unique_payloads"], 1)
         self.assertEqual(b["decision_counts"]["duplicate_same_content"], 1)
 
+    def test_inventory_digest_changes_with_modified_content(self):
+        before = review_batch([agen_z()])
+        changed = agen_z()
+        changed["fields"]["price_mad"] = 1000000
+        after = review_batch([changed])
+        self.assertNotEqual(before["inventory_sha256"], after["inventory_sha256"])
+
     def test_wrong_batch_shape_fails(self):
         for bad in (None, {}, [None]*1001):
             with self.subTest(bad=type(bad).__name__):

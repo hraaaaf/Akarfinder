@@ -73,7 +73,7 @@ def review_batch(records: list[dict]) -> dict:
     # Digest uses only source identity and normalized content hashes. It does
     # not disclose original source URLs or raw advertisement text.
     inventory = sorted(
-        (domain, offer, hashlib.sha256(url.encode()).hexdigest())
+        (domain, offer, hashlib.sha256(url.encode()).hexdigest(), by_url_content[url])
         for (domain, offer), url in by_identity.items()
     )
     return {
