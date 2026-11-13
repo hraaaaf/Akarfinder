@@ -371,6 +371,16 @@ def run_h1(source: Path, store: SupabasePrivateStore, run_id: str, secret: str) 
         store.bytes_used = max(store.bytes_used, committed +
                                (len(batches) + 2) * len(canonical_json(manifest)))
         require(store.bytes_used <= MAX_RUN_BYTES, "H1_SUPABASE_FREE_QUOTA_GUARD")
+        if manifest.get("complete") is True:
+            validate_final(manifest)
+            final_stored = store.get_manifest(final_key, temp_root)
+            require(final_stored is not None and final_stored[0] == manifest,
+                    "H1_FINAL_MANIFEST_CHECKPOINT_MISMATCH")
+            emit_github_output("canary_passed", "true")
+            emit_github_output("complete", "true")
+            print(f"H1_ALREADY_COMPLETE rows={manifest['processed']} batches={len(batches)} "
+                  f"final_manifest_sha256={final_stored[1]} db_writes=0 publication=0", flush=True)
+            return manifest
         if batches:
             print(f"H1_RESUME_CHECKPOINT batches={len(batches)} rows={manifest['processed']}", flush=True)
         if not batches:
