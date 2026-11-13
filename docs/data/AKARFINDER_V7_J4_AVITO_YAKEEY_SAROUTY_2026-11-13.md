@@ -67,3 +67,11 @@ La [PR Draft #1146](https://github.com/hraaaaf/Akarfinder/pull/1146) possède d�
 **Gate exact restant** : obtenir par le canal source autorisé le HTML original et son manifeste SHA256 + UTC + URL canonique, comparer les 7 champs L4/V3 et vérifier l'identité source 894012 indépendamment de la simple forme d'URL. La page rendue n'est pas un artefact immuable, pas une autorisation de collecte en masse, et aucun marqueur d'admission ne change. Avito HTTP 403 historique non contourné ; Yakeey reste lien historique tiers non intégré.
 
 **Opérations de ce pointage :** consultation publique et documentation seulement, pas de script de collecte source, pas de HTTP GitHub Actions supplémentaire, DB, cron, staging, merge ni déploiement. J4 demeure OUVERT.
+
+
+
+## 13/11/2026 — Rectification de la portée du témoin Sarouty
+
+Relecture de la page directe /acheter/appartement-sale-bab-al-bahr-894012/ via lecteur web : seul le pied de page/navigateur apparaît dans le texte retourné, **aucun des prix/surface/chambres attribués précédemment n'y est indépendantement visible** lors de cette lecture. La lecture a été fournie depuis une copie indexée de trois mois, et une récupération réseau directe de l'URL a échoué sur DNS non résolu dans l'environnement local. Ce constat ne démontre ni disparition ni maintien de la fiche : il **annule toute qualification courante de ses champs**.
+
+Statut du témoin : URL à examiner, **0 HTML brut actuel vérifié, 0/7 champs présents et certifiés sur cette nouvelle lecture, 0 admission**. Conserver l'observation historique comme piste non vérifiée, pas comme preuve nouvelle. Aucun contournement de blocage, pas de source GET réussi, pas de DB/cron/merge/Vercel.
