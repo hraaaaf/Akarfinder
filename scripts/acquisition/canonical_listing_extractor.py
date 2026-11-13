@@ -42,7 +42,7 @@ DISCOVERY_PATH_PATTERNS = [
 ]
 
 PRICE_RE = re.compile(r"(?<!\d)(\d{1,3}(?:[\s\u00a0.,]\d{3})+|\d{4,10})(?:[\s\u00a0]*(?:MAD|DH|DHS|درهم))", re.I)
-SURFACE_RE = re.compile(r"(?<!\d)(\d{1,5}(?:[.,]\d{1,2})?)\s*(?:m²|m2|m\^2)\b", re.I)
+SURFACE_RE = re.compile(r"(?<!\d)(\d{1,5}(?:[.,]\d{1,2})?)\s*(?:m²(?!\w)|m2\b|m\^2\b)", re.I)
 BEDROOM_RE = re.compile(r"(?<!\d)(\d{1,2})\s*(?:chambres?|ch(?:\.|\b)|bedrooms?)", re.I)
 BATHROOM_RE = re.compile(r"(?<!\d)(\d{1,2})\s*(?:salles?\s+de\s+bains?|sdb|bathrooms?)", re.I)
 FLOOR_RE = re.compile(r"(?:étage|etage|floor)\s*[:\-]?\s*(\d{1,2})", re.I)
@@ -322,7 +322,15 @@ def extract_canonical(source_url: str, html: str) -> dict[str, Any]:
         if parsed and 5 <= parsed <= 100_000:
             fields["surfaces.surface_total_m2"] = FieldFact(parsed, Evidence(source_url, f"jsonld:{floor_key}.value", str(value)))
     if "surfaces.surface_total_m2" not in fields:
-        fact = _regex_fact(SURFACE_RE, combined, source_url, "text:surface")
+        # On Agenz detail pages, the visible hero surface is a total-area
+        # label; meta descriptions may first advertise HABITABLE area and
+        # a separate terrace, e.g. 105 + 45 against 150 total. We use the
+        # first visible area before the marketing meta-description fallback.
+        portal = (urlparse(source_url).hostname or "").removeprefix("www.")
+        visible = (_regex_fact(SURFACE_RE, text, source_url,
+                               "agenz.visible_first_surface")
+                   if portal == "agenz.ma" else None)
+        fact = visible or _regex_fact(SURFACE_RE, combined, source_url, "text:surface")
         if fact and 5 <= fact.value <= 100_000:
             fields["surfaces.surface_total_m2"] = fact
 

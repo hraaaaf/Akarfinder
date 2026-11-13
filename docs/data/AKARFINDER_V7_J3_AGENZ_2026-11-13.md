@@ -42,3 +42,14 @@
 **Nouvelle vérification réelle préparée :** workflow `akar-v7-j3-corpus-replay.yml` télécharge le corpus déjà capturé depuis GitHub et refait les sept comparaisons L4/V3 **sans aucun appel aux portails**. Succès exige zéro divergence ville/quartier sur les cinq originaux ; l'écart de surface restant doit être analysé séparément, pas inventé.
 
 **Prochaine preuve :** CI aux commits exacts et rapport de rejeu ; labels manuels indépendants pour certifier la précision sur les 7 champs. J3 partiellement validé, pas encore précision représentative. Aucun merge, staging privé, cron actif, Vercel ou publication.
+
+## J3 — Diagnostic vérité terrain #445495 : 105 habitables + 45 terrasse = 150 m² totaux
+
+**Preuve des octets réels** : [workflow replay diagnostique #43340844303](https://github.com/hraaaaf/Akarfinder/actions/runs/43340844303), SHA256 original `4e2d6d4ed51dd86896356baf84e76ba5a7eb0b798acb62086262d72819d9274a` inchangé. Sur la fiche #445495 :
+- **105 m²** : la description précise « Avec 105m2 habitables et une terrasse de 45 m² » ;
+- **150 m²** : valeur affichée plusieurs fois dans la zone de caractéristiques principale (2 CH, 2 SDB, 150 m²) ;
+- L4 captait **105** (motif générique `text:surface`) ; V3 retournait **150**. L4 ne doit pas confondre surface habitable et totale.
+
+**Correction proposée :** L4 privilégie pour les fiches détails **Agenz uniquement** la première valeur de surface visible dans le corps HTML, avant la description Meta qui peut présenter habitable+terrasse. Le motif général corrige aussi la prise en charge de `m²` Unicode (la frontière `\\b` après `²` était mal formée). Tests synthétiques : cas exact 150 total/105 habitables/45 terrasse et Unicode, en conservant JSON-LD quand présent.
+
+**Nouvelle certification attendue :** `akar-v7-j3-corpus-replay.yml` doit prouver **zéro divergence** L4/V3 sur les surfaces, ville et quartier des 5 mêmes originaux, sans nouvelle requête. Même si vert, **accord des parseurs ≠ précision indépendante des sept champs** ; annotation humaine reste indispensable. Pas de DB, merge, cron ni Vercel.

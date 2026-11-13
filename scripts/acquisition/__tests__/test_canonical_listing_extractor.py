@@ -106,6 +106,23 @@ class CanonicalListingExtractorTests(unittest.TestCase):
         self.assertNotIn("offer.price_amount", result["fields"])
         self.assertIn("agenz:discounted_current_price_ambiguous", result["rejected"])
 
+    def test_agenz_total_150_not_105_habitable_or_45_terrace(self):
+        url="https://agenz.ma/fr/annonces/immo-sale/vente-appartements/sale-el-jadida/445495"
+        html="""<html><head><title>Appartement rez-de-jardin à vendre</title>
+        <meta name="description" content="Avec 105m2 habitables et une terrasse de 45 m²."></head>
+        <body><h1>Appartement à vendre</h1><div>2 CH 2 SDB 150m² 1 650 000 DH</div>
+        <section>Description Avec 105m2 habitables et une terrasse de 45 m².</section></body></html>"""
+        r=MODULE.extract_canonical(url,html)
+        self.assertEqual(r["fields"]["surfaces.surface_total_m2"]["value"],150)
+        self.assertEqual(r["fields"]["surfaces.surface_total_m2"]["evidence"]["method"],
+                         "agenz.visible_first_surface")
+
+    def test_unicode_m_squared_is_detected_when_no_jsonld(self):
+        url="https://www.mubawab.ma/fr/a/1234567/flat"
+        html="<html><head><title>Appartement à vendre</title></head><body>Surface totale : 150 m². Prix 1 000 000 DH.</body></html>"
+        r=MODULE.extract_canonical(url,html)
+        self.assertEqual(r["fields"]["surfaces.surface_total_m2"]["value"],150)
+
     def test_agenz_detail_path_location_only_as_unverified_fallback(self):
         url="https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291"
         html="<html><title>Appartement à vendre</title><body>Appartement à vendre, 104 m², 980 000 DH</body></html>"

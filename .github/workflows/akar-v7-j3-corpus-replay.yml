@@ -67,6 +67,7 @@ jobs:
           assert r["status"]=="corpus_ready_for_human_labels"
           assert r["disagreements_by_field"].get("city",0)==0, "L4_V3_CITY_STILL_DIVERGE"
           assert r["disagreements_by_field"].get("district",0)==0, "L4_V3_DISTRICT_STILL_DIVERGE"
+          assert r["disagreements_by_field"].get("surface_total_m2",0)==0, "L4_V3_TOTAL_SURFACE_STILL_DIVERGE"
           assert r["db_writes"]==0 and not r["representative_accuracy_certified"]
           print(json.dumps({
             "snapshots":r["snapshots"],
