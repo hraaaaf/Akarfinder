@@ -49,3 +49,10 @@ Acquérir hors rendu un export institutionnel versionné, vérifier son schéma 
 - Les horodatages \`dataset_as_of\`, \`fetched_at\`, \`individual_verified_at\` restent séparés. \`gps_columns_candidate=true\` n'est jamais \`gps_values_verified=true\`.
 - Contrat immutable du probe : \`accepted_public_pois=0\`, \`public_publish_allowed=false\`. L1/L2/L6 restent les seules gates métier ; pas de promotion automatique depuis un XLSX.
 - Issue effective à compléter **après run** ; ne pas déclarer le fichier reçu avant son SHA256 vérifié.
+
+## Diagnostic CI L7 de la récupération officielle — 13 novembre 2026
+
+- [GitHub Actions L7 #43475687847](https://github.com/hraaaaf/Akarfinder/actions/runs/43475687847) : 62 tests PASS, mais le probe MENPS primaire fournit \`fetch failed\`, 0 octets et aucun SHA du XLSX.
+- La source primaire reste le [portail MENPS](https://data.gov.ma/data/fr/dataset/liste-des-etablissements-publics-primaire), ressource \`f98bdb47-19a8-4f4d-8407-ae08b56305d5\`. L'index CKAN annonce 649 492 octets, sans somme de contrôle fournie.
+- Tentative de correction côté transport sur runner GitHub Actions : après erreur réseau \`fetch failed\` de Node, \`curl\` accepte uniquement le même lien officiel HTTPS et le proxy du runner ; **aucun redirect inter-domaine ni relâchement de certificat**. Tout échec conserve 0 POI et produit un diagnostic. 2 tests supplémentaires de filtrage en CI.
+- Prochaine preuve requise : rapport \`official-menps-primary-xlsx-header.json\` sur le nouveau SHA, avec soit vrai SHA256, soit erreur structurée de \`curl\`. La conformité du workflow CI ne valide **aucun** GPS, aucune identité, aucune observation individuelle.

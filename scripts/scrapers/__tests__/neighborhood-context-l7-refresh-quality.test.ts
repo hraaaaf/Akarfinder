@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import { getAnnL5CertifiedSeedPois } from "@/lib/neighborhood-context/certified-seed";
 import { inspectInstitutionalXlsxHeaders } from "@/lib/neighborhood-context/institutional-xlsx-inspector";
+import { MENPS_PRIMARY_2026_RESOURCE_URL, officialCurlArguments, permittedOfficialResource } from "@/scripts/neighborhood-context/l7-probe-official-xlsx";
 import {
   INSTITUTIONAL_DATASETS_2026,
   buildInstitutionalAdmissionReport,
@@ -358,5 +359,37 @@ describe("L7 official MENPS XLSX read-only header probe", () => {
     const bytes = makeStoredXlsx({ "xl/worksheets/sheet1.xml": fixtureSheet(["Latitude", "Longitude"]) });
     bytes.writeUInt32LE(0, bytes.length - 22);
     assert.throws(() => inspectInstitutionalXlsxHeaders(bytes), /zip_eocd_missing/);
+  });
+});
+
+
+describe("L7 MENPS secure proxy-aware curl fallback (GitHub Actions tests only)", () => {
+  it("permits only the official HTTPS XLSX URL and normal www host", () => {
+    assert.equal(permittedOfficialResource(MENPS_PRIMARY_2026_RESOURCE_URL), true);
+    assert.equal(permittedOfficialResource(MENPS_PRIMARY_2026_RESOURCE_URL.replace("data.gov.ma", "www.data.gov.ma")), true);
+    for (const invalid of [
+      MENPS_PRIMARY_2026_RESOURCE_URL.replace("https:", "http:"),
+      MENPS_PRIMARY_2026_RESOURCE_URL.replace("data.gov.ma", "untrusted.example"),
+      MENPS_PRIMARY_2026_RESOURCE_URL.replace(".xlsx", ".csv"),
+      "https://data.gov.ma.evil.test/data/fr/dataset/path.xlsx",
+      "https://user:pass@data.gov.ma/data/fr/dataset/path.xlsx",
+      "file:///etc/passwd",
+    ]) {
+      assert.equal(permittedOfficialResource(invalid), false, invalid);
+      assert.throws(() => officialCurlArguments(invalid), /blocked_untrusted_resource_origin/);
+    }
+  });
+
+  it("builds a bounded single URL curl request with no insecure flag or automatic redirect", () => {
+    const args = officialCurlArguments(MENPS_PRIMARY_2026_RESOURCE_URL);
+    assert.equal(args.at(-1), MENPS_PRIMARY_2026_RESOURCE_URL);
+    assert.deepEqual(args.slice(args.indexOf("--max-filesize"), args.indexOf("--max-filesize") + 2), ["--max-filesize", String(3 * 1024 * 1024)]);
+    assert.deepEqual(args.slice(args.indexOf("--max-time"), args.indexOf("--max-time") + 2), ["--max-time", "18"]);
+    assert.equal(args.includes("--location"), false);
+    assert.equal(args.includes("-L"), false);
+    assert.equal(args.includes("--insecure"), false);
+    assert.equal(args.includes("-k"), false);
+    assert.equal(args.includes("--retry"), true);
+    assert.equal(args.includes("--proto"), true);
   });
 });
