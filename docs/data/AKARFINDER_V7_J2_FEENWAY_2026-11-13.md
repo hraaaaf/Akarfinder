@@ -19,3 +19,15 @@ Lecture publique de deux pages FeenWay (HTML sémantique rendu et liste de href,
 **Progrès concret :** le contrat J2 prend en charge les CTA réels « Voir sur ... », la casse de slug Avito et les accents percent-encoded du slug Mubawab (les encodages ASCII dangereux restent bloqués). Tests réels de forme d'URL basés sur ces deux liens, sans dépôt du contenu HTML source.
 
 **Limite :** le fait que FeenWay fournisse un lien Mubawab/Avito n'atteste pas que l'annonce est encore en ligne, que ses champs concordent, ou qu'il s'agit d'un bien physique distinct. Les IDs source sont **des identités candidates** seulement ; une vérification de la page originale avec hash et date UTC est nécessaire avant toute admission. Aucune requête automatique nouvelle, aucun DB, aucun merge/cron/Vercel.
+
+## Décision de conception — FeenWay comme radar d'URLs originales
+
+**Observation terrain (13 novembre 2026) :** lecture des deux liens FeenWay puis consultation directe des pages originales :
+- FeenWay 258638 -> Mubawab **8449079** ; original Mubawab affiche **4 350 000 DH / 169 m²** pour un appartement à Riyad/Rabat ; FeenWay affiche 4,35 M DH / 169 m².
+- FeenWay 256946 -> Avito **59015264** ; original Avito affiche **5 500 000 DH / 165 m²** dans Hay Riad/Rabat ; FeenWay affiche 5,5 M DH / 165 m².
+
+**Choix optimal :** FeenWay sert seulement à découvrir un lien sortant explicite ; la queue V7 doit garder **directement URL/ID original du portail**, jamais un identifiant FeenWay comme ID d'offre, et regrouper plusieurs miroirs pointant vers un même (portail, ID). Contradiction de slug/URL pour un même ID : échec fermé. La présence d'un lien d'origine ne démontre pas la disponibilité durable, la fraîcheur, la précision de tous les champs, ni l'unicité physique du bien.
+
+**Code J2 :** `build_upstream_candidate_queue` extrait les URLs originelles candidates et assure le dedup par source+ID, sans admission privée/publique. `compare_rendered_claims` confronte, sur observations rendues fournies, les prix/surfaces de FeenWay et du portail original ; zéro DB et aucun appel réseau à partir du comparateur. Le résultat **2/2 cohérent sur prix et surface** dans les deux exemples ne constitue pas un benchmark brut HTML ni une statistique représentative.
+
+**Prochaine validation :** tests CI ajoutés sur cas d'origine, doublons, variantes de slug et désaccord de prix ; puis véritables captures HTML originaux hachées, comparaison L4/V3, et garde de disponibilité. Pas de merge, cron LIVE, DB ou Vercel.

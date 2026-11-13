@@ -128,3 +128,102 @@ def analyze_feenway_mirror(mirror_url: str, supplied_html: str) -> dict:
         "source_network_requests": 0,
         "db_writes": 0,
     }
+
+
+def build_upstream_candidate_queue(mirrors: list[dict]) -> dict:
+    """Use original portal URLs directly, never FeenWay IDs as offer IDs.
+
+    Inputs are previously analyzed FeenWay links, NOT trusted live evidence.
+    Collapse repeated mirror references to the same upstream (portal, ID).
+    Conflicting upstream URL variants fail closed pending canonical review.
+    """
+    if not isinstance(mirrors, list) or len(mirrors) > 100:
+        raise ProvenanceError("INVALID_MIRROR_BATCH")
+    upstream, seen_mirrors = {}, set()
+    unresolved = 0
+    for mirror in mirrors:
+        if not isinstance(mirror, dict) or mirror.get("schema_version") != SCHEMA:
+            raise ProvenanceError("INVALID_MIRROR_OBSERVATION")
+        mid = mirror.get("mirror_id")
+        if not isinstance(mid, str) or re.fullmatch(r"\d{3,12}", mid) is None:
+            raise ProvenanceError("INVALID_MIRROR_ID")
+        if mid in seen_mirrors:
+            raise ProvenanceError("DUPLICATE_MIRROR_ID")
+        seen_mirrors.add(mid)
+        if mirror.get("status") != "origin_link_observed_unverified":
+            unresolved += 1
+            continue
+        url = mirror.get("origin_url_claimed_by_mirror")
+        identity = _original_identity(url)
+        if identity is None or identity != (
+            mirror.get("origin_portal"), mirror.get("origin_offer_id")
+        ):
+            raise ProvenanceError("UPSTREAM_IDENTITY_MISMATCH")
+        key = identity
+        old = upstream.get(key)
+        if old is not None:
+            if old["source_url"] != url:
+                raise ProvenanceError("ORIGINAL_ID_URL_CONFLICT")
+            old["discovered_via_feenway_ids"].append(mid)
+            continue
+        upstream[key] = {
+            "source_domain": identity[0],
+            "source_offer_id": identity[1],
+            "source_url": url,
+            "discovered_via_feenway_ids": [mid],
+            "discovery_method": "feenway_explicit_original_link",
+            "record_kind": "url_candidate_only",
+            "origin_page_independently_verified": False,
+            "detail_observed": False,
+            "physical_uniqueness_verified": False,
+            "eligible_for_private_detail_staging": False,
+            "eligible_for_public_admission": False,
+        }
+    return {
+        "schema_version": SCHEMA,
+        "upstream_url_candidates": sorted(
+            upstream.values(), key=lambda x: (x["source_domain"], x["source_offer_id"])
+        ),
+        "candidate_count": len(upstream),
+        "unresolved_mirrors": unresolved,
+        "physical_unique_properties": None,
+        "source_network_requests": 0,
+        "db_writes": 0,
+        "private_detail_staging_count": 0,
+    }
+
+
+def compare_rendered_claims(mirror: dict, mirror_fields: dict, original_fields: dict) -> dict:
+    """Compare manually supplied rendered price/area observations, not raw HTML.
+
+    Requires already-resolved direct original URL. Match is informative, NOT
+    independent proof of source HTML, activity, freshness or physical identity.
+    """
+    if (not isinstance(mirror, dict) or mirror.get("schema_version") != SCHEMA
+            or mirror.get("status") != "origin_link_observed_unverified"):
+        raise ProvenanceError("MIRROR_LINK_REQUIRED")
+    if (not isinstance(mirror_fields, dict) or set(mirror_fields) != {"price_mad", "surface_m2"}
+            or not isinstance(original_fields, dict)
+            or set(original_fields) != {"source_url", "price_mad", "surface_m2"}
+            or original_fields["source_url"] != mirror["origin_url_claimed_by_mirror"]):
+        raise ProvenanceError("OBSERVATION_URL_MISMATCH")
+    for fields in (mirror_fields, original_fields):
+        for name in ("price_mad", "surface_m2"):
+            value = fields[name]
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not (0 < value < 1e9):
+                raise ProvenanceError("INVALID_OBSERVATION")
+    equal = {
+        field: abs(mirror_fields[field] - original_fields[field]) < 0.01
+        for field in ("price_mad", "surface_m2")
+    }
+    return {
+        "source_domain": mirror["origin_portal"],
+        "source_offer_id": mirror["origin_offer_id"],
+        "observed_fields_equal": equal,
+        "rendered_price_and_surface_match": all(equal.values()),
+        "raw_source_html_verified": False,
+        "availability_verified": False,
+        "public_admission": False,
+        "db_writes": 0,
+        "source_network_requests_by_comparison": 0,
+    }
