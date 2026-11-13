@@ -6,6 +6,8 @@ on:
       - 'scripts/acquisition/__tests__/test_v7_j6_staging_readiness.py'
       - 'scripts/acquisition/v7_parallel/j6_source_evidence.py'
       - 'scripts/acquisition/__tests__/test_v7_j6_source_evidence.py'
+      - 'scripts/acquisition/v7_parallel/j6_authenticated_capture.py'
+      - 'scripts/acquisition/__tests__/test_v7_j6_authenticated_capture.py'
       - 'scripts/acquisition/__tests__/test_v7_j6_postgres_isolation.py'
       - '.github/workflows/akar-v7-j6-readiness.yml'
 permissions:
@@ -45,12 +47,14 @@ jobs:
         run: python -m pip install "psycopg[binary]==3.3.8" "beautifulsoup4==4.14.3"
       - name: Compile readiness gate without network or DB
         run: |
-          python -m py_compile scripts/acquisition/v7_parallel/j6_staging_readiness.py scripts/acquisition/__tests__/test_v7_j6_staging_readiness.py scripts/acquisition/v7_parallel/j6_source_evidence.py scripts/acquisition/__tests__/test_v7_j6_source_evidence.py scripts/acquisition/__tests__/test_v7_j6_postgres_isolation.py
+          python -m py_compile scripts/acquisition/v7_parallel/j6_staging_readiness.py scripts/acquisition/__tests__/test_v7_j6_staging_readiness.py scripts/acquisition/v7_parallel/j6_source_evidence.py scripts/acquisition/__tests__/test_v7_j6_source_evidence.py scripts/acquisition/v7_parallel/j6_authenticated_capture.py scripts/acquisition/__tests__/test_v7_j6_authenticated_capture.py scripts/acquisition/__tests__/test_v7_j6_postgres_isolation.py
       - name: Actual V3 + Radar10 negative-admission contracts
         run: |
           python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j6_staging_readiness.py' -v
 
       - name: Check HTML SHA and deterministic V3 replay (no source requests)
         run: python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j6_source_evidence.py' -v
+      - name: Check authenticated out-of-band capture envelope (OFFLINE ONLY)
+        run: python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j6_authenticated_capture.py' -v
       - name: Check isolated PostgreSQL RLS, roles, transaction rollback
         run: python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j6_postgres_isolation.py' -v
