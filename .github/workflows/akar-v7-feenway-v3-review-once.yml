@@ -1,0 +1,47 @@
+name: Akar V7 J2 FeenWay V3 conflict gate - one-shot offline
+
+on:
+  push:
+    branches:
+      - feat/akar-v7-feenway-offline-provenance-20261113
+    paths:
+      - '.github/workflows/akar-v7-feenway-v3-review-once.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: akar-v7-feenway-v3-review-once
+  cancel-in-progress: false
+
+jobs:
+  genuine-v3-source-review:
+    if: github.repository == 'hraaaaf/Akarfinder'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PYTHONPATH: scripts/acquisition
+    steps:
+      - name: Read reviewed PR code only
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install existing tested parser dependencies
+        run: python -m pip install 'psycopg[binary]==3.3.8' 'beautifulsoup4==4.14.3'
+      - name: Compile real V3 and V7 review code
+        run: |
+          python -m py_compile scripts/acquisition/akarparser_v3_raw_bulk.py
+          python -m py_compile scripts/acquisition/v7_multisource/feenway_upstream_10_audit.py
+          python -m py_compile scripts/acquisition/v7_multisource/feenway_agenz_v3_replay.py
+          python -m py_compile scripts/acquisition/__tests__/test_akarparser_v3_source_review_gate.py
+      - name: V3 reason allowlist and human review bucket
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v3_source_review_gate.py'
+      - name: Genuine V7 to V3 source review propagation
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_agenz_v3_replay.py'
+      - name: Source-scoped primary versus descriptive price safety
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_agenz_primary_scope.py'
+      - name: Existing V3 real portal regressions
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v3_portals.py'
