@@ -104,3 +104,21 @@ Le 13/11/2026, un bundle ZIP privé de **199 159 octets** a été créé depuis 
 - Anomalie source additionnelle : le titre de #387448 mentionne « 4 chambres », tandis que l'en-tête affiche « 3 Ch ». Il faut éviter de transformer un titre recopié fidèlement en caractéristique structurée « 4 chambres » ; cette différence n'affecte pas les sept comparaisons actuelles, qui vérifient seulement le texte du titre.
 
 **Décision au gate J3 : NO-GO pour localisation géographique certifiée et connecteur qualifié au sens complet.** La fidélité aux champs principaux du portail a été contrôlée, mais les 3 quartiers contradictoires et les 2 quartiers sans attestation indépendante interdisent la promotion en géo-index. Lot V7 **2/8 jalons clôturés**, pas 25 % de travail. Aucune action prod, merge, staging, 10-min cron ou déploiement.
+
+## J3 — Re-vérification indépendante du bundle privé original (13 novembre 2026)
+
+**Goal :** confirmer que les cinq vrais documents d'origine Agenz déjà archivés sont intègres, disponibles et identifiables, plutôt que supposer que la sauvegarde antérieure suffit. Aucune nouvelle requête portail.
+
+**Source :** `/AkarFinder/V7/private/AKARFINDER_V7_J3_AGENZ_ARCHIVES_PRIVEES_2026-11-13.zip`, materialisée en lecture seule dans un dossier privé de cette conversation. **Taille : 199 159 octets**, SHA256 du conteneur `a1fb0a2ccf59fc57955abf15b4a4e4986e44bd7e534aeddd1d256dd45b37f037`, identique au précédent indice canonique ; ZIP externe CRC PASS, **5 ZIP internes CRC PASS**.
+
+**Contrôle des vrais octets `source.html` et manifestes :** cinq identifiants de la même archive, chacun exactement un `source.html`, empreinte SHA256 égale à la référence et au `html_sha256` du manifeste. Les cinq manifestes déclarent HTTP 200 avec horodatage UTC.
+
+- Agenz **444291**, 237450 octets, SHA256 `788355d9050f4b3ee6061c51ebf259c89acff19bb583a03a895ab8889ece6d61`.
+- Agenz **445495**, 248662 octets, SHA256 `4e2d6d4ed51dd86896356baf84e76ba5a7eb0b798acb62086262d72819d9274a`.
+- Agenz **420510**, 216245 octets, SHA256 `1714113517ad3179f70645ae56722b286ab790d20e88e4fdd9a5febb24eaff9d`.
+- Agenz **387448**, 186116 octets, SHA256 `d9faa5bf7ab4ab6721bf13752e311ab8d4a44626c61311317087f089cce389d1`.
+- Agenz **500006**, 271176 octets, SHA256 `047d6e02ee82a3d4cd724b9c447dea5cc42c24397f77f08617c3a546b468aafe`.
+
+**Preuve qualifiée :** intégrité des octets des cinq fiches sauvegardées et cohérence avec leurs manifestes, **pas** vérification indépendante que la page internet ait été éditée/actualisée à cette heure, ni certification des quartiers/adresses. Les trois conflits source internes #444291, #387448, #500006 restent en quarantaine et les deux autres quartiers non géolocalisés indépendamment ; **0/5 autorisées pour géo-index**. Aucune nouvelle preuve de fraîcheur, disponibilité, adresse exacte ou propriété physique unique.
+
+**Closeout :** sous-lot vérification de conservation **5/5 PASS** ; jalon J3 complet toujours OUVERT/NO-GO géographique. Aucun HTML source brut publié en Git, aucune source HTTP, DB, cron live, merge ou déploiement. Reste nécessaire un élément d'adresse ou coordonnées réellement indépendant avant tout changement du gate J3 ou J6.
