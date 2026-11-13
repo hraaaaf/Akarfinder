@@ -100,7 +100,7 @@ class J45SourceTests(unittest.TestCase):
                 _url(url)
 
     def test_missing_html_canonical_is_quarantined_even_when_sha_matches(self):
-        self.write(URLS["sarouty.ma"],html=HTML)
+        self.write(URLS["sarouty.ma"],html=HTML+b"\n")
         with self.assertRaisesRegex(OriginalSnapshotRejected,"HTML_CANONICAL_URL_MISSING"):
             self.gate("sarouty.ma")
 
