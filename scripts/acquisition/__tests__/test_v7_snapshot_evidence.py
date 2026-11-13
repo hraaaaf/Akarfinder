@@ -83,6 +83,15 @@ class SnapshotIntegrityTests(unittest.TestCase):
         self.assertEqual(result["source_network_requests"], 0)
         self.assertEqual(result["db_writes"], 0)
 
+    def test_capture_error_classification_is_bounded_no_raw_body_leak(self):
+        from v7_multisource.snapshot_evidence import MAX_RAW_HTML_BYTES
+        with self.assertRaisesRegex(EvidenceError, "BODY_TOO_LARGE"):
+            _manifest(URL, b"<html>" + b"x" * MAX_RAW_HTML_BYTES, when=NOW,
+                      method="explicit_single_page_https_get")
+        with self.assertRaisesRegex(EvidenceError, "HTML_MAGIC_MISMATCH"):
+            _manifest(URL, b"<main>not a document</main>", when=NOW,
+                      method="explicit_single_page_https_get")
+
     def test_network_fetch_requires_both_runtime_and_cli_go(self):
         with patch.dict(os.environ, {}, clear=True):
             with self.assertRaisesRegex(EvidenceError, "EXPLICIT_NETWORK_GO_REQUIRED"):

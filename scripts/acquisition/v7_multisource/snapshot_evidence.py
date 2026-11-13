@@ -66,10 +66,14 @@ def _utc(s: str) -> datetime:
 
 
 def _manifest(url: str, raw: bytes, *, when: datetime, method: str) -> dict:
-    if (when.tzinfo is None or when.utcoffset().total_seconds() != 0
-            or not raw.startswith((b"<!doctype html", b"<!DOCTYPE html", b"<html", b"<HTML"))
-            or len(raw) > MAX_RAW_HTML_BYTES):
-        raise EvidenceError("INVALID_RAW_CAPTURE")
+    if when.tzinfo is None or when.utcoffset().total_seconds() != 0:
+        raise EvidenceError("INVALID_RAW_CAPTURE:NON_UTC_CLOCK")
+    if len(raw) > MAX_RAW_HTML_BYTES:
+        raise EvidenceError("INVALID_RAW_CAPTURE:BODY_TOO_LARGE")
+    if not raw.startswith((b"<!doctype html", b"<!DOCTYPE html", b"<html", b"<HTML")):
+        # Do not include untrusted response content in logs. Could be leading
+        # whitespace, challenge HTML, JSON or a non-document source response.
+        raise EvidenceError("INVALID_RAW_CAPTURE:HTML_MAGIC_MISMATCH")
     try:
         raw.decode("utf-8", errors="strict")
     except UnicodeError as exc:
