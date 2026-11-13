@@ -14,7 +14,7 @@ from pathlib import Path
 import re
 
 from v7_multisource.snapshot_evidence import verify_evidence
-from v7_multisource.sources import canonical_identity
+from v7_parallel.j6_source_evidence import _listing_identity
 from v7_parallel.j6_staging_readiness import review_with_verified_bytes
 
 SCHEMA = "akar-v7-j6-signed-source-capture-v1"
@@ -110,7 +110,7 @@ def review_authenticated_capture(
     evidence = verify_evidence(Path(html_file), Path(manifest_file))
     manifest = evidence["manifest"]
     try:
-        domain, offer, _ = canonical_identity(manifest["source_url"])
+        domain, offer, _ = _listing_identity(manifest["source_url"])
     except ValueError as exc:
         raise AttestationRejected("ATTESTED_SOURCE_NOT_SUPPORTED") from exc
     if any((
