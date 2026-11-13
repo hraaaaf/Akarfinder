@@ -94,33 +94,60 @@ def gate_parser_report(report: dict[str, Any], expected_count: int) -> None:
             "H1_ADMISSION_OR_RIGHTS_FLAG_INVALID")
 
 
-def verify_batch_record(record: dict[str, Any], index: int) -> None:
+def verify_batch_record(record: dict[str, Any], index: int, run_id: str) -> None:
     require(record.get("index") == index and record.get("id") == batch_id(index),
             "H1_CHECKPOINT_BATCH_ORDER_INVALID")
     require(int(record.get("count", -1)) == batch_count(index), "H1_CHECKPOINT_BATCH_COUNT_INVALID")
     require(isinstance(record.get("first_id"), int) and isinstance(record.get("last_id"), int)
             and record["first_id"] <= record["last_id"], "H1_CHECKPOINT_ID_RANGE_INVALID")
-    require(bool(record.get("files")), "H1_CHECKPOINT_FILES_MISSING")
-    for item in record["files"]:
+    files = record.get("files")
+    require(isinstance(files, list) and bool(files), "H1_CHECKPOINT_FILES_MISSING")
+    prefix = object_key(run_id, f"batches/{index:03d}") + "/"
+    input_key = prefix + "input/rows.jsonl.gz"
+    report_key = prefix + "parsed/aggregate_report.json"
+    seen, kinds = set(), {}
+    for item in files:
+        require(isinstance(item, dict), "H1_CHECKPOINT_FILE_INVALID")
         key = str(item.get("key") or "")
-        require(key.startswith(S3_PREFIX + "/") and ".." not in PurePosixPath(key).parts,
-                "H1_CHECKPOINT_KEY_INVALID")
+        kind = item.get("kind")
+        require(key.startswith(prefix) and ".." not in PurePosixPath(key).parts
+                and key not in seen, "H1_CHECKPOINT_KEY_INVALID")
+        seen.add(key)
+        require(kind in ("raw_input", "aggregate_report", "parser_output"),
+                "H1_CHECKPOINT_KIND_INVALID")
+        require((kind == "raw_input" and key == input_key)
+                or (kind == "aggregate_report" and key == report_key)
+                or (kind == "parser_output" and key.startswith(prefix + "parsed/")
+                    and key != report_key), "H1_CHECKPOINT_KEY_KIND_MISMATCH")
         require(re.fullmatch(r"[0-9a-f]{64}", str(item.get("sha256") or "")) is not None,
                 "H1_CHECKPOINT_SHA_INVALID")
         require(int(item.get("size", -1)) >= 0, "H1_CHECKPOINT_SIZE_INVALID")
+        if kind in ("raw_input", "aggregate_report"):
+            require(kind not in kinds, "H1_CHECKPOINT_DUPLICATE_REQUIRED_FILE")
+            kinds[kind] = item
+    require(set(kinds) == {"raw_input", "aggregate_report"},
+            "H1_CHECKPOINT_REQUIRED_FILES_MISSING")
+    require(record.get("input_sha256") == kinds["raw_input"]["sha256"]
+            and record.get("report_sha256") == kinds["aggregate_report"]["sha256"],
+            "H1_CHECKPOINT_RECORDED_SHA_MISMATCH")
 
 
 class S3PrivateStore:
     """Small AWS CLI wrapper. All stdout/stderr is captured and suppressed."""
 
-    def __init__(self, bucket: str, kms_key: str, region: str):
+    def __init__(self, bucket: str, kms_key: str, region: str, account: str):
         require(bool(re.fullmatch(r"[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]", bucket)),
                 "H1_PRIVATE_BUCKET_INVALID")
-        require(kms_key.startswith("arn:aws:kms:eu-central-1:"), "H1_PRIVATE_KMS_KEY_INVALID")
-        require(region == "eu-central-1", "H1_PRIVATE_STORAGE_REGION_INVALID")
-        self.bucket, self.kms_key, self.region = bucket, kms_key, region
+        require(kms_key.startswith(f"arn:aws:kms:eu-central-1:{account}:key/"),
+                "H1_PRIVATE_KMS_KEY_INVALID")
+        require(region == "eu-central-1" and bool(re.fullmatch(r"[0-9]{12}", account)),
+                "H1_PRIVATE_STORAGE_REGION_OR_ACCOUNT_INVALID")
+        self.bucket, self.kms_key, self.region, self.account = bucket, kms_key, region, account
 
     def _aws(self, args: list[str], *, expect_json: bool = False) -> Any:
+        require(bool(args) and args[0] == "s3api", "H1_PRIVATE_STORAGE_ACTION_INVALID")
+        # Reject any accidental cross-account bucket or KMS routing.
+        args = [*args, "--expected-bucket-owner", self.account]
         result = subprocess.run(["aws", *args, "--region", self.region, "--no-cli-pager"],
                                 capture_output=True, text=True, check=False)
         require(result.returncode == 0, "H1_PRIVATE_STORAGE_OPERATION_FAILED")
@@ -263,7 +290,7 @@ def verify_checkpoint(store: S3PrivateStore, manifest: dict[str, Any], run_id: s
                 "H1_RESUME_COMPLETION_FLAG_INVALID")
     previous_last = None
     for index, record in enumerate(batches):
-        verify_batch_record(record, index)
+        verify_batch_record(record, index, run_id)
         require(index > 0 or record.get("canary_passed") is True, "H1_RESUME_CANARY_NOT_PASSED")
         if previous_last is not None:
             require(record["first_id"] > previous_last, "H1_RESUME_ID_RANGE_OVERLAP")
@@ -347,7 +374,7 @@ def execute_batch(h1: Any, parse_batch: Any, env: dict[str, str], snapshot: dict
         "files": files,
         "canary_passed": index == 0,
     }
-    verify_batch_record(record, index)
+    verify_batch_record(record, index, run_id)
     # Only one bounded batch is staged on the ephemeral runner at a time.
     # The private S3 objects and checkpoint are the durable recovery state.
     shutil.rmtree(directory)
@@ -368,7 +395,7 @@ def validate_final(manifest: dict[str, Any]) -> None:
             and manifest.get("publication_authorized") is False, "H1_FINAL_SAFETY_INVALID")
     prior_last = None
     for record in batches:
-        verify_batch_record(record, int(record["index"]))
+        verify_batch_record(record, int(record["index"]), str(manifest["run_id"]))
         if prior_last is not None:
             require(int(record["first_id"]) > prior_last, "H1_FINAL_ID_RANGE_OVERLAP")
         prior_last = int(record["last_id"])
@@ -464,7 +491,7 @@ def check_runtime() -> tuple[str, S3PrivateStore, str]:
     require(caller.get("Account") == expected_account
             and str(caller.get("Arn", "")).startswith(expected_arn_prefix),
             "H1_AWS_OIDC_ROLE_MISMATCH")
-    return secret, S3PrivateStore(bucket, kms_key, region), run_id
+    return secret, S3PrivateStore(bucket, kms_key, region, expected_account), run_id
 
 
 def main() -> None:
