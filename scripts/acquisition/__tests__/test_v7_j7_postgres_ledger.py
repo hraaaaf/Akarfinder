@@ -14,7 +14,6 @@ from datetime import datetime, timezone
 
 ROOT = Path(__file__).resolve().parents[1]
 DSN = os.getenv("AKAR_J7_TEST_DSN")
-SLOT = offline_cycle_intent(datetime(2026, 11, 13, 9, 3, tzinfo=timezone.utc))["slot_index"]
 
 
 @unittest.skipUnless(DSN, "J7 isolated postgres fixture unavailable")
@@ -45,6 +44,9 @@ class J7EphemeralLedgerTests(unittest.TestCase):
 
     def setUp(self):
         self.admin.execute("TRUNCATE v7_schedule.fenced_markers, v7_schedule.slots")
+        self.slot=self.admin.execute(
+            "SELECT floor(extract(epoch FROM clock_timestamp()) / 600)::bigint"
+        ).fetchone()[0]
 
     def role(self, name="v7_schedule_worker"):
         if name not in ("v7_schedule_worker", "v7_schedule_observer"):
@@ -53,7 +55,9 @@ class J7EphemeralLedgerTests(unittest.TestCase):
         conn.execute("SET ROLE "+name)
         return conn
 
-    def claim(self, slot=SLOT, token=None):
+    def claim(self, slot=None, token=None):
+        if slot is None:
+            slot=self.slot
         token=token or uuid4()
         with self.role() as conn:
             ok=conn.execute(
@@ -72,7 +76,7 @@ class J7EphemeralLedgerTests(unittest.TestCase):
     def test_concurrent_distinct_tokens_get_one_claim(self):
         tokens=[uuid4(),uuid4()]
         with ThreadPoolExecutor(max_workers=2) as pool:
-            futures=[pool.submit(self.claim,SLOT,token) for token in tokens]
+            futures=[pool.submit(self.claim,self.slot,token) for token in tokens]
             results=[f.result()[0] for f in futures]
         self.assertEqual(sorted(results),[False,True])
         self.assertEqual(self.admin.execute(
@@ -83,13 +87,13 @@ class J7EphemeralLedgerTests(unittest.TestCase):
         self.assertTrue(ok)
         with self.role() as conn:
             self.assertFalse(conn.execute(
-                "SELECT v7_schedule.finish_slot(%s,%s)",(SLOT,uuid4())
+                "SELECT v7_schedule.finish_slot(%s,%s)",(self.slot,uuid4())
             ).fetchone()[0])
             self.assertTrue(conn.execute(
-                "SELECT v7_schedule.finish_slot(%s,%s)",(SLOT,token)
+                "SELECT v7_schedule.finish_slot(%s,%s)",(self.slot,token)
             ).fetchone()[0])
             self.assertFalse(conn.execute(
-                "SELECT v7_schedule.finish_slot(%s,%s)",(SLOT,token)
+                "SELECT v7_schedule.finish_slot(%s,%s)",(self.slot,token)
             ).fetchone()[0])
         self.assertEqual(self.admin.execute(
             "SELECT status FROM v7_schedule.slots").fetchone()[0],"completed")
@@ -99,11 +103,11 @@ class J7EphemeralLedgerTests(unittest.TestCase):
         self.assertTrue(ok)
         with self.role() as conn:
             self.assertTrue(conn.execute(
-                "SELECT v7_schedule.fail_slot(%s,%s)",(SLOT,token)
+                "SELECT v7_schedule.fail_slot(%s,%s)",(self.slot,token)
             ).fetchone()[0])
         again,_=self.claim()
         self.assertFalse(again)
-        self.assertTrue(self.claim(SLOT+1)[0])
+        self.assertTrue(self.claim(self.slot-1)[0])
 
     def test_worker_has_no_direct_table_access(self):
         self.assertEqual(self.admin.execute(
@@ -118,7 +122,7 @@ class J7EphemeralLedgerTests(unittest.TestCase):
     def test_observer_cannot_execute_privileged_functions(self):
         with self.role("v7_schedule_observer") as conn:
             with self.assertRaises(self.psycopg.errors.InsufficientPrivilege):
-                conn.execute("SELECT v7_schedule.claim_slot(%s,%s)",(SLOT,uuid4()))
+                conn.execute("SELECT v7_schedule.claim_slot(%s,%s)",(self.slot,uuid4()))
         self.assertFalse(self.admin.execute(
             "SELECT has_function_privilege('v7_schedule_observer', "
             "'v7_schedule.claim_slot(bigint,uuid)', 'EXECUTE')").fetchone()[0])
@@ -127,6 +131,52 @@ class J7EphemeralLedgerTests(unittest.TestCase):
         self.assertFalse(self.claim(-1)[0])
         self.assertEqual(self.admin.execute(
             "SELECT count(*) FROM v7_schedule.slots").fetchone()[0],0)
+
+    def test_future_or_too_old_slot_cannot_be_reserved_forever(self):
+        self.assertFalse(self.claim(self.slot + 1)[0])
+        self.assertFalse(self.claim(self.slot - 4)[0])
+        self.assertTrue(self.claim(self.slot - 1)[0])
+        self.assertEqual(self.admin.execute(
+            "SELECT slot_index FROM v7_schedule.slots"
+        ).fetchone()[0], self.slot - 1)
+
+    def test_stale_claim_token_cannot_finish_fail_or_commit_marker(self):
+        ok,token=self.claim()
+        self.assertTrue(ok)
+        self.admin.execute(
+            "UPDATE v7_schedule.slots SET claimed_at="
+            "clock_timestamp() - interval '31 minutes'"
+        )
+        self.assertFalse(self.marker(self.slot,token,"stale-marker"))
+        with self.role() as conn:
+            self.assertFalse(conn.execute(
+                "SELECT v7_schedule.finish_slot(%s,%s)",(self.slot,token)
+            ).fetchone()[0])
+            self.assertFalse(conn.execute(
+                "SELECT v7_schedule.fail_slot(%s,%s)",(self.slot,token)
+            ).fetchone()[0])
+        self.assertEqual(self.admin.execute(
+            "SELECT count(*) FROM v7_schedule.fenced_markers"
+        ).fetchone()[0],0)
+        self.assertEqual(self.admin.execute(
+            "SELECT status FROM v7_schedule.slots"
+        ).fetchone()[0],"claimed")
+
+    def test_security_definer_search_path_places_pg_temp_last(self):
+        signatures=(
+            "v7_schedule.claim_slot(bigint,uuid)",
+            "v7_schedule.finish_slot(bigint,uuid)",
+            "v7_schedule.fail_slot(bigint,uuid)",
+            "v7_schedule.record_fenced_marker(bigint,uuid,text,text)",
+        )
+        for signature in signatures:
+            with self.subTest(signature=signature):
+                configs=self.admin.execute(
+                    "SELECT proconfig FROM pg_proc WHERE oid=%s::regprocedure",
+                    (signature,)
+                ).fetchone()[0]
+                self.assertIn(
+                    "search_path=pg_catalog, v7_schedule, pg_temp", configs)
 
     def test_local_test_ledger_never_enables_collection(self):
         self.assertTrue(self.claim()[0])
@@ -148,28 +198,28 @@ class J7EphemeralLedgerTests(unittest.TestCase):
     def test_fenced_marker_requires_exact_active_claim_token(self):
         ok, token = self.claim()
         self.assertTrue(ok)
-        self.assertFalse(self.marker(SLOT, uuid4()))
-        self.assertTrue(self.marker(SLOT, token))
-        self.assertFalse(self.marker(SLOT, token))  # duplicate no-op, not success
-        self.assertFalse(self.marker(SLOT, token, "snapshot-sha", "b"*64))
+        self.assertFalse(self.marker(self.slot, uuid4()))
+        self.assertTrue(self.marker(self.slot, token))
+        self.assertFalse(self.marker(self.slot, token))  # duplicate no-op, not success
+        self.assertFalse(self.marker(self.slot, token, "snapshot-sha", "b"*64))
         self.assertEqual(self.admin.execute(
             "SELECT marker_name, evidence_sha256 FROM v7_schedule.fenced_markers"
         ).fetchall(), [("snapshot-sha", "a"*64)])
         with self.role() as conn:
             self.assertTrue(conn.execute(
-                "SELECT v7_schedule.finish_slot(%s,%s)", (SLOT, token)
+                "SELECT v7_schedule.finish_slot(%s,%s)", (self.slot, token)
             ).fetchone()[0])
-        self.assertFalse(self.marker(SLOT, token, "after-finish"))
+        self.assertFalse(self.marker(self.slot, token, "after-finish"))
         self.assertEqual(self.admin.execute(
             "SELECT count(*) FROM v7_schedule.fenced_markers"
         ).fetchone()[0], 1)
 
     def test_fenced_marker_rejects_invalid_inputs_and_unclaimed_slot(self):
-        self.assertFalse(self.marker(SLOT, uuid4()))
+        self.assertFalse(self.marker(self.slot, uuid4()))
         ok, token = self.claim()
         self.assertTrue(ok)
-        self.assertFalse(self.marker(SLOT, token, "bad spaces"))
-        self.assertFalse(self.marker(SLOT, token, "valid", "xyz"))
+        self.assertFalse(self.marker(self.slot, token, "bad spaces"))
+        self.assertFalse(self.marker(self.slot, token, "valid", "xyz"))
         self.assertFalse(self.marker(-1, token, "valid"))
         self.assertEqual(self.admin.execute(
             "SELECT count(*) FROM v7_schedule.fenced_markers"
@@ -207,7 +257,7 @@ class J7EphemeralLedgerTests(unittest.TestCase):
             with self.assertRaises(self.psycopg.errors.InsufficientPrivilege):
                 conn.execute(
                     "SELECT v7_schedule.record_fenced_marker(%s,%s,%s,%s)",
-                    (SLOT, uuid4(), "snapshot-sha", "a"*64))
+                    (self.slot, uuid4(), "snapshot-sha", "a"*64))
 
 
 
