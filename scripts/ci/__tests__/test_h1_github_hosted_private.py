@@ -22,17 +22,26 @@ import h1_github_hosted_private as h1
 class FakeStore:
     def __init__(self):
         self.data: dict[str, bytes] = {}
+        self.bytes_used = 0
 
     def exists(self, key):
         return key in self.data
 
     def put_file(self, path, key):
         value = Path(path).read_bytes()
-        self.data[key] = value
+        if key in self.data and self.data[key] != value:
+            raise RuntimeError("FAKE_APPEND_ONLY_CONFLICT")
+        if key not in self.data:
+            self.bytes_used += len(value)
+            self.data[key] = value
         return {"key": key, "sha256": hashlib.sha256(value).hexdigest(), "size": len(value)}
 
     def put_bytes(self, value, key, _temp_root):
-        self.data[key] = value
+        if key in self.data and self.data[key] != value:
+            raise RuntimeError("FAKE_APPEND_ONLY_CONFLICT")
+        if key not in self.data:
+            self.bytes_used += len(value)
+            self.data[key] = value
         return {"key": key, "sha256": hashlib.sha256(value).hexdigest(), "size": len(value)}
 
     def put_manifest(self, manifest, key, temp_root):
@@ -238,15 +247,21 @@ class TestCanaryAndStorage(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "H1_CHECKPOINT_KEY_INVALID"):
             h1.verify_batch_record(duplicate_key, 0, "123456")
 
-    def test_storage_owner_and_kms_arn_must_match(self):
-        store = h1.S3PrivateStore("akar-h1-private-test", 
-                                  "arn:aws:kms:eu-central-1:123456789012:key/example",
-                                  "eu-central-1", "123456789012")
-        self.assertEqual(store.account, "123456789012")
-        with self.assertRaisesRegex(RuntimeError, "H1_PRIVATE_KMS_KEY_INVALID"):
-            h1.S3PrivateStore("akar-h1-private-test",
-                              "arn:aws:kms:eu-central-1:999999999999:key/example",
-                              "eu-central-1", "123456789012")
+    def test_supabase_is_pinned_to_private_bucket_and_auth_user(self):
+        user_id = "11111111-1111-4111-8111-111111111111"
+        store = h1.SupabasePrivateStore(h1.PROJECT_REF, h1.BUCKET, "sb_publishable_test",
+                                        "worker@example.test", "synthetic-only", user_id)
+        self.assertEqual(store.bucket, "h1-historical-evidence")
+        self.assertIn("/object/authenticated/h1-historical-evidence/",
+                      store._url("akarfinder/h1/run-123/checkpoints/000.json"))
+        with self.assertRaisesRegex(RuntimeError, "H1_SUPABASE_TARGET_MISMATCH"):
+            h1.SupabasePrivateStore("other-project", h1.BUCKET, "sb_publishable_test",
+                                    "worker@example.test", "synthetic-only", user_id)
+        with self.assertRaisesRegex(RuntimeError, "H1_SUPABASE_CREDENTIALS_MISSING"):
+            h1.SupabasePrivateStore(h1.PROJECT_REF, h1.BUCKET, "sb_secret_disallowed",
+                                    "worker@example.test", "synthetic-only", user_id)
+        with self.assertRaisesRegex(RuntimeError, "H1_SUPABASE_METHOD_FORBIDDEN"):
+            store._call("DELETE", store._url("akarfinder/h1/run-123/file"))
 
 
 class TestReadOnlyAndWorkflowContracts(unittest.TestCase):
@@ -268,8 +283,11 @@ class TestReadOnlyAndWorkflowContracts(unittest.TestCase):
                     "akarparser-v3-h1-private-historical.yml").read_text(encoding="utf-8")
         self.assertIn("runs-on: ubuntu-24.04", workflow)
         self.assertNotRegex(workflow, r"self-hosted|windows-latest|upload-artifact|actions/cache")
-        self.assertIn("id-token: write", workflow)
-        self.assertIn("role-duration-seconds: 21600", workflow)
+        self.assertNotIn("id-token: write", workflow)
+        self.assertNotIn("aws-actions/configure-aws-credentials", workflow)
+        self.assertIn("H1_SUPABASE_AUTH_PASSWORD", workflow)
+        self.assertIn("H1_SUPABASE_AUTH_USER_ID", workflow)
+        self.assertIn("H1_SUPABASE_PUBLISHABLE_KEY", workflow)
         self.assertIn("Q1E_NEON_RECOVERY_READONLY_URL", workflow)
         self.assertIn("inputs.authorize_h1_readonly == true", workflow)
         self.assertIn("github.ref == 'refs/heads/main'", workflow)
