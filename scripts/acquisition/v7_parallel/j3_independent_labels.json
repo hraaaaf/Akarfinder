@@ -1,0 +1,136 @@
+{
+  "schema_version": "akar-v7-j3-source-visible-labels-v1",
+  "label_policy": "Annotated independently from original verified HTML bytes (headline/hero/characteristics), without copying either parser output. This only checks fidelity to portal's displayed facts, not location reality, publication date, availability or representative accuracy. Keep three contradictory district descriptions quarantined.",
+  "records": [
+    {
+      "id": "444291",
+      "source_url": "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291",
+      "html_sha256": "788355d9050f4b3ee6061c51ebf259c89acff19bb583a03a895ab8889ece6d61",
+      "captured_at_utc": "2026-11-12T23:39:02Z",
+      "expected": {
+        "title": "Grand appartement – À proximité des commodités à Al Qods, Salé | Agenz",
+        "price_mad": 980000,
+        "surface_total_m2": 104,
+        "city": "Salé",
+        "district": "Al Qods",
+        "property_type": "apartment",
+        "transaction_type": "sale"
+      },
+      "evidence": {
+        "title": "HTML <title> and listing hero heading",
+        "price_mad": "main listing hero current DH price",
+        "surface_total_m2": "main listing hero + characteristics (not 105 m² habitable for #445495)",
+        "city": "main listing hero displays Salé",
+        "district": "main listing hero / breadcrumb, NOT physical location verification",
+        "property_type": "main listing hero Appartement à vendre",
+        "transaction_type": "main listing hero Appartement à vendre"
+      },
+      "district_description_conflict": "Tabriquet",
+      "district_claim_level": "source_header_only_unverified_geolocation"
+    },
+    {
+      "id": "445495",
+      "source_url": "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/sale-el-jadida/445495",
+      "html_sha256": "4e2d6d4ed51dd86896356baf84e76ba5a7eb0b798acb62086262d72819d9274a",
+      "captured_at_utc": "2026-11-13T00:44:57Z",
+      "expected": {
+        "title": "Appartement rez-de-jardin - Salé El Jedida à Salé El Jadida, Salé | Agenz",
+        "price_mad": 1650000,
+        "surface_total_m2": 150,
+        "city": "Salé",
+        "district": "Salé El Jadida",
+        "property_type": "apartment",
+        "transaction_type": "sale"
+      },
+      "evidence": {
+        "title": "HTML <title> and listing hero heading",
+        "price_mad": "main listing hero current DH price",
+        "surface_total_m2": "main listing hero + characteristics (not 105 m² habitable for #445495)",
+        "city": "main listing hero displays Salé",
+        "district": "main listing hero / breadcrumb, NOT physical location verification",
+        "property_type": "main listing hero Appartement à vendre",
+        "transaction_type": "main listing hero Appartement à vendre"
+      },
+      "district_description_conflict": null,
+      "district_claim_level": "source_header_and_description_consistent_unverified_geolocation"
+    },
+    {
+      "id": "420510",
+      "source_url": "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/said-hajji/420510",
+      "html_sha256": "1714113517ad3179f70645ae56722b286ab790d20e88e4fdd9a5febb24eaff9d",
+      "captured_at_utc": "2026-11-13T00:44:54Z",
+      "expected": {
+        "title": "Appartement plein sud - Luminosité assuré à Said hajji, Salé | Agenz",
+        "price_mad": 730000,
+        "surface_total_m2": 81,
+        "city": "Salé",
+        "district": "Said hajji",
+        "property_type": "apartment",
+        "transaction_type": "sale"
+      },
+      "evidence": {
+        "title": "HTML <title> and listing hero heading",
+        "price_mad": "main listing hero current DH price",
+        "surface_total_m2": "main listing hero + characteristics (not 105 m² habitable for #445495)",
+        "city": "main listing hero displays Salé",
+        "district": "main listing hero / breadcrumb, NOT physical location verification",
+        "property_type": "main listing hero Appartement à vendre",
+        "transaction_type": "main listing hero Appartement à vendre"
+      },
+      "district_description_conflict": null,
+      "district_claim_level": "source_header_and_description_consistent_unverified_geolocation"
+    },
+    {
+      "id": "387448",
+      "source_url": "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/zone-industrielle-tabriquet/387448",
+      "html_sha256": "d9faa5bf7ab4ab6721bf13752e311ab8d4a44626c61311317087f089cce389d1",
+      "captured_at_utc": "2026-11-13T00:45:11Z",
+      "expected": {
+        "title": "Appartement de 4 chambres à vendre à Hay rahma Salé à Zone industrielle Tabriquet, Salé | Agenz",
+        "price_mad": 740000,
+        "surface_total_m2": 107,
+        "city": "Salé",
+        "district": "Zone industrielle Tabriquet",
+        "property_type": "apartment",
+        "transaction_type": "sale"
+      },
+      "evidence": {
+        "title": "HTML <title> and listing hero heading",
+        "price_mad": "main listing hero current DH price",
+        "surface_total_m2": "main listing hero + characteristics (not 105 m² habitable for #445495)",
+        "city": "main listing hero displays Salé",
+        "district": "main listing hero / breadcrumb, NOT physical location verification",
+        "property_type": "main listing hero Appartement à vendre",
+        "transaction_type": "main listing hero Appartement à vendre"
+      },
+      "district_description_conflict": "Hay Rahma",
+      "district_claim_level": "source_header_only_unverified_geolocation"
+    },
+    {
+      "id": "500006",
+      "source_url": "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/assonboula/500006",
+      "html_sha256": "047d6e02ee82a3d4cd724b9c447dea5cc42c24397f77f08617c3a546b468aafe",
+      "captured_at_utc": "2026-11-13T00:45:09Z",
+      "expected": {
+        "title": "Appartement familial - Confort et espace garantis à Assonboula, Salé | Agenz",
+        "price_mad": 1224000,
+        "surface_total_m2": 128,
+        "city": "Salé",
+        "district": "Assonboula",
+        "property_type": "apartment",
+        "transaction_type": "sale"
+      },
+      "evidence": {
+        "title": "HTML <title> and listing hero heading",
+        "price_mad": "main listing hero current DH price",
+        "surface_total_m2": "main listing hero + characteristics (not 105 m² habitable for #445495)",
+        "city": "main listing hero displays Salé",
+        "district": "main listing hero / breadcrumb, NOT physical location verification",
+        "property_type": "main listing hero Appartement à vendre",
+        "transaction_type": "main listing hero Appartement à vendre"
+      },
+      "district_description_conflict": "Bab Lamrissa",
+      "district_claim_level": "source_header_only_unverified_geolocation"
+    }
+  ]
+}
