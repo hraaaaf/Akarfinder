@@ -89,6 +89,14 @@ class IssuerRegistryTests(unittest.TestCase):
         self.assertTrue(result["operator_registry_sha256_verified"])
         self.assertTrue(result["issuer_key_scope_and_window_matched"])
         self.assertEqual(result["operator_registry_generation"], 1)
+        self.assertEqual(result["review_receipt_intent"], {
+            "registry_generation": 1,
+            "registry_sha256": hashlib.sha256(registry_json()).hexdigest(),
+            "attestation_mac_sha256": self.att["mac_sha256"],
+            "source_domain": "agenz.ma",
+            "source_offer_id": "444291",
+            "html_sha256": hashlib.sha256(RAW).hexdigest(),
+        })
         self.assertEqual(result["source_proof"]["v3_fields_replayed"], 7)
         self.assertFalse(result["issuer_independently_vetted_here"])
         self.assertFalse(result["registry_generation_rollback_prevented_here"])
@@ -176,6 +184,10 @@ class IssuerRegistryTests(unittest.TestCase):
             "valid_from_utc":"2026-11-14T00:00:00Z"})
         with self.assertRaisesRegex(IssuerPolicyRejected, "ISSUER_KEY_OUTSIDE_VALIDITY"):
             self.review(registry=future)
+        overlong = registry_json(entry={**BASE_POLICY,
+            "valid_until_utc":"2027-03-01T00:00:00Z"})
+        with self.assertRaisesRegex(IssuerPolicyRejected, "ISSUER_VALIDITY_RANGE_INVALID"):
+            self.review(registry=overlong)
         invalid = registry_json(entry={**BASE_POLICY,
             "valid_from_utc":"2026-12-01T00:00:00Z"})
         with self.assertRaisesRegex(IssuerPolicyRejected, "ISSUER_VALIDITY_RANGE_INVALID"):
