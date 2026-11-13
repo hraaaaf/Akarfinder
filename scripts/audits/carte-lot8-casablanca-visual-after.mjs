@@ -119,6 +119,30 @@ try {
       if (searchUrl.pathname !== "/search" || searchUrl.searchParams.get("city") !== "Casablanca" || searchUrl.searchParams.get("district") !== "Maârif") {
         throw new Error(`${viewport.name}: Search handoff mismatch ${searchHref}`);
       }
+      // J18 V1 final UX gate: visible return link and critical source-absence text.
+      // Check computed browser geometry in all four viewports; no CSS-only guesses.
+      const territoryBack = page.locator('[data-vivre-ici-territory-back]');
+      const backBox = await territoryBack.boundingBox();
+      const backFont = await territoryBack.evaluate((node) => parseFloat(getComputedStyle(node).fontSize));
+      if (!backBox || backBox.width < 44 || backBox.height < 44 || backFont < 12) {
+        throw new Error(`${viewport.name}: Maroc back control below 44px/12px ${JSON.stringify({backBox,backFont})}`);
+      }
+      await page.waitForFunction(() =>
+        document.querySelector('[data-p4-map-decision-rail]')?.getAttribute('data-vivre-ici-empty-context') === 'true',
+      null, { timeout: 10000 });
+      const emptyState = rail.locator('.p4-premium-empty-evidence');
+      const emptyStateFont = await emptyState.evaluate((node) => parseFloat(getComputedStyle(node).fontSize));
+      if (!await emptyState.isVisible() || emptyStateFont < 12) {
+        throw new Error(`${viewport.name}: missing-POI explanation below 12px or hidden ${emptyStateFont}`);
+      }
+      if (viewport.width <= 768) {
+        const clipping = await rail.evaluate((node) => ({
+          clientHeight: node.clientHeight, scrollHeight: node.scrollHeight,
+        }));
+        if (clipping.scrollHeight > clipping.clientHeight + 1) {
+          throw new Error(`${viewport.name}: mobile Vivre Ici rail clips content ${JSON.stringify(clipping)}`);
+        }
+      }
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (overflow > 1) throw new Error(`${viewport.name}: horizontal overflow ${overflow}`);
       if (diagnostics.pageErrors.length) throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(diagnostics.pageErrors)}`);
@@ -245,7 +269,7 @@ try {
         touchTargets: targetSizes, publicAnchors, privateQa, emptyFiltersHidden: !privateQa && publicAnchors === 0,
         honestBoundary: true, ariaExpandedReset: true, afterOverflow, pageErrors: diagnostics.pageErrors.length
       };
-      report.cases.push({ viewport: viewport.name, searchHref, panelBox, layoutDiagnostics, overflow, mapRendered: true, highZoomTileCount, diagnostics, v1 });
+      report.cases.push({ viewport: viewport.name, searchHref, panelBox, layoutDiagnostics, overflow, mapRendered: true, highZoomTileCount, diagnostics, v1, uxGate: { backBox, backFont, emptyStateFont } });
     } finally {
       clearTimeout(tileGateTimeout);
       await page.close();

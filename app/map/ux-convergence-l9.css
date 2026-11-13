@@ -50,7 +50,7 @@
   top: 118px;
   z-index: 52;
   display: inline-flex;
-  min-height: 36px;
+  min-height: 44px;
   align-items: center;
   gap: 7px;
   border: 1px solid rgb(207 220 235 / .9);
@@ -58,8 +58,8 @@
   background: rgb(255 255 255 / .94);
   padding: 7px 12px;
   color: #071b33;
-  font-size: 10px;
-  font-weight: 900;
+  font-size: 12px;
+  font-weight: 800;
   letter-spacing: .04em;
   box-shadow: 0 10px 28px rgb(7 27 51 / .16);
   backdrop-filter: blur(14px);
@@ -125,9 +125,9 @@
   [data-vivre-ici-page] .vivre-ici-territory-back {
     left: 12px;
     top: 101px;
-    min-height: 32px;
-    padding: 6px 10px;
-    font-size: 9px;
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 12px;
   }
 
   /* Mobile N3 is map-first: title + reliability contract + real action.
@@ -183,9 +183,9 @@
   display: block;
   margin: 6px 0 4px;
   color: #52657a;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 /* L4-B: the city-wide sourced national map does not mount the neighborhood
