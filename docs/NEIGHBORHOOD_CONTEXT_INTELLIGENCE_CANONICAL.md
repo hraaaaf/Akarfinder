@@ -271,3 +271,25 @@ PR roadmap : #902. Lots : #904, #906, #907, #913.
 - Fit­ness Park : centre de caméra du lien Google Maps à 297,7 m du point OSM ; ne doit jamais être promu comme pin précis sans preuve.
 - Axes du secteur Maârif historique : analyse complète Geofabrik 25/60/69/65/3/28 segments associés aux six axes ; **250 associations**, zéro contour fabriqué. Exécution de l'audit `maarif-historical-axis-osm-audit.py` avec rapport privé et `derived_polygon:null`.
 - **J9/J10 restent ouverts** ; prochaine action = source municipale/territoriale vectorielle réellement datée, vérification terrain/opérateur indépendante, revue licences, puis seulement intégration preview et QA UX. Branche Draft #1197 sans Vercel.
+---
+
+## 2026-11-13 — Vivre Ici / J18 : gel du candidat OSM non publié et preuves de QA de la PR #1197
+
+**Décision de périmètre :** le lot de données indicatives OSM J18 reste un **candidat privé gelé, non publiable (NO-GO data)**. Cette décision documentaire ne supprime ni les objets privés ni les modules. L'achèvement de l'interface Vivre Ici (Quartier 2D, Rue zoom, panneau « Limites non disponibles ») est traité séparément de l'activation de l'API OSM. Elle n'est **pas** une acceptation produit, une autorisation de merge ni de déploiement.
+
+**GOAL UI :** offrir la carte de quartier, la vue Rue et une explication honnête des limites sans afficher de périmètre Maârif central non homologué, sans présenter les POI expirés comme frais.
+
+**PREUVES exactes du HEAD** \`d6179842c8fdc845b7da097cf66e29964acca06e\` : PR [#1197](https://github.com/hraaaaf/Akarfinder/pull/1197) OPEN/Draft ; 29 workflows terminés, **27 SUCCESS et 2 SKIPPED**. Rapports et captures téléchargés depuis les artefacts GitHub Actions :
+- [Casablanca AFTER #43313181577](https://github.com/hraaaaf/Akarfinder/actions/runs/43313181577), artefact \`13986034123\` : **4/4** vues 390×844, 430×932, 768×900 et 1280×900, carte affichée, 0 erreur JS, 0 overflow, lien Search Maârif conservé ; certaines requêtes de navigation sont marquées \`net::ERR_ABORTED\`, sans diagnostic métier associé.
+- [Multivilles #43313181504](https://github.com/hraaaaf/Akarfinder/actions/runs/43313181504), artefact \`13986797679\` : **11/11** scénarios sur Casablanca, Marrakech, Agadir, Fès, Tanger, 0 débordement et rendu de carte ; Fès/Tanger rendent honnêtement le **fallback ville**, pas une couverture quartier certifiée.
+- [Vivre Ici annonce #43313181451](https://github.com/hraaaaf/Akarfinder/actions/runs/43313181451), artefact \`13987311326\` : **8/8** scénarios, aucun finding/console error/overflow ; 7 états avec carte et 1 état volontairement masqué.
+- **Comparaison visuelle** : ancien artefact Casablanca [#42844148759](https://github.com/hraaaaf/Akarfinder/actions/runs/42844148759) \`13777540528\` comparé au HEAD \`d6179842\` sur les 4 mêmes formats. Aucune régression majeure visible dans les captures inspectées ; **aucun score UX 9,5/10 ni résultat VoiceOver/NVDA réel ne sont certifiés**. L'artefact historique n'est pas la production actuelle.
+- **Verrou public en source** : \`J18H_SOURCE_PUBLICATION_ENABLED=false\` ; \`app/api/geo/indicative-landmarks/route.ts\` répond 404 tant que ce verrou reste désactivé et 503 sans contrôleur si jamais il est activé. \`vercel.mjs\` porte \`git.deploymentEnabled=false\`. Aucune preuve HTTP sur le futur déploiement n'est prétendue.
+- **Intégrité J18** : manifeste privé SHA256 \`e0aca1621c93328ef5dd83ed38d23593839ccf06e71b12e2103d51773b7f4950\` vérifié antérieurement par Codex ; **1/1 339 tuile** distante rehashée, 1 338 non vérifiées. Métadonnées Vercel : store privé disponible, 1 340 objets, 9 448 167 octets, sans preuve d'inventaire ou de somme cryptographique complète. Le WAF personnalisé reste non configuré ; le quota Redis est testé isolément mais non intégré à une route publique. **NO-GO J18 publié maintenu**.
+
+**SUCCESS technique limité :** gel non public du candidat J18 documenté, séparation explicite des gates de la carte Vivre Ici et de la future distribution OSM, CI et captures du HEAD revues. **NON ATTEINT :** score UX ≥9,5/10, accessibilité réelle VoiceOver/NVDA, validation de la géométrie du Maârif central, conformité des données POI fraîches, 1 339/1 339 SHA, WAF/identité/quota intégrés pour une publication, validation humaine finale.
+
+**Next exact :** finir la revue produit UX et accessibilité réelle sur la build candidate en conservant la géométrie non certifiée invisible ; faire accepter ou corriger le périmètre réellement prouvé ; tenir la PR Draft tant que les gates sont ouverts. Si ces gates deviennent verts : recontrôler HEAD/CI, état des protections et captures, puis demander un **GO distinct** pour le merge et un autre **GO explicite** pour tout déploiement Vercel. Le chantier J18 de **publication OSM** reste dans la roadmap différée, sans endpoint public et sans activer Blob/Redis/WAF. [Handover Notion J18](https://app.notion.com/p/41777c66336281968368d299b5e79143).
+
+**Interdictions maintenues :** pas de merge, Vercel, changement DB/Blob/WAF, activation de données ni déclaration « terminé/production-ready » sans preuves et autorisations.
+
