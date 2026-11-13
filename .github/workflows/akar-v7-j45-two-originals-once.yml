@@ -1,0 +1,152 @@
+name: Akar V7 J4-J5 two original HTTP source captures (ONE SHOT)
+on:
+  pull_request:
+    paths:
+      - '.github/v7-j45-two-source-capture-go-20261113'
+permissions:
+  contents: read
+concurrency:
+  group: akar-v7-j45-one-shot-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  individual-original:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'feat/akar-v7-j4-avito-yakeey-sarouty-20261113' &&
+      github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - source: sarouty
+            lane: j4
+            domain: sarouty.ma
+            offer: '894012'
+            url: 'https://www.sarouty.ma/acheter/appartement-sale-bab-al-bahr-894012/'
+          - source: mubawab
+            lane: j5
+            domain: mubawab.ma
+            offer: '8394751'
+            url: 'https://www.mubawab.ma/fr/a/8394751/alyaida-chemin-la-paz'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Require exact one-time operator marker
+        id: permit
+        run: |
+          if test -f .github/v7-j45-two-source-capture-go-20261113 &&
+             grep -qx 'J45_OPERATOR_GO_ONCE_2026-11-13' .github/v7-j45-two-source-capture-go-20261113; then
+            echo 'granted=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'granted=false' >> "$GITHUB_OUTPUT"
+            echo 'NO_ONE_SHOT_SOURCE_CAPTURE_AUTHORIZATION'
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.permit.outputs.granted == 'true'
+        with:
+          python-version: '3.11'
+      - name: Install pinned existing parser dependency
+        if: steps.permit.outputs.granted == 'true'
+        run: python -m pip install "beautifulsoup4==4.14.3"
+      - name: Verify fresh robots.txt, no bypass
+        if: steps.permit.outputs.granted == 'true'
+        env:
+          SOURCE_URL: ${{ matrix.url }}
+        run: |
+          python - <<'PY'
+          import os,ssl,urllib.request,urllib.robotparser
+          from urllib.parse import urlsplit
+          url=os.environ["SOURCE_URL"]
+          p=urlsplit(url)
+          robots_url=f"{p.scheme}://{p.netloc}/robots.txt"
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,*args,**kwargs):
+                  raise RuntimeError("ROBOTS_REDIRECT_NEEDS_OPERATOR_REVIEW")
+          opener=urllib.request.build_opener(
+              urllib.request.ProxyHandler({}),NoRedirect(),
+              urllib.request.HTTPSHandler(context=ssl.create_default_context()))
+          req=urllib.request.Request(robots_url,headers={
+              "User-Agent":"Akarfinder-Source-Evidence/0.1 (+operator-approved)",
+              "Accept":"text/plain","Accept-Encoding":"identity"},method="GET")
+          with opener.open(req,timeout=12) as response:
+              if response.status!=200: raise RuntimeError("ROBOTS_HTTP_NON200")
+              raw=response.read(100_001)
+          if len(raw)>100_000: raise RuntimeError("ROBOTS_TOO_LARGE")
+          rp=urllib.robotparser.RobotFileParser()
+          rp.parse(raw.decode("utf-8").splitlines())
+          if not rp.can_fetch("Akarfinder-Source-Evidence/0.1",url):
+              raise RuntimeError("ROBOTS_DISALLOW_OR_UNKNOWN")
+          print("ROBOTS_ALLOWED_SINGLE_DETAIL")
+          PY
+      - name: ONE original HTTPS GET, no redirects/retries, private bytes
+        if: steps.permit.outputs.granted == 'true'
+        env:
+          PYTHONPATH: scripts/acquisition
+          AKAR_SOURCE_NETWORK_APPROVED: approved
+          SOURCE_URL: ${{ matrix.url }}
+          PRIVATE_FOLDER: .private-j45-${{ matrix.source }}-${{ matrix.offer }}
+        run: |
+          python scripts/acquisition/v7_multisource/snapshot_evidence.py \
+            --capture-url "$SOURCE_URL" \
+            --private-output "$PRIVATE_FOLDER" \
+            --capture-approved-once
+      - name: Offline original HTML plus seven fields and source self-identity
+        if: steps.permit.outputs.granted == 'true'
+        env:
+          PYTHONPATH: scripts/acquisition
+          PRIVATE_FOLDER: .private-j45-${{ matrix.source }}-${{ matrix.offer }}
+          SOURCE_URL: ${{ matrix.url }}
+          SOURCE_DOMAIN: ${{ matrix.domain }}
+          SOURCE_OFFER: ${{ matrix.offer }}
+          LANE: ${{ matrix.lane }}
+        run: |
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          from v7_multisource.snapshot_evidence import verify_evidence,offline_benchmark
+          from v7_multisource.legacy_url_intake import SCHEMA
+          from v7_parallel.j45_original_snapshot import review_original_snapshot,OriginalSnapshotRejected
+          folder=Path(os.environ["PRIVATE_FOLDER"])
+          m=verify_evidence(folder/"source.html",folder/"source.manifest.json")["manifest"]
+          assert m["source_url"]==os.environ["SOURCE_URL"]
+          candidate={"schema_version":SCHEMA,"source_domain":os.environ["SOURCE_DOMAIN"],
+            "source_offer_id":os.environ["SOURCE_OFFER"],
+            "source_url":os.environ["SOURCE_URL"],
+            "discovery_method":"existing_l8_collector_result_offline",
+            "record_kind":"url_candidate_only","detail_observed":False,
+            "editorial_published_at":None,"rights_verified":False,
+            "source_currently_active":None,
+            "eligible_for_private_detail_staging":False,
+            "eligible_for_public_admission":False}
+          out={"source":os.environ["SOURCE_DOMAIN"],"offer":os.environ["SOURCE_OFFER"],
+            "source_url":m["source_url"],"html_sha256":m["html_sha256"],
+            "captured_at_utc":m["captured_at_utc"],"bytes":m["bytes"],
+            "original_bytes_verified":True,"db_writes":0,"staging_allowed":False}
+          try:
+            result=review_original_snapshot(lane=os.environ["LANE"],
+              candidate=candidate,folder=folder,expected_html_sha256=m["html_sha256"])
+            out["contract"]="original_snapshot_gate_pass_but_no_independent_truth"
+            out["field_comparison"]=result["l4_v3_fields"]
+            out["source_self_identity"]=result["source_html_self_declaration"]
+          except OriginalSnapshotRejected as exc:
+            out["contract"]="quarantined"
+            out["reason"]=str(exc)
+            benchmark=offline_benchmark(folder/"source.html",folder/"source.manifest.json")
+            out["page_kind"]=benchmark["l4_page_kind"]
+            out["quality_status"]=benchmark["v3_quality_status"]
+          print(json.dumps(out,ensure_ascii=False,sort_keys=True))
+          PY
+      - name: PRIVATE original artifact, 1-day retention
+        if: steps.permit.outputs.granted == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: akar-v7-j45-${{ matrix.source }}-${{ matrix.offer }}-private
+          path: |
+            .private-j45-${{ matrix.source }}-${{ matrix.offer }}/source.html
+            .private-j45-${{ matrix.source }}-${{ matrix.offer }}/source.manifest.json
+          retention-days: 1
+          if-no-files-found: error
