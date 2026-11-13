@@ -117,8 +117,15 @@ class J45SourceTests(unittest.TestCase):
 
     def test_cross_site_url_spoofing_rejected(self):
         self.write(URLS["avito.ma"])
-        with self.assertRaisesRegex(OriginalSnapshotRejected,"L8_SOURCE_ID_REJECTED"):
+        # Early Python authority rejection is correct: Node is never invoked.
+        with self.assertRaisesRegex(OriginalSnapshotRejected,"URL_ONLY_SAFETY_CONTRACT_FAILED"):
             self.gate("sarouty.ma",record=candidate("sarouty.ma",URLS["avito.ma"]))
+
+    def test_html_challenge_body_cannot_be_labeled_a_detail(self):
+        challenge=b"<!DOCTYPE html><html><head><title>Access denied</title></head><body>captcha required</body></html>"
+        self.write(URLS["avito.ma"],html=challenge)
+        with self.assertRaisesRegex(OriginalSnapshotRejected,"ORIGINAL_HTML_NOT_LISTING_DETAIL"):
+            self.gate("avito.ma")
 
     def test_extra_provenance_claim_rejected(self):
         self.write(URLS["avito.ma"])

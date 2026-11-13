@@ -13,3 +13,11 @@ Limites : 0 nouveau HTML original J4/J5 ; aucun droit de fraîcheur/activité, p
 Aucune collecte réseau, DB, staging, merge, cron live ou Vercel.
 
 NEXT : vérification CI au SHA exact, puis replay de la première archive authentique obtenue via un canal autorisé. Si source bloquée, garder en quarantaine et poursuivre les tâches indépendantes.
+
+## Premier verdict CI et correction ciblée (13 novembre 2026)
+
+Le premier code SHA 8bceb223da64813c388752f6ca488e2f7b3707cd a obtenu 5 workflows SUCCESS mais [V7 run #43405232600](https://github.com/hraaaaf/Akarfinder/actions/runs/43405232600) FAILED : neuf tests du nouveau banc passent, le dixième exigeait un message d'erreur trop tardif sur l'URL Sarouty portant un domaine Avito. La fonction Python URL-only refuse déjà l'usurpation par URL_ONLY_SAFETY_CONTRACT_FAILED avant le validateur Node ; c'est le bon comportement. L'assertion est corrigée, sans assouplissement.
+
+Nouveau garde-fou ajouté : une réponse HTML HTTP200 peut être un CAPTCHA/page de blocage et non une annonce malgré une route valide. Le benchmark remonte maintenant les raisons L4 de classification ; le gate J4/J5 exige une fiche detail et au moins une raison de contenu (structured_listing_type ou listing_fact_density), pas seulement detail_url_pattern. Nouveau test négatif challenge HTML. Cette classification ne vaut toujours pas preuve indépendante des faits.
+
+Nouveau HEAD code et CI : à observer séparément avant de revendiquer PASS.

@@ -65,6 +65,13 @@ def review_original_snapshot(*,lane:str,candidate:dict,folder:Path,expected_html
     if manifest["html_sha256"]!=expected_html_sha256:
         raise OriginalSnapshotRejected("CAPTURE_PIN_MISMATCH")
     replay=offline_benchmark(folder/"source.html",folder/"source.manifest.json")
+    # A valid offer URL may return a CAPTCHA/challenge/non-listing HTML.
+    # Do not infer a detail page from the URL pattern alone.
+    reasons=set(replay["l4_classification_reasons"])
+    if (replay["l4_page_kind"]!="listing_detail" or
+        not reasons.intersection({"structured_listing_type","listing_fact_density"}) or
+        replay["v3_quality_status"]=="source_snippet_only"):
+        raise OriginalSnapshotRejected("ORIGINAL_HTML_NOT_LISTING_DETAIL")
     fields=replay["field_comparison"]
     if set(fields)!={"title","price_mad","surface_total_m2","city","district",
                     "property_type","transaction_type"}:

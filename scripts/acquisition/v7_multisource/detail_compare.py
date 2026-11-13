@@ -125,6 +125,7 @@ def compare_supplied_html(case: dict, *, as_of: datetime | None = None) -> dict:
         "byte_count": len(html.encode("utf-8")),
         "observation_ref": case.get("observation_ref"),
         "l4_page_kind": l4["page_kind"],
+        "l4_classification_reasons": l4["classification_reasons"],
         "v3_quality_status": row["quality"]["status"],
         "field_comparison": comparison,
         "conflicting_nonempty_fields": sorted(conflicts),

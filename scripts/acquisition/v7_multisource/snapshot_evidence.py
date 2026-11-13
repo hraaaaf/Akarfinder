@@ -133,6 +133,8 @@ def offline_benchmark(html_file: Path, manifest_file: Path) -> dict:
     return {
         "evidence_verified": True, "raw_sha256": m["html_sha256"],
         "capture_method": m["capture_method"], "captured_at_utc": m["captured_at_utc"],
+        "l4_page_kind": result["l4_page_kind"],
+        "l4_classification_reasons": result["l4_classification_reasons"],
         "field_comparison": result["field_comparison"],
         "conflicting_nonempty_fields": result["conflicting_nonempty_fields"],
         "v3_quality_status": result["v3_quality_status"],
