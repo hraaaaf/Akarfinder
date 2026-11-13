@@ -110,4 +110,5 @@ jobs:
           name: akar-v7-j5-cc-8205911-private
           path: .private-j5-cc/
           retention-days: 1
-          if-no-files-found: warn
+          include-hidden-files: true
+          if-no-files-found: error
