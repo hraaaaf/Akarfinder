@@ -9,7 +9,7 @@ Signing keys must arrive from a different operator-controlled secret channel.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 import re
@@ -59,6 +59,8 @@ def _parse_registry(raw: bytes, expected_sha256: str) -> dict:
             parse_constant=lambda _: (_ for _ in ()).throw(
                 IssuerPolicyRejected("ISSUER_REGISTRY_INVALID_JSON_NUMBER")),
         )
+    except IssuerPolicyRejected:
+        raise
     except (UnicodeError, ValueError, TypeError) as exc:
         raise IssuerPolicyRejected("ISSUER_REGISTRY_INVALID_JSON") from exc
     if (not isinstance(registry, dict)
@@ -97,7 +99,7 @@ def _parse_registry(raw: bytes, expected_sha256: str) -> dict:
             until = _utc(item["valid_until_utc"])
         except AttestationRejected as exc:
             raise IssuerPolicyRejected("ISSUER_VALIDITY_UTC_INVALID") from exc
-        if first >= until:
+        if first >= until or until - first > timedelta(days=90):
             raise IssuerPolicyRejected("ISSUER_VALIDITY_RANGE_INVALID")
     return registry
 
