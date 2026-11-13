@@ -27,3 +27,13 @@ La [PR Draft #1146](https://github.com/hraaaaf/Akarfinder/pull/1146) possède d�
 **Frontière :** Yakeey demeure sans collecteur direct fusionné, Avito/Sarouty demeurent URL-only, HTML originaux absents, 0 accès HTTP/DB/staging/publication. **CI à vérifier sur SHA exact** ; la précédente [CI J4 #43342459480](https://github.com/hraaaaf/Akarfinder/actions/runs/43342459480) prouvait seulement **10/10** scénarios du code précédent.
 
 **NEXT :** vérifier les nouveaux tests et la CI ; traiter les vraies pages sources seulement via flux autorisé, sinon poursuivre J5 en autonomie sans promotion.
+
+## Closeout du sous-lot de durcissement — 13 novembre 2026
+
+**Code exact :** `0d8d701e09e5feaca2d39b3bdb81e7c0268826a6`. [CI J4 #43400406370](https://github.com/hraaaaf/Akarfinder/actions/runs/43400406370) **SUCCESS, 14/14 tests Node PASS (0 FAIL / 0 SKIP)** ; [CI Policy #43400406540](https://github.com/hraaaaf/Akarfinder/actions/runs/43400406540) **SUCCESS**. Contrôle de code réalisé avec les véritables adaptateurs L8 réutilisés hors ligne, et tests d'entrée adversariaux synthétiques.
+
+**Décision :** le sous-lot de bornage/traçabilité est certifié pour le contrat **URL-only**. Cela ne valide ni HTML d'origine, ni véracité des annonces, ni identité de bien physique, ni disponibilité/fraîcheur, ni droit de publication. Le jalon J4 complet reste **OUVERT**, car les pages originales et un contrôle indépendant des champs ne sont toujours pas établis.
+
+**Aucun effet de bord :** pas de requêtes réseau vers les portails, pas de DB, pas de staging, pas de cron live, pas de merge et aucun déploiement Vercel. Les changements sont uniquement sur la Draft PR.
+
+**NEXT exact :** conserver les sources non qualifiées en quarantaine et reprendre l'audit d'HTML source direct par un canal permis ; à défaut, poursuivre les travaux V7 indépendants, sans promouvoir les URL candidates.
