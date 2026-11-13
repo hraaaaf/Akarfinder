@@ -175,6 +175,10 @@ try {
         if (!await disclosure.getByText(/Les prix de quartier ne sont pas publiés/).isVisible()) {
           throw new Error(`${viewport.name}: source disclaimer hidden after opening disclosure`);
         }
+        const disclosureFont = await disclosure.locator(".p4-premium-market-copy").evaluate((node) => parseFloat(getComputedStyle(node).fontSize));
+        if (disclosureFont < 12) {
+          throw new Error(`${viewport.name}: expanded source disclaimer below 12px: ${disclosureFont}`);
+        }
         await summary.press("Enter");
         await page.waitForFunction(() => document.querySelector('[data-vivre-ici-source-details]')?.open === false);
         // Overwrite the initial capture only after the empty public context is resolved.

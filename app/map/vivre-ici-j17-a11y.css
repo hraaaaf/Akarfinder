@@ -45,9 +45,9 @@
 [data-vivre-ici-page] [data-p4-map-decision-rail] [data-vivre-ici-source-details][open] > summary > span { transform: rotate(180deg); }
 [data-vivre-ici-page] [data-p4-map-decision-rail] [data-vivre-ici-source-details] > p {
   margin-top: 10px;
-  font-size: 12px;
-  line-height: 1.55;
-  color: #45586f;
+  font-size: 12px !important;
+  line-height: 1.55 !important;
+  color: #45586f !important;
 }
 @media (min-width: 1024px) {
   [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-vivre-ici-empty-context="true"] .p4-premium-empty-evidence {
