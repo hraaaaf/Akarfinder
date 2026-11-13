@@ -21,32 +21,33 @@ async function exercise({ page, reader }, testInfo) {
 
   // Actual NVDA/VoiceOver fixture; no virtual reader or Playwright-only substitute.
   await page.bringToFront();
-  await reader.navigateToWebContent();
   let announcedHeading = false;
   const announcements = [];
-  for (let attempt = 0; attempt < 18; attempt += 1) {
-    await reader.nextHeading();
-    const spoken = await reader.lastSpokenPhrase();
-    announcements.push(spoken);
-    if (normalise(spoken).includes("maarif")) {
-      announcedHeading = true;
-      break;
-    }
-  }
-  expect(announcedHeading, "NVDA/VoiceOver must speak the Maârif heading").toBe(true);
-
   const saveSpoken = async (stage) => {
     const dir = resolve("artifacts/native-sr");
     mkdirSync(dir, { recursive: true });
     writeFileSync(resolve(dir, `${readerName}-speech.json`), JSON.stringify({
-      reader: readerName,
-      stage,
-      headingAnnounced: announcedHeading,
+      reader: readerName, stage, headingAnnounced: announcedHeading,
       headingNavigation: announcements,
       spokenLog: await reader.spokenPhraseLog(),
     }, null, 2));
   };
-  await saveSpoken("heading-confirmed");
+  // Retry the real native heading rotor once; preserve evidence even on FAIL.
+  for (let pass = 0; pass < 2 && !announcedHeading; pass += 1) {
+    await page.bringToFront();
+    await reader.navigateToWebContent();
+    for (let attempt = 0; attempt < 18; attempt += 1) {
+      await reader.nextHeading();
+      const spoken = await reader.lastSpokenPhrase();
+      announcements.push({ pass: pass + 1, attempt: attempt + 1, spoken });
+      if (normalise(spoken).includes("maarif")) {
+        announcedHeading = true;
+        break;
+      }
+    }
+    await saveSpoken(announcedHeading ? "heading-confirmed" : `heading-pass-${pass + 1}-not-found`);
+  }
+  expect(announcedHeading, "NVDA/VoiceOver must speak the Maârif heading").toBe(true);
 
   // VoiceOver's cursor is distinct from browser DOM focus. On macOS, locate
   // the control in its *native reader cursor* and perform its default action.
