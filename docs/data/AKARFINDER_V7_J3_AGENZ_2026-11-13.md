@@ -53,3 +53,13 @@
 **Correction proposée :** L4 privilégie pour les fiches détails **Agenz uniquement** la première valeur de surface visible dans le corps HTML, avant la description Meta qui peut présenter habitable+terrasse. Le motif général corrige aussi la prise en charge de `m²` Unicode (la frontière `\\b` après `²` était mal formée). Tests synthétiques : cas exact 150 total/105 habitables/45 terrasse et Unicode, en conservant JSON-LD quand présent.
 
 **Nouvelle certification attendue :** `akar-v7-j3-corpus-replay.yml` doit prouver **zéro divergence** L4/V3 sur les surfaces, ville et quartier des 5 mêmes originaux, sans nouvelle requête. Même si vert, **accord des parseurs ≠ précision indépendante des sept champs** ; annotation humaine reste indispensable. Pas de DB, merge, cron ni Vercel.
+
+## Closeout comparatif cinq originaux : 0 divergences (13 novembre 2026)
+
+**Code exact :** `6b6ce0c1a285aca1174911326a298cd5b58064af`, dans la Draft PR #1206 (non mergée).
+
+**Preuve CI complète :** [GitHub Actions replay #43341257516](https://github.com/hraaaaf/Akarfinder/actions/runs/43341257516) SUCCESS, source des cinq archives **inchangées**, statut `disagreements_by_field = {}` sur les **7 champs** comparés L4/V3 : prix, surface totale, ville, quartier, titre, type, transaction. Le différentiel de #445495 est corrigé de **105 habitable** à **150 total**, méthode L4 `agenz.visible_first_surface`; original SHA `4e2d6d4ed51dd86896356baf84e76ba5a7eb0b798acb62086262d72819d9274a`. **Six workflows au même commit SUCCESS** : replay corpus #43341257516, V7 #43341257349, J1 replay #43341257439, J3 tests #43341257322, CI Policy #43341257311, one-shot #43341257269 avec les étapes de capture SKIPPED (marqueur retiré).
+
+**Succès précis du sous-lot :** cinq annonces originales Agenz ont une archive HTML brute SHA256+UTC unique et une comparaison L4/V3 sans divergence. **Limite :** la concordance sur sept colonnes peut inclure deux valeurs `null` et ne certifie ni complétude, ni précision indépendante, ni date réelle de publication ou statut actif. Les valeurs doivent être étiquetées indépendamment sur les vrais documents pour prétendre à une qualité certifiée. Aucune propriété en DB/PROD.
+
+**NEXT exact :** audit indépendant des sept champs, quantification `present/missing/correct/incorrect` par source, puis décision de validation du lot J3 ; continuer J4 et J5 en parallèle. Toutes les activations réseau périodiques, SQL staging, merge et Vercel restent non autorisées.
