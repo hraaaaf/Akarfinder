@@ -47,3 +47,14 @@ La [PR Draft #1146](https://github.com/hraaaaf/Akarfinder/pull/1146) possède d�
 **Preuves attendues :** quatre nouveaux tests adversariaux : 1001 refusé/1000 autorisé, refus en présence de répétitions, ordre stable indépendant des clés d'input, et séparation de la quarantaine historique. La CI du commit exact doit confirmer avant tout qualificatif PASS.
 
 **Frontière :** aucun HTTP source, aucune DB réelle, aucune admission V3/Radar10 ou publication, aucun cron live/merge/Vercel. Les portails J4 ne sont pas certifiés par ce seul contrat URL-only ; J4 jalon complet reste ouvert.
+
+## Closeout vérifié : plafond J4 commun Avito + Sarouty, 13 novembre 2026
+
+**Code SHA exact :** `f3d030409650c5fc942ccac97991831250f0a8db`.
+**Preuve :** [J4 GitHub Actions #43423554296](https://github.com/hraaaaf/Akarfinder/actions/runs/43423554296) **SUCCESS : 18/18 tests Node (18 PASS, 0 FAIL)**, dont 4 tests supplémentaires de plafond global, répétitions brutes, stabilité du tri et séparation de la voie tierce non intégrée. [CI Workflow Efficiency #43423554294](https://github.com/hraaaaf/Akarfinder/actions/runs/43423554294) **SUCCESS** sur le même SHA. Aucune capture réseau source pendant la CI J4.
+
+**Correction clôturée, bornes précises :** `assessJ4` refuse 1001 liens Avito/Sarouty bruts, accepte 1000 (y compris en présence de duplications), expose les compteurs source et ordonne les URL candidates de façon déterministe. Les URL du canal historique tiers ne sont jamais comptées comme des fiches détaillées ni raccordées à l'intake L8 de 1000 lignes. Les identifiants extraits de l'URL et les deux validateurs L8 demeurent des candidates, non une preuve de vente ni de fraîcheur.
+
+**Décision GO/NOGO :** GO pour la **préparation J4 URL-only** testée ; **NO-GO pour le jalon J4 de collecte/detail réelle**. Absence de HTML d'annonce originale vérifiée, d'attestation indépendante de précision et de droit d'admission ; aucune annonce réelle n'a été ajoutée. J0/J1 restent les seuls jalons V7 clos : 2/8. PR toujours Draft, pas de merge ni DB/staging/cron/Vercel.
+
+**NEXT exact :** traiter une vraie archive de fiche source par canal autorisé puis l'auditer via le gate J4/J5 existant ; dans l'attente, exploiter les contrôles de contrats hors ligne J5. Les lots d'activation J6/J7 exigent une validation sécuritaire et un effort élevé avant toute production.
