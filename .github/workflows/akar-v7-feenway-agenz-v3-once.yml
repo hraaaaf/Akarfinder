@@ -50,3 +50,5 @@ jobs:
           path: pilot-agenz/agenz_replay_QUARANTINE.json
           if-no-files-found: ignore
           retention-days: 1
+
+# One-shot replay after strict fixture correction; only the permitted Agenz ID 169490.

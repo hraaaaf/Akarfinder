@@ -84,8 +84,12 @@ class AgenzReplayTests(unittest.TestCase):
             self.assertFalse(result["source_canonical_id_claim_matches"])
 
     def test_no_bulk_list(self):
+        tampered = json.loads(json.dumps(INPUT))
+        row = next(x for x in tampered if x["source_domain_hint"] == "agenz.ma")
+        row["original_url"] = row["original_url"].replace("169490", "169491")
+        row["source_offer_id_hint"] = "169491"
         with self.assertRaisesRegex(UpstreamAuditRejected, "EXACT_AGENZ_CASE_REQUIRED"):
-            one_agenz_candidate(INPUT[:-1] + [INPUT[-2]])
+            one_agenz_candidate(tampered)
 
 
 if __name__ == "__main__":
