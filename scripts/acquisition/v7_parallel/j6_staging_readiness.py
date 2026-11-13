@@ -29,6 +29,7 @@ def review_batch(records: list[dict]) -> dict:
     by_identity: dict[tuple[str, str], str] = {}
     by_url: dict[str, str] = {}
     seen_payloads: set[str] = set()
+    by_url_content: dict[str, str] = {}
     reasons: Counter[str] = Counter()
     sources: Counter[str] = Counter()
     for record in records:
@@ -51,6 +52,10 @@ def review_batch(records: list[dict]) -> dict:
         by_identity[identity] = url
         by_url[url] = row["source_offer_id"]
         payload = row["content_sha256"]
+        old_payload = by_url_content.get(url)
+        if old_payload is not None and old_payload != payload:
+            raise ValueError("J6_CONTRADICTORY_CONTENT_FOR_URL")
+        by_url_content[url] = payload
         key = json.dumps([url, payload], separators=(",", ":"))
         if key in seen_payloads:
             reasons["duplicate_same_content"] += 1

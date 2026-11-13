@@ -56,6 +56,15 @@ class PrivateStageGateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "J6_SOURCE_ID_COLLISION"):
             review_batch([agen_z("445495","sale-el-jadida"), agen_z("445495","al-qods")])
 
+    def test_content_change_same_url_fails_closed(self):
+        left = agen_z()
+        right = agen_z()
+        # Different data under the same portal/offer identity MUST not be
+        # silently treated as two distinct source observations.
+        right["fields"]["price_mad"] = 1000000
+        with self.assertRaisesRegex(ValueError, "J6_CONTRADICTORY_CONTENT_FOR_URL"):
+            review_batch([left, right])
+
     def test_identical_replay_deduplicated(self):
         row = agen_z()
         a = review_batch([row])

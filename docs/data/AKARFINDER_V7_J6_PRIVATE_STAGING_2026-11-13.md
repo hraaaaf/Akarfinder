@@ -13,3 +13,7 @@
 **DÉCISION** — J6 sous-lot "readiness no-write" réalisable sans attente des sources ; J6 complet (migration + RLS + identité/permissions + staging réel) reste soumis à autre contrôle et autorisation. Pas de déploiement Vercel, merge, cron live ni DB de production.
 
 **NEXT** — Vérifier CI et corriger. Puis étudier un couplage explicite avec les validations d'original HTML SHA+UTC et règles d'origine pour sélectionner une admission **uniquement** après validation humaine/identité DB, puis test PostgreSQL éphémère. En parallèle poursuivre les portails et ne pas promouvoir les URL-only.
+
+## Correctif complémentaire — collision de contenu intra-batch
+
+Le premier commit J6 `2b44c1533bfc3761128ab6f5b1763adcc28bbfaf` a obtenu [CI J6 #43395861642](https://github.com/hraaaaf/Akarfinder/actions/runs/43395861642) **SUCCESS : 8/8 tests**, et [CI Policy #43395861528](https://github.com/hraaaaf/Akarfinder/actions/runs/43395861528) SUCCESS. L'audit a identifié un deuxième cas : même URL et identifiant mais contenu normalisé divergent au sein d'un batch. Ce lot renforce le fail-closed en rejetant cette contradiction plutôt qu'en la comptant comme deux observations. Un neuvième test est ajouté. La nouvelle CI au HEAD corrigé doit être vérifiée avant de qualifier ce correctif.
