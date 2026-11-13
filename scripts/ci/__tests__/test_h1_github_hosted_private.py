@@ -194,6 +194,37 @@ class TestCanaryAndStorage(unittest.TestCase):
         self.assertEqual(second["processed"], 5)
         self.assertNotIn("H1_BATCH_CHECKPOINT_COMPLETE", second_output)
 
+    def test_interrupted_upload_resumes_without_overwriting_orphan(self):
+        class InterruptedOnce(FakeStore):
+            fail_once = True
+            def put_file(self, path, key):
+                item = super().put_file(path, key)
+                if self.fail_once and "/batches/001/input/" in key:
+                    self.fail_once = False
+                    raise RuntimeError("SIMULATED_CRASH_AFTER_PRIVATE_UPLOAD")
+                return item
+
+        store = InterruptedOnce()
+        with self.assertRaisesRegex(RuntimeError, "SIMULATED_CRASH_AFTER_PRIVATE_UPLOAD"):
+            self._run(store)
+        self.assertTrue(any(k.endswith("checkpoints/001.json") for k in store.data))
+        self.assertFalse(any(k.endswith("checkpoints/002.json") for k in store.data))
+        result, _ = self._run(store)
+        self.assertTrue(result["complete"])
+        self.assertEqual(result["processed"], 5)
+        self.assertTrue(any(k.endswith("checkpoints/003.json") for k in store.data))
+        self.assertEqual(len([k for k in store.data if "/batches/001/input/" in k]), 1)
+
+    def test_resume_rejects_mutated_checkpoint(self):
+        store = FakeStore()
+        self._run(store)
+        key = "akarfinder/h1/run-123456/checkpoints/001.json"
+        changed = json.loads(store.data[key])
+        changed["snapshot"]["total"] += 1
+        store.data[key] = h1.canonical_json(changed)
+        with self.assertRaisesRegex(RuntimeError, "H1_RESUME_SOURCE_SNAPSHOT_MISMATCH"):
+            self._run(store)
+
     def test_parser_error_fails_canary_before_any_private_batch_upload(self):
         store = FakeStore()
         fake = FakeH1(synthetic_rows())
