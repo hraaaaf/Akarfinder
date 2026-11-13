@@ -13,3 +13,15 @@
 **SUCCESS limité :** intention pure et simulation robuste PASS en CI à HEAD exact. Aucune affirmation d'exécution continue, de source collectée ou d'annonce ajoutée. J7 complet restera ouvert.
 
 **NEXT :** valider CI, documenter preuve, puis concevoir un registre partagé authentifié externe aux GitHub runners, toujours sans activer la collecte.
+
+## Closeout J7 — simulation des créneaux et registre atomique éphémère
+
+**Code SHA `4c5eeca2935dbc43564682e3b6559b580dcf2a87` :** [GitHub Actions J7 #43399007468](https://github.com/hraaaaf/Akarfinder/actions/runs/43399007468) **SUCCESS 17/17 tests** (9 slot/temps/SQLite simulation + 8 PostgreSQL 17 éphémère), et [CI Policy #43399007243](https://github.com/hraaaaf/Akarfinder/actions/runs/43399007243) **SUCCESS**. Première version code SHA `3c937193e4224c64d8473e96da2b54a1f25b3f8e` : [run #43398618102](https://github.com/hraaaaf/Akarfinder/actions/runs/43398618102) 9/9 PASS.
+
+**Design technique éprouvé en CI exclusivement :** `j7_ephemeral_ledger.sql` crée la table de claims à clé `slot_index` UNIQUE et trois fonctions SQL fermées : claim/finish/fail. Compétition simultanée de deux connexions et deux jetons UUID : un seul claim gagne ; le jeton étranger ne peut terminer ; un créneau marqué failed ou abandonné ne se réattribue pas automatiquement. Le rôle `v7_schedule_worker` NOLOGIN dispose seulement d'EXECUTE sur les fonctions, sans SELECT/DELETE sur les tables ; rôle observateur sans droit. Aucun contournement des privilèges constaté dans la fixture.
+
+**Limites de sécurité à respecter :** ce schéma SQL est un **projet non déployé**, utilisé avec PostgreSQL sous GitHub CI, sur `127.0.0.1/akarfinder_v7_j7_ci`. Le SECURITY DEFINER est propriétaire de l'utilisateur `postgres` **superuser en CI uniquement** : avant toute migration réelle, il faudra un propriétaire dédié non-superuser, audit du `search_path`, tests de permissions et une politique de fencing des éventuels effets externes. L'absence de retry évite le doublon mais peut laisser une fenêtre perdue après crash ; aucun mécanisme de replay automatique n'est validé. Le schéma n'est raccordé ni aux sources V7 ni à un cron.
+
+**Closeout du seul sous-lot :** clé 10 min UTC + preuve de collision au niveau DB isolée validées. **J7 complet reste NON clôturé** ; ni cron réel activé, ni cadence mesurée, ni rendement de collecte démontré. J6 admission privée n'est pas non plus clôturée. V7 toujours 2/8 jalons clos (pas 25 % du travail total).
+
+**Next exact :** choix d'un stockage durable partagé au périmètre Akarfinder, owner/migration non-superuser et test d'identité externe, avant tout déploiement du registre ; qualification réelle d'au moins une source J2–J5 ; gate humain sur calendrier et collecte. Tant que ces preuves n'existent pas, poursuivre les travaux de qualification hors ligne sans activer le live.
