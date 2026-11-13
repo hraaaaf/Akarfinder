@@ -1,0 +1,29 @@
+name: Akar V7 J6 Private Staging Readiness (NO DB WRITES)
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/v7_parallel/j6_staging_readiness.py'
+      - 'scripts/acquisition/__tests__/test_v7_j6_staging_readiness.py'
+      - '.github/workflows/akar-v7-j6-readiness.yml'
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  j6-no-write-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile readiness gate without network or DB
+        run: |
+          python -m py_compile scripts/acquisition/v7_parallel/j6_staging_readiness.py scripts/acquisition/__tests__/test_v7_j6_staging_readiness.py
+      - name: Actual V3 + Radar10 negative-admission contracts
+        run: |
+          python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j6_staging_readiness.py' -v
