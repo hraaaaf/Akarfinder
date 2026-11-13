@@ -1,0 +1,11 @@
+{
+  "crawl": "CC-MAIN-2026-39",
+  "timestamp": "20260905210142",
+  "url": "https://www.mubawab.ma/fr/a/8205911/appartement-de-106m2-bouskoura-ville-verte",
+  "status": "200",
+  "mime": "text/html",
+  "digest": "GY5Z4MOTJBFVBIPIOC6QB3ZVJCVF5L3V",
+  "length": 54725,
+  "offset": 767799442,
+  "filename": "crawl-data/CC-MAIN-2026-39/segments/1788492699608.30/warc/CC-MAIN-20260905194534-20260905224534-00967.warc.gz"
+}
