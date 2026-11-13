@@ -1,0 +1,27 @@
+name: Akar V7 J7 Ten Minute Contract — Offline Only
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/v7_parallel/j7_ten_minute_contract.py'
+      - 'scripts/acquisition/__tests__/test_v7_j7_ten_minute_contract.py'
+      - '.github/workflows/akar-v7-j7-offline.yml'
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  j7-offline-simulation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and verify no-live J7 schedule semantics
+        run: |
+          python -m py_compile scripts/acquisition/v7_parallel/j7_ten_minute_contract.py scripts/acquisition/__tests__/test_v7_j7_ten_minute_contract.py
+          python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j7_ten_minute_contract.py' -v
