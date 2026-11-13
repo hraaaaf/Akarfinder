@@ -1,5 +1,16 @@
 # AKARFINDER — V7 MULTISOURCE GITHUB ACTIONS — 2026-11-12
 
+## Décision de reprise canonique — 13 novembre 2026 (recentrage utilisateur)
+
+**Décision explicite :** le lot J2 lié à l'agrégateur tiers est **écarté du chemin critique**. Ne plus chercher ses archives, relancer son collecteur ni conditionner l'avancement V7 à ses données. Conserver les preuves historiques pour audit sans en déduire une admission ou une clôture J2. Aucun changement du périmètre des autres jalons.
+
+**Séquence canonique active :** J3 Agenz (5 archives HTML originales conservées, intégrité 5/5 PASS, précision géographique 0/5 admise) → J4 Avito/Yakeey/Sarouty (18/18 tests PASS pour contrat hors ligne ; HTML original/identité indépendante non certifiés) → J5 autres portails (13/13 tests PASS sur URL synthétiques → vrai V3, toujours source_snippet_only) → J6 staging privé (non activé) → J7 ordonnanceur 10 minutes (non activé). J0/J1 seuls fermés : **2/8 jalons entièrement clos**. J2 reste ouvert mais hors chemin critique, pas artificiellement « terminé ».
+
+**Gate effectif :** travailler d'abord sur preuves amont autorisées (HTML original, champs comparés, localisation indépendante, dédoublonnage), sans insérer de candidat en DB. Les sous-lots de contrat hors ligne J3–J5 étant clôturés, ne pas répéter leurs tests sans nouveau changement. Le durcissement J6/J7 (authentification, isolation, ledger/fencing durable et permissions minimales) relève d'un effort élevé distinct : ne pas l'engager sans changement de niveau. Aucune collecte récurrente, migration/staging actif, merge, déploiement Vercel ou publication autorisée.
+
+**État documentaire :** décision de priorisation uniquement, sans nouveau code, capture live ou certification supplémentaire. Les détails et preuves demeurent dans les documents J3/J4/J5 et les PR Draft #1206–#1210.
+
+
 GOAL: version multi-sites extensible, cadence cible 10 minutes GitHub Actions,
 AkarParser V3 réel, déduplication par source et staging privé.
 
