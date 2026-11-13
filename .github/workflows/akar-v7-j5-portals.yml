@@ -5,6 +5,10 @@ on:
       - 'scripts/acquisition/v7_parallel/j5_remaining_portals.mjs'
       - 'scripts/acquisition/__tests__/v7-j5-portals.test.mjs'
       - '.github/workflows/akar-v7-j5-portals.yml'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 jobs:
