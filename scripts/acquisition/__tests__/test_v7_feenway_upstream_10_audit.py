@@ -98,6 +98,19 @@ class UpstreamPilotTests(unittest.TestCase):
         self.assertEqual(c["headline_transaction"], "CONFLICT")
         self.assertEqual(c["v3_transaction"], "CONFLICT")
 
+    def test_avito_unicode_path_encoded_without_changing_id(self):
+        from v7_multisource.feenway_upstream_10_audit import _wire_url
+        url = CASES[2]["original_url"]
+        wire = _wire_url(url)
+        self.assertIn("%C3%A0", wire)
+        self.assertIn("%C2%B2", wire)
+        self.assertTrue(wire.endswith("58688662.htm"))
+        self.assertEqual(_wire_url("https://www.avito.ma/robots.txt"), "https://www.avito.ma/robots.txt")
+
+    def test_mubawab_encoded_percent_preserved(self):
+        from v7_multisource.feenway_upstream_10_audit import _wire_url
+        self.assertEqual(_wire_url(CASES[4]["original_url"]), CASES[4]["original_url"])
+
     def test_no_network_before_gate(self):
         with tempfile.TemporaryDirectory() as d:
             dest = Path(d) / "out"

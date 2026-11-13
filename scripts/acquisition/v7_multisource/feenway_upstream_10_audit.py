@@ -18,7 +18,7 @@ from pathlib import Path
 import re
 import ssl
 from urllib import error, request, robotparser
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlunsplit, quote
 
 from v7_multisource.feenway_snapshot_links import _source_identity
 from v7_multisource.feenway_actions_pilot import FEENWAY, USER_AGENT
@@ -114,8 +114,18 @@ def check_robots(raw, user_agent, urls):
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
+def _wire_url(url: str):
+    """Encode Unicode path for urllib; preserve the exact vetted portal offer ID."""
+    p = urlsplit(url)
+    encoded = urlunsplit((p.scheme, p.netloc, quote(p.path, safe="/%._~-"), p.query, ""))
+    if p.path != "/robots.txt":
+        if _source_identity(url)[:2] != _source_identity(encoded)[:2]:
+            raise UpstreamAuditRejected("TRANSPORT_URL_CHANGED_SOURCE_ID")
+    return encoded
+
+
 def _get(url: str, *, max_bytes: int, accept: str):
-    r = request.Request(url, method="GET", headers={"User-Agent": USER_AGENT,
+    r = request.Request(_wire_url(url), method="GET", headers={"User-Agent": USER_AGENT,
             "Accept": accept, "Accept-Encoding": "identity"})
     opener = request.build_opener(request.ProxyHandler({}), _NoRedirect(),
                                  request.HTTPSHandler(context=ssl.create_default_context()))
@@ -225,11 +235,12 @@ def audit(items, output: Path, *, approved: bool):
         try:
             policy_hashes[host] = _robots_policy(host, [item["original_url"] for item in group])
         except (UpstreamAuditRejected, error.HTTPError, error.URLError, TimeoutError, UnicodeError) as exc:
-            blocked_hosts[host] = "ROBOTS_GATE_FAILED_" + type(exc).__name__
+            blocked_hosts[host] = "ROBOTS_GATE_FAILED_" + type(exc).__name__ + ":" + (str(exc)[:80] if isinstance(exc, UpstreamAuditRejected) else "HTTP_OR_NETWORK")
             for item in group:
                 rows.append({"feenway_url": item["feenway_url"], "source_domain": host,
                              "original_url": item["original_url"], "source_offer_id_hint": item["source_offer_id_hint"],
                              "status": "ROBOTS_BLOCKED_OR_UNAVAILABLE", "error_class": type(exc).__name__,
+                             "error_reason": str(exc)[:80] if isinstance(exc, UpstreamAuditRejected) else None,
                              "public_admission_authorized": False})
             continue
         for item in group:
@@ -259,7 +270,8 @@ def audit(items, output: Path, *, approved: bool):
                              "eligible_for_radar10_private_staging": False})
             except (UpstreamAuditRejected, error.HTTPError, error.URLError, TimeoutError, UnicodeError) as exc:
                 base.update({"status": "SOURCE_FETCH_UNAVAILABLE", "error_class": type(exc).__name__,
-                             "source_http_code": exc.code if isinstance(exc, error.HTTPError) else None})
+                             "source_http_code": exc.code if isinstance(exc, error.HTTPError) else None,
+                             "error_reason": str(exc)[:80] if isinstance(exc, UpstreamAuditRejected) else None})
                 if isinstance(exc, error.HTTPError) and exc.code in (401, 403, 429):
                     blocked_hosts[host] = "PORTAL_ACCESS_DENIED_HTTP_" + str(exc.code)
             rows.append(base)

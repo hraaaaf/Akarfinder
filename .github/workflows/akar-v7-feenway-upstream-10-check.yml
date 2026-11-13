@@ -50,3 +50,6 @@ jobs:
             pilot-upstream/upstream_cases_QUARANTINE.jsonl
           if-no-files-found: ignore
           retention-days: 1
+
+# One bounded retry: safely percent-encode Unicode Avito URL paths before urllib GET.
+# No schedule. Captures are still quarantine-only. Historical run #43445997766.
