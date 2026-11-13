@@ -1,0 +1,94 @@
+name: AkarParser V3 H1 private historical recovery
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/akarparser-v3-h1-private-historical.yml"
+      - "scripts/ci/h1_github_hosted_private.py"
+      - "scripts/ci/h1_supabase_storage.py"
+      - "scripts/ci/__tests__/test_h1_github_hosted_private.py"
+      - "docs/data/AKARPARSER_V3_H1_GITHUB_HOSTED_PRIVATE_EXECUTION.md"
+  workflow_dispatch:
+    inputs:
+      authorize_h1_readonly:
+        description: "Authorize private H1 DEV-only read-only recovery"
+        type: boolean
+        required: true
+        default: false
+      resume_run_id:
+        description: "Optional prior Actions run ID whose private Supabase checkpoint should resume"
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || inputs.resume_run_id || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  h1-contract-tests:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout PR code without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Checkout immutable V3 parser source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: 3eb2b8a7b7ec78832e764e014b387eabd5e74058
+          path: trusted-v3-source
+          persist-credentials: false
+      - name: Run offline H1 GitHub-hosted and persistence contracts
+        env:
+          H1_TRUSTED_SOURCE: trusted-v3-source
+        run: python3 -m unittest discover -s scripts/ci/__tests__ -p "test_h1_github_hosted_private.py" -v
+
+  h1-private-recovery:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.actor == 'hraaaaf' && inputs.authorize_h1_readonly == true
+    runs-on: ubuntu-24.04
+    environment: q1e-neon-readonly
+    timeout-minutes: 360
+    permissions:
+      contents: read
+    env:
+      H1_STORAGE_RUN_ID: ${{ inputs.resume_run_id || github.run_id }}
+      H1_SUPABASE_PROJECT_REF: mgqsckxsqdqbzqwkgvwo
+      H1_SUPABASE_BUCKET: h1-historical-evidence
+      H1_SUPABASE_PUBLISHABLE_KEY: ${{ vars.H1_SUPABASE_PUBLISHABLE_KEY }}
+      H1_SUPABASE_AUTH_USER_ID: ${{ vars.H1_SUPABASE_AUTH_USER_ID }}
+    steps:
+      - name: Checkout exact authorized main revision without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Checkout immutable reviewed V3 parser source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: 3eb2b8a7b7ec78832e764e014b387eabd5e74058
+          path: trusted-v3-source
+          persist-credentials: false
+      - name: Verify GitHub-hosted Linux dependencies
+        run: |
+          set -euo pipefail
+          test "$(uname -s)" = Linux
+          test "${RUNNER_ENVIRONMENT:-}" = github-hosted
+          command -v python3 >/dev/null
+          command -v psql >/dev/null
+          python3 --version >/dev/null
+          psql --version >/dev/null
+      - name: Canary, gated continuation, and resumable private checkpoints
+        env:
+          Q1E_NEON_RECOVERY_READONLY_URL: ${{ secrets.Q1E_NEON_RECOVERY_READONLY_URL }}
+          H1_SUPABASE_AUTH_EMAIL: ${{ secrets.H1_SUPABASE_AUTH_EMAIL }}
+          H1_SUPABASE_AUTH_PASSWORD: ${{ secrets.H1_SUPABASE_AUTH_PASSWORD }}
+        run: python3 scripts/ci/h1_github_hosted_private.py --source trusted-v3-source
+      # No Actions artifacts/cache, no checkout credentials, and no row-level stdout.
