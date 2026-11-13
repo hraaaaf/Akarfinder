@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 import { getAnnL5CertifiedSeedPois } from "@/lib/neighborhood-context/certified-seed";
 import { inspectInstitutionalXlsxHeaders, scanInstitutionalSchoolTextCandidates } from "@/lib/neighborhood-context/institutional-xlsx-inspector";
@@ -449,5 +451,90 @@ describe("L7 MENPS school name/address staging scan, no spatial admission", () =
   it("refuses a school XLSX without required identity/address/admin columns", () => {
     const buffer = makeStoredXlsx({ "xl/worksheets/sheet1.xml": fixtureSheet(["Name", "Address", "City"]) });
     assert.throws(() => scanInstitutionalSchoolTextCandidates(buffer), /xlsx_required_school_identity_columns_missing/);
+  });
+});
+
+
+describe("L5/L7 Maarif 2026: three school evidence dossiers cannot auto-publish", () => {
+  const ledger = JSON.parse(readFileSync(resolve(
+    "scripts/neighborhood-context/LOT5_MAARIF_THREE_PRIMARY_SCHOOLS_EVIDENCE_2026-11-13.json",
+  ), "utf8"));
+  const now = new Date("2026-11-13T12:00:00.000Z");
+  const catalogue = INSTITUTIONAL_DATASETS_2026.find((entry) => entry.id === "menps-primary-2026-07");
+  if (!catalogue) throw new Error("MENPS 2026 catalogue missing");
+
+  it("records exactly the three MENPS rows and preserves the checked XLSX hash", () => {
+    assert.equal(ledger.schema, "NCI_L5_MAARIF_SCHOOL_EVIDENCE_DOSSIERS_V1");
+    assert.equal(ledger.basis_github_actions_run, 43481434417);
+    assert.equal(ledger.public_publish_allowed, false);
+    assert.equal(ledger.admitted_count, 0);
+    assert.equal(ledger.no_gps_in_source, true);
+    assert.deepEqual(ledger.candidates.map((c: { sheet_row: number }) => c.sheet_row), [227, 228, 229]);
+    assert.deepEqual(ledger.candidates.map((c: { name: string }) => c.name), [
+      "ATTABARI", "AL IMAM MALIK", "SAKINA BENT AL HOSSEIN",
+    ]);
+    for (const row of ledger.candidates) {
+      assert.equal(row.source_dataset_id, "menps-primary-2026-07");
+      assert.equal(row.source_xlsx_sha256, "e3967f57b114c01c07e5664b01a02fab6393796af4be28fb66d59945880ab148");
+      assert.equal(row.administrative_commune, "El Maarif (Arrond.)");
+      assert.equal(row.source_dataset_version, "2026-07");
+    }
+  });
+
+  it("does not equate ministerial Pioneer listing with a row-level geolocation or verified activity", () => {
+    assert.equal(ledger.candidates[0].potential_menps_school_code, null);
+    assert.equal(ledger.candidates[1].potential_menps_school_code, "01442S");
+    assert.equal(ledger.candidates[2].potential_menps_school_code, "01443T");
+    for (const row of ledger.candidates) {
+      assert.equal(row.official_code_row_join_verified, false);
+      assert.equal(row.coordinates, null);
+      assert.equal(row.individual_activity_verified_at, null);
+      assert.equal(row.territorial_relation_verified, false);
+      assert.equal(row.admission_status, "rejected");
+      assert.equal(row.publication_allowed, false);
+      assert.ok(row.evidence.some((x: { evidence_type: string }) => x.evidence_type === "menps_primary_2026_xlsx"));
+      for (const entry of row.evidence) {
+        assert.ok(new URL(entry.url).protocol === "https:");
+      }
+    }
+    const actual = ledger.candidates.slice(1).map((row: { evidence: Array<{ evidence_type: string, reported_code?: string, join_to_xlsx_row_proven?: boolean }> }) =>
+      row.evidence.find((entry) => entry.evidence_type === "menps_pioneer_2026_pdf"));
+    assert.deepEqual(actual.map((x) => x?.reported_code), ["01442S", "01443T"]);
+    assert.ok(actual.every((x) => x?.join_to_xlsx_row_proven === false));
+  });
+
+  it("rejects every case via the unchanged admission gate due to missing real coordinates", () => {
+    for (const row of ledger.candidates) {
+      const reviewed = reviewInstitutionalPoiV1(catalogue, {
+        dataset_id: row.source_dataset_id,
+        source_entity_id: row.candidate_id,
+        name: row.name,
+        latitude: null,
+        longitude: null,
+        individual_verified_at: null,
+        independent_evidence_url: null,
+        independent_evidence_method: null,
+        territorial_relation: null,
+        territorial_proof_url: null,
+        reviewer_approval_id: null,
+      }, now);
+      assert.equal(reviewed.status, "rejected");
+      assert.equal(reviewed.public_publish_allowed, false);
+      assert.ok(reviewed.reasons.includes("coordinates_missing_or_outside_morocco"));
+      assert.ok(reviewed.reasons.includes("missing_individual_observation"));
+    }
+  });
+
+  it("retains same-name collisions and does not infer GPS from school name, city or old directories", () => {
+    const rows = ledger.candidates;
+    assert.ok(rows[0].ambiguous_matches.some((match: { other_entity: string }) => match.other_entity.includes("Lissasfa")));
+    assert.ok(rows[1].ambiguous_matches.some((match: { other_entity: string }) => match.other_entity.includes("Moulay Rachid")));
+    assert.ok(rows[2].ambiguous_matches.some((match: { other_entity: string }) => match.other_entity.includes("Sidi Othmane")));
+    for (const row of rows) {
+      assert.ok(row.ambiguous_matches.length >= 1);
+      assert.equal(row.coordinates, null);
+      assert.ok(row.evidence.every((ev: { individually_verified_recent_activity?: boolean }) =>
+        ev.individually_verified_recent_activity !== true));
+    }
   });
 });

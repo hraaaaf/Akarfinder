@@ -64,3 +64,15 @@ Acquérir hors rendu un export institutionnel versionné, vérifier son schéma 
 Prochain rapport de préqualification `identity_text_candidates`, généré par le **même workflow GitHub Actions L7**, lit les lignes de la première feuille pour trouver au maximum 3 exemples par ville pilote (Rabat, Casablanca, Marrakech), leurs adresses, communes et provinces, et des mentions textuelles des quartiers ciblés (Agdal, Maârif, Guéliz). **Aucune attribution de coordonnées, aucun usage public, aucune vérité de frontière**. Une école nommée « Agdal » n'est pas automatiquement située à Agdal. Échantillons destinés uniquement au recoupement officiel/indépendant de l'identité et du GPS, et à une vérification individuelle récente.
 
 Aucun nouveau téléchargement supplémentaire ni traitement dans le navigateur/serveur de production. Si le fichier échoue au runner, résultat fail-closed sans échantillon et sans publication. Les gates L1/L2/L6 restent inchangées.
+
+## 13 novembre 2026 — Dossiers d'écoles Maârif, corroboration et homonymes
+
+**Identités à contrôler (primaire public, fichier MENPS juillet 2026 SHA256 e3967f57b114c01c07e5664b01a02fab6393796af4be28fb66d59945880ab148)** : ATTABARI (ligne 227, 76 rue Oussama Bnou Zaid), AL IMAM MALIK (228, rue Mustapha Chokri Petchou), SAKINA BENT AL HOSSEIN (229, rue Soumaya Derb Ghalef), tous déclarés « El Maarif (Arrond.) » **sans démonstration d'appartenance au quartier central ciblé**.
+
+- [MENPS, liste Écoles pionnières 2026](https://www.men.gov.ma) : Imam Malik 01442S, Sakina Bent Al Hossein 01443T, direction Casablanca Anfa. Codes **potentiels**, pas jointure vérifiée au XLSX.
+- [Fondation Mohammed VI, adresse régionale de Casablanca](https://www.fm6education.ma/ar/%D8%A7%D9%84%D8%A7%D8%AA%D8%B5%D8%A7%D9%84/) : « près de l'école Attabari, Maârif », corroboration de repère seulement, pas d'activité individuelle datée.
+- **Conflits d'homonymes** à ne pas confondre : [Collège Attabari Lissasfa](https://www.telecontact.ma/college-attabari/ecole/casablanca/3110569), [école privée Attabari Guercif](https://www.annuaire-gratuit.ma/ecoles-privees/attabari-s234191.html), [école Imam Malik Moulay Rachid](https://www.etenma.com/ecole.php?code_ecole=79030P31), [Sakina Bent ElHousseine Sidi Othmane](https://www.telecontact.ma/annonceur/ecole-sakina-bent-elhousseine/3112439/casablanca.php).
+- Annuaire local et miroir de fichiers historiques **ne démontrent pas** des preuves indépendantes (risque de recopie).
+- **Dossier machine lisible** : `LOT5_MAARIF_THREE_PRIMARY_SCHOOLS_EVIDENCE_2026-11-13.json`. GPS NULL, date de vérification d'activité individuelle NULL, appartenance au polygone Maârif central non vérifiée ; statut `rejected` et publication désactivée. Quatre nouveaux tests adversariaux du dossier sous GH Actions L7 uniquement.
+
+**Prochaine preuve manquante** : identifiant unique de l'établissement + coordonnées du bâtiment contrôlées par une source indépendante, activité actuelle datée de moins de 30 jours et relation géographique au périmètre réellement certifié. Aucun simple point OSM/géocodage par adresse ne suffit seul à cette certification.
