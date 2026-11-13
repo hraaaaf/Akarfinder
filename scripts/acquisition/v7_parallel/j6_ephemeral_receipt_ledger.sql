@@ -51,7 +51,7 @@ CREATE OR REPLACE FUNCTION v7_capture.advance_policy(
   p_expected_generation bigint, p_next_generation bigint, p_registry_sha256 text
 ) RETURNS boolean
 LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = pg_catalog, v7_capture
+SET search_path = pg_catalog, v7_capture, pg_temp
 AS $$
 BEGIN
   IF p_expected_generation IS NULL OR p_next_generation IS NULL
@@ -85,7 +85,7 @@ CREATE OR REPLACE FUNCTION v7_capture.record_review_receipt(
   p_source_offer_id text, p_html_sha256 text
 ) RETURNS boolean
 LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = pg_catalog, v7_capture
+SET search_path = pg_catalog, v7_capture, pg_temp
 AS $$
 BEGIN
   IF p_generation IS NULL OR p_generation < 1
