@@ -5,6 +5,10 @@ on:
       - 'scripts/acquisition/v7_parallel/j3_agenz_corpus.py'
       - 'scripts/acquisition/__tests__/test_v7_j3_agenz.py'
       - '.github/workflows/akar-v7-j3-corpus.yml'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 jobs:
