@@ -31,3 +31,15 @@ Lecture publique de deux pages FeenWay (HTML sémantique rendu et liste de href,
 **Code J2 :** `build_upstream_candidate_queue` extrait les URLs originelles candidates et assure le dedup par source+ID, sans admission privée/publique. `compare_rendered_claims` confronte, sur observations rendues fournies, les prix/surfaces de FeenWay et du portail original ; zéro DB et aucun appel réseau à partir du comparateur. Le résultat **2/2 cohérent sur prix et surface** dans les deux exemples ne constitue pas un benchmark brut HTML ni une statistique représentative.
 
 **Prochaine validation :** tests CI ajoutés sur cas d'origine, doublons, variantes de slug et désaccord de prix ; puis véritables captures HTML originaux hachées, comparaison L4/V3, et garde de disponibilité. Pas de merge, cron LIVE, DB ou Vercel.
+
+## J2 — pont preuves HTML originales (13 novembre 2026)
+
+**GOAL:** le lien FeenWay original (portail, ID, URL) devient uniquement un **candidat URL source**, puis l'archive HTML brute de l'original est vérifiée par SHA256 + manifeste, et rejouée dans les extracteurs existants L4/V3. Ne jamais insérer FeenWay comme nouvelle propriété ni transformer un accord entre L4/V3 en certitude éditoriale.
+
+**Code:** nouvelle fonction `verify_upstream_snapshot(candidate, dossier)` dans `j2_feenway_provenance.py`. Elle exige source + ID exacts et URL identique entre découverte et manifest, `record_kind=url_candidate_only`, vérifie les octets source, puis rapporte les sept champs comparés L4/V3 ; **0 DB/0 admission**, même après hash valide.
+
+**Format d'URL corrigé:** `detail_compare._domain` accepte désormais uniquement les octets UTF-8 **non ASCII** percent-encoded dans les slugs (nécessaire pour le vrai lien Mubawab) tout en refusant les échappements ASCII dangereux, invalides ou non UTF-8. `snapshot_evidence` réutilise ce contrat. Régressions correspondantes ajoutées.
+
+**Acquisition unitaire:** le workflow PR `akar-v7-j2-original-once.yml` comporte une matrice de **deux GET maximum** : Mubawab #8449079 et Avito #59015264, strictement sans retry/redirect/proxy, captures privées et éphémères d'un jour. Un marqueur explicite `.github/v7-j2-original-once-enabled` est ajouté après le GO utilisateur puis sera retiré après premier essai. Aucune cadence, cron ou import Supabase. Si 403, redirection, contenu non HTML ou incohérence : **stop et preuve d'échec**, pas contournement.
+
+**SUCCESS requis :** CI de tests offline au HEAD + preuves GitHub Actions exactes par source (HTTP200, bytes, SHA, horodatage UTC, L4/V3 sept champs) ; seuls les cas vérifiés peuvent être qualifiés, et une capture ne garantit ni fraîcheur ni propriété physiquement unique.

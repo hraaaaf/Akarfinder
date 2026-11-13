@@ -1,0 +1,122 @@
+name: Akar V7 J2 Two Original Detail HTML Captures (ONE SHOT)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/akar-v7-j2-original-once.yml'
+      - '.github/v7-j2-original-once-enabled'
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  original-source-one-shot:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - source: mubawab
+            url: 'https://www.mubawab.ma/fr/a/8449079/%C3%A0-vendre-%E2%80%93-bel-appartement-%C3%A0-hay-riad-rabat'
+            offer_id: '8449079'
+          - source: avito
+            url: 'https://www.avito.ma/fr/hay_riad/appartements/Appartement_PRESTIGIA_HAU_RIAD_59015264.htm'
+            offer_id: '59015264'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check one-shot marker
+        id: consent
+        shell: bash
+        run: |
+          if test -f .github/v7-j2-original-once-enabled; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "J2_CAPTURE_EXPLICIT_MARKER_PRESENT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "J2_CAPTURE_DISABLED"
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.consent.outputs.enabled == 'true'
+        with:
+          python-version: '3.11'
+      - name: Install existing parser dependency
+        if: steps.consent.outputs.enabled == 'true'
+        run: python -m pip install "beautifulsoup4==4.14.3"
+      - name: Capture exactly one original HTTPS page, no retries or redirects
+        if: steps.consent.outputs.enabled == 'true'
+        env:
+          AKAR_SOURCE_NETWORK_APPROVED: approved
+          PYTHONPATH: scripts/acquisition
+          SOURCE_URL: ${{ matrix.url }}
+          SOURCE: ${{ matrix.source }}
+          SOURCE_OFFER_ID: ${{ matrix.offer_id }}
+        run: |
+          python scripts/acquisition/v7_multisource/snapshot_evidence.py \
+            --capture-url "$SOURCE_URL" \
+            --private-output ".private-j2-$SOURCE" \
+            --capture-approved-once
+      - name: Verify original manifest and compare seven fields L4/V3 offline
+        if: steps.consent.outputs.enabled == 'true'
+        env:
+          PYTHONPATH: scripts/acquisition
+          SOURCE_URL: ${{ matrix.url }}
+          SOURCE: ${{ matrix.source }}
+          SOURCE_OFFER_ID: ${{ matrix.offer_id }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from v7_multisource.snapshot_evidence import verify_evidence
+          from v7_parallel.j2_feenway_provenance import _original_identity, verify_upstream_snapshot
+          source_url = os.environ["SOURCE_URL"]
+          identity = _original_identity(source_url)
+          assert identity == ({"mubawab": "mubawab.ma", "avito": "avito.ma"}[os.environ["SOURCE"]], os.environ["SOURCE_OFFER_ID"])
+          root = Path(".private-j2-" + os.environ["SOURCE"])
+          evidence = verify_evidence(root / "source.html", root / "source.manifest.json")
+          m = evidence["manifest"]
+          assert m["source_url"] == source_url and m["http_status"] == 200
+          candidate = {
+              "source_url": source_url,
+              "source_domain": identity[0],
+              "source_offer_id": identity[1],
+              "record_kind": "url_candidate_only",
+              "discovery_method": "feenway_explicit_original_link",
+              "eligible_for_private_detail_staging": False,
+              "eligible_for_public_admission": False,
+          }
+          summary = verify_upstream_snapshot(candidate, str(root))
+          price = summary["l4_v3_field_comparison"]["price_mad"]
+          surface = summary["l4_v3_field_comparison"]["surface_total_m2"]
+          assert summary["db_writes"] == 0
+          assert summary["source_network_requests_by_replay"] == 0
+          assert not summary["eligible_for_private_detail_staging"]
+          print(json.dumps({
+              "portal": identity[0], "id": identity[1],
+              "html_sha256": summary["raw_sha256_verified_against_manifest"],
+              "captured_at_utc": summary["captured_at_utc"],
+              "byte_count": summary["byte_count"],
+              "L4_price_mad": price["l4"], "V3_price_mad": price["v3"],
+              "L4_surface_total_m2": surface["l4"], "V3_surface_total_m2": surface["v3"],
+              "l4_v3_conflicts": summary["l4_v3_conflicting_nonempty_fields"],
+              "capture_authenticity_independently_certified": False,
+              "publication_date_verified": False,
+              "public_admission": False,
+              "db_writes": 0,
+          }, ensure_ascii=False, sort_keys=True))
+          PY
+      - name: Store original source HTML in short-lived private artifact
+        if: steps.consent.outputs.enabled == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: akar-v7-j2-original-${{ matrix.source }}-private
+          path: |
+            .private-j2-${{ matrix.source }}/source.html
+            .private-j2-${{ matrix.source }}/source.manifest.json
+          retention-days: 1
+          if-no-files-found: error

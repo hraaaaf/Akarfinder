@@ -227,3 +227,55 @@ def compare_rendered_claims(mirror: dict, mirror_fields: dict, original_fields: 
         "db_writes": 0,
         "source_network_requests_by_comparison": 0,
     }
+
+
+def verify_upstream_snapshot(candidate: dict, private_folder: str) -> dict:
+    """Verify a locally captured original URL/ID and replay real L4/V3.
+
+    This is NOT a FeenWay capture, a fresh-property certification, an
+    authenticated source signature, or a DB staging admission.
+    """
+    from pathlib import Path
+    from v7_multisource.snapshot_evidence import (
+        EvidenceError, verify_evidence, offline_benchmark,
+    )
+    if (not isinstance(candidate, dict)
+            or candidate.get("record_kind") != "url_candidate_only"
+            or candidate.get("discovery_method") != "feenway_explicit_original_link"
+            or candidate.get("eligible_for_private_detail_staging") is not False
+            or candidate.get("eligible_for_public_admission") is not False):
+        raise ProvenanceError("NOT_UPSTREAM_URL_ONLY")
+    url = candidate.get("source_url")
+    identity = _original_identity(url)
+    if identity is None or identity != (
+            candidate.get("source_domain"), candidate.get("source_offer_id")):
+        raise ProvenanceError("CANDIDATE_SOURCE_ID_MISMATCH")
+    root = Path(private_folder)
+    evidence = verify_evidence(root / "source.html", root / "source.manifest.json")
+    manifest = evidence["manifest"]
+    if manifest["source_url"] != url:
+        raise ProvenanceError("CAPTURE_URL_DOES_NOT_MATCH_ORIGINAL")
+    if _original_identity(manifest["source_url"]) != identity:
+        raise ProvenanceError("CAPTURE_ID_DOES_NOT_MATCH_ORIGINAL")
+    report = offline_benchmark(root / "source.html", root / "source.manifest.json")
+    # Real HTML bytes compared by the EXISTING L4 and V3 implementations,
+    # with freshness/rights/availability/public admission never inferred.
+    return {
+        "source_domain": identity[0],
+        "source_offer_id": identity[1],
+        "source_url": url,
+        "raw_sha256_verified_against_manifest": manifest["html_sha256"],
+        "captured_at_utc": manifest["captured_at_utc"],
+        "byte_count": manifest["bytes"],
+        "l4_v3_field_comparison": report["field_comparison"],
+        "l4_v3_conflicting_nonempty_fields": report["conflicting_nonempty_fields"],
+        "v3_quality_status": report["v3_quality_status"],
+        "snapshot_hash_consistency_verified": True,
+        "capture_authenticity_independently_certified": False,
+        "availability_verified": False,
+        "editorial_publication_date_verified": False,
+        "eligible_for_private_detail_staging": False,
+        "eligible_for_public_admission": False,
+        "db_writes": 0,
+        "source_network_requests_by_replay": 0,
+    }

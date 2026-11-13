@@ -120,4 +120,57 @@ class J2Tests(unittest.TestCase):
         self.assertFalse(row["rendered_price_and_surface_match"])
         self.assertFalse(row["observed_fields_equal"]["price_mad"])
 
+
+    def test_upstream_capture_evidence_replay_actual_v3_l4(self):
+        from v7_parallel.j2_feenway_provenance import (
+            build_upstream_candidate_queue, verify_upstream_snapshot)
+        from v7_multisource.snapshot_evidence import _manifest
+        from datetime import datetime, timezone
+        from tempfile import TemporaryDirectory
+        from pathlib import Path
+        import json
+        linked=analyze_feenway_mirror(
+            MIRROR, '<html><a href="'+ORIGIN+'">Voir sur Mubawab</a></html>')
+        candidate=build_upstream_candidate_queue([linked])["upstream_url_candidates"][0]
+        html=b"""<!DOCTYPE html><html><head><title>Appartement a vendre</title>
+        <script type="application/ld+json">{"@type":"Apartment","name":"Appartement a vendre",
+        "offers":{"price":1200000,"priceCurrency":"MAD"},
+        "floorSize":{"value":85,"unitCode":"MTK"}}</script></head>
+        <body><h1>Appartement a vendre</h1><p>Prix 1 200 000 DH</p>
+        <p>Surface 85 m2</p></body></html>"""
+        with TemporaryDirectory() as folder:
+            root=Path(folder)
+            m=_manifest(ORIGIN,html,when=datetime(2026,11,13,tzinfo=timezone.utc),
+                        method="explicit_single_page_https_get")
+            (root/"source.html").write_bytes(html)
+            (root/"source.manifest.json").write_text(json.dumps(m),encoding="utf-8")
+            replay=verify_upstream_snapshot(candidate,folder)
+            self.assertEqual(replay["source_offer_id"],"9961000")
+            self.assertEqual(replay["raw_sha256_verified_against_manifest"],m["html_sha256"])
+            self.assertFalse(replay["capture_authenticity_independently_certified"])
+            self.assertFalse(replay["eligible_for_private_detail_staging"])
+            self.assertEqual(replay["db_writes"],0)
+
+    def test_upstream_capture_replay_rejects_wrong_original(self):
+        from v7_parallel.j2_feenway_provenance import (
+            build_upstream_candidate_queue, verify_upstream_snapshot)
+        from v7_multisource.snapshot_evidence import _manifest
+        from datetime import datetime, timezone
+        from tempfile import TemporaryDirectory
+        from pathlib import Path
+        import json
+        linked=analyze_feenway_mirror(
+            MIRROR, '<html><a href="'+ORIGIN+'">Voir sur Mubawab</a></html>')
+        candidate=build_upstream_candidate_queue([linked])["upstream_url_candidates"][0]
+        wrong="https://www.mubawab.ma/fr/a/9961001/flat"
+        html=b"<html><body>Foreign listing</body></html>"
+        with TemporaryDirectory() as folder:
+            root=Path(folder)
+            m=_manifest(wrong,html,when=datetime(2026,11,13,tzinfo=timezone.utc),
+                        method="explicit_single_page_https_get")
+            (root/"source.html").write_bytes(html)
+            (root/"source.manifest.json").write_text(json.dumps(m),encoding="utf-8")
+            with self.assertRaisesRegex(ProvenanceError,"CAPTURE_URL_DOES_NOT_MATCH_ORIGINAL"):
+                verify_upstream_snapshot(candidate,folder)
+
 if __name__ == "__main__": unittest.main()

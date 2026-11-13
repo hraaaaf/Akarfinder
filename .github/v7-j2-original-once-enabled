@@ -1,0 +1,4 @@
+Akarfinder V7 J2: user GO 2026-11-13 for TWO original offer HTML snapshots only.
+Mubawab original 8449079; Avito original 59015264.
+Only 1 HTTPS GET per source via scoped PR job; no retries or bypass; no DB, no cron, no Vercel.
+Remove marker after the first attempts; no recurrent capture.

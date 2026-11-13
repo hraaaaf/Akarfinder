@@ -13,9 +13,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 import hashlib
 import json
+import re
 import sys
 from typing import Any
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, unquote_to_bytes
 
 BASE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BASE))
@@ -43,6 +44,26 @@ class DetailBenchmarkError(ValueError):
     pass
 
 
+def _safe_unicode_percent_path(path: str) -> bool:
+    """Allow strict UTF-8 percent-encoded NON-ASCII slug only.
+
+    Encoded ASCII (/ . ? # % controls) is rejected, preventing path
+    reinterpreting after URL normalization. Plain ASCII path stays valid.
+    """
+    if "%" not in path:
+        return True
+    octets = re.findall(r"%([a-fA-F0-9]{2})", path)
+    if not octets or "%" in re.sub(r"%[a-fA-F0-9]{2}", "", path):
+        return False
+    if any(int(x, 16) < 128 for x in octets):
+        return False
+    try:
+        decoded = unquote_to_bytes(path).decode("utf-8", errors="strict")
+    except UnicodeError:
+        return False
+    return not any(ord(c) < 32 or c == "\\" for c in decoded)
+
+
 def _domain(raw: Any) -> str:
     if not isinstance(raw, str) or len(raw) > 2048:
         raise DetailBenchmarkError("SOURCE_URL_INVALID")
@@ -55,7 +76,7 @@ def _domain(raw: Any) -> str:
     host = host[4:] if host.startswith("www.") else host
     if (url.scheme != "https" or host not in SOURCES
             or url.username or url.password or port is not None
-            or url.fragment or "%" in url.path or "\\" in url.path
+            or url.fragment or not _safe_unicode_percent_path(url.path) or "\\" in url.path
             or not url.path.startswith("/") or "//" in url.path):
         raise DetailBenchmarkError("UNSUPPORTED_URL")
     return host
