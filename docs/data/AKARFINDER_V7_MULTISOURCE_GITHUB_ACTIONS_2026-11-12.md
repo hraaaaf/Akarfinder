@@ -353,3 +353,16 @@ J3 Agenz multi-exemples, ville/quartier & exactitude terrain →
 J4 Avito/Yakeey/Sarouty → J5 autres sources →
 J6 staging privé durable/anti-rejeu → J7 canarys/cron 10min sous GO,
 monitoring 24h. Aucun merge/Vercel/Supabase PROD/cron live.
+
+
+## 2026-11-13 — Reprise source-first J3/J4/J5, gates de vérité maintenus
+
+**Périmètre décisionnel inchangé :** J2 agrégateur tiers hors chemin critique, aucune nouvelle roadmap, aucun merge/staging/cron source/DB/Vercel. J0/J1 seuls fermés (2/8), J3/J4/J5 restent ouverts.
+
+**J3 Agenz** : 5 HTML bruts privés sauvegardés, SHA256 du bundle a1fb0a2ccf59fc57955abf15b4a4e4986e44bd7e534aeddd1d256dd45b37f037, 5/5 SHA originaux conformes. Nouvel audit de cohérence hors ligne en [PR #1206](https://github.com/hraaaaf/Akarfinder/pull/1206) : 1 titre « 4 chambres » alors que caractéristiques « 3 chambres » (#387448) ; 5/5 paires data-lat/data-lng chiffrées au format Salted__, jamais utilisées pour géolocaliser. La [Commune de Salé](https://fr.villedesale.ma/arrondissements/arrondissement-tabriquet/) place Al Qods dans l'arrondissement Tabriquet : un désaccord de libellés ne prouve pas nécessairement deux lieux exclusifs ; la [Commune](https://fr.villedesale.ma/zones-industrielles/) distingue toutefois deux zones industrielles Hay Rahma et Tabriquet. Aucune de ces observations ne certifie le bien réel : **0/5 géolocalisations autorisées**. Code J3 SHA bb842259bcfd7d37ddf3e20bcbac75f8d947edee, tests unitaires locaux 6/6 PASS et audit privé sur vraies archives ; **CI exacte à vérifier**. Premier run précédent #43454446109 FAILED sur une conversion de type UTF-8 dans le nouvel auditeur après 6/6 tests ; correctif appliqué au nouveau code SHA. Distinguer une CI verte d'un test de donnée originale certifiée.
+
+**J4 Avito/Yakeey/Sarouty** : [fiche directe Sarouty 894012](https://www.sarouty.ma/acheter/appartement-sale-bab-al-bahr-894012/) lisible dans un lecteur public : appartement Salé/Bab al bahr 3 500 000 DH, 196 m², 3 chambres, 2 SDB, réf. agence 3199. **Simple témoin original rendu**, sans manifeste de HTML brut horodaté, donc non admissible. [PR #1207](https://github.com/hraaaaf/Akarfinder/pull/1207) HEAD doc 0c97dc0a83cb7670889dc6d8e552359cb21baa6a ; Avito et Yakeey restent non qualifiés.
+
+**J5 Mubawab/MarocAnnonces et autres** : [Mubawab #8413785](https://www.mubawab.ma/fr/a/8413785/appartement-%C3%A0-vendre-104-m%C2%B2-3-chambres-al-qods-sal%C3%A9) reprend référence SAL-TA-1004 et description de [Agenz #444291](https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291). Cela montre une offre publicitaire répliquée et un **risque de doublon inter-portails**, pas une attestation indépendante du quartier ou d'un bien physique. HTML source original SHA/UTC non archivé ; MarocAnnonces et les autres portails toujours non qualifiés. [PR #1208](https://github.com/hraaaaf/Akarfinder/pull/1208) HEAD doc b4662063e1feb4eb34108581b3f66ea482a8b9a3.
+
+**Next exact :** conclure CI J3 à SHA corrigé, traiter tout échec, conserver 0/5 index geo ; archiver par canal autorisé des HTML originaux Sarouty et Mubawab avec SHA/UTC/ID et benchmark L4↔V3 ; qualifier puis dédupliquer avant gate J6, J7. Pas d'activation sans preuves et gates distincts.
