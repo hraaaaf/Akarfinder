@@ -1,0 +1,175 @@
+name: Akar V7 J3 Four Agenz Detail Snapshots (ONE SHOT)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/akar-v7-j3-original-once.yml'
+      - '.github/v7-j3-original-once-enabled'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  source-page:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - id: '445495'
+            url: 'https://agenz.ma/fr/annonces/immo-sale/vente-appartements/sale-el-jadida/445495'
+          - id: '420510'
+            url: 'https://agenz.ma/fr/annonces/immo-sale/vente-appartements/said-hajji/420510'
+          - id: '387448'
+            url: 'https://agenz.ma/fr/annonces/immo-sale/vente-appartements/zone-industrielle-tabriquet/387448'
+          - id: '500006'
+            url: 'https://agenz.ma/fr/annonces/immo-sale/vente-appartements/assonboula/500006'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Confirm one-shot marker, no persistent token
+        id: one
+        run: |
+          if test -f .github/v7-j3-original-once-enabled; then
+            echo "go=true" >> "$GITHUB_OUTPUT"
+            echo "J3_SINGLE_SOURCE_PAGE_APPROVED"
+          else
+            echo "go=false" >> "$GITHUB_OUTPUT"
+            echo "J3_SOURCE_CAPTURE_DISABLED"
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.one.outputs.go == 'true'
+        with:
+          python-version: '3.11'
+      - name: Install parser dependency
+        if: steps.one.outputs.go == 'true'
+        run: python -m pip install "beautifulsoup4==4.14.3"
+      - name: Exactly one HTTPS GET to Agenz detail, no retries/redirects
+        if: steps.one.outputs.go == 'true'
+        env:
+          PYTHONPATH: scripts/acquisition
+          AKAR_SOURCE_NETWORK_APPROVED: approved
+          SOURCE_URL: ${{ matrix.url }}
+          OFFER_ID: ${{ matrix.id }}
+        run: |
+          python scripts/acquisition/v7_multisource/snapshot_evidence.py \
+            --capture-url "$SOURCE_URL" \
+            --private-output ".private-j3-$OFFER_ID" \
+            --capture-approved-once
+      - name: Offline verify SHA and compare 7 fields L4/V3, no DB
+        if: steps.one.outputs.go == 'true'
+        env:
+          PYTHONPATH: scripts/acquisition
+          OFFER_ID: ${{ matrix.id }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          from v7_multisource.snapshot_evidence import offline_benchmark, verify_evidence
+          from v7_parallel.j3_agenz_corpus import _agenz_id
+          root=Path(".private-j3-"+os.environ["OFFER_ID"])
+          data=verify_evidence(root/"source.html",root/"source.manifest.json")
+          m=data["manifest"]
+          assert _agenz_id(m["source_url"])==os.environ["OFFER_ID"]
+          report=offline_benchmark(root/"source.html",root/"source.manifest.json")
+          assert report["db_writes"] == 0 and report["source_network_requests"] == 0
+          print(json.dumps({
+            "source_offer_id":os.environ["OFFER_ID"],
+            "html_sha256":m["html_sha256"], "byte_count":m["bytes"],
+            "captured_at_utc":m["captured_at_utc"],
+            "L4_price_mad":report["field_comparison"]["price_mad"]["l4"],
+            "V3_price_mad":report["field_comparison"]["price_mad"]["v3"],
+            "field_disagreements":[k for k,v in report["field_comparison"].items() if not v["agreement"]],
+            "public_admission":False,"db_writes":0
+          },ensure_ascii=False,sort_keys=True))
+          PY
+      - name: Store only private 1-day source evidence artifact
+        if: steps.one.outputs.go == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: akar-v7-j3-agenz-${{ matrix.id }}-private
+          path: |
+            .private-j3-${{ matrix.id }}/source.html
+            .private-j3-${{ matrix.id }}/source.manifest.json
+          retention-days: 1
+          if-no-files-found: error
+  corpus:
+    needs: source-page
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Confirm first-run gate; never promote skipped work
+        id: gated
+        run: |
+          if test -f .github/v7-j3-original-once-enabled; then
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "go=false" >> "$GITHUB_OUTPUT"
+            echo "J3_CORPUS_REPLAY_DISABLED"
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.gated.outputs.go == 'true'
+        with:
+          python-version: '3.11'
+      - name: Install parser dependency
+        if: steps.gated.outputs.go == 'true'
+        run: python -m pip install "beautifulsoup4==4.14.3"
+      - uses: actions/download-artifact@v4
+        if: steps.gated.outputs.go == 'true'
+        with:
+          name: akar-v7-j3-agenz-445495-private
+          path: .private-j3-445495
+      - uses: actions/download-artifact@v4
+        if: steps.gated.outputs.go == 'true'
+        with:
+          name: akar-v7-j3-agenz-420510-private
+          path: .private-j3-420510
+      - uses: actions/download-artifact@v4
+        if: steps.gated.outputs.go == 'true'
+        with:
+          name: akar-v7-j3-agenz-387448-private
+          path: .private-j3-387448
+      - uses: actions/download-artifact@v4
+        if: steps.gated.outputs.go == 'true'
+        with:
+          name: akar-v7-j3-agenz-500006-private
+          path: .private-j3-500006
+      - uses: actions/download-artifact@v4
+        if: steps.gated.outputs.go == 'true'
+        with:
+          name: akar-v7-j1-agenz-source-private
+          run-id: 43330609367
+          github-token: ${{ github.token }}
+          path: .private-j3-444291
+      - name: Verify five source IDs, hashes and L4/V3 seven fields
+        if: steps.gated.outputs.go == 'true'
+        env:
+          PYTHONPATH: scripts/acquisition
+        run: |
+          python - <<'PY'
+          import json
+          from v7_parallel.j3_agenz_corpus import assess_corpus
+          ids=["444291","445495","420510","387448","500006"]
+          cases=[{"folder":".private-j3-"+id, "expected":{}} for id in ids]
+          r=assess_corpus(cases)
+          assert r["snapshots"]==5 and r["independent_source_ids"]==5
+          assert r["status"]=="corpus_ready_for_human_labels"
+          assert not r["representative_accuracy_certified"] and r["db_writes"]==0
+          print(json.dumps({
+             "source":"agenz.ma","source_offer_ids":ids,
+             "snapshot_hashes":[{"id":x["source_offer_id"],"sha256":x["sha256"],"captured_at_utc":x["captured_at_utc"]} for x in r["results"]],
+             "disagreements_by_field":r["disagreements_by_field"],
+             "corpus_ready_for_human_labels":True,
+             "representative_accuracy_certified":False,
+             "db_writes":0,"source_network_requests_by_replay":0,
+          },sort_keys=True))
+          PY

@@ -1,0 +1,3 @@
+V7 J3 user parallel GO HIGH: exactly one source HTTPS GET for each of 445495, 420510, 387448, 500006.
+J1 444291 existing private artifact to be reused offline. No retries, no DB, no Vercel, no merge, no cron.
+Remove marker after first run, then only offline validation remains.
