@@ -1,4 +1,6 @@
 import { expect } from "@playwright/test";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { nvdaTest, voiceOverTest } from "@guidepup/playwright";
 
 const readerName = process.env.NATIVE_READER;
@@ -33,11 +35,46 @@ async function exercise({ page, reader }, testInfo) {
   }
   expect(announcedHeading, "NVDA/VoiceOver must speak the Maârif heading").toBe(true);
 
+  const saveSpoken = async (stage) => {
+    const dir = resolve("artifacts/native-sr");
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(resolve(dir, `${readerName}-speech.json`), JSON.stringify({
+      reader: readerName,
+      stage,
+      headingAnnounced: announcedHeading,
+      headingNavigation: announcements,
+      spokenLog: await reader.spokenPhraseLog(),
+    }, null, 2));
+  };
+  await saveSpoken("heading-confirmed");
+
+  // VoiceOver's cursor is distinct from browser DOM focus. On macOS, locate
+  // the control in its *native reader cursor* and perform its default action.
+  const activateViaVoiceOver = async (label, maxSteps = 45) => {
+    await reader.navigateToWebContent();
+    const visited = [];
+    for (let step = 0; step < maxSteps; step += 1) {
+      await reader.perform(reader.keyboardCommands.findNextControl);
+      const text = String(await reader.itemText());
+      const phrase = String(await reader.lastSpokenPhrase());
+      visited.push({ text, phrase });
+      if (normalise(text + " " + phrase).includes(normalise(label))) {
+        await reader.act();
+        return;
+      }
+    }
+    await saveSpoken("control-not-found");
+    throw new Error("VoiceOver could not navigate to control " + label + "; visited: " + JSON.stringify(visited.slice(-12)));
+  };
+
   const control = page.locator("[data-l3-go-admin]");
   await expect(control).toBeVisible();
-  await control.focus();
-  // Send Enter via the native reader rather than Playwright's synthetic click.
-  await reader.press("Enter");
+  if (readerName === "voiceover") {
+    await activateViaVoiceOver("Limites");
+  } else {
+    await control.focus();
+    await reader.press("Enter");
+  }
   const explanation = page.locator('[data-l3-admin-unavailable="true"]');
   await expect(explanation).toBeVisible();
   await expect(explanation.getByText("Limites non disponibles", { exact: true })).toBeVisible();
@@ -52,11 +89,17 @@ async function exercise({ page, reader }, testInfo) {
     contentType: "application/json",
   });
 
-  await explanation.locator("[data-l3-admin-return]").focus();
-  await reader.press("Enter");
+  await saveSpoken("limites-open");
+  if (readerName === "voiceover") {
+    await activateViaVoiceOver("Retour au quartier");
+  } else {
+    await explanation.locator("[data-l3-admin-return]").focus();
+    await reader.press("Enter");
+  }
   await expect(root).toHaveAttribute("data-l3-maarif-view", "quartier");
   await expect(control).toHaveAttribute("aria-expanded", "false");
   await expect(control).not.toHaveAttribute("aria-controls", /./);
+  await saveSpoken("complete");
   await page.screenshot({ path: `artifacts/native-sr/${readerName}-quartier-after-reader.png`, animations: "disabled" });
 }
 
