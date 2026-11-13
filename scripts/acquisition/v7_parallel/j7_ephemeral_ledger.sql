@@ -1,7 +1,7 @@
 -- V7 J7: EPHEMERAL TEST PROPOSAL ONLY; never applied to a real DB.
 -- A slot is permanently unique: no automatic takeover/retry after a crash.
--- SECURITY DEFINER is only exercised with a superuser OWNER IN TEST CI.
--- A real migration would need an audited dedicated non-superuser owner.
+-- CI bootstraps the schema as postgres, then transfers all SECURITY DEFINER
+-- ownership to dedicated non-superuser NOLOGIN v7_schedule_owner.
 BEGIN;
 CREATE SCHEMA IF NOT EXISTS v7_schedule;
 REVOKE ALL ON SCHEMA v7_schedule FROM PUBLIC;
@@ -81,20 +81,20 @@ GRANT EXECUTE ON FUNCTION v7_schedule.fail_slot(bigint, uuid) TO v7_schedule_wor
 
 -- J7 next slice: dedicated NOLOGIN/NO-BYPASSRLS owner, not postgres.
 -- This ownership transfer is validated ONLY in ephemeral PostgreSQL 17 CI.
-DO $
+DO $$
 BEGIN
  IF to_regrole('v7_schedule_owner') IS NULL THEN
   CREATE ROLE v7_schedule_owner NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
  END IF;
-END $;
+END $$;
 
 -- Transaction-fenced marker: proof of an authorized, current worker token
 -- within the SAME database transaction. NOT a network side effect, not an
 -- externally durable registry and not a permit to collect or publish.
 CREATE TABLE IF NOT EXISTS v7_schedule.fenced_markers (
   slot_index bigint NOT NULL REFERENCES v7_schedule.slots(slot_index),
-  marker_name text NOT NULL CHECK (marker_name ~ '^[a-z0-9][a-z0-9:_-]{0,63}),
-  evidence_sha256 text NOT NULL CHECK (evidence_sha256 ~ '^[0-9a-f]{64}),
+  marker_name text NOT NULL CHECK (marker_name ~ '^[a-z0-9][a-z0-9:_-]{0,63}$'),
+  evidence_sha256 text NOT NULL CHECK (evidence_sha256 ~ '^[0-9a-f]{64}$'),
   recorded_at timestamptz NOT NULL DEFAULT clock_timestamp(),
   PRIMARY KEY (slot_index, marker_name)
 );
@@ -108,11 +108,11 @@ CREATE OR REPLACE FUNCTION v7_schedule.record_fenced_marker(
 ) RETURNS boolean
 LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, v7_schedule
-AS $
+AS $$
 BEGIN
  IF requested_slot IS NULL OR requested_slot < 0 OR worker_token IS NULL
-    OR marker_name IS NULL OR marker_name !~ '^[a-z0-9][a-z0-9:_-]{0,63}
-    OR evidence_sha256 IS NULL OR evidence_sha256 !~ '^[0-9a-f]{64}
+    OR marker_name IS NULL OR marker_name !~ '^[a-z0-9][a-z0-9:_-]{0,63}$'
+    OR evidence_sha256 IS NULL OR evidence_sha256 !~ '^[0-9a-f]{64}$'
  THEN
   RETURN false;
  END IF;
@@ -128,7 +128,7 @@ BEGIN
  ON CONFLICT (slot_index, marker_name) DO NOTHING;
  RETURN FOUND;
 END;
-$;
+$$;
 REVOKE ALL ON FUNCTION v7_schedule.record_fenced_marker(bigint, uuid, text, text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION v7_schedule.record_fenced_marker(bigint, uuid, text, text)
  TO v7_schedule_worker;
