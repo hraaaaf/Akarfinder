@@ -39,3 +39,13 @@
 **Succès à vérifier :** CI au code SHA exact et compte des tests ; le résultat attendu est 1000/1000 `source_snippet_only`, zéro detail, zéro base, aucune admission privée ou publique. Cela **ne prouve aucune présence réelle d'annonces sur les portails**, aucune date de publication, aucune propriété unique, aucune disponibilité. Le corpus est synthétique.
 
 **Gate conservé :** J5 complet demeure ouvert sans HTML original. Pas d'appel HTTP portal, pas de staging, cron live, merge ni Vercel.
+
+## J5 — Cross-language V3 réel : closeout vérifié (13 novembre 2026)
+
+**Code exact vérifié :** `663619debb5069a534ac55edfb0edc316ffabe70` sur PR Draft #1208. [J5 GitHub Actions #43424340573](https://github.com/hraaaaf/Akarfinder/actions/runs/43424340573) **SUCCESS : 10/10 tests Node existants + 3/3 tests Python nouveaux, soit 13/13**, sans échec. [CI Workflow Efficiency Policy #43424340770](https://github.com/hraaaaf/Akarfinder/actions/runs/43424340770) SUCCESS sur le même SHA.
+
+**Preuve métier limitée :** `assessJ5` et `adaptLegacyReports` ont été lancés sur **600 URL Mubawab + 400 URL MarocAnnonces synthétiques**, comparaison exacte des 1000 triplets (portail, ID, URL). Les 1000 vrais objets de contrat L8 ont été acceptés en mémoire par `inspect_url_only_candidates` du réel AkarParser V3 et sont tous restés `source_snippet_only` : **1000/1000 en quarantaine, 0 détails admis, 0 lignes Radar10/DB, 0 accès HTTP source**. Les falsifications `editorial_published_at` et `eligible_for_private_detail_staging=true` ont été rejetées. CI Python 3.11 et dépendance BeautifulSoup épinglée en workflow PR-only.
+
+**Ce que cela ne prouve pas :** aucune des 1000 URL de test ne prouve une annonce actuellement en ligne, ni une archive HTML originale, ni une adresse, ni une donnée métier vérifiée. Ce sous-lot **contrat interopérabilité Node→Python/V3** est clos ; J5 connecteurs physiques reste **OUVERT**, les quatre portails complémentaires toujours non intégrés. Zéro réseau source, aucune écriture extérieure, aucune activation live, cron, SQL réel, staging, merge ou Vercel.
+
+**Séquence restante :** conserver la quarantaine, obtenir une archive originale autorisée et son identifiant source, comparer les sept champs, contrôler la disponibilité/identité géographique indépendamment, puis seulement envisager un gate d'admission privé J6 sous effort élevé. V7 conserve J0/J1 seuls clos = 2/8 jalons.
