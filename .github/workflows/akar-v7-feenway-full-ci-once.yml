@@ -117,6 +117,8 @@ jobs:
       # J2 FeenWay: full V7 + PG17 + Radar10 gate must include real V3 review propagation.
       - name: V3 canonical identity, source-scoped Agenz and safe review routing (offline)
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v3_source_review_gate.py'
+      - name: FeenWay J2 pinned evidence reconciliation safety tests (offline)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_j2_evidence_reconcile.py'
       - name: Existing Radar10 private staging regression
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_radar10_*.py'
 

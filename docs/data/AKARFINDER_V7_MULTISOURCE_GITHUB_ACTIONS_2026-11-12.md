@@ -441,3 +441,8 @@ J2 only, PR #1211 Draft : parser code commit 3a27a7d and eight adversarial tests
 ## 2026-11-13 — J2 AkarParser source-first hardening validated on code SHA
 
 The earlier pending-CI section is superseded by [full offline gate run #43519074259](https://github.com/hraaaaf/Akarfinder/actions/runs/43519074259) SUCCESS on SHA `0c2dc75e09c1f0c204a43be1cbc6326fb955ec77`: 199 Python tests across 16 suites PASS, including the 15 V3 source-review contracts (8 new), Node PASS, Python compile PASS, PostgreSQL 17 ephemeral PASS, Radar10 PASS; `ten-minute-gate` SKIPPED. Source URL/canonical/og:url conflicts, HTML unscoped numbers and the first-party Agenz conflicting rent are now review-gated in V3. This confirms implementation/test behavior on synthetic fixtures, **not** live source truth or current listing availability. 82 166 FeenWay observations remain quarantined, no admission / DB / cron / merge / Vercel, J2 not closed. V7 business milestones remain 2/8. Next J2: obtain authorized primary proofs, independent freshness and physical dedup, then separate staging gate.
+
+
+## 2026-11-13 — J2 pinned evidence reconcile / private quarantine
+
+Private source artifacts 2a63e4a4… (10 original checks) and f6d93772… (Agenz contradiction) independently integrity-checked: 10 cases, one canonical source ID claim, one conflicting source rent 7500/7700 MAD/month, three robots/access blockers, four source-fetch failures and two portal-stop results. No raw original HTML in archive, no active listing proof or physical dedup. New offline fail-closed reconciliation module and 11 adversarial tests added to one-shot V7/PG17/Radar10 gate; CI of this commit to be checked. FeenWay 82,166 quarantined, 0 DB/cron/merge/Vercel; J2 open, V7 2/8 business milestones.
