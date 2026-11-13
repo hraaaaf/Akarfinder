@@ -397,7 +397,27 @@ def stable_observation_id(raw_hash: str, base: dict) -> tuple[str, str]:
     return "observation-" + hashlib.sha256(immutable_basis).hexdigest()[:24], "v3_capture_sha256"
 
 
-def parse_raw(raw: dict, clock: datetime) -> dict:
+def parse_raw(raw: dict, clock: datetime, *, source_review_reasons: tuple[str, ...] = ()) -> dict:
+    """Trusted source-evidence findings may only LOWER eligibility.
+
+    The FeenWay V7 scope validator supplies these reasons after checking
+    original HTML. The extra argument never changes extracted values.
+    Unsupported or cross-domain reasons fail closed.
+    """
+    allowed = {"AGENZ_PRIMARY_VS_DESCRIPTION_RENT_PRICE_CONFLICT"}
+    if (not isinstance(source_review_reasons, tuple)
+            or len(source_review_reasons) > 4
+            or any(not isinstance(reason, str) or reason not in allowed
+                   for reason in source_review_reasons)):
+        raise ValueError("INVALID_SOURCE_REVIEW_REASONS")
+    if source_review_reasons:
+        host = (urlparse(str(raw.get("source_url") or "")).hostname or "").removeprefix("www.")
+        has_original_html = any(
+            isinstance(raw.get(k), str) and raw[k].lstrip().startswith("<")
+            for k in ("raw_html", "html", "page_html", "body_html")
+        )
+        if host != "agenz.ma" or not has_original_html:
+            raise ValueError("SOURCE_REVIEW_WRONG_ORIGIN_OR_MISSING_HTML")
     row, provenance = adapt(raw)
     base = v2.parse_record(row, generated_at=clock.isoformat())
     raw_hash = hashlib.sha256(json.dumps(raw, ensure_ascii=False, sort_keys=True,
@@ -495,10 +515,18 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
         review_reasons.append("TITLE_CONTAINS_SALE_AND_RENT")
     if row.get("_mubawab_primary_transaction_conflict"):
         review_reasons.append("PRIMARY_TITLE_DESCRIPTION_TRANSACTION_CONFLICT")
+    # A V7 source-first contradiction is additive, never a basis to replace
+    # the offer amount or upgrade status. Do not hide it behind "freshness".
+    for reason in source_review_reasons:
+        if reason not in review_reasons:
+            review_reasons.append(reason)
     status = quality(e, base["source"], clock,
                      quarantine=base["status"] == "quarantine" or invalid_http or foreign_country,
                      serp=bool(row.get("query_id") and row.get("source_domain")),
                      review_reasons=tuple(review_reasons))
+    if (source_review_reasons
+            and status["status"] not in ("quarantine", "source_snippet_only")):
+        status["status"] = "requires_manual_review"
     return {
         "version": VERSION, "record_id": record_id,
         "record_id_scheme": identity_scheme, "source": base["source"],

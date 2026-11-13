@@ -182,13 +182,14 @@ def _amount(text):
     return int(re.sub(r"[^\d]", "", m.group(1))) if m else None
 
 
-def _source_parser_summary(url, raw_html):
+def _source_parser_summary(url, raw_html, *, source_review_reasons=()):
     domain = (urlsplit(url).hostname or "").removeprefix("www.")
     if domain not in PARSER_HOSTS:
         return {"status": "UNSUPPORTED_IN_V3", "fields": {}}
     try:
         from akarparser_v3_raw_bulk import parse_raw
-        row = parse_raw({"source_url": url, "raw_html": raw_html}, datetime.now(timezone.utc))
+        row = parse_raw({"source_url": url, "raw_html": raw_html}, datetime.now(timezone.utc),
+                        source_review_reasons=source_review_reasons)
         e = row.get("fields") or {}
         fields = {}
         for key in ("price_mad", "surface_total_m2", "property_type", "transaction_type"):
