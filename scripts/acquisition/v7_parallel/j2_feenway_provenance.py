@@ -6,13 +6,13 @@ never certify it as a fetched/current page, and never stage or publish.
 """
 from __future__ import annotations
 from html.parser import HTMLParser
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, unquote_to_bytes
 import re
 
 SCHEMA = "akarfinder-v7-parallel-source-v1"
 MIRROR_RE = re.compile(r"/listings/([0-9]{3,12})/?\Z")
 ORIGINS = frozenset(("mubawab.ma", "avito.ma", "sarouty.ma", "agenz.ma"))
-CTA_RE = re.compile(r"(?:visiter|voir)\s+(?:le\s+)?(?:site\s+de\s+l['’]annonce|l['’]annonce\s+originale)", re.I)
+CTA_RE = re.compile(r"(?:visiter|voir)\s+(?:le\s+)?(?:site\s+de\s+l['’]annonce|l['’]annonce\s+originale)|voir\s+sur\s+(?:mubawab|avito|sarouty|agenz)", re.I)
 
 
 class ProvenanceError(ValueError):
@@ -51,9 +51,22 @@ def _url(value: str, hosts: frozenset[str]) -> tuple[str, str, str]:
     bare = host[4:] if host.startswith("www.") else host
     if (p.scheme != "https" or bare not in hosts
         or p.username or p.password or port is not None or p.fragment
-        or not p.path.startswith("/") or "//" in p.path or "%" in p.path
-        or "\\" in p.path or p.path != p.path.lower()
+        or not p.path.startswith("/") or "//" in p.path
+        or "\\" in p.path
         or p.netloc not in (host,) or p.query):
+        raise ProvenanceError("URL_UNSAFE")
+    # FeenWay links contain percent-encoded UTF-8 accents; prevent encoded
+    # ASCII slashes, controls and percent-escape ambiguity.
+    if re.search(r"%(?![0-9a-fA-F]{2})", p.path):
+        raise ProvenanceError("BAD_PERCENT_ESCAPE")
+    for part in re.findall(r"%([0-9a-fA-F]{2})", p.path):
+        if int(part, 16) < 0x80:
+            raise ProvenanceError("ENCODED_ASCII_BLOCKED")
+    try:
+        decoded = unquote_to_bytes(p.path).decode("utf-8")
+    except UnicodeError as exc:
+        raise ProvenanceError("BAD_UTF8_URL") from exc
+    if any(ord(c) < 32 for c in decoded) or "\\" in decoded:
         raise ProvenanceError("URL_UNSAFE")
     return bare, p.path.rstrip("/"), value
 

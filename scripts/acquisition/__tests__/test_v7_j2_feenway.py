@@ -23,6 +23,22 @@ class J2Tests(unittest.TestCase):
         self.assertFalse(r["eligible_for_public_admission"])
         self.assertEqual(r["db_writes"],0)
 
+    def test_observed_feenway_outbound_links_256946_258638(self):
+        # Links observed in rendered public pages; not raw source HTML.
+        mub="https://www.mubawab.ma/fr/a/8449079/%C3%A0-vendre-%E2%80%93-bel-appartement-%C3%A0-hay-riad-rabat"
+        avi="https://www.avito.ma/fr/hay_riad/appartements/Appartement_PRESTIGIA_HAU_RIAD_59015264.htm"
+        a=analyze_feenway_mirror(
+            "https://www.feenway.com/listings/258638",
+            '<html><a href="'+mub+'">Voir sur Mubawab</a></html>')
+        self.assertEqual((a["origin_portal"],a["origin_offer_id"]),("mubawab.ma","8449079"))
+        self.assertEqual(a["status"],"origin_link_observed_unverified")
+        self.assertFalse(a["origin_page_independently_verified"])
+        b=analyze_feenway_mirror(
+            "https://www.feenway.com/listings/256946",
+            '<html><a href="'+avi+'">Voir sur Avito</a></html>')
+        self.assertEqual((b["origin_portal"],b["origin_offer_id"]),("avito.ma","59015264"))
+        self.assertFalse(b["mirror_is_new_property"])
+
     def test_two_competing_originals_are_ambiguous(self):
         html='<html><a href="'+ORIGIN+'">Visiter le site de l\'annonce</a><a href="https://www.avito.ma/fr/casa/appartements/test_12345678.htm">Voir l\'annonce originale</a></html>'
         self.assertEqual(analyze_feenway_mirror(MIRROR,html)["status"],"ambiguous_origin")
