@@ -336,3 +336,12 @@ PR roadmap : #902. Lots : #904, #906, #907, #913.
 
 **NEXT exact** : CI du HEAD documentaire après ce closeout ; trancher explicitement la qualité V1 limitée (améliorer vers la cible ou autoriser un compromis documenté). GO humain distinct requis avant merge, puis un autre avant tout déploiement Vercel. Maintenir la PR Draft et le J18 OSM public OFF. Aucune progression globale chiffrée sans critères exhaustifs.
 
+### 2026-11-13 — Lot 5 : état de convergence des sources en novembre
+
+**Audit de code**, source : scripts/neighborhood-context/LOT5_LIVE_CONVERGENCE_SOURCE_AUDIT_2026-11-13.md, PR #1197 HEAD source d3d56b9cad5653afc54e1b8bb4c2a81c60864f32, 28 SUCCESS / 2 SKIPPED.
+
+- Le seed ANN-L5, observé le 16 août 2026, expire après 30 jours ; ses douze anciens POI n'alimentent plus les six read-models vivants en novembre. Aucun rafraîchissement artificiel et aucune admission J18 privée ne sont autorisés.
+- La Carte Vivre Ici, la page quartier SEO et l'annonce moderne utilisent déjà NeighborhoodContextReadModelV1. Le composant homepage Vivre Ici raccordé existe, mais app/page.tsx ne le monte pas actuellement.
+- Ancien listing/proximité statique : risque si consommé, pas démontré dans la route actuelle /listings/[id]. Le test visuel AFTER L5 historique attend covered, désormais incompatible avec la fraîcheur du seed courant ; aucune baisse des critères.
+- Succès de CE sous-lot : inventaire et diagnostic documentés, PAS une nouvelle valeur métier livrée. Lot 5 ACTIVE, score UX >=9,5 non démontré, V1 limitée inchangée et J18 OSM gelé/public OFF.
+- Next exact : captures BEFORE des quatre surfaces 390/430/768/1280 et mockup avant tout changement visuel ; test de convergence, puis source fraîche certifiée suivant L1/L2/L6. Aucun GO de merge ni Vercel.
