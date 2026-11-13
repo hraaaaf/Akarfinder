@@ -56,3 +56,73 @@ Local offline verification in the isolated worktree based on PR #1203 HEAD `1eb1
 2. Confirm the environment reviewer policy and the supported secure network path to the Neon Recovery branch.
 3. Provision the private storage resources and non-secret repository/environment variables; verify the Neon secret exists without exposing its value.
 4. Merge only after the security review and required CI. A separate explicit operator action is still required for the gated live dispatch. Do not merge or dispatch as part of this preparation task.
+
+## Security hardening review — 2026-11-12 (not production authorization)
+
+**Scope:** code and offline-security review of the Draft #1203 GitHub-hosted variant. No AWS resources or GitHub environment protections have been provisioned by this review. No live H1 run, no merge, no Vercel deployment.
+
+### Verified safeguards in Draft code
+
+- The H1 PostgreSQL role is non-owner and SELECT-only (Neon Recovery SQL evidence), with 151,900 joined rows, 53,083 priority rows and **zero missing title/city/URL core identities**. Field precision, freshness and portability remain uncertified.
+- Every S3 object HEAD/GET/PUT/LIST is now forced to the **expected bucket-owner account**; KMS ARN must belong to that account and region.
+- Resume checkpoints now require every referenced S3 key to belong to the **same run ID and batch index**, with exactly one raw input and one aggregate report, unique keys and matching SHA-256 references. Cross-run, wrong-kind and modified-hash references fail closed.
+- The OIDC session request is set to **21,600 seconds** (six hours) rather than 43,200 seconds. The AWS IAM role must have `MaxSessionDuration >= 21600` or assumption will fail before processing. Renewed runs get fresh OIDC credentials. The GitHub job itself has a six-hour timeout; do not promise completion within one attempt.
+
+### Required AWS provisioning — NOT YET VERIFIED
+
+Use dedicated infrastructure in AWS `eu-central-1`, **not** public GitHub artifacts. Fill placeholders out of band. Do **not** paste account IDs, credentials, complete database URLs, bucket inventory or private data into GitHub issue/PR/Notion.
+
+1. Choose an AWS account and create an S3 bucket dedicated to the H1 evidence. Enable **Block Public Access (all four controls)**, bucket versioning, default customer-managed **SSE-KMS**, TLS-only requests, and no expiry/deletion lifecycle for this H1 prefix. Object versioning retains prior versions but **does not make evidence immutable**. If immutable archival is required, evaluate separate Object Lock/retention requirements; do not impose indefinite legal holds by default.
+2. Create a customer-managed KMS key in `eu-central-1`. Its key policy must let only the designated IAM H1 role use `kms:GenerateDataKey` and `kms:Decrypt` via S3; an IAM permission by itself is insufficient if the KMS key policy denies it.
+3. Configure the GitHub OIDC identity provider `https://token.actions.githubusercontent.com`, audience `sts.amazonaws.com`. Create a dedicated IAM role with **MaxSessionDuration >= 21600**. Restrict its trust to the exact repo + environment **and** `main`. Confirm the effective trust via AWS IAM Access Analyzer. Example trust statement (replace account id):
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": {"Federated": "arn:aws:iam::<AWS_ACCOUNT_ID>:oidc-provider/token.actions.githubusercontent.com"},
+    "Action": "sts:AssumeRoleWithWebIdentity",
+    "Condition": {"StringEquals": {
+      "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+      "token.actions.githubusercontent.com:sub": "repo:hraaaaf/Akarfinder:environment:q1e-neon-readonly",
+      "token.actions.githubusercontent.com:ref": "refs/heads/main"
+    }}
+  }]
+}
+```
+4. Grant that role only S3 ListBucket scoped to `akarfinder/h1/*`, PutObject/GetObject scoped to `arn:aws:s3:::<BUCKET>/akarfinder/h1/*`, and KMS data-key/decrypt on the one key. Do not grant S3 DeleteObject, PutBucketPolicy, PutBucketAcl, PutObjectAcl or wildcard bucket access. Example identity permissions (replace placeholders):
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow", "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::<BUCKET>",
+      "Condition": {"StringLike": {"s3:prefix": ["akarfinder/h1/*"]}}
+    },
+    {
+      "Effect": "Allow", "Action": ["s3:GetObject", "s3:PutObject"],
+      "Resource": "arn:aws:s3:::<BUCKET>/akarfinder/h1/*"
+    },
+    {
+      "Effect": "Allow", "Action": ["kms:GenerateDataKey", "kms:Decrypt"],
+      "Resource": "<KMS_KEY_ARN>",
+      "Condition": {"StringEquals": {"kms:ViaService": "s3.eu-central-1.amazonaws.com"}}
+    }
+  ]
+}
+```
+Validate this sample with IAM Access Analyzer; resource and key policies may further restrict use. `HeadObject --checksum-mode ENABLED` on SSE-KMS encrypted objects can require both KMS permissions. Add bucket-policy enforcement of TLS and encryption after testing actual calls. The H1 job should not need `iam:*`, `kms:Create*`, `s3:Delete*`, or permission to change public access.
+
+5. **Environment gate:** on GitHub `Settings → Environments → q1e-neon-readonly`, restrict deployment branches to `main`, disable administrator bypass, require a second authorized reviewer with **Prevent self-review** if permitted by the repo's plan, and audit who can edit workflows/environment. The environment was previously shown with **No restriction** and administrator bypass enabled; it is **not certified protected**. Repository is public per the connected GitHub repo metadata, so environment reviewer protections are available on supported plans.
+6. Configure environment/repo variables `H1_PRIVATE_S3_BUCKET`, `H1_PRIVATE_S3_KMS_KEY_ARN`, `H1_PRIVATE_AWS_ROLE_ARN`, `H1_PRIVATE_AWS_ROLE_NAME`, `H1_PRIVATE_AWS_ACCOUNT_ID`; check that the environment secret `Q1E_NEON_RECOVERY_READONLY_URL` is present and uses the dedicated **direct non-pooler** `akar_h1_ci_readonly` Neon connection with `sslmode=require`. Never display its value in logs/screenshots.
+7. **Network gate:** Neon project currently reports no configured allowed IPs and public access enabled, but outbound HTTPS/Postgres reachability from a GitHub-hosted Linux runner has **not** been tested. Verify TLS/connection using a *separate, bounded read-only preflight* before the full dispatch. Never solve connectivity problems by inserting `0.0.0.0/0` into a restrictive allowlist.
+8. **Source consistency gate:** counts, ID high-water and uniqueness cannot prove content immutability between successive SQL connections or cross-run resumes. Protect the Recovery branch from writes by other workloads for the entire H1 job and all retries, or build a verifiable source-content fingerprint/snapshot mechanism first. Do **not** call the result a consistent PostgreSQL snapshot without that evidence.
+
+### GO / NO-GO
+
+**NO-GO until:** AWS S3 + KMS + IAM OIDC resources exist and policies are verified, GitHub environment restrictions/reviewer are in place, secrets/variables are verified without revealing values, Neon connection and read-only checks pass, the source-immutability risk is addressed, and the **exact current HEAD** has green CI. No merge or live dispatch is authorized by this security-review edit.
+
+**Once all gates are evidenced**, review merge separately, then explicitly dispatch with `authorize_h1_readonly=true` from `main`. Automatic continuation after the first 1,000 is intentional. Treat any failed check as a stop; after recovery, use `resume_run_id` to replay S3 integrity checks before continuation. Verify 152 batches / 151,900 rows / zero parser errors and private final manifest SHA. Independent field accuracy and publishing remain separate certification work.
+
+Primary references: [AWS OIDC trust](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-idp_oidc.html), [AWS role session duration](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_update-role-settings.html), [AWS HeadObject/KMS](https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html), [GitHub environment protections](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments).
