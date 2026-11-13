@@ -316,3 +316,23 @@ PR roadmap : #902. Lots : #904, #906, #907, #913.
 
 **Critère de clôture du sous-lot périmètre** : décision produit limitée enregistrée + CI et captures historiques identifiables + publication J18 hors scope. Ce sous-lot décisionnel est acté. **La release V1 demeure NO-GO** jusqu'aux contrôles qualité/validation nécessaires. **NEXT EXACT** : achever QA réelle sur la build candidate (trois modes / quatre viewports + lecteurs d'écran), produire score et rapport, corriger si nécessaire ; ensuite revalider HEAD/CI, closeout et ouvrir séparément les gates de merge et Vercel. Pas de pourcentage global sans dénominateur prouvé.
 
+### LOT01 — closeout technique UX V1 limitée : 2026-11-13
+
+**Périmètre V1 accepté** : Quartier 2D, Rue zoom et panneau « Limites non disponibles », sans POI Maârif non qualifiés ni frontière SIG certifiée. J18 OSM public reste gelé et NO-GO (1/1339 tuiles privées SHA vérifiée antérieurement). Aucune publication ni modification Blob, DB, WAF, Redis, OIDC ou Vercel.
+
+**Goal** : clarifier le panneau Maârif desktop avec zéro POI public (plus de lisibilité et moins de répétitions, disclaimers toujours consultables), et vérifier que la capture Rue à 768px est prise après stabilisation réelle de caméra MapLibre.
+
+**BEFORE et référence** : GitHub Actions [#43407727309](https://github.com/hraaaaf/Akarfinder/actions/runs/43407727309), artefact 14028132439, 12 captures sur 390×844, 430×932, 768×900, 1280×900. Vue Rue 768 active mais capture non conditionnée par le zoom caméra ; texte de couverture redondant et minuscule sur desktop.
+
+**Implémentation** : commits [7e9a83a](https://github.com/hraaaaf/Akarfinder/commit/7e9a83af13621757ed888738410c9461cc52e659), [78e4945](https://github.com/hraaaaf/Akarfinder/commit/78e4945dc1af8866042e91b5c2547db762ea685c), [8f6c414](https://github.com/hraaaaf/Akarfinder/commit/8f6c4144b2e55b9bc757064090d562d8ce64aea5). Fichiers : components/map/P4MapDecisionRail.tsx, app/map/vivre-ici-j17-a11y.css et scripts/audits/carte-lot8-casablanca-visual-after.mjs. Sources et limites en disclosure natif utilisable au clavier, texte documentaire au moins 12px, aucun faux POI. Le script attend zoom MapLibre >=16,95 après idle avant la capture.
+
+**AFTER, success et preuves sur HEAD applicatif 8f6c4144b2e55b9bc757064090d562d8ce64aea5** :
+- [Casablanca AFTER #43440643624](https://github.com/hraaaaf/Akarfinder/actions/runs/43440643624), artefact 14044683169 : 4/4 viewports PASS, zoom Rue mesuré **17,1 sur chaque format**, 0 erreur JS, 0 overflow. Disclosure clavier et typographie desktop vérifiés.
+- [Accessibilité native #43440643917](https://github.com/hraaaaf/Akarfinder/actions/runs/43440643917) : jobs **NVDA Windows PASS / VoiceOver macOS PASS**. Artefacts 14045499149 / 14046048396 ; transcriptions de parole contrôlées, Maârif H1 annoncé, navigation native Limites/Retour.
+- CI exacte HEAD applicatif : **30 workflows terminés ; 28 SUCCESS, 2 SKIPPED, 0 FAIL**. Cette preuve ne vaut pas pour le SHA du futur commit documentaire.
+- Avant/Après comparés visuellement aux mêmes viewports ; archive Vivre_Ici_UX_BEFORE_AFTER_8f6c414_2026-11-13.zip, SHA256 bb8fdb872ca7748457d09fbd42f3c1aad88f6fa3067d07673cff03597ff16aff ; rapport VIVRE_ICI_V1_UX_QA_8f6c414_2026-11-13.md, SHA256 14b4216bb8d647d784f2dcd8e1703d87c0d9bbbd7565ecff5a387c89c3f05276, joints à la conversation.
+
+**VERDICT** : PASS du sous-lot QA visuel, caméra et parcours natifs testés. Ces scénarios ne certifient pas l'ensemble WCAG. **UX provisoire subjective** ~8,5/10 (BEFORE ~8/10), cible >=9,5/10 NON démontrée : trop peu de données publiques qualifiées pour une valeur métier complète. Périmètre accepté ne signifie pas que l'exigence UX soit levée. **Release V1 NO-GO.**
+
+**NEXT exact** : CI du HEAD documentaire après ce closeout ; trancher explicitement la qualité V1 limitée (améliorer vers la cible ou autoriser un compromis documenté). GO humain distinct requis avant merge, puis un autre avant tout déploiement Vercel. Maintenir la PR Draft et le J18 OSM public OFF. Aucune progression globale chiffrée sans critères exhaustifs.
+
