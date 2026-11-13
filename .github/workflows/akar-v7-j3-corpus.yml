@@ -1,0 +1,24 @@
+name: Akar V7 J3 Agenz Corpus — Offline
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/v7_parallel/j3_agenz_corpus.py'
+      - 'scripts/acquisition/__tests__/test_v7_j3_agenz.py'
+      - '.github/workflows/akar-v7-j3-corpus.yml'
+permissions:
+  contents: read
+jobs:
+  j3-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install parser-only dependency
+        run: python -m pip install "beautifulsoup4==4.14.3"
+      - name: Snapshot corpus contracts; synthetic fixtures, 0 HTTP, 0 DB
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_j3_agenz.py'
