@@ -24,7 +24,7 @@ const mar=Array.from({length:400},(_,i)=>'https://www.marocannonces.com/annonce/
 const sources={'marocannonces.com':report(mar),'mubawab.ma':report(mub)};
 const j5=assessJ5(sources);
 const bridge=adaptLegacyReports(sources);
-process.stdout.write(JSON.stringify({j5,bridgeRecords:bridge.records})+'\\n');
+process.stdout.write(JSON.stringify({j5,bridgeRecords:bridge.records}));
 """
 
 
