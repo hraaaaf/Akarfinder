@@ -76,4 +76,4 @@ def audit_verified_snapshot(folder):
     source = verify_evidence(root / "source.html", root / "source.manifest.json")
     return {"source_url": source["manifest"]["source_url"],
             "original_sha256": source["manifest"]["html_sha256"],
-            **audit_source_internal_consistency(source["raw_html"])}
+            **audit_source_internal_consistency(source["raw_html"].encode("utf-8"))}
