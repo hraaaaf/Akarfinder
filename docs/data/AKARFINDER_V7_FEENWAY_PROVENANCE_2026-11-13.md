@@ -66,3 +66,16 @@ Le poste utilisateur DESKTOP-3MAJEEH a été vérifié **Offline**, dernier cont
 **Accès Windows constaté :** AI Machine Bridge signale la machine en ligne en mode `presence_only`, sans commande ni accès fichiers. Desktop Commander indique `DESKTOP-3MAJEEH` Offline (dernier contact historique 55 h). Il est donc impossible à ce jour de récupérer les fichiers bruts `feenway_mp_scraper` par ces canaux.
 
 **Next exact :** réexporter localement, depuis les fichiers bruts déjà collectés (priorité zéro nouvelle requête réseau), le lien `Voir sur` / URL de fiche originale et ID amont, ou donner les captures HTML originales immuables avec empreinte indépendante ; puis qualifier les champs des portails source et la dédup avant staging privé V3/Radar10. Pas de promotion sans nouveau gate. V7 reste **2/8 jalons clôturés**, pas de pourcentage projet établi.
+
+
+## 13 novembre 2026 — Sous-lot de revue photo-ID Mubawab (OFFLINE, pas d'identité source)
+
+**Goal :** explorer une piste de triage sans refaire 82 166 appels FeenWay. Les photos ne sont pas des URL/ID de l'annonce originale.
+
+**Code :** `scripts/acquisition/v7_multisource/feenway_photo_id_hints.py`, tests `scripts/acquisition/__tests__/test_v7_feenway_photo_id_hints.py`, CI branchée. Analyse très stricte du chemin de la **première photo** `www.mubawab-media.com/ad/d/ddd/dddF/h/...` comme **indice non authentifié**. Les photos `/m/` (miniatures d'autres annonces observées) ne peuvent jamais produire d'ID principal ; rejet des hôtes trompeurs et schémas HTTP. Aucun URL original fabriqué et aucune admission.
+
+**Rapport sur le vrai ZIP :** 82 166 / 82 166 annonces parcourues ; 27 328 premières photos avec chemin Mubawab strict et ID *candidat* ; 1 680 groupes de collision de cet indice (1 803 occurrences supplémentaires) en revue uniquement ; 3 646 galeries vides, 51 192 lignes sans indice strict. **Zéro vrai doublon confirmé**, 0 ID de source certifié, 0 suppression, 0 DB, 0 requête réseau. Les IDs photo peuvent être trompeurs ; deux exemples déjà reliés manuellement à un lien de fiche original ne constituent pas une mesure de précision globale.
+
+**Preuves locales :** 9/9 tests PASS. ZIP privé `feenway_v7_mubawab_photo_hints_audit_2026-11-13.zip` (279 377 octets ; SHA256 `548de2f3f94244277fd18c3bb14281158b6bfde1aee7552a43c84ea3afcebb0e`) CRC ZIP PASS, contient le rapport et 27 328 indices JSONL.gz en quarantaine et CSV des collisions. La CI au SHA de code poussé doit être constatée avant certification GitHub.
+
+**Next exact :** exploiter les candidats pour sélectionner des échantillons prioritaires de correspondance avec les vrais liens originaux (HTML d'origine ou fichiers bruts du collecteur), puis confrontation prix/type/transaction/dates et dédoublonnage avant la moindre admission dans V3/Radar10. **V7 reste 2/8** jalons clos.
