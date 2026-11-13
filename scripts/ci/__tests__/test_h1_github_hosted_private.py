@@ -269,6 +269,7 @@ class TestReadOnlyAndWorkflowContracts(unittest.TestCase):
         self.assertIn("runs-on: ubuntu-24.04", workflow)
         self.assertNotRegex(workflow, r"self-hosted|windows-latest|upload-artifact|actions/cache")
         self.assertIn("id-token: write", workflow)
+        self.assertIn("role-duration-seconds: 21600", workflow)
         self.assertIn("Q1E_NEON_RECOVERY_READONLY_URL", workflow)
         self.assertIn("inputs.authorize_h1_readonly == true", workflow)
         self.assertIn("github.ref == 'refs/heads/main'", workflow)
