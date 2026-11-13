@@ -162,7 +162,7 @@ def all_rows_page_sql(h1: Any, cursor: int, highwater: int, limit: int) -> str:
 
 
 def make_storage_manifest(run_id: str, snapshot: dict[str, Any], batches: list[dict[str, Any]],
-                          *, complete: bool) -> dict[str, Any]:
+                          *, complete: bool, previous_checkpoint_sha256: str | None = None) -> dict[str, Any]:
     processed = sum(int(x["count"]) for x in batches)
     status = Counter()
     for x in batches:
@@ -170,6 +170,7 @@ def make_storage_manifest(run_id: str, snapshot: dict[str, Any], batches: list[d
     return {
         "version": MANIFEST_VERSION,
         "run_id": run_id,
+        "previous_checkpoint_sha256": previous_checkpoint_sha256,
         "source_commit": IMMUTABLE_SOURCE_SHA,
         "workflow_commit": os.environ.get("GITHUB_SHA", ""),
         "snapshot": snapshot,
@@ -336,9 +337,12 @@ def run_h1(source: Path, store: SupabasePrivateStore, run_id: str, secret: str) 
         if initial is None:
             snapshot = dict(snapshot, as_of=datetime.now(timezone.utc).isoformat())
             manifest = make_storage_manifest(run_id, snapshot, [], complete=False)
-            store.put_manifest(manifest, checkpoint_key(run_id, 0), temp_root)
+            initial_object = store.put_manifest(manifest, checkpoint_key(run_id, 0), temp_root)
+            predecessor_sha = initial_object["sha256"]
         else:
-            manifest, _ = initial
+            manifest, predecessor_sha = initial
+            require(manifest.get("previous_checkpoint_sha256") is None,
+                    "H1_INITIAL_CHECKPOINT_CHAIN_INVALID")
             saved = manifest.get("snapshot") or {}
             as_of = saved.get("as_of")
             try:
@@ -354,9 +358,12 @@ def run_h1(source: Path, store: SupabasePrivateStore, run_id: str, secret: str) 
             existing = store.get_manifest(checkpoint_key(run_id, index), temp_root)
             if existing is None:
                 break
-            candidate, _ = existing
+            candidate, candidate_sha = existing
             require(len(candidate.get("batches") or []) == min(index, TOTAL_BATCHES),
                     "H1_CHECKPOINT_PREFIX_INVALID")
+            require(candidate.get("previous_checkpoint_sha256") == predecessor_sha,
+                    "H1_CHECKPOINT_CHAIN_MISMATCH")
+            predecessor_sha = candidate_sha
             manifest = candidate
         batches = verify_checkpoint(store, manifest, run_id, snapshot, temp_root)
         # Conservative budget on resumed runs; includes retained historical manifests.
@@ -374,8 +381,11 @@ def run_h1(source: Path, store: SupabasePrivateStore, run_id: str, secret: str) 
             require(first_size * TOTAL_BATCHES + 80 * 1024**2 <= MAX_RUN_BYTES,
                     "H1_SUPABASE_CANARY_SIZE_ESTIMATE_EXCEEDS_QUOTA")
             batches.append(record)
-            manifest = make_storage_manifest(run_id, snapshot, batches, complete=False)
-            store.put_manifest(manifest, checkpoint_key(run_id, 1), temp_root)
+            manifest = make_storage_manifest(
+                run_id, snapshot, batches, complete=False,
+                previous_checkpoint_sha256=predecessor_sha)
+            obj = store.put_manifest(manifest, checkpoint_key(run_id, 1), temp_root)
+            predecessor_sha = obj["sha256"]
             print(f"H1_CANARY_PASS rows={record['count']} parser_errors=0 db_writes=0 publication=0", flush=True)
             emit_github_output("canary_passed", "true")
         else:
@@ -388,11 +398,16 @@ def run_h1(source: Path, store: SupabasePrivateStore, run_id: str, secret: str) 
             record = execute_batch(h1, parse_batch, env, page_snapshot, index, temp_root, store, run_id)
             require(record["first_id"] > cursor, "H1_COHORT_CURSOR_OVERLAP")
             batches.append(record)
-            manifest = make_storage_manifest(run_id, snapshot, batches, complete=False)
-            store.put_manifest(manifest, checkpoint_key(run_id, index + 1), temp_root)
+            manifest = make_storage_manifest(
+                run_id, snapshot, batches, complete=False,
+                previous_checkpoint_sha256=predecessor_sha)
+            obj = store.put_manifest(manifest, checkpoint_key(run_id, index + 1), temp_root)
+            predecessor_sha = obj["sha256"]
             print(f"H1_BATCH_CHECKPOINT_COMPLETE index={index} rows={record['count']} total={manifest['processed']}",
                   flush=True)
-        manifest = make_storage_manifest(run_id, snapshot, batches, complete=True)
+        manifest = make_storage_manifest(
+            run_id, snapshot, batches, complete=True,
+            previous_checkpoint_sha256=predecessor_sha)
         validate_final(manifest)
         final_object = store.put_manifest(manifest, final_key, temp_root)
         store.put_manifest(manifest, checkpoint_key(run_id, TOTAL_BATCHES + 1), temp_root)
