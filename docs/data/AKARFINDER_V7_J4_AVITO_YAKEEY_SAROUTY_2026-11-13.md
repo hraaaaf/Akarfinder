@@ -105,3 +105,17 @@ Sept champs effectivement visibles dans le rendu sémantique renvoyé par la sou
 **Anti-relance :** marqueur unique créé au SHA ba3c9617 puis **supprimé** au commit dbc49d1fd05e29caf7abad6378b8eec35dfbddc9, sans second GET ; workflow sans marqueur = étapes source SKIPPED. CI workflow efficiency corrigée par f2b67e75b53be5190be905b7c687e9ec92340913. Aucune DB externe, publication, staging, cron live, merge ni Vercel.
 
 **Décision :** sous-lot Sarouty capture brute + replay hors ligne = preuve concrète acquise ; J4 complet OUVERT (quartier/geo source contradictoire, activité/qualité indépendantes non certifiées), J5 OUVERT. V7 = 2/8 jalons clos. Next exact : vérifier CI du garde-fou source-geo, ensuite corriger seulement les parsers sur données originales si preuve de non-régression ; J5 nouvelle source par canal autorisé sans retry du même endpoint.
+
+
+
+## ERRATUM obligatoire — seconde exécution automatique non voulue et neutralisation définitive
+
+**Fait vérifié dans les jobs GitHub, corrige la formulation « un seul GET » du paragraphe précédent :** le premier [run #43474551252](https://github.com/hraaaaf/Akarfinder/actions/runs/43474551252) a exécuté 1 GET original Sarouty + 1 GET original Mubawab. Une modification ultérieure du workflow alors que le marqueur restait dans la différence globale de la PR a déclenché automatiquement le **second** [run #43474887096](https://github.com/hraaaaf/Akarfinder/actions/runs/43474887096). Ses deux jobs ont exécuté chacun une seconde requête source (pas de rerun manuel). C'est un **défaut de conception du déclenchement temporaire** : les filtres de chemin GitHub sur PR n'assurent pas l'unicité par commit du marqueur. L'intention « une tentative par portail » n'a donc pas été respectée : **2 GETs Sarouty, 2 GETs Mubawab** dans les deux runs. Ne jamais déclarer le contraire.
+
+**Impact exact :** seconde capture Sarouty à 2026-11-13T17:40:46Z, **183331 octets et même SHA256 HTML 019a2cf51b6e188270b4a7c9d4f830cc31245fe9d1dbee50ac9e7e9bad12e145** que la première ; elle n'ajoute aucune information source indépendante. [Artifact secondaire #14063215863](https://github.com/hraaaaf/Akarfinder/actions/runs/43474887096/artifacts/14063215863), expiration 1 jour. Seconde tentative Mubawab : **même EvidenceError INVALID_RAW_CAPTURE**, 0 octet archivé/certifié. Aucun blocage technique contourné. La copie durable privée conservée est celle du **premier** artefact, contrôlée localement.
+
+**Arrêt réel effectué :** marqueur d'autorisation **supprimé** au commit dbc49d1fd05e29caf7abad6378b8eec35dfbddc9, puis fichier du workflow temporaire **supprimé du repo** au commit **79d40f181122938c979ed66faa6bfce6da074d7c**. Il n'existe plus de chemin de capture automatique J4/J5 sur cette branche à son HEAD ; il ne faut pas réinstaller un tel workflow sans mécanisme de consommateur unique durable/claim opérateur, vérification de séquence et CI Policy PASS. Aucun autre GET n'a été ordonné.
+
+**Autre défaut détecté et résolu :** [CI Policy #43474550923](https://github.com/hraaaaf/Akarfinder/actions/runs/43474550923) FAILED pour cancel-in-progress=false ; le paramètre a été corrigé puis le workflow de capture entièrement retiré. Les nouveaux tests hors ligne J4 géographie restent en CI indépendante, à vérifier sur HEAD final.
+
+**Aucune fausse promotion :** vrai HTML Sarouty prouvé pour un identifiant, district L4/V3 toujours NULL, coordonnées JSON-LD incohérentes avec Salé, aucun lien d'authentification J6, aucune annonce indexée/écrite/publiee, J4/J5 non clos.
