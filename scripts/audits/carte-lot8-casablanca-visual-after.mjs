@@ -154,6 +154,29 @@ try {
       // In normal public mode, an empty or unverified context must not display fake POI filters.
       const privateQa = await shell.getAttribute("data-j11c-qa-enabled") === "true";
       const publicAnchors = Number(await shell.getAttribute("data-maplibre-anchor-count"));
+      if (viewport.width >= 1024 && !privateQa && publicAnchors === 0) {
+        const emptyRail = rail.locator('[data-vivre-ici-empty-context="true"]');
+        await emptyRail.waitFor({ state: "visible", timeout: 10000 });
+        const disclosure = rail.locator('[data-vivre-ici-source-details]');
+        if (await disclosure.count() !== 1) throw new Error(`${viewport.name}: collapsed provenance details missing`);
+        const detailsOpen = await disclosure.evaluate((node) => node.open);
+        if (detailsOpen) throw new Error(`${viewport.name}: zero-source details should be collapsed by default`);
+        const summary = disclosure.locator("summary");
+        const summaryBox = await summary.boundingBox();
+        const summaryFont = await summary.evaluate((node) => parseFloat(getComputedStyle(node).fontSize));
+        const introFont = await rail.locator(".p4-premium-empty-evidence").evaluate((node) => parseFloat(getComputedStyle(node).fontSize));
+        if (!summaryBox || summaryBox.height < 44 || summaryFont < 12 || introFont < 12) {
+          throw new Error(`${viewport.name}: source disclosure / empty text illegible ${JSON.stringify({summaryBox,summaryFont,introFont})}`);
+        }
+        await summary.focus();
+        await summary.press("Enter");
+        await page.waitForFunction(() => document.querySelector('[data-vivre-ici-source-details]')?.open === true);
+        if (!await disclosure.getByText(/Les prix de quartier ne sont pas publiés/).isVisible()) {
+          throw new Error(`${viewport.name}: source disclaimer hidden after opening disclosure`);
+        }
+        await summary.press("Enter");
+        await page.waitForFunction(() => document.querySelector('[data-vivre-ici-source-details]')?.open === false);
+      }
       const filters = shell.locator(".maplibre-spike-filters");
       if (!privateQa && publicAnchors === 0 && await filters.count() !== 0) {
         throw new Error(`${viewport.name}: empty public POI filter remains visible`);
@@ -170,6 +193,17 @@ try {
       await page.waitForFunction(() => document.querySelector('[data-l3-maarif-pilot="true"]')?.getAttribute("data-l3-maarif-view") === "rue");
       if (await street.getAttribute("aria-pressed") !== "true") {
         throw new Error(`${viewport.name}: street aria-pressed did not update`);
+      }
+      // The React mode updates before MapLibre's 450ms easeTo animation finishes.
+      // The observed camera is only written on map idle with rendered basemap features.
+      await page.waitForFunction(() => {
+        const root = document.querySelector('[data-l3-maarif-pilot="true"]');
+        return root?.getAttribute("data-l3-maarif-view") === "rue"
+          && Number(root.getAttribute("data-l3-camera-zoom")) >= 16.95;
+      }, null, { timeout: 30000 });
+      const rueZoom = Number(await shell.getAttribute("data-l3-camera-zoom"));
+      if (rueZoom < 16.95 || rueZoom > 17.4) {
+        throw new Error(`${viewport.name}: camera Rue zoom not settled: ${rueZoom}`);
       }
       await page.screenshot({ path: `${outDir}/casablanca-maarif-rue-${viewport.width}x${viewport.height}.png`, fullPage: false, animations: "disabled" });
 
@@ -198,6 +232,8 @@ try {
         throw new Error(`${viewport.name}: V1 mode regression ${JSON.stringify({ afterOverflow, pageErrors: diagnostics.pageErrors })}`);
       }
       const v1 = {
+        streetZoom: rueZoom,
+        desktopEmptyDisclosure: viewport.width >= 1024 && !privateQa && publicAnchors === 0,
         modes: ["quartier", "rue", "limites", "quartier"], keyboardStreet: true,
         touchTargets: targetSizes, publicAnchors, privateQa, emptyFiltersHidden: !privateQa && publicAnchors === 0,
         honestBoundary: true, ariaExpandedReset: true, afterOverflow, pageErrors: diagnostics.pageErrors.length

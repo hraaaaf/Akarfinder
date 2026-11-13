@@ -108,6 +108,7 @@ export function P4MapDecisionRail() {
     ...category,
     count: localContext?.anchors.filter((anchor) => anchor.category === category.key).length ?? 0,
   }));
+  const isEmptyVerifiedContext = Boolean(districtEntity && localContext?.anchor_count === 0 && !QA_INDICATIVE_OSM);
   const contextIntro = districtEntity
     ? localContext?.anchor_count
       ? `${districtEntity.canonical_name} : ${localContext.anchor_count} repère${localContext.anchor_count > 1 ? "s" : ""} public${localContext.anchor_count > 1 ? "s" : ""} sourcé${localContext.anchor_count > 1 ? "s" : ""}. Les biens ne sont cartographiés que lorsqu’une position exacte vérifiée est disponible.`
@@ -126,6 +127,7 @@ export function P4MapDecisionRail() {
       className="p4-map-decision-rail"
       data-p4-map-decision-rail
       data-vivre-ici-premium-context
+      data-vivre-ici-empty-context={isEmptyVerifiedContext ? "true" : "false"}
       data-j11c-qa-rail={QA_INDICATIVE_OSM ? "true" : "false"}
       data-sheet-expanded={sheetExpanded ? "true" : "false"}
       aria-label="Vivre ici : territoire, vie locale et biens"
@@ -187,7 +189,7 @@ export function P4MapDecisionRail() {
                 ? "Transports, écoles, santé et commerces : seuls les lieux effectivement documentés figurent ci-dessous."
                 : QA_INDICATIVE_OSM
                   ? "Les catégories ci-dessous concernent le contexte détaillé non disponible. Les repères OSM de la carte sont indicatifs."
-                  : "Aucun lieu suffisamment récent n’est disponible pour décrire le quotidien de ce quartier."
+                  : "Écoles, commerces, santé et transports : données locales récentes non vérifiées."
               : QA_INDICATIVE_OSM
                 ? "Contexte détaillé indisponible ; les repères OSM de la carte sont indicatifs."
                 : "Les informations de proximité ne sont pas disponibles actuellement."}
@@ -266,18 +268,38 @@ export function P4MapDecisionRail() {
           <p className="p4-premium-market-eyebrow">Sources et couverture</p>
           <h2 id="vivre-ici-cadre" className="p4-premium-market-title">Cadre de vie</h2>
         </div>
-        <p className="p4-premium-market-copy">
-          {districtEntity && localContext?.coverage_status === "covered"
-            ? "Des repères locaux récents et documentés sont disponibles, avec leur provenance."
-            : districtEntity && localContext?.coverage_status === "partial" && localContext.anchor_count > 0
-              ? "La couverture locale est partielle. Les informations manquantes ne sont pas extrapolées."
-              : QA_INDICATIVE_OSM && districtEntity
-                ? "Cadre de vie enrichi non disponible. Les repères OSM affichés par la carte ne certifient ni activité ni périmètre."
-                : "Les éléments de cadre de vie sont insuffisamment documentés ou indisponibles dans cette vue."}
-        </p>
-        <p className="mt-2 text-[10px] leading-4" style={{ color: "var(--text-secondary)" }}>
-          Les prix de quartier ne sont pas publiés sans source actuelle vérifiable. Aucun score de qualité de vie ni temps de trajet n’est estimé.
-        </p>
+        {isEmptyVerifiedContext ? (
+          <details className="p4-premium-source-details" data-vivre-ici-source-details>
+            <summary>Consulter les sources et limites <span aria-hidden="true">⌄</span></summary>
+          <p className="p4-premium-market-copy">
+            {districtEntity && localContext?.coverage_status === "covered"
+              ? "Des repères locaux récents et documentés sont disponibles, avec leur provenance."
+              : districtEntity && localContext?.coverage_status === "partial" && localContext.anchor_count > 0
+                ? "La couverture locale est partielle. Les informations manquantes ne sont pas extrapolées."
+                : QA_INDICATIVE_OSM && districtEntity
+                  ? "Cadre de vie enrichi non disponible. Les repères OSM affichés par la carte ne certifient ni activité ni périmètre."
+                  : "Les éléments de cadre de vie sont insuffisamment documentés ou indisponibles dans cette vue."}
+          </p>
+          <p className="mt-2 text-[10px] leading-4" style={{ color: "var(--text-secondary)" }}>
+            Les prix de quartier ne sont pas publiés sans source actuelle vérifiable. Aucun score de qualité de vie ni temps de trajet n’est estimé.
+          </p>
+          </details>
+        ) : (
+          <>
+          <p className="p4-premium-market-copy">
+            {districtEntity && localContext?.coverage_status === "covered"
+              ? "Des repères locaux récents et documentés sont disponibles, avec leur provenance."
+              : districtEntity && localContext?.coverage_status === "partial" && localContext.anchor_count > 0
+                ? "La couverture locale est partielle. Les informations manquantes ne sont pas extrapolées."
+                : QA_INDICATIVE_OSM && districtEntity
+                  ? "Cadre de vie enrichi non disponible. Les repères OSM affichés par la carte ne certifient ni activité ni périmètre."
+                  : "Les éléments de cadre de vie sont insuffisamment documentés ou indisponibles dans cette vue."}
+          </p>
+          <p className="mt-2 text-[10px] leading-4" style={{ color: "var(--text-secondary)" }}>
+            Les prix de quartier ne sont pas publiés sans source actuelle vérifiable. Aucun score de qualité de vie ni temps de trajet n’est estimé.
+          </p>
+          </>
+        )}
       </section>
 
       {cityName === "Maroc" ? (

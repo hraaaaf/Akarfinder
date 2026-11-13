@@ -14,3 +14,68 @@
     height: 48px !important;
   }
 }
+
+/* J18 V1 — evidence-honest empty state, 1280px desktop typography after BEFORE.
+   Keep source disclaimers available through native details, not removed. */
+[data-vivre-ici-page] [data-p4-map-decision-rail] [data-vivre-ici-source-details] {
+  margin-top: 8px;
+}
+[data-vivre-ici-page] [data-p4-map-decision-rail] [data-vivre-ici-source-details] > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  gap: 8px;
+  padding: 9px 11px;
+  border-radius: 11px;
+  border: 1px solid #d7e3ef;
+  background: #f8fbff;
+  color: #183b60;
+  cursor: pointer;
+  font-size: 12.5px;
+  line-height: 1.35;
+  font-weight: 750;
+  list-style: none;
+}
+[data-vivre-ici-page] [data-p4-map-decision-rail] [data-vivre-ici-source-details] > summary::-webkit-details-marker { display: none; }
+[data-vivre-ici-page] [data-p4-map-decision-rail] [data-vivre-ici-source-details] > summary:focus-visible {
+  outline: 3px solid #0b63ce;
+  outline-offset: 2px;
+}
+[data-vivre-ici-page] [data-p4-map-decision-rail] [data-vivre-ici-source-details][open] > summary > span { transform: rotate(180deg); }
+[data-vivre-ici-page] [data-p4-map-decision-rail] [data-vivre-ici-source-details] > p {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #45586f;
+}
+@media (min-width: 1024px) {
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-vivre-ici-empty-context="true"] .p4-premium-empty-evidence {
+    font-size: 12.5px !important;
+    line-height: 1.55 !important;
+    color: #344d62 !important;
+  }
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-vivre-ici-empty-context="true"] .p4-premium-proofline span {
+    font-size: 10.5px !important;
+    line-height: 1.35 !important;
+  }
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-vivre-ici-empty-context="true"] [data-l2b-daily-context] > p {
+    font-size: 12.5px !important;
+    line-height: 1.5 !important;
+  }
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-vivre-ici-empty-context="true"] [data-vivre-ici-daily-details] > summary {
+    font-size: 12.5px !important;
+    min-height: 44px !important;
+  }
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-vivre-ici-empty-context="true"] .p4-premium-market-title {
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+  }
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-vivre-ici-empty-context="true"] .p4-premium-market-eyebrow {
+    font-size: 10.5px !important;
+    line-height: 1.3 !important;
+  }
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-vivre-ici-empty-context="true"] .p4-premium-primary-action {
+    font-size: 12.5px !important;
+  }
+}
