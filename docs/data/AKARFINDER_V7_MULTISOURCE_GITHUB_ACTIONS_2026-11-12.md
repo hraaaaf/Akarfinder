@@ -357,3 +357,10 @@ Le fichier source privé fourni `feenway_akarfinder_import.zip` contient **82 16
 **BLOCAGE EXTERNE** : fichiers bruts de la collecte initiale inaccessibles ; Windows AI Machine Bridge en mode heartbeat sans accès fichiers, Desktop Commander offline. Préférer extraction/ réexport du collecteur original avec liens et IDs source plutôt que revisiter 82 166 pages sur FeenWay. En alternative, obtenir des HTML bruts individuels traçables et SHA indépendants. Ensuite rapprocher les vraies fiches sources, prix et période, dédoublonner et tester les adaptateurs V7 → AkarParser V3 / Radar10 privé ; gate distinct avant DB / merge / cron / Vercel.
 
 **Décision :** 82 166/82 166 en quarantaine, 0 admission, 0 HTTP massif, 0 DB, 0 merge, 0 Vercel. **V7 reste 2/8 jalons clôturés** ; aucune couverture FeenWay ou fraîcheur source certifiée. Rapport détaillé : `docs/data/AKARFINDER_V7_FEENWAY_PROVENANCE_2026-11-13.md`.
+
+
+## Sous-lot FeenWay Mubawab : détection ID candidate depuis CDN sans promotion (13 novembre 2026)
+
+Réutilisation de la [PR #1211](https://github.com/hraaaaf/Akarfinder/pull/1211), module `scripts/acquisition/v7_multisource/feenway_photo_id_hints.py`, 9 tests. **CI fonctionnelle au SHA `fbea07bf29ae92a56e9168105b7e2486af2f3dba` :** [V7 #43424248483](https://github.com/hraaaaf/Akarfinder/actions/runs/43424248483) SUCCESS et [Policy #43424248495](https://github.com/hraaaaf/Akarfinder/actions/runs/43424248495) SUCCESS. Cron SKIPPED, 0 source HTTP/DB.
+
+Sur le ZIP original 82 166 entrées, 27 328 identifiants Mubawab **inférés de la première photo seulement**, 1 680 groupes de collision candidats (1 803 répétitions de lignes), dont 419 groupes à prix différents et 68 avec vente/location différentes. Aucune identité source, aucun doublon immobilier certifiés, 0 admission. Fichier canonique détaillé : `docs/data/AKARFINDER_V7_FEENWAY_PROVENANCE_2026-11-13.md`. **Next :** récupérer l'export brut des URLs/IDs amont via le collecteur Windows (bloqué par Desktop Commander Offline ; AI Machine Bridge heartbeat seulement), comparer aux originales, puis staging privé V3/Radar10. V7 demeure 2/8.

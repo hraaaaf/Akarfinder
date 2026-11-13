@@ -79,3 +79,16 @@ Le poste utilisateur DESKTOP-3MAJEEH a été vérifié **Offline**, dernier cont
 **Preuves locales :** 9/9 tests PASS. ZIP privé `feenway_v7_mubawab_photo_hints_audit_2026-11-13.zip` (279 377 octets ; SHA256 `548de2f3f94244277fd18c3bb14281158b6bfde1aee7552a43c84ea3afcebb0e`) CRC ZIP PASS, contient le rapport et 27 328 indices JSONL.gz en quarantaine et CSV des collisions. La CI au SHA de code poussé doit être constatée avant certification GitHub.
 
 **Next exact :** exploiter les candidats pour sélectionner des échantillons prioritaires de correspondance avec les vrais liens originaux (HTML d'origine ou fichiers bruts du collecteur), puis confrontation prix/type/transaction/dates et dédoublonnage avant la moindre admission dans V3/Radar10. **V7 reste 2/8** jalons clos.
+
+
+## Closeout technique — FeenWay / Mubawab indices photo, 13 novembre 2026
+
+**Code V7 vérifié au SHA exact :** `fbea07bf29ae92a56e9168105b7e2486af2f3dba`. [Run V7 #43424248483](https://github.com/hraaaaf/Akarfinder/actions/runs/43424248483) **SUCCESS** : 9 tests du module `feenway_photo_id_hints.py` PASS, anciens tests FeenWay et régressions V3/PostgreSQL/Radar10 PASS, compilation PASS, job cron `ten-minute-gate` **SKIPPED**. [CI Policy #43424248495](https://github.com/hraaaaf/Akarfinder/actions/runs/43424248495) **SUCCESS**.
+
+**Résultats effectivement calculés sur le ZIP utilisateur :** 82 166 lignes, 27 328 lignes avec ID Mubawab **candidat** extrait strictement de la première image `/ad/d/ddd/dddF/h/...`; 51 192 sans cette structure primaire, 3 646 galeries vides. 1 680 groupes de collision de l'ID photo candidat (1 803 répétitions supplémentaires), dont 419 groupes avec des prix textuels différents, 329 avec des surfaces textuelles différentes, 31 avec des noms de villes différents et 68 avec des transactions vente/location différentes. Ces groupes sont **seulement des signaux de revue** : 0 doublon physique certifié, 0 source originale certifiée, 0 suppression/fusion, 0 admission.
+
+**Nouveau livrable ZIP privé :** `feenway_v7_mubawab_photo_hints_audit_2026-11-13.zip`, 279 377 octets, SHA256 `548de2f3f94244277fd18c3bb14281158b6bfde1aee7552a43c84ea3afcebb0e`, CRC PASS. Contenu : rapport JSON, 27 328 indices candidats en JSONL.gz en quarantaine, CSV des 1 680 groupes collisionnels, code et tests. Archives et données privées non poussées sur GitHub.
+
+**Réserve méthodologique :** FeenWay peut réutiliser dans une galerie les miniatures `/m/` d'autres annonces Mubawab ; le module exige donc le premier chemin primaire `/h/` et ne tire **aucune URL source** des images. L'ID reste une hypothèse à confronter à une vraie fiche source ; le doublon de photos n'est pas le doublon de biens.
+
+**Gates restantes :** collecteur Windows brut inaccessible (Desktop Commander offline ; AI Machine Bridge présence seule). Réexport du dossier brut avec vraies URLs amont et snapshots source ou accès authentifié aux documents de collecte ; validation par échantillons puis staging privé V3/Radar10 et gates DB/merge séparés. FeenWay toujours NOT_INTEGRATED dans la couverture live ; V7 2/8 jalons clos.
