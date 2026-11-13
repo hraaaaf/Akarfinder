@@ -44,7 +44,7 @@ class J7EphemeralLedgerTests(unittest.TestCase):
         cls.admin.close()
 
     def setUp(self):
-        self.admin.execute("TRUNCATE v7_schedule.slots")
+        self.admin.execute("TRUNCATE v7_schedule.fenced_markers, v7_schedule.slots")
 
     def role(self, name="v7_schedule_worker"):
         if name not in ("v7_schedule_worker", "v7_schedule_observer"):
@@ -136,6 +136,79 @@ class J7EphemeralLedgerTests(unittest.TestCase):
         self.assertFalse(plan["execution_authorized"])
         self.assertIsNone(self.admin.execute(
             "SELECT to_regclass('public.property_listings')").fetchone()[0])
+
+
+    def marker(self, slot, token, name="snapshot-sha", sha="a"*64):
+        with self.role() as conn:
+            return conn.execute(
+                "SELECT v7_schedule.record_fenced_marker(%s,%s,%s,%s)",
+                (slot, token, name, sha)
+            ).fetchone()[0]
+
+    def test_fenced_marker_requires_exact_active_claim_token(self):
+        ok, token = self.claim()
+        self.assertTrue(ok)
+        self.assertFalse(self.marker(SLOT, uuid4()))
+        self.assertTrue(self.marker(SLOT, token))
+        self.assertFalse(self.marker(SLOT, token))  # duplicate no-op, not success
+        self.assertFalse(self.marker(SLOT, token, "snapshot-sha", "b"*64))
+        self.assertEqual(self.admin.execute(
+            "SELECT marker_name, evidence_sha256 FROM v7_schedule.fenced_markers"
+        ).fetchall(), [("snapshot-sha", "a"*64)])
+        with self.role() as conn:
+            self.assertTrue(conn.execute(
+                "SELECT v7_schedule.finish_slot(%s,%s)", (SLOT, token)
+            ).fetchone()[0])
+        self.assertFalse(self.marker(SLOT, token, "after-finish"))
+        self.assertEqual(self.admin.execute(
+            "SELECT count(*) FROM v7_schedule.fenced_markers"
+        ).fetchone()[0], 1)
+
+    def test_fenced_marker_rejects_invalid_inputs_and_unclaimed_slot(self):
+        self.assertFalse(self.marker(SLOT, uuid4()))
+        ok, token = self.claim()
+        self.assertTrue(ok)
+        self.assertFalse(self.marker(SLOT, token, "bad spaces"))
+        self.assertFalse(self.marker(SLOT, token, "valid", "xyz"))
+        self.assertFalse(self.marker(-1, token, "valid"))
+        self.assertEqual(self.admin.execute(
+            "SELECT count(*) FROM v7_schedule.fenced_markers"
+        ).fetchone()[0], 0)
+
+    def test_function_owner_is_dedicated_non_superuser_with_force_rls(self):
+        self.assertEqual(self.admin.execute(
+            "SELECT rolcanlogin, rolsuper, rolbypassrls, rolcreaterole "
+            "FROM pg_roles WHERE rolname='v7_schedule_owner'"
+        ).fetchone(), (False, False, False, False))
+        self.assertEqual(self.admin.execute(
+            "SELECT pg_get_userbyid(proowner) FROM pg_proc "
+            "WHERE oid='v7_schedule.record_fenced_marker(bigint,uuid,text,text)'::regprocedure"
+        ).fetchone()[0], "v7_schedule_owner")
+        self.assertEqual(self.admin.execute(
+            "SELECT relrowsecurity, relforcerowsecurity FROM pg_class "
+            "WHERE oid='v7_schedule.slots'::regclass"
+        ).fetchone(), (True, True))
+        self.assertEqual(self.admin.execute(
+            "SELECT relrowsecurity, relforcerowsecurity FROM pg_class "
+            "WHERE oid='v7_schedule.fenced_markers'::regclass"
+        ).fetchone(), (True, True))
+        self.assertEqual(self.admin.execute(
+            "SELECT pg_get_userbyid(proowner) FROM pg_proc "
+            "WHERE oid='v7_schedule.claim_slot(bigint,uuid)'::regprocedure"
+        ).fetchone()[0], "v7_schedule_owner")
+
+    def test_fenced_marker_table_not_accessible_to_worker_or_observer(self):
+        with self.role() as conn:
+            with self.assertRaises(self.psycopg.errors.InsufficientPrivilege):
+                conn.execute("SELECT count(*) FROM v7_schedule.fenced_markers")
+            with self.assertRaises(self.psycopg.errors.InsufficientPrivilege):
+                conn.execute("DELETE FROM v7_schedule.fenced_markers")
+        with self.role("v7_schedule_observer") as conn:
+            with self.assertRaises(self.psycopg.errors.InsufficientPrivilege):
+                conn.execute(
+                    "SELECT v7_schedule.record_fenced_marker(%s,%s,%s,%s)",
+                    (SLOT, uuid4(), "snapshot-sha", "a"*64))
+
 
 
 if __name__=="__main__":
