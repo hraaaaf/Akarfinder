@@ -353,3 +353,61 @@ J3 Agenz multi-exemples, ville/quartier & exactitude terrain →
 J4 Avito/Yakeey/Sarouty → J5 autres sources →
 J6 staging privé durable/anti-rejeu → J7 canarys/cron 10min sous GO,
 monitoring 24h. Aucun merge/Vercel/Supabase PROD/cron live.
+
+
+## FeenWay priorité 1 — sous-lot d'adaptateurs de provenance OFFLINE (13 novembre 2026)
+
+Le fichier source privé fourni `feenway_akarfinder_import.zip` contient **82 166 observations FeenWay et 0 URL/ID d'annonce des portails originaux**. FeenWay est un agrégateur : les domaines CDN des photos ne constituent **jamais** une identité de source et ne permettent pas une promotion vers les bases produit.
+
+[PR Draft #1211](https://github.com/hraaaaf/Akarfinder/pull/1211) empilée sur cette V7 : nouveau module d'audit ZIP `feenway_provenance.py` (7 tests), et nouveau `feenway_snapshot_links.py` (12 tests) qui **réutilise** `v7_multisource.snapshot_evidence.verify_evidence` pour un HTML original fourni de fiche FeenWay. SHA256 + manifeste + pin attendu, canonical/og:url exacts, unique lien explicite « Voir sur <portail> », URL/ID source analysés conservativement, aucun accès réseau/DB. Sortie `SUPPLIED_HTML_SELF_DECLARED_LINK_QUARANTINE_ONLY` ; `eligible_for_public_admission=false` et `eligible_for_radar10_private_staging=false`.
+
+**CI du commit de code** `5c6166d92c32306874188c6a86cf100ad2171ac8` : [V7 run #43421661472](https://github.com/hraaaaf/Akarfinder/actions/runs/43421661472) SUCCESS, FeenWay 12/12 tests HTML PASS contre véritable V7, tests initiaux FeenWay et régressions V3/PostgreSQL/Radar10 PASS, cron SKIPPED ; [CI policy #43421661482](https://github.com/hraaaaf/Akarfinder/actions/runs/43421661482) SUCCESS.
+
+**Vérification limitée (non extrapolable)** : 10/10 fiches FeenWay consultées fournissent un lien vers site original ; 6/8 destinations vérifiées sont des fiches accessibles, 1 Avito redirigée vers catégorie, 1 Sarouty HTTP 410. Des anomalies métier bloquent l'admission (FeenWay 180678 3 900 DH/mois contre Masaken 14564 3 900 DH/jour ; FeenWay 222666 Appartement vente contre titre Mubawab Terrain location). Les 12 tests automatiques sont synthétiques et **aucune vraie capture HTML immuable FeenWay n'est encore fournie**.
+
+**BLOCAGE EXTERNE** : fichiers bruts de la collecte initiale inaccessibles ; Windows AI Machine Bridge en mode heartbeat sans accès fichiers, Desktop Commander offline. Préférer extraction/ réexport du collecteur original avec liens et IDs source plutôt que revisiter 82 166 pages sur FeenWay. En alternative, obtenir des HTML bruts individuels traçables et SHA indépendants. Ensuite rapprocher les vraies fiches sources, prix et période, dédoublonner et tester les adaptateurs V7 → AkarParser V3 / Radar10 privé ; gate distinct avant DB / merge / cron / Vercel.
+
+**Décision :** 82 166/82 166 en quarantaine, 0 admission, 0 HTTP massif, 0 DB, 0 merge, 0 Vercel. **V7 reste 2/8 jalons clôturés** ; aucune couverture FeenWay ou fraîcheur source certifiée. Rapport détaillé : `docs/data/AKARFINDER_V7_FEENWAY_PROVENANCE_2026-11-13.md`.
+
+
+## Sous-lot FeenWay Mubawab : détection ID candidate depuis CDN sans promotion (13 novembre 2026)
+
+Réutilisation de la [PR #1211](https://github.com/hraaaaf/Akarfinder/pull/1211), module `scripts/acquisition/v7_multisource/feenway_photo_id_hints.py`, 9 tests. **CI fonctionnelle au SHA `fbea07bf29ae92a56e9168105b7e2486af2f3dba` :** [V7 #43424248483](https://github.com/hraaaaf/Akarfinder/actions/runs/43424248483) SUCCESS et [Policy #43424248495](https://github.com/hraaaaf/Akarfinder/actions/runs/43424248495) SUCCESS. Cron SKIPPED, 0 source HTTP/DB.
+
+Sur le ZIP original 82 166 entrées, 27 328 identifiants Mubawab **inférés de la première photo seulement**, 1 680 groupes de collision candidats (1 803 répétitions de lignes), dont 419 groupes à prix différents et 68 avec vente/location différentes. Aucune identité source, aucun doublon immobilier certifiés, 0 admission. Fichier canonique détaillé : `docs/data/AKARFINDER_V7_FEENWAY_PROVENANCE_2026-11-13.md`. **Next :** récupérer l'export brut des URLs/IDs amont via le collecteur Windows (bloqué par Desktop Commander Offline ; AI Machine Bridge heartbeat seulement), comparer aux originales, puis staging privé V3/Radar10. V7 demeure 2/8.
+
+
+## FeenWay — correctif du collecteur original reçu le 13/11/2026
+
+L'audit du **vrai `scraper_multiprocess.py` fourni par l'utilisateur** établit que seules les sept colonnes JSON-LD de la fiche FeenWay ont été sauvegardées ; `extract_listing` n'exporte ni lien « Voir sur [portail] » ni HTML brut, et les checkpoints `feenway_parts` ne contiennent eux aussi que les mêmes sept champs. Les **82 166 URLs** de `feenway_urls.json` correspondent exactement aux 82 166 fiches du ZIP d'origine (test local de jointure), mais ne sont **pas** 82 166 identités originales certifiées. **Correction de la séquence : demander uniquement les checkpoints n'aide plus ; il faut des captures HTML originales déjà existantes ailleurs OU une collecte complémentaire ciblée avec le collecteur corrigé.**
+
+Un correctif **local, non commité dans cette PR** a été livré en ZIP privé `feenway_collector_source_origin_patch_2026-11-13.zip` (SHA256 `bd2e93ab07e7a96dfa34c6ff0027176142c6d998c1cf55024b9a07636703e511`) : les anciens sept champs restent inchangés, le lien source explicite et un ID candidat sont enregistrés dans un JSONL **séparé**, horodaté et en quarantaine, lors d'une prochaine consultation HTML. 22/22 tests unitaires hors ligne PASS ; aucune requête réseau, DB ou publication. Les liens eux-mêmes doivent être contrôlés sur le portail d'origine ; notamment période de loyer et transaction.
+
+**Next exact :** pilote borné de 10 URLs depuis un nouveau dossier, contrôle des liens originaux et des prix/types/périodes, puis seulement GO/NO-GO sur une capture source plus large et staging privé V3/Radar10. La PR #1211 demeure Draft ; FeenWay non intégré, V7 2/8. Aucun cron live, merge ou Vercel.
+
+**Addendum test final FeenWay :** correctif privé révisé (22/22 tests offline PASS, hash final ci-dessus) : contrôle robots.txt de `/listings/` et de l'User-Agent, arrêt sur redirections et liens non sûrs, conservation de liens inconnus *seulement pour revue* ; aucune collecte réseau lancée et aucune source V7 admise.
+
+
+## FeenWay pilote GitHub Actions 10/10 — 13/11/2026
+
+Le blocage « PC Windows offline » **n'est plus bloquant pour le pilote**. [Run de capture FeenWay #43440398205](https://github.com/hraaaaf/Akarfinder/actions/runs/43440398205) SUCCESS au SHA `4b388e7d9c178b646dd20e9ea40d3dc64ce8654c` : 14 tests de sécurité PASS, 10/10 pages FeenWay capturées, 10/10 URLs/IDs amont observés via leurs liens explicites. Résultat contrôlé par [artefact #14046020698](https://github.com/hraaaaf/Akarfinder/actions/runs/43440398205/artifacts/14046020698), ZIP SHA256 `28b49a0bb5c2331c92483f7dd12c440b971f6025dc5da9b49db52baae2f2c539` et CRC PASS. [V7 CI #43440408179](https://github.com/hraaaaf/Akarfinder/actions/runs/43440408179) SUCCESS et [CI Policy #43440408276](https://github.com/hraaaaf/Akarfinder/actions/runs/43440408276) SUCCESS.
+
+Workflow limité au premier push de sa définition sur la branche de la PR #1211, 10 URLs fixes, robots contrôlé, redirections/accès refusés, **pas de schedule/DB/portails amont**. La suite peut rester sur GitHub Actions mais l'admission requiert une validation indépendante des vraies fiches amont (état, prix et période, type, transaction, dédup). 10/10 est un échantillon ciblé, non représentatif. FeenWay pas encore intégré aux annonces publiques ; **82 166 en quarantaine, V7 2/8**.
+
+
+## FeenWay V7 — Contrôle des 10 originaux via GitHub Actions, 13/11/2026
+
+**Résultat concret (source directe, sans PC)** : [run original #43445997766](https://github.com/hraaaaf/Akarfinder/actions/runs/43445997766) et [run correctif Unicode #43446700779](https://github.com/hraaaaf/Akarfinder/actions/runs/43446700779) **SUCCESS**. 22 tests puis 24 tests offline sur le vrai code GitHub, [CI V7 #43446712582](https://github.com/hraaaaf/Akarfinder/actions/runs/43446712582) SUCCESS, [Policy #43446712504](https://github.com/hraaaaf/Akarfinder/actions/runs/43446712504) SUCCESS.
+
+**État vérité 10/10** : 1 identité de fiche Agenz 169490 supportée par canonical HTML sous HTTP200 mais aucun champ métier prix/surface/type/transaction exploitable par V3 ; Avito 1 HTTP403 + 2 non tentées selon stop-on-denial ; Mubawab 3 corps de réponses non reconnus comme HTML (`NOT_HTML_DOCUMENT`), aucune identité source certifiée ; Yakeey, Masaken et Sarouty 3 contrôles robots indisponibles/refusés, aucune page fiche demandée. **0 validation de disponibilité**, 0 insertion DB et 0 annonce publiable. Ne pas confondre « job SUCCESS » et « fiche validée ». Les 10 URLs sont un échantillon ciblé et non représentatif.
+
+**Preuve téléchargeable hors repo** : ZIP `feenway_v7_original_portals_10_checked_2026-11-13.zip` SHA256 `b890b7b86b017b6084659052db20a20ee135978d2a5feb2f52ef262da757edfb`, 10 observations + résumés + artefacts des deux passes ; originaux GitHub [#14046954140](https://github.com/hraaaaf/Akarfinder/actions/runs/43445997766/artifacts/14046954140) et [#14047988025](https://github.com/hraaaaf/Akarfinder/actions/runs/43446700779/artifacts/14047988025), CRC des archives PASS. Aucun HTML original partagé.
+
+**Next exact** : ne pas répéter des GET sur les portails qui refusent/contredisent le contrat. Chercher une source primaire explicitement autorisée ou des snapshots originaux indépendants fournis ; améliorer la mesure et l'extraction métier sur preuve source ; enchaîner seulement ensuite le gate V3/Radar10 privé, pas l'import. **V7 2/8**, PR #1211 Draft, aucun merge/DB/Vercel.
+
+
+## FeenWay / Agenz V3 — 13/11/2026 — correction contractuelle et replay source unique
+
+Le contrôle FeenWay **lisait `row.extracted` au lieu de `row.fields`** alors que le vrai `akarparser_v3_raw_bulk.parse_raw()` expose `fields`. Après correction, [run GitHub Agenz #43452034762](https://github.com/hraaaaf/Akarfinder/actions/runs/43452034762) SUCCESS, **25+8 tests PASS**, HTTP 200/canonical ID 169490, SHA256 du HTML brut `a2b8e683b921af7897a7ecb85da2cfb7b54490e1c037faa22dd896762c9e29c5`. Prix V3 7 500 MAD, surface 84 m², location, appartement concordent avec FeenWay `186197` ; **réserve :** prix extrait génériquement de texte visible, surface sans chemin de provenance V3, type/transaction du chemin URL, période /mois et disponibilité non vérifiées. Archive GitHub [#14050801710](https://github.com/hraaaaf/Akarfinder/actions/runs/43452034762/artifacts/14050801710), SHA256 `2f156c438f8c48d557a4fff10e17e1b9b221f5caf7dc293e4aeecaa5b11c1a6a`, CRC PASS. [CI V7 #43452284032](https://github.com/hraaaaf/Akarfinder/actions/runs/43452284032) et [Policy #43452284365](https://github.com/hraaaaf/Akarfinder/actions/runs/43452284365) SUCCESS au commit fonctionnel `da7c7769d747019dfa7ccf29948970169f2b8fc9`.
+
+La première exécution du workflow a échoué sur une fixture synthétique, étape GET original SKIPPED ; elle a été corrigée avant le second run. **Aucun enrichissement global** : FeenWay 82 166 observations en quarantaine, 0 admission/DB/merge/cron live/Vercel. Next : source first structurée pour prix/surface/période et fraîcheur, puis seulement gate V3/Radar10 privé. V7 2/8.

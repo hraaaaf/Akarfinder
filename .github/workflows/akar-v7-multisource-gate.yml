@@ -6,6 +6,13 @@ on:
       - 'scripts/acquisition/v7_multisource/**'
       - 'scripts/acquisition/radar10/ingest.py'
       - 'scripts/acquisition/__tests__/test_v7_multisource.py'
+      - 'scripts/acquisition/__tests__/test_v7_feenway_provenance.py'
+      - 'scripts/acquisition/__tests__/test_v7_feenway_snapshot_links.py'
+      - 'scripts/acquisition/__tests__/test_v7_feenway_photo_id_hints.py'
+      - 'scripts/acquisition/__tests__/test_v7_feenway_actions_pilot.py'
+      - 'scripts/acquisition/__tests__/test_v7_feenway_upstream_10_audit.py'
+      - 'scripts/acquisition/__tests__/test_v7_feenway_agenz_v3_replay.py'
+      - 'scripts/acquisition/__tests__/test_v7_feenway_agenz_primary_scope.py'
       - 'scripts/acquisition/__tests__/test_v7_legacy_url_intake.py'
       - 'scripts/acquisition/__tests__/test_v7_detail_compare.py'
       - 'scripts/acquisition/__tests__/test_v7_snapshot_evidence.py'
@@ -78,6 +85,13 @@ jobs:
         run: >-
           python -m py_compile
           scripts/acquisition/v7_multisource/sources.py
+          scripts/acquisition/v7_multisource/feenway_provenance.py
+          scripts/acquisition/v7_multisource/feenway_snapshot_links.py
+          scripts/acquisition/v7_multisource/feenway_photo_id_hints.py
+          scripts/acquisition/v7_multisource/feenway_actions_pilot.py
+          scripts/acquisition/v7_multisource/feenway_upstream_10_audit.py
+          scripts/acquisition/v7_multisource/feenway_agenz_v3_replay.py
+          scripts/acquisition/v7_multisource/feenway_agenz_primary_scope.py
           scripts/acquisition/v7_multisource/pipeline.py
           scripts/acquisition/v7_multisource/legacy_url_intake.py
           scripts/acquisition/v7_multisource/detail_compare.py
@@ -87,6 +101,13 @@ jobs:
           scripts/acquisition/__tests__/test_v7_legacy_url_intake.py
           scripts/acquisition/radar10/ingest.py
           scripts/acquisition/__tests__/test_v7_multisource.py
+          scripts/acquisition/__tests__/test_v7_feenway_provenance.py
+          scripts/acquisition/__tests__/test_v7_feenway_snapshot_links.py
+          scripts/acquisition/__tests__/test_v7_feenway_photo_id_hints.py
+          scripts/acquisition/__tests__/test_v7_feenway_actions_pilot.py
+          scripts/acquisition/__tests__/test_v7_feenway_upstream_10_audit.py
+          scripts/acquisition/__tests__/test_v7_feenway_agenz_v3_replay.py
+          scripts/acquisition/__tests__/test_v7_feenway_agenz_primary_scope.py
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -106,6 +127,20 @@ jobs:
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_j45_original_snapshot.py'
       - name: V7 source and actual V3 PostgreSQL tests
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_multisource.py'
+      - name: FeenWay archive provenance quarantine (offline only)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_provenance.py'
+      - name: FeenWay immutable HTML source-link evidence (offline only)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_snapshot_links.py'
+      - name: FeenWay private Mubawab CDN-hint review, no admission
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_photo_id_hints.py'
+      - name: FeenWay GitHub Actions pilot safety regressions offline (no network)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_actions_pilot.py'
+      - name: FeenWay original portals 10 source audit safety offline
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_upstream_10_audit.py'
+      - name: FeenWay Agenz V3 fields contract regression offline
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_agenz_v3_replay.py'
+      - name: Agenz source HTML scoped price-description conflict safety offline
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_agenz_primary_scope.py'
       - name: Existing Radar10 private staging regression
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_radar10_*.py'
 

@@ -1,0 +1,142 @@
+[
+  {
+    "feenway_url": "https://www.feenway.com/listings/199629",
+    "feenway_html_sha256": "711e1ca68dc277d5795c5fa531e8b85f2a9aebb022e5aa2aeaa50b098fd2b263",
+    "original_url": "https://www.avito.ma/fr/nahda_1/appartements/Appartement_à_louer_avec_option_d_achat_à_Temara_58894239.htm",
+    "source_offer_id_hint": "58894239",
+    "source_domain_hint": "avito.ma",
+    "feenway_claim": {
+      "title": "Appartement à louer à Temara Nahda, 1 – 900 DH/nuit",
+      "city": "1",
+      "district": "Temara Nahda",
+      "surface": "35 m²",
+      "price": "900 MAD"
+    }
+  },
+  {
+    "feenway_url": "https://www.feenway.com/listings/222666",
+    "feenway_html_sha256": "3c2509869814b88bb3631ddfeb450a42658fe01d36ffa6fdb37b5a71298dacb2",
+    "original_url": "https://www.mubawab.ma/fr/a/8423416/terrain-%C3%A0-louer",
+    "source_offer_id_hint": "8423416",
+    "source_domain_hint": "mubawab.ma",
+    "feenway_claim": {
+      "title": "Appartement à vendre à Afella N'dra – 160K DH",
+      "city": "Afella N'dra",
+      "district": "Afella N'dra",
+      "surface": "222 m²",
+      "price": "160 000 MAD"
+    }
+  },
+  {
+    "feenway_url": "https://www.feenway.com/listings/273928",
+    "feenway_html_sha256": "ce003cc7012ce7162afa36ad04581e3d6fff1abce7cf0fd2804f86e7770391e1",
+    "original_url": "https://www.avito.ma/fr/anfa/bureaux/Bureau_luxueux_à_louer_à_Anfa_225_m²_58688662.htm",
+    "source_offer_id_hint": "58688662",
+    "source_domain_hint": "avito.ma",
+    "feenway_claim": {
+      "title": "Bureau à louer à Anfa, Casablanca – 40 000 DH/mois",
+      "city": "Casablanca",
+      "district": "Anfa",
+      "surface": "225 m²",
+      "price": "40 000 MAD"
+    }
+  },
+  {
+    "feenway_url": "https://www.feenway.com/listings/197602",
+    "feenway_html_sha256": "3736b3c22af771ece15bfec8a9cbf9bbbff8a75e6fdc843701844b9a3758c655",
+    "original_url": "https://www.avito.ma/fr/hay_salam/appartements/Appartement_Deyar_salam_2_à_vendre_85_m²_à_Agadir_58659730.htm",
+    "source_offer_id_hint": "58659730",
+    "source_domain_hint": "avito.ma",
+    "feenway_claim": {
+      "title": "Appartement à vendre à Hay Salam, Agadir – 1,208M DH",
+      "city": "Agadir",
+      "district": "Hay Salam",
+      "surface": "85 m²",
+      "price": "1 207 500 MAD"
+    }
+  },
+  {
+    "feenway_url": "https://www.feenway.com/listings/239051",
+    "feenway_html_sha256": "76a6e3f2dd0311129d6bbb6ffd0d124227674524c3658c9cf566cefd58259d28",
+    "original_url": "https://www.mubawab.ma/fr/a/8421954/villa-de-luxe-%C3%A0-vendre-%C3%A0-ain-atig-4-chambres-tout-confort-avec-chemin%C3%A9e-et-climatisation",
+    "source_offer_id_hint": "8421954",
+    "source_domain_hint": "mubawab.ma",
+    "feenway_claim": {
+      "title": "Villa à vendre à Ain Atig, Temara – 4,05M DH",
+      "city": "Temara",
+      "district": "Ain Atig",
+      "surface": "250 m²",
+      "price": "4 050 000 MAD"
+    }
+  },
+  {
+    "feenway_url": "https://www.feenway.com/listings/219504",
+    "feenway_html_sha256": "7263c1460b8fc28e66990fe57b89e4929ccd5b0fc46ce39321e606dd9aecd192",
+    "original_url": "https://www.mubawab.ma/fr/a/8438837/studio-meubl%C3%A9-tr%C3%A8s-haut-standing-de-50-m%C2%B2-avec-terrasse-%E2%80%93-triangle-d%E2%80%99or",
+    "source_offer_id_hint": "8438837",
+    "source_domain_hint": "mubawab.ma",
+    "feenway_claim": {
+      "title": "Studio à louer à Triangle D'or, Casablanca – 8 500 DH/mois",
+      "city": "Casablanca",
+      "district": "Triangle D'or",
+      "surface": "50 m²",
+      "price": "8 500 MAD"
+    }
+  },
+  {
+    "feenway_url": "https://www.feenway.com/listings/183868",
+    "feenway_html_sha256": "cf713449c11ae5bd3db5ed02f503b79fd25d468064db8b38d04fdd6929c9ba21",
+    "original_url": "https://yakeey.com/fr-ma/acheter-appartement-casablanca-beausejour-ca096674",
+    "source_offer_id_hint": "ca096674",
+    "source_domain_hint": "yakeey.com",
+    "feenway_claim": {
+      "title": "Appartement à vendre à Beausejour, Casablanca – 1,88M DH",
+      "city": "Casablanca",
+      "district": "Beausejour",
+      "surface": "132 m²",
+      "price": "1 880 000 MAD"
+    }
+  },
+  {
+    "feenway_url": "https://www.feenway.com/listings/186197",
+    "feenway_html_sha256": "c55387530cd9c6adee3a9bc976855ce526bd30c895091ad0338b3219e43e73aa",
+    "original_url": "https://agenz.ma/fr/annonces/immo-marrakech/location-appartements/route-de-casablanca/169490",
+    "source_offer_id_hint": "169490",
+    "source_domain_hint": "agenz.ma",
+    "feenway_claim": {
+      "title": "Appartement à louer à Route de Casablanca, Marrakech – 7 500 DH/mois",
+      "city": "Marrakech",
+      "district": "Route de Casablanca",
+      "surface": "84 m²",
+      "price": "7 500 MAD"
+    }
+  },
+  {
+    "feenway_url": "https://www.feenway.com/listings/179960",
+    "feenway_html_sha256": "d8922a898fd065fef6843de5130414b449a0fd9af3acf3749041f57e89aa6065",
+    "original_url": "https://sarouty.ma/property-details/?listing_id=896796",
+    "source_offer_id_hint": "896796",
+    "source_domain_hint": "sarouty.ma",
+    "feenway_claim": {
+      "title": "Bureau à louer à Centre Ville Casablanca, Casablanca – 2 450 DH/mois",
+      "city": "Casablanca",
+      "district": "Centre Ville Casablanca",
+      "surface": "8 m²",
+      "price": "2 450 MAD"
+    }
+  },
+  {
+    "feenway_url": "https://www.feenway.com/listings/180678",
+    "feenway_html_sha256": "d67404b4e8209a34f9fdda171fc3068bab24808ce4589df44c8d2e4147b9c148",
+    "original_url": "https://www.masaken.ma/fr/immobilier-maroc/location-villa-marrakech/14564",
+    "source_offer_id_hint": "14564",
+    "source_domain_hint": "masaken.ma",
+    "feenway_claim": {
+      "title": "Villa à louer à Route D'amezmiz, Marrakech – 3 900 DH/mois",
+      "city": "Marrakech",
+      "district": "Route D'amezmiz",
+      "surface": "490 m²",
+      "price": "3 900 MAD"
+    }
+  }
+]
