@@ -1,0 +1,22 @@
+name: Akar V7 J4 Avito Sarouty Yakeey — Offline
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/v7_parallel/j4_portal_intake.mjs'
+      - 'scripts/acquisition/__tests__/v7-j4-portals.test.mjs'
+      - '.github/workflows/akar-v7-j4-portals.yml'
+permissions:
+  contents: read
+jobs:
+  j4-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: J4 real merged L8 adapter tests; 0 portal requests, 0 DB
+        run: node --test scripts/acquisition/__tests__/v7-j4-portals.test.mjs
