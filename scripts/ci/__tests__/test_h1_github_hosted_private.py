@@ -222,7 +222,7 @@ class TestCanaryAndStorage(unittest.TestCase):
         changed = json.loads(store.data[key])
         changed["snapshot"]["total"] += 1
         store.data[key] = h1.canonical_json(changed)
-        with self.assertRaisesRegex(RuntimeError, "H1_RESUME_SOURCE_SNAPSHOT_MISMATCH"):
+        with self.assertRaisesRegex(RuntimeError, "H1_CHECKPOINT_CHAIN_MISMATCH"):
             self._run(store)
 
     def test_parser_error_fails_canary_before_any_private_batch_upload(self):
