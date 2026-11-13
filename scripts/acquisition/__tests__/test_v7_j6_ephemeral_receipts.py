@@ -174,6 +174,82 @@ class J6EphemeralReceiptTests(unittest.TestCase):
             "SELECT count(*) FROM v7_capture.policy_head"
         ).fetchone()[0],1)
 
+    def test_verified_j6_hmac_and_operator_policy_intent_maps_to_once_only_receipt(self):
+        """Integration: actual J6 signature+V3 replay -> SQL receipt, NEVER staging."""
+        import hashlib, hmac, json, sys
+        from datetime import datetime, timedelta, timezone
+        from tempfile import TemporaryDirectory
+        sys.path.insert(0, str(ROOT))
+        from akarparser_v3_raw_bulk import parse_raw
+        from v7_multisource.snapshot_evidence import _manifest
+        from v7_parallel.j6_authenticated_capture import DOMAIN, SCHEMA
+        from v7_parallel.j6_issuer_policy import (
+            REGISTRY_SCHEMA, review_with_operator_issuer_policy,
+        )
+
+        at=datetime(2026,11,13,12,tzinfo=timezone.utc)
+        url="https://agenz.ma/fr/annonces/immo-sale/vente-appartements/agdal/444291"
+        raw=(b"<html><head><title>Appartement a vendre</title></head><body>"
+             b"<h1>Appartement a vendre</h1><p>980 000 DH</p>"
+             b"<p>104 m2</p></body></html>")
+        key=bytes(range(32))  # PUBLIC fixture, no real credential.
+        kid="postgres-ci-issuer"
+        issuer="synthetic J6 integration only"
+        registry={
+            "schema_version":REGISTRY_SCHEMA,"generation":1,"issuers":[{
+                "key_id":kid,"issuer":issuer,"source_domains":["agenz.ma"],
+                "status":"active",
+                "valid_from_utc":"2026-11-12T00:00:00Z",
+                "valid_until_utc":"2026-12-01T00:00:00Z"}]
+        }
+        registry_bytes=json.dumps(registry,sort_keys=True).encode()
+        pin=hashlib.sha256(registry_bytes).hexdigest()
+        with TemporaryDirectory() as tmp:
+            html=Path(tmp)/"source.html"
+            manifest=Path(tmp)/"source.manifest.json"
+            html.write_bytes(raw)
+            m=_manifest(url,raw,when=at,method="explicit_single_page_https_get")
+            manifest.write_text(json.dumps(m),encoding="utf-8")
+            record=parse_raw({"source_url":url,"raw_html":raw.decode()},at)
+            att={
+                "schema_version":SCHEMA,"key_id":kid,"issuer":issuer,
+                "source_domain":"agenz.ma","source_offer_id":"444291",
+                "source_url":url,"html_sha256":m["html_sha256"],
+                "manifest_sha256":hashlib.sha256(manifest.read_bytes()).hexdigest(),
+                "captured_at_utc":"2026-11-13T12:00:00Z",
+                "issued_at_utc":"2026-11-13T12:05:00Z",
+                "expires_at_utc":"2026-11-14T12:05:00Z",
+            }
+            msg=DOMAIN+json.dumps(
+                att,ensure_ascii=True,sort_keys=True,
+                separators=(",",":"),allow_nan=False).encode()
+            att["mac_sha256"]=hmac.new(key,msg,hashlib.sha256).hexdigest()
+            result=review_with_operator_issuer_policy(
+                record,html,manifest,att,
+                registry_json_bytes=registry_bytes,
+                operator_pinned_registry_sha256=pin,
+                operator_keyring_hex={kid:key.hex()},
+                now_utc=at+timedelta(minutes=10))
+        self.assertTrue(result["capture_attestation_mac_valid"])
+        self.assertFalse(result["eligible_for_private_staging"])
+        self.assertFalse(result["public_admission_authorized"])
+        self.assertEqual(result["db_writes"],0)  # verifier did not write
+        receipt=result["review_receipt_intent"]
+        self.assertEqual(receipt["html_sha256"],hashlib.sha256(raw).hexdigest())
+        self.assertTrue(self.advance(0,receipt["registry_generation"],
+                                     receipt["registry_sha256"]))
+        args=dict(gen=receipt["registry_generation"],
+                  pin=receipt["registry_sha256"],
+                  mac=receipt["attestation_mac_sha256"],
+                  domain=receipt["source_domain"],
+                  offer=receipt["source_offer_id"],
+                  html=receipt["html_sha256"])
+        self.assertTrue(self.receipt(**args))
+        self.assertFalse(self.receipt(**args))  # same proof cannot count twice
+        self.assertEqual(self.admin.execute(
+            "SELECT count(*) FROM v7_capture.capture_receipts"
+        ).fetchone()[0],1)
+
     def test_non_superuser_owner_and_force_rls_and_no_product_effects(self):
         self.assertEqual(self.admin.execute(
             "SELECT rolcanlogin,rolsuper,rolbypassrls,rolcreaterole "
