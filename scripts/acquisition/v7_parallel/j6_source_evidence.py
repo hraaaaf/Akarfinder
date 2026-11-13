@@ -8,6 +8,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from akarparser_v3_raw_bulk import parse_raw
 from v7_multisource.snapshot_evidence import verify_evidence, _utc
 from v7_multisource.sources import canonical_identity, SourceNotSupported
+from v7_parallel.j45_original_snapshot import (
+    _real_l8_identity, _check_self_declared_source_url, OriginalSnapshotRejected,
+)
 
 FIELDS = ("title", "price_mad", "surface_total_m2", "city", "district",
           "property_type", "transaction_type")
@@ -16,6 +19,29 @@ FIELDS = ("title", "price_mad", "surface_total_m2", "city", "district",
 class ProvenanceRejected(ValueError):
     pass
 
+
+
+def _listing_identity(url: str) -> tuple[str, str, str]:
+    """J6 whitelisted detail identity; Sarouty reuses actual J4 L8, not guesses."""
+    if isinstance(url, str) and url.startswith((
+            "https://www.sarouty.ma/", "https://sarouty.ma/")):
+        try:
+            x = _real_l8_identity("sarouty.ma", url)
+        except OriginalSnapshotRejected as exc:
+            raise ProvenanceRejected("SAROUTY_L8_DETAIL_IDENTITY_INVALID") from exc
+        if (x.get("source_domain") != "sarouty.ma"
+                or x.get("source_url") != url
+                or x.get("record_kind") != "url_candidate_only"
+                or x.get("detail_observed") is not False
+                or x.get("eligible_for_private_detail_staging") is not False
+                or x.get("eligible_for_public_admission") is not False
+                or not isinstance(x.get("source_offer_id"), str)):
+            raise ProvenanceRejected("SAROUTY_L8_DETAIL_IDENTITY_INVALID")
+        return "sarouty.ma", x["source_offer_id"], url
+    try:
+        return canonical_identity(url)
+    except SourceNotSupported as exc:
+        raise ProvenanceRejected("ORIGINAL_DETAIL_URL_UNSUPPORTED") from exc
 
 def review_original_bytes(record: dict, html_file: Path, manifest_file: Path,
                           *, independently_pinned_html_sha256: str) -> dict:
@@ -31,10 +57,12 @@ def review_original_bytes(record: dict, html_file: Path, manifest_file: Path,
     manifest = evidence["manifest"]
     if manifest["html_sha256"] != pin:
         raise ProvenanceRejected("HTML_PIN_MISMATCH")
-    try:
-        domain, offer, _ = canonical_identity(manifest["source_url"])
-    except SourceNotSupported as exc:
-        raise ProvenanceRejected("ORIGINAL_DETAIL_URL_UNSUPPORTED") from exc
+    domain, offer, _ = _listing_identity(manifest["source_url"])
+    if domain == "sarouty.ma":
+        try:
+            _check_self_declared_source_url(evidence["raw_html"], manifest["source_url"])
+        except OriginalSnapshotRejected as exc:
+            raise ProvenanceRejected("SAROUTY_HTML_CANONICAL_UNVERIFIED") from exc
     if not isinstance(record, dict):
         raise ProvenanceRejected("V3_RECORD_REQUIRED")
     source = record.get("source")
