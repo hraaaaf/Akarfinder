@@ -92,7 +92,7 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Capture and certify L5 AFTER
-        run: node scripts/audits/neighborhood-context-l5-live-after-2026.mjs
+        run: node scripts/audits/neighborhood-context-l5-after-audit.mjs
       - name: Upload L5 AFTER evidence
         if: always()
         uses: actions/upload-artifact@v4

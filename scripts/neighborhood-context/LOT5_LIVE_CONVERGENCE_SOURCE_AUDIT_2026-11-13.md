@@ -46,3 +46,16 @@ Annonce avec GPS exact vérifié : conserver les mesures liées au BIEN dans une
 
 ## Verdict
 Audit SOURCE effectué ; Lot 5 toujours ACTIVE, Lot 6 OPEN. Aucun POI public admissible supplémentaire prouvé par cette analyse. Ne pas prétendre avoir atteint 9,5/10. Pas de merge/deploy/data change. Avancement de roadmap historique 4 lots CLOSED / 6 = 66,7 %, sans signification de couverture POI vivante.
+
+## 2026-11-13 — Résultat du sous-lot convergence Homepage
+
+BEFORE : [GitHub Actions #43455239930](https://github.com/hraaaaf/Akarfinder/actions/runs/43455239930), artefact 14054450401, 16/16 captures aux mêmes quatre formats ; homepage sans Vivre Ici, annonce QA en fixture historique août.
+
+Cible : `docs/NEIGHBORHOOD_CONTEXT_L5_VISUAL_TARGET_2026_11.md` et capture mockup desktop/mobile montrée avant implémentation. Composant NCI réintroduit après CityIntentGrid avec sources et couverture honnêtes et prix non sourcés absents.
+
+Code applicatif `c9dcbf6e6e1ecdca4d9f79c73961dcb8bee1224b`. AFTER : [GitHub Actions #43458198177](https://github.com/hraaaaf/Akarfinder/actions/runs/43458198177), artefact 14054463763, 20/20 captures, 0 findings ; URL API courant concorde avec rendu sur Homepage/SEO/Annonce QA live/Carte, état Agdal/Maârif `unavailable/0`. La fixture historique d'août conserve 4 ancres et n'est jamais classée live.
+
+Archive de preuves `NCI_L5_UX_BEFORE_AFTER_c9dcbf6_2026-11-13.zip` : SHA256 `cf845dde374125684bd5354100354dbb9b64a4cc98b37d423abb875e6e4b11f5`, remise dans la conversation.
+
+Réserve : le YAML L5 historique déclenche un échec CI Efficiency Policy lorsqu'on le modifie ; restaurer YAML original, conserver et isoler le test d'août, rediriger le runner stable vers le nouveau test live. Tant que nouveau HEAD CI non vérifié : **ne pas déclarer l'ensemble GREEN**. Malgré les captures, qualité UX 9,5 non démontrée et Lot 5 reste actif ; J18 et Vercel non activés.
+

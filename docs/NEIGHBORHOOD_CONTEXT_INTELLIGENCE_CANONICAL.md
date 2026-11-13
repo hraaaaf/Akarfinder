@@ -345,3 +345,24 @@ PR roadmap : #902. Lots : #904, #906, #907, #913.
 - Ancien listing/proximité statique : risque si consommé, pas démontré dans la route actuelle /listings/[id]. Le test visuel AFTER L5 historique attend covered, désormais incompatible avec la fraîcheur du seed courant ; aucune baisse des critères.
 - Succès de CE sous-lot : inventaire et diagnostic documentés, PAS une nouvelle valeur métier livrée. Lot 5 ACTIVE, score UX >=9,5 non démontré, V1 limitée inchangée et J18 OSM gelé/public OFF.
 - Next exact : captures BEFORE des quatre surfaces 390/430/768/1280 et mockup avant tout changement visuel ; test de convergence, puis source fraîche certifiée suivant L1/L2/L6. Aucun GO de merge ni Vercel.
+
+### 2026-11-13 — Lot 5 : AFTER convergence Homepage prouvé, source POI toujours indisponible
+
+**Goal** : afficher Vivre Ici sur Homepage avec un read-model NCI unique sur Homepage, SEO quartier, annonce moderne et carte, sans afficher les anciennes ancres POI ou des prix/temps non sourcés.
+
+**BEFORE certifié** : [GitHub Actions #43455239930](https://github.com/hraaaaf/Akarfinder/actions/runs/43455239930), artefact 14054450401, 16/16 captures sur 4 surfaces aux dimensions 390×844, 430×932, 768×900, 1280×900 ; 0 finding, 0 overflow ; absence du module sur Homepage. L'annonce de référence était une **fixture historique d'août**, pas une preuve d'ancres actuelles.
+
+**Cible visuelle** : `docs/NEIGHBORHOOD_CONTEXT_L5_VISUAL_TARGET_2026_11.md` et mockup desktop/mobile fournis au propriétaire. Trois cartes Agdal/Maârif/Guéliz, indicateur « Repères indisponibles » quand 0 ancre, liens vers quartier et carte, pas de prix ou trajets inventés.
+
+**Implémentation du candidat** : SHA applicatif `c9dcbf6e6e1ecdca4d9f79c73961dcb8bee1224b`, Homepage reconnectée à `HomeVivreIciSection` après villes ; cartes alimentées par `NeighborhoodContextReadModelV1`, prix statiques supprimés ; annonce QA `state=live` au temps courant séparée du contexte QA août ; attributs canoniques ajoutés au rail Carte.
+
+**AFTER ciblé PASS** : [GitHub Actions #43458198177](https://github.com/hraaaaf/Akarfinder/actions/runs/43458198177), artefact 14054463763, 20/20 captures (5 états × 4 formats), 0 finding, 0 pageError, 0 overflow. Les valeurs affichées sur la Homepage/SEO/annonce QA live et Carte concordent avec l'API du même build ; Agdal/Maârif `unavailable` et zéro repère, donc aucune promotion du seed expiré. La fixture août `partial`/4 reste testée et strictement distinguée.
+
+**Preuves visuelles** : comparaison BEFORE/AFTER mêmes viewports, rapport et mockup remis dans `NCI_L5_UX_BEFORE_AFTER_c9dcbf6_2026-11-13.zip`, SHA256 `cf845dde374125684bd5354100354dbb9b64a4cc98b37d423abb875e6e4b11f5`; ZIP BEFORE SHA256 `ff0dfd8c8b98c6f4a4547315e423ad56aa433a204695bb4b5cb1c0a2c42582f2`; AFTER `9b2fd1e0fe965349fb3b6a1312b1b7c416fba0a7b1bb5fbd3b2a50adae00d751`. Captures montrées au propriétaire.
+
+**Verdict limité** : sous-lot UI convergence testée PASS ; **Lot 5 reste ACTIVE** jusqu'à acceptation visuelle explicite et traitement des prérequis données. Score UX qualitatif AFTER ≈8,5/10, cible ≥9,5/10 non établie, aucune nouvelle ancre source actuelle admise. Ne pas confondre le vert du test AFTER avec la qualité et la fraîcheur des données.
+
+**Incident CI du SHA applicatif** : Efficiency Policy [#43458197648](https://github.com/hraaaaf/Akarfinder/actions/runs/43458197648) FAILURE car le YAML L5 historique (Chromium lourd sur PR) a été modifié. Correction prévue au **prochain HEAD** : restaurer bit-pour-bit le YAML original pour sortir du diff full-PR, archiver le test « covered/5 anchors » d'août sous son nom explicite, faire pointer l'ancien script AFTER vers le protocole moderne de vérité live sans modifier la politique CI ni admettre une exception générale. La CI du prochain HEAD doit être vérifiée à son SHA précis avant closeout final.
+
+**Gates** : L1/L2/L6 pour données fraîches, J18 OSM non publié et OFF ; PR #1197 Draft/non mergée ; pas de merge ou Vercel sans deux GO séparés. Pas de certification exhaustive WCAG ni de score 9,5 déclaré. NEXT : CI du HEAD réparé, vérification native, retours humains sur capture et admission indépendante de sources.
+

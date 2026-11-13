@@ -43,3 +43,10 @@ MOBILE 390/430 : titre 2 lignes, CTA carte >=44 px, une carte entière + amorce 
 
 ## NON OBJECTIFS
 Pas d'injection des 415 POI Geofabrik privés, pas de 1 339 tuiles OSM J18 publiques, pas de promotion du seed août par retouche de observed_at, pas de Vercel/merge sans GO distinct.
+
+## AFTER comparé aux BEFORE, 13 novembre 2026
+
+Le mockup desktop/mobile a été confronté à la vraie Homepage 1280×900 puis 390×844 ; également 430×932 et 768×900. Trois cartes Agdal/Maârif/Guéliz, CTA vers la carte, état « Repères indisponibles » et zéro overflow. Le [run AFTER #43458198177](https://github.com/hraaaaf/Akarfinder/actions/runs/43458198177) contient 20/20 captures et aucun finding ; le [BEFORE #43455239930](https://github.com/hraaaaf/Akarfinder/actions/runs/43455239930) contient 16/16 captures comparables.
+
+Score UX **estimatif**, non une note certifiée de tests utilisateurs : hiérarchie 9, responsive 9, cohérence 9, accessibilité partielle 8,5, honnêteté 9,5, utilité des informations 6 = moyenne ≈8,5/10. La cible ≥9,5/10 n'est pas atteinte faute de POI frais ; ne pas inventer de données pour la dépasser.
+
