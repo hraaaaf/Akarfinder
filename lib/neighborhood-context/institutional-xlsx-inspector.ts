@@ -155,3 +155,130 @@ export function inspectInstitutionalXlsxHeaders(file: Buffer): InstitutionalXlsx
     individual_entity_verified: false,
   };
 }
+
+
+/** Temporary identity-only candidates: these labels are NOT geographic points. */
+export type InstitutionalSchoolTextCandidateScanV1 = {
+  schema: "NCI_MENPS_SCHOOL_TEXT_CANDIDATES_V1";
+  scanned_data_rows: number;
+  rows_with_school_name: number;
+  source_columns_verified: string[];
+  city_checks: Array<{
+    city: "rabat" | "casablanca" | "marrakech";
+    pilot_district: "agdal" | "maarif" | "gueliz";
+    administrative_text_matches: number;
+    district_address_text_mentions: number;
+    samples: Array<{
+      sheet_row: number;
+      school_name: string;
+      address: string;
+      commune: string;
+      province: string;
+      region: string;
+      address_mentions_district: boolean;
+      geolocation_verified: false;
+    }>;
+  }>;
+  relation_to_pilot_neighborhood_verified: false;
+  coordinates_verified: false;
+  individual_entity_verified: false;
+  accepted_public_pois: 0;
+  public_publish_allowed: false;
+};
+
+/** Translate A1, AA27 etc. to a zero-based slot, keeping blank XLSX cells. */
+function columnSlot(ref: string | null): number {
+  const letters = ref?.match(/^[A-Z]{1,3}(?=\d)/)?.[0];
+  if (!letters) return -1;
+  let index = 0;
+  for (const ch of letters) index = index * 26 + ch.charCodeAt(0) - 64;
+  return index - 1;
+}
+function cellsByColumn(rowXml: string, shared: string[]): string[] {
+  const cols: string[] = [];
+  let next = 0;
+  for (const cell of rowXml.matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
+    const slot = columnSlot(attr(cell[1], "r"));
+    const idx = slot >= 0 ? slot : next;
+    must(idx >= 0 && idx < 100, "xlsx_row_column_out_of_bounds");
+    cols[idx] = tidy(valueOfCell(cell[1], cell[2] ?? "", shared));
+    next = idx + 1;
+  }
+  return cols;
+}
+function tokenIncludes(text: string, target: string): boolean {
+  return (" " + normalized(text) + " ").includes(" " + target + " ");
+}
+
+export function scanInstitutionalSchoolTextCandidates(file: Buffer): InstitutionalSchoolTextCandidateScanV1 {
+  const archive = entriesOfZip(file);
+  const sheetName = [...archive.keys()].filter((name) => /^xl\/worksheets\/sheet\d+\.xml$/.test(name))
+    .sort((a, b) => Number(a.match(/sheet(\d+)/)?.[1]) - Number(b.match(/sheet(\d+)/)?.[1]))[0];
+  must(sheetName, "xlsx_no_worksheet");
+  const xml = unzipXml(file, archive.get(sheetName)!);
+  must(xml.includes("<worksheet") && xml.includes("<sheetData"), "xlsx_invalid_worksheet");
+  const shared = archive.get("xl/sharedStrings.xml") ? sharedStrings(unzipXml(file, archive.get("xl/sharedStrings.xml")!)) : [];
+
+  const expectations = [
+    { city: "rabat", pilot_district: "agdal" },
+    { city: "casablanca", pilot_district: "maarif" },
+    { city: "marrakech", pilot_district: "gueliz" },
+  ] as const;
+  const checks: InstitutionalSchoolTextCandidateScanV1["city_checks"] = expectations.map((entry) => ({
+    ...entry, administrative_text_matches: 0, district_address_text_mentions: 0, samples: [],
+  }));
+  const needed = ["NOM_ETABL", "AdresseL", "LL_COM", "LL_PROV", "LL_REG"];
+  let columns: string[] | null = null;
+  let fields: Map<string, number> | null = null;
+  let scanned = 0, named = 0;
+  for (const row of xml.matchAll(/<row\b([^>]*?)>([\s\S]*?)<\/row>/g)) {
+    const rowNo = Number(attr(row[1], "r")) || scanned + 1;
+    const values = cellsByColumn(row[2], shared);
+    if (!columns) {
+      columns = values.map((v) => v || "");
+      fields = new Map(columns.map((field, idx) => [field, idx]));
+      must(needed.every((field) => fields!.has(field)), "xlsx_required_school_identity_columns_missing");
+      continue;
+    }
+    scanned += 1;
+    must(scanned <= 20_000, "xlsx_school_row_limit_exceeded");
+    const val = (field: string) => values[fields!.get(field)!] || "";
+    const school = val("NOM_ETABL");
+    const address = val("AdresseL");
+    const commune = val("LL_COM");
+    const province = val("LL_PROV");
+    const region = val("LL_REG");
+    if (school) named += 1;
+    for (const stat of checks) {
+      const administrative = [commune, province].join(" ");
+      if (!tokenIncludes(administrative, stat.city)) continue;
+      stat.administrative_text_matches += 1;
+      const districtMention = tokenIncludes([address, commune].join(" "), stat.pilot_district);
+      if (districtMention) stat.district_address_text_mentions += 1;
+      // Prefer a district-address mention, but retain up to three broad-city
+      // candidates to investigate if the official address lacks district text.
+      const candidate = {
+        sheet_row: rowNo, school_name: school, address, commune, province, region,
+        address_mentions_district: districtMention, geolocation_verified: false as const,
+      };
+      if (districtMention && stat.samples.length >= 3) {
+        const firstBroad = stat.samples.findIndex((sample) => !sample.address_mentions_district);
+        if (firstBroad >= 0) stat.samples.splice(firstBroad, 1, candidate);
+      } else if (stat.samples.length < 3 && school) {
+        stat.samples.push(candidate);
+      }
+    }
+  }
+  must(columns !== null && fields !== null, "xlsx_school_header_missing");
+  return {
+    schema: "NCI_MENPS_SCHOOL_TEXT_CANDIDATES_V1",
+    scanned_data_rows: scanned, rows_with_school_name: named,
+    source_columns_verified: columns.filter(Boolean),
+    city_checks: checks,
+    relation_to_pilot_neighborhood_verified: false,
+    coordinates_verified: false,
+    individual_entity_verified: false,
+    accepted_public_pois: 0,
+    public_publish_allowed: false,
+  };
+}

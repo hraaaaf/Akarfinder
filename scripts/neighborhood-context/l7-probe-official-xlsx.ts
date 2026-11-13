@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
 import { INSTITUTIONAL_DATASETS_2026 } from "@/lib/neighborhood-context/institutional-admission";
-import { inspectInstitutionalXlsxHeaders } from "@/lib/neighborhood-context/institutional-xlsx-inspector";
+import { inspectInstitutionalXlsxHeaders, scanInstitutionalSchoolTextCandidates } from "@/lib/neighborhood-context/institutional-xlsx-inspector";
 
 const MAX_DOWNLOAD_BYTES = 3 * 1024 * 1024;
 const MAX_REDIRECTS = 2;
@@ -156,6 +156,8 @@ export async function runL7OfficialXlsxHeaderProbe(now = new Date()) {
     content_type: null as string | null,
     final_url: null as string | null,
     header_inspection: null as ReturnType<typeof inspectInstitutionalXlsxHeaders> | null,
+    identity_text_candidates: null as ReturnType<typeof scanInstitutionalSchoolTextCandidates> | null,
+    identity_text_scan_error: null as string | null,
     error: null as string | null,
     gps_values_verified: false,
     entity_identity_verified: false,
@@ -195,6 +197,14 @@ export async function runL7OfficialXlsxHeaderProbe(now = new Date()) {
     report.content_type = downloaded.contentType;
     report.final_url = downloaded.finalUrl;
     report.header_inspection = inspectInstitutionalXlsxHeaders(downloaded.bytes);
+    // Independent staging projection only: bounded text samples, no GPS or
+    // territorial acceptance. Never affects the public NCI read-model.
+    try {
+      report.identity_text_candidates = scanInstitutionalSchoolTextCandidates(downloaded.bytes);
+    } catch (scanError) {
+      report.identity_text_scan_error = scanError instanceof Error
+        ? scanError.message.slice(0, 140) : "unknown_identity_scan_error";
+    }
     report.download_status = "downloaded_and_header_inspected";
   } catch (error) {
     report.download_status = "unavailable_fail_closed";

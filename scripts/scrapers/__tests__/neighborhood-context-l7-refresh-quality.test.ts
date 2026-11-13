@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { getAnnL5CertifiedSeedPois } from "@/lib/neighborhood-context/certified-seed";
-import { inspectInstitutionalXlsxHeaders } from "@/lib/neighborhood-context/institutional-xlsx-inspector";
+import { inspectInstitutionalXlsxHeaders, scanInstitutionalSchoolTextCandidates } from "@/lib/neighborhood-context/institutional-xlsx-inspector";
 import { MENPS_PRIMARY_2026_RESOURCE_URL, officialCurlArguments, permittedOfficialResource } from "@/scripts/neighborhood-context/l7-probe-official-xlsx";
 import {
   INSTITUTIONAL_DATASETS_2026,
@@ -391,5 +391,63 @@ describe("L7 MENPS secure proxy-aware curl fallback (GitHub Actions tests only)"
     assert.equal(args.includes("-k"), false);
     assert.equal(args.includes("--retry"), true);
     assert.equal(args.includes("--proto"), true);
+  });
+});
+
+
+function makeSchoolTextSheet(rows: string[][]): string {
+  const headers = ["NOM_ETABL", "NOM_ETABA", "AdresseL", "AdresseA", "LL_COM", "LL_PROV", "LL_REG"];
+  const wrapRow = (values: string[], rowNumber: number) => {
+    const cells = values.map((value, idx) => value
+      ? '<c r="' + String.fromCharCode(65 + idx) + rowNumber +
+        '" t="inlineStr"><is><t>' + value + '</t></is></c>'
+      : "").join("");
+    return '<row r="' + rowNumber + '">' + cells + '</row>';
+  };
+  return '<worksheet><sheetData>' +
+    wrapRow(headers, 1) + rows.map((row, i) => wrapRow(row, i + 2)).join("") +
+    '</sheetData></worksheet>';
+}
+
+describe("L7 MENPS school name/address staging scan, no spatial admission", () => {
+  it("counts text-only candidate rows and preserves the actual spreadsheet row number", () => {
+    const rows = [
+      ["TEST-AGDAL", "", "Rue Agdal", "", "Rabat", "Rabat", "Rabat-Sale"],
+      ["TEST-OTHER", "", "Rue Centrale", "", "Casablanca", "Casablanca", "Casablanca-Settat"],
+      ["TEST-GUELIZ", "", "Avenue Guéliz", "", "Marrakech", "Marrakech", "Marrakech-Safi"],
+      ["TEST-MAARIF-NAME", "", "Rue Sans Quartier", "", "Casablanca", "Casablanca", "Casablanca-Settat"],
+    ];
+    const buffer = makeStoredXlsx({ "xl/worksheets/sheet1.xml": makeSchoolTextSheet(rows) });
+    const result = scanInstitutionalSchoolTextCandidates(buffer);
+    assert.equal(result.scanned_data_rows, 4);
+    assert.equal(result.rows_with_school_name, 4);
+    const byCity = Object.fromEntries(result.city_checks.map((x) => [x.city, x]));
+    assert.equal(byCity.rabat.administrative_text_matches, 1);
+    assert.equal(byCity.rabat.district_address_text_mentions, 1);
+    assert.equal(byCity.rabat.samples[0].sheet_row, 2);
+    assert.equal(byCity.casablanca.administrative_text_matches, 2);
+    assert.equal(byCity.casablanca.district_address_text_mentions, 0);
+    assert.equal(byCity.casablanca.samples[0].school_name, "TEST-OTHER");
+    assert.equal(byCity.marrakech.district_address_text_mentions, 1);
+    assert.equal(result.relation_to_pilot_neighborhood_verified, false);
+    assert.equal(result.coordinates_verified, false);
+    assert.equal(result.accepted_public_pois, 0);
+    assert.equal(result.public_publish_allowed, false);
+  });
+
+  it("treats a district name in the school title as insufficient geographic proof", () => {
+    const buffer = makeStoredXlsx({ "xl/worksheets/sheet1.xml": makeSchoolTextSheet([
+      ["TEST-MAARIF", "", "Rue sans indication de quartier", "", "Casablanca", "Casablanca", "Casablanca-Settat"],
+    ]) });
+    const result = scanInstitutionalSchoolTextCandidates(buffer);
+    const casablanca = result.city_checks.find((item) => item.city === "casablanca");
+    assert.equal(casablanca?.district_address_text_mentions, 0);
+    assert.equal(casablanca?.samples[0]?.address_mentions_district, false);
+    assert.equal(result.public_publish_allowed, false);
+  });
+
+  it("refuses a school XLSX without required identity/address/admin columns", () => {
+    const buffer = makeStoredXlsx({ "xl/worksheets/sheet1.xml": fixtureSheet(["Name", "Address", "City"]) });
+    assert.throws(() => scanInstitutionalSchoolTextCandidates(buffer), /xlsx_required_school_identity_columns_missing/);
   });
 });
