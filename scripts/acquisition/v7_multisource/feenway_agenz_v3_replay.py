@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 from urllib import error
 
+from v7_multisource.feenway_agenz_primary_scope import evidence as agenz_primary_evidence
 from v7_multisource.feenway_upstream_10_audit import (
     MAX_HTML_BYTES, UpstreamAuditRejected, _get, _robots_policy,
     _source_parser_summary, inspect_identity, compare_claims, validate_candidates,
@@ -75,6 +76,9 @@ def run(candidate, out: Path, *, approved: bool):
             v3 = _source_parser_summary(AGENZ_URL, html)
             report["v3"] = v3
             report["comparisons"] = compare_claims(candidate["feenway_claim"], identity, v3)
+            report["primary_source_scope"] = agenz_primary_evidence(html)
+            report["source_price_conflict_needs_manual_review"] = bool(
+                report["primary_source_scope"]["primary_price_description_conflict"])
     except (UpstreamAuditRejected, error.HTTPError, error.URLError, TimeoutError, UnicodeError) as exc:
         report["status"] = "SOURCE_CHECK_UNAVAILABLE"
         report["error_class"] = type(exc).__name__
