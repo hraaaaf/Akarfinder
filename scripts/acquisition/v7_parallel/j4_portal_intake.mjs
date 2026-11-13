@@ -7,32 +7,84 @@ export const J4_SCHEMA = 'akarfinder-v7-parallel-source-v1';
 const TWO_MERGED = new Set(['avito.ma', 'sarouty.ma']);
 const MAX_YAKEEY = 50;
 
+/** Based on the exact historical #1146 Kaynly output shape (DRAFT).
+ * /fr-ma/...-ca5003319 represents candidate source ID ca5003319, NOT a
+ * verified original listing. No direct Yakeey collector is merged.
+ */
+function yakeeyDraftIdentity(raw) {
+  if (typeof raw !== 'string' || raw.length > 2048 || raw.length < 30 ||
+      !/^https:\/\/(?:www\.)?yakeey\.com\/fr-ma\/[a-z0-9-]+$/.test(raw)) {
+    throw new LegacyCandidateError('YAKEEY_DETAIL_ROUTE_UNPROVEN');
+  }
+  let u;
+  try { u = new URL(raw); }
+  catch { throw new LegacyCandidateError('YAKEEY_URL_INVALID'); }
+  if (u.protocol !== 'https:' || !['www.yakeey.com','yakeey.com'].includes(u.hostname) ||
+      u.username || u.password || u.port || u.search || u.hash ||
+      u.pathname.includes('//') || u.pathname.includes('%') || u.pathname.includes('\\')) {
+    throw new LegacyCandidateError('YAKEEY_SOURCE_NOT_VERIFIED');
+  }
+  const match = /^\/fr-ma\/[a-z0-9-]+-([a-z]{2}\d{5,12})$/.exec(u.pathname);
+  if (!match) throw new LegacyCandidateError('YAKEEY_SOURCE_ID_UNPROVEN');
+  return match[1];
+}
+
+function yakeeyQuarantineRecord(raw, candidateId, sourceEvidence) {
+  return {
+    schema_version: J4_SCHEMA, portal: 'yakeey.com', source_url: raw,
+    original_listing_id: null, candidate_source_offer_id_from_url: candidateId,
+    evidence_kind: sourceEvidence, source_detail_observed: false,
+    historical_collector_pr: 1146, collector_merged: false,
+    private_detail_staging: false, public_admission: false,
+    source_network_requests: 0, db_writes: 0,
+  };
+}
+
 export function reviewYakeeyDraftLinks(links) {
-  if (!Array.isArray(links) || links.length > MAX_YAKEEY) throw new LegacyCandidateError('YAKEEY_BOUNDED_LIST_REQUIRED');
+  if (!Array.isArray(links) || links.length > MAX_YAKEEY)
+    throw new LegacyCandidateError('YAKEEY_BOUNDED_LIST_REQUIRED');
   const results = new Map();
+  const seenIds = new Map();
   for (const raw of links) {
-    if (typeof raw !== 'string' || raw.length > 2048 || raw.length < 21) {
-      throw new LegacyCandidateError('YAKEEY_URL_INVALID');
-    }
-    let u;
-    try { u = new URL(raw); }
-    catch { throw new LegacyCandidateError('YAKEEY_URL_INVALID'); }
-    const match = /^https:\/\/(www\.)?yakeey\.com\/[a-z0-9/_-]+\/?$/i.test(raw);
-    if (!match || u.protocol !== 'https:' || !['www.yakeey.com','yakeey.com'].includes(u.hostname) ||
-        u.username || u.password || u.search || u.hash || u.port || u.pathname === '/' || u.pathname.includes('//')) {
-      throw new LegacyCandidateError('YAKEEY_SOURCE_NOT_VERIFIED');
-    }
-    results.set(raw, {
-      schema_version: J4_SCHEMA, portal: 'yakeey.com', source_url: raw,
-      original_listing_id: null, evidence_kind: 'third_party_draft_link_only',
-      connector_merged: false, private_detail_staging: false,
-      public_admission: false, source_network_requests: 0, db_writes: 0,
-    });
+    const id = yakeeyDraftIdentity(raw);
+    if (seenIds.has(id) && seenIds.get(id) !== raw)
+      throw new LegacyCandidateError('YAKEEY_CANDIDATE_ID_URL_COLLISION');
+    seenIds.set(id,raw);
+    results.set(raw, yakeeyQuarantineRecord(raw,id,'third_party_draft_link_only'));
   }
   return [...results.values()];
 }
 
-export function assessJ4({ mergedReports = {}, yakeeyDraftLinks = [] } = {}) {
+/** Direct reuse of #1146 source_links.jsonl records, not its network fetcher.
+ * Historical record { id:"yakeey:ca5003319", platform:"yakeey",
+ * url:"https://yakeey.com/fr-ma/acheter-appartement-casa-ca5003319",
+ * detail_state:"not_fetched" }. No accepted "fetched" evidence.
+ */
+export function reviewKaynlyDraftRecords(records) {
+  if (!Array.isArray(records) || records.length > MAX_YAKEEY)
+    throw new LegacyCandidateError('YAKEEY_BOUNDED_RECORDS_REQUIRED');
+  const out = new Map();
+  for (const record of records) {
+    if (!record || typeof record !== 'object' || Array.isArray(record) ||
+        Object.keys(record).sort().join('|') !== 'detail_state|id|platform|url' ||
+        record.platform !== 'yakeey' || record.detail_state !== 'not_fetched') {
+      throw new LegacyCandidateError('YAKEEY_HISTORICAL_RECORD_INVALID');
+    }
+    const candidateId = yakeeyDraftIdentity(record.url);
+    if (record.id !== 'yakeey:' + candidateId) {
+      throw new LegacyCandidateError('YAKEEY_HISTORICAL_ID_MISMATCH');
+    }
+    const old = out.get(candidateId);
+    if (old && old.source_url !== record.url) {
+      throw new LegacyCandidateError('YAKEEY_CANDIDATE_ID_URL_COLLISION');
+    }
+    out.set(candidateId, yakeeyQuarantineRecord(
+      record.url,candidateId,'historical_kaynly_draft_source_link_only'));
+  }
+  return [...out.values()];
+}
+
+export function assessJ4({ mergedReports = {}, yakeeyDraftLinks = [], yakeeyDraftRecords = [] } = {}) {
   if (!mergedReports || typeof mergedReports !== 'object' || Array.isArray(mergedReports)) {
     throw new LegacyCandidateError('INVALID_J4_REPORTS');
   }
@@ -41,6 +93,16 @@ export function assessJ4({ mergedReports = {}, yakeeyDraftLinks = [] } = {}) {
   }
   const legacy = adaptLegacyReports(mergedReports);
   const yakeey = reviewYakeeyDraftLinks(yakeeyDraftLinks);
+  const imported = reviewKaynlyDraftRecords(yakeeyDraftRecords);
+  const merged = new Map();
+  for (const candidate of [...yakeey,...imported]) {
+    const key = candidate.candidate_source_offer_id_from_url;
+    const old = merged.get(key);
+    if (old && old.source_url !== candidate.source_url)
+      throw new LegacyCandidateError('YAKEEY_CANDIDATE_ID_URL_COLLISION');
+    // Do not create a new source identity for third-party duplicate links.
+    merged.set(key, old ?? candidate);
+  }
   return {
     schema_version: J4_SCHEMA,
     merged_url_only_candidates: legacy.records.map(x => ({
@@ -50,7 +112,7 @@ export function assessJ4({ mergedReports = {}, yakeeyDraftLinks = [] } = {}) {
       evidence_kind: 'merged_L8_url_only',
       private_detail_staging: false, public_admission: false,
     })),
-    yakeey_draft_unverified_links: yakeey,
+    yakeey_draft_unverified_links: [...merged.values()],
     detailed_records: 0,
     unique_physical_properties: null,
     source_network_requests: 0, db_writes: 0,
