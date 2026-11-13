@@ -94,7 +94,7 @@ jobs:
         with:
           role-to-assume: ${{ vars.H1_PRIVATE_AWS_ROLE_ARN }}
           role-session-name: h1-${{ github.run_id }}
-          role-duration-seconds: 43200
+          role-duration-seconds: 21600 # IAM role MaxSessionDuration MUST be >= 21600 (6h)
           aws-region: eu-central-1
           allowed-account-ids: ${{ vars.H1_PRIVATE_AWS_ACCOUNT_ID }}
       - name: Canary, gated continuation, and resumable private checkpoints
