@@ -101,7 +101,18 @@ export function assessJ4({ mergedReports = {}, yakeeyDraftLinks = [], yakeeyDraf
     if (old && old.source_url !== candidate.source_url)
       throw new LegacyCandidateError('YAKEEY_CANDIDATE_ID_URL_COLLISION');
     // Do not create a new source identity for third-party duplicate links.
-    merged.set(key, old ?? candidate);
+    if (!old) {
+      merged.set(key, {
+        ...candidate,
+        evidence_sources: [candidate.evidence_kind],
+      });
+    } else if (!old.evidence_sources.includes(candidate.evidence_kind)) {
+      old.evidence_sources.push(candidate.evidence_kind);
+      old.evidence_sources.sort();
+    }
+  }
+  if (merged.size > MAX_YAKEEY) {
+    throw new LegacyCandidateError('YAKEEY_COMBINED_CANDIDATE_LIMIT');
   }
   return {
     schema_version: J4_SCHEMA,

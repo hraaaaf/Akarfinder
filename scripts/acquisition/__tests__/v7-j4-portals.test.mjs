@@ -91,3 +91,52 @@ test('merge duplicate Kaynly-record/link to ONE source-ID candidate, not detail'
   assert.equal(x.detailed_records,0);
   assert.equal(x.db_writes,0);
 });
+
+test('combined Yakeey cap is enforced across BOTH channels, not separately', () => {
+  const links=Array.from({length:30},(_,i)=>{
+    const id='ca'+String(i+5000000);
+    return 'https://yakeey.com/fr-ma/acheter-appartement-casa-'+id;
+  });
+  const records=Array.from({length:21},(_,i)=>{
+    const id='ca'+String(i+6000000);
+    return {id:'yakeey:'+id,platform:'yakeey',
+      url:'https://yakeey.com/fr-ma/acheter-appartement-casa-'+id,
+      detail_state:'not_fetched'};
+  });
+  assert.throws(()=>assessJ4({yakeeyDraftLinks:links,yakeeyDraftRecords:records}),
+    /YAKEEY_COMBINED_CANDIDATE_LIMIT/);
+  assert.equal(assessJ4({yakeeyDraftLinks:links,yakeeyDraftRecords:records.slice(0,20)})
+    .yakeey_draft_unverified_links.length,50);
+});
+
+test('historical record and draft link preserve BOTH provenance channels without verification', () => {
+  const url='https://yakeey.com/fr-ma/acheter-appartement-casa-ca5003319';
+  const rows=assessJ4({yakeeyDraftLinks:[url],yakeeyDraftRecords:[
+    {id:'yakeey:ca5003319',platform:'yakeey',url,detail_state:'not_fetched'}
+  ]}).yakeey_draft_unverified_links;
+  assert.equal(rows.length,1);
+  assert.deepEqual(rows[0].evidence_sources,
+    ['historical_kaynly_draft_source_link_only','third_party_draft_link_only']);
+  assert.equal(rows[0].original_listing_id,null);
+  assert.equal(rows[0].collector_merged,false);
+  assert.equal(rows[0].source_detail_observed,false);
+  assert.equal(rows[0].private_detail_staging,false);
+  assert.equal(rows[0].public_admission,false);
+});
+
+test('Yakeey same candidate ID on two different URLs is rejected across input channels', () => {
+  const url='https://yakeey.com/fr-ma/acheter-appartement-casa-ca5003319';
+  const other='https://yakeey.com/fr-ma/acheter-maison-casa-ca5003319';
+  assert.throws(()=>assessJ4({yakeeyDraftLinks:[url],yakeeyDraftRecords:[
+    {id:'yakeey:ca5003319',platform:'yakeey',url:other,detail_state:'not_fetched'}
+  ]}),/YAKEEY_CANDIDATE_ID_URL_COLLISION/);
+});
+
+test('duplicate historical records alone do not fabricate multiple evidence channels', () => {
+  const url='https://yakeey.com/fr-ma/acheter-appartement-casa-ca5003319';
+  const rows=assessJ4({yakeeyDraftRecords:[
+    {id:'yakeey:ca5003319',platform:'yakeey',url,detail_state:'not_fetched'}
+  ]}).yakeey_draft_unverified_links;
+  assert.deepEqual(rows[0].evidence_sources,['historical_kaynly_draft_source_link_only']);
+  assert.equal(rows[0].original_listing_id,null);
+});
