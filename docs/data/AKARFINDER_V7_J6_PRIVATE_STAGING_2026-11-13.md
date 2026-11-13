@@ -17,3 +17,11 @@
 ## Correctif complémentaire — collision de contenu intra-batch
 
 Le premier commit J6 `2b44c1533bfc3761128ab6f5b1763adcc28bbfaf` a obtenu [CI J6 #43395861642](https://github.com/hraaaaf/Akarfinder/actions/runs/43395861642) **SUCCESS : 8/8 tests**, et [CI Policy #43395861528](https://github.com/hraaaaf/Akarfinder/actions/runs/43395861528) SUCCESS. L'audit a identifié un deuxième cas : même URL et identifiant mais contenu normalisé divergent au sein d'un batch. Ce lot renforce le fail-closed en rejetant cette contradiction plutôt qu'en la comptant comme deux observations. Un neuvième test est ajouté. La nouvelle CI au HEAD corrigé doit être vérifiée avant de qualifier ce correctif.
+
+## Closeout de préparation no-write — 13 novembre 2026
+
+**Code exact :** `2e803311b71ba942c48fb32d77b6e6c978299de5` : [J6 no-write CI #43396093228](https://github.com/hraaaaf/Akarfinder/actions/runs/43396093228) **SUCCESS (9/9 tests PASS)** ; [CI Efficiency Policy #43396093217](https://github.com/hraaaaf/Akarfinder/actions/runs/43396093217) **SUCCESS**. Le test supplémentaire vérifie le rejet d'une même URL avec deux contenus normalisés divergents. En outre, la CI précédente au SHA initial `2b44c1533bfc3761128ab6f5b1763adcc28bbfaf` avait **8/8 PASS**.
+
+**Clôture du sous-lot seulement :** validation de contrat read-only, aucun texte de source publié, aucune migration, zéro appel à `apply_batch` et aucun accès DB ni source. L'éligibilité reste **0** par conception : ce sous-lot ne constitue pas une certification d'alimentation ni une activation du staging. Il est incorrect de comptabiliser J6 parmi les jalons V7 clôturés.
+
+**Suite :** la vraie intégration au staging privé (validateur indépendant de source + autorisation + schéma/RLS + DB isolée), puis la préparation de l'automatisation distribuée, sont des lots distincts, plus risqués. Laisser les travaux J2/J3/J4/J5 quarantainés sans les convertir en annonces fiables.
