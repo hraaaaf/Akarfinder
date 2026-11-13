@@ -16,7 +16,7 @@ import json
 from pathlib import Path
 import re
 from typing import Any, Iterator
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 
 import akarparser_v2 as v2
 import akarparser_v3_portals as portals
@@ -79,6 +79,15 @@ def url_ok(value: Any) -> bool:
         return False
     p = urlparse(value)
     return p.scheme in ("http", "https") and bool(p.hostname) and not (p.username or p.password)
+
+
+def listing_url_identity(value: Any) -> tuple[str, str] | None:
+    """Compare first-party URL claims without trusting query strings."""
+    if not url_ok(value):
+        return None
+    parsed = urlparse(value)
+    return ((parsed.hostname or "").casefold().removeprefix("www."),
+            unquote(parsed.path).rstrip("/") or "/")
 
 
 class Page(HTMLParser):
@@ -242,6 +251,20 @@ def adapt(raw: dict) -> tuple[dict, dict]:
             "price_currency": page.meta.get("product:price:currency"),
             "image_urls": page.meta.get("og:image"),
         }
+        # Never silently trust mutually conflicting canonical/og:url identities.
+        source_identity = listing_url_identity(row.get("source_url"))
+        html_identities = [
+            listing_url_identity(value)
+            for value in (page.canonical, page.meta.get("og:url"))
+            if present(value)
+        ]
+        if html_identities and (
+            None in html_identities
+            or len(set(html_identities)) != 1
+            or (source_identity is not None
+                and any(identity != source_identity for identity in html_identities))
+        ):
+            row["_v3_html_source_identity_mismatch"] = True
         for key, val in html_fallback.items():
             if present(val) and not present(row.get(key)):
                 row[key] = val
@@ -361,7 +384,7 @@ def quality(e: dict, source: dict, as_of: datetime, *, quarantine: bool, serp: b
     status = ("source_snippet_only" if serp else "quarantine" if quarantine or freshness == "future_invalid"
               else "ready_internal" if not missing and freshness == "recent_claimed" and score >= 80
               else "complete_requires_freshness" if not missing else "partial")
-    if review_reasons and status == "ready_internal":
+    if review_reasons and status in ("ready_internal", "complete_requires_freshness"):
         status = "requires_manual_review"
     return {
         "score": score, "score_breakdown": score_parts, "status": status,
@@ -419,6 +442,10 @@ def parse_raw(raw: dict, clock: datetime, *, source_review_reasons: tuple[str, .
         if host != "agenz.ma" or not has_original_html:
             raise ValueError("SOURCE_REVIEW_WRONG_ORIGIN_OR_MISSING_HTML")
     row, provenance = adapt(raw)
+    original_html = next((
+        raw[k] for k in ("raw_html", "html", "page_html", "body_html")
+        if isinstance(raw.get(k), str) and raw[k].lstrip().startswith("<")
+    ), None)
     base = v2.parse_record(row, generated_at=clock.isoformat())
     raw_hash = hashlib.sha256(json.dumps(raw, ensure_ascii=False, sort_keys=True,
                                        default=str).encode("utf-8")).hexdigest()
@@ -488,6 +515,30 @@ def parse_raw(raw: dict, clock: datetime, *, source_review_reasons: tuple[str, .
     # Price plausibility is NOT evidence of an incorrect listing. It is a
     # conservative manual-review gate, never a silent price correction.
     review_reasons = []
+    if row.get("_v3_html_source_identity_mismatch"):
+        review_reasons.append("HTML_SOURCE_IDENTITY_MISMATCH_REQUIRES_REVIEW")
+    # A number found anywhere on an HTML page may belong to a recommendation.
+    # Keep the value only as a reviewable hint, not a trusted listing field.
+    if original_html and any(
+        provenance.get(field, {}).get("method") == "explicit_unit_regex"
+        for field in ("price_mad", "surface_m2")
+    ):
+        review_reasons.append("UNSCOPED_HTML_NUMERIC_FIELD_REQUIRES_REVIEW")
+    # The J2 scoped Agenz validator is reused: no duplicate heuristic in V3.
+    # Missing dependency fails to manual review; nothing is auto-corrected.
+    if (host == "agenz.ma" and original_html
+            and "<main" in original_html.casefold()
+            and "mensuel" in original_html.casefold()):
+        if len(original_html.encode("utf-8")) > 2_000_000:
+            review_reasons.append("AGENZ_SCOPE_TOO_LARGE_REQUIRES_REVIEW")
+        else:
+            try:
+                from v7_multisource.feenway_agenz_primary_scope import evidence as agenz_scope
+            except ImportError:
+                review_reasons.append("AGENZ_SOURCE_SCOPE_UNAVAILABLE_REQUIRES_REVIEW")
+            else:
+                if agenz_scope(original_html)["primary_price_description_conflict"]:
+                    review_reasons.append("AGENZ_PRIMARY_VS_DESCRIPTION_RENT_PRICE_CONFLICT")
     if (strict_mubawab and row.get("_mubawab_unit_price_not_total")) or domio_unit_rate:
         review_reasons.append("UNIT_PRICE_RATE_NOT_TOTAL_REQUIRES_REVIEW")
     price = e.get("price_mad")
