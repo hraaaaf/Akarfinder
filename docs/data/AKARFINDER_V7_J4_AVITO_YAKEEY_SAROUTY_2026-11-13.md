@@ -58,3 +58,12 @@ La [PR Draft #1146](https://github.com/hraaaaf/Akarfinder/pull/1146) possède d�
 **Décision GO/NOGO :** GO pour la **préparation J4 URL-only** testée ; **NO-GO pour le jalon J4 de collecte/detail réelle**. Absence de HTML d'annonce originale vérifiée, d'attestation indépendante de précision et de droit d'admission ; aucune annonce réelle n'a été ajoutée. J0/J1 restent les seuls jalons V7 clos : 2/8. PR toujours Draft, pas de merge ni DB/staging/cron/Vercel.
 
 **NEXT exact :** traiter une vraie archive de fiche source par canal autorisé puis l'auditer via le gate J4/J5 existant ; dans l'attente, exploiter les contrôles de contrats hors ligne J5. Les lots d'activation J6/J7 exigent une validation sécuritaire et un effort élevé avant toute production.
+
+
+## J4 — Témoin original public Sarouty identifié, 13 novembre 2026
+
+**Témoin candidat en lecture seule**, issu directement du portail Sarouty : [fiche individuelle /acheter/appartement-sale-bab-al-bahr-894012](https://www.sarouty.ma/acheter/appartement-sale-bab-al-bahr-894012/). Le rendu consultable expose un appartement à vendre à Bab al bahr, Salé, **3 500 000 DH, 196 m², 3 chambres, 2 salles de bain**, référence commerciale 3199, agence AYKANA. Ces éléments proviennent du rendu public Sarouty et non d'une archive brute certifiée. Ils ne sont pas injectés dans l'URL-only intake ni réputés disponibles/frais au moment de l'intégration.
+
+**Gate exact restant** : obtenir par le canal source autorisé le HTML original et son manifeste SHA256 + UTC + URL canonique, comparer les 7 champs L4/V3 et vérifier l'identité source 894012 indépendamment de la simple forme d'URL. La page rendue n'est pas un artefact immuable, pas une autorisation de collecte en masse, et aucun marqueur d'admission ne change. Avito HTTP 403 historique non contourné ; Yakeey reste lien historique tiers non intégré.
+
+**Opérations de ce pointage :** consultation publique et documentation seulement, pas de script de collecte source, pas de HTTP GitHub Actions supplémentaire, DB, cron, staging, merge ni déploiement. J4 demeure OUVERT.
