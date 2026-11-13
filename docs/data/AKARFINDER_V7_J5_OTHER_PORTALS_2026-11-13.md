@@ -49,3 +49,12 @@
 **Ce que cela ne prouve pas :** aucune des 1000 URL de test ne prouve une annonce actuellement en ligne, ni une archive HTML originale, ni une adresse, ni une donnée métier vérifiée. Ce sous-lot **contrat interopérabilité Node→Python/V3** est clos ; J5 connecteurs physiques reste **OUVERT**, les quatre portails complémentaires toujours non intégrés. Zéro réseau source, aucune écriture extérieure, aucune activation live, cron, SQL réel, staging, merge ou Vercel.
 
 **Séquence restante :** conserver la quarantaine, obtenir une archive originale autorisée et son identifiant source, comparer les sept champs, contrôler la disponibilité/identité géographique indépendamment, puis seulement envisager un gate d'admission privé J6 sous effort élevé. V7 conserve J0/J1 seuls clos = 2/8 jalons.
+
+
+## J5 — Exemple direct Mubawab et risque de duplication cross-portail (13 novembre 2026)
+
+**Fiche originale visible sur Mubawab :** [Mubawab #8413785](https://www.mubawab.ma/fr/a/8413785/appartement-%C3%A0-vendre-104-m%C2%B2-3-chambres-al-qods-sal%C3%A9). Elle porte la référence commerciale **SAL-TA-1004**, comme la [fiche originale Agenz #444291](https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291), et reproduit une description identique : 104 m², 3 chambres, Al Qods dans le titre et Tabriquet dans la description. Ce recoupement étaye **une même offre publicitaire répliquée entre deux portails**, non deux biens comptables distincts. Il ne constitue ni une attestation géographique indépendante, ni une preuve d'adresse réelle du bien.
+
+**Risques à garder explicitement** : déduplication inter-portails sur identité de l'offre + référence commerciale quand la provenance l'autorise ; éviter de confondre duplication de contenu et certification de la propriété physique, ou de transférer automatiquement le quartier d'un portail à l'autre. La ref peut aussi se répéter, donc ne suffit pas seule à unir des biens physiques. Les 7 champs Mubawab n'ont pas été extraits/rejoués sur HTML brut SHA256/UTC original. Source visible dans un lecteur public seulement. MarocAnnonces reste sans telle fiche réelle qualifiée.
+
+**Statut J5 :** candidat direct de revue documentaire, pas un nouveau connecteur certifié ; **0 admission privée/publique, 0 DB, 0 cron, 0 merge, 0 Vercel**. Next exact = un HTML source Mubawab original archivé et signé + contrôle ID/canonical/7 champs, puis dédup sur preuves réelles avant J6.
