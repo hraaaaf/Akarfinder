@@ -171,6 +171,7 @@ def make_storage_manifest(run_id: str, snapshot: dict[str, Any], batches: list[d
         "version": MANIFEST_VERSION,
         "run_id": run_id,
         "source_commit": IMMUTABLE_SOURCE_SHA,
+        "workflow_commit": os.environ.get("GITHUB_SHA", ""),
         "snapshot": snapshot,
         "batch_size": BATCH_SIZE,
         "total_batches": TOTAL_BATCHES,
@@ -192,6 +193,7 @@ def verify_checkpoint(store: SupabasePrivateStore, manifest: dict[str, Any], run
     require(manifest.get("version") == MANIFEST_VERSION and manifest.get("run_id") == run_id,
             "H1_RESUME_MANIFEST_VERSION_OR_RUN_MISMATCH")
     require(manifest.get("source_commit") == IMMUTABLE_SOURCE_SHA
+            and manifest.get("workflow_commit") == os.environ.get("GITHUB_SHA", "")
             and manifest.get("snapshot") == snapshot, "H1_RESUME_SOURCE_SNAPSHOT_MISMATCH")
     require(manifest.get("batch_size") == BATCH_SIZE and manifest.get("total_batches") == TOTAL_BATCHES,
             "H1_RESUME_BATCH_CONTRACT_MISMATCH")
@@ -404,6 +406,10 @@ def check_runtime() -> tuple[str, SupabasePrivateStore, str]:
     require(platform.system() == "Linux" and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted",
             "H1_GITHUB_HOSTED_LINUX_REQUIRED")
     require(os.environ.get("GITHUB_ACTOR", "") == APPROVAL_ACTOR, "H1_ACTOR_NOT_AUTHORIZED")
+    require(os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+            and os.environ.get("GITHUB_REF") == "refs/heads/main"
+            and re.fullmatch(r"[0-9a-f]{40}", os.environ.get("GITHUB_SHA", "")) is not None,
+            "H1_WORKFLOW_CONTEXT_INVALID")
     secret = os.environ.get("Q1E_NEON_RECOVERY_READONLY_URL", "")
     require(bool(secret), "H1_READONLY_CREDENTIAL_REQUIRED")
     run_id = validate_run_id(os.environ.get("H1_STORAGE_RUN_ID", ""))
