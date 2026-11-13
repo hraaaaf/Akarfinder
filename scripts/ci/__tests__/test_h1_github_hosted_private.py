@@ -173,7 +173,8 @@ class TestCanaryAndStorage(unittest.TestCase):
             workspace.mkdir(); runner_temp.mkdir()
             with patch.dict(os.environ, {"GITHUB_WORKSPACE": str(workspace),
                                          "RUNNER_TEMP": str(runner_temp),
-                                         "GITHUB_OUTPUT": ""}, clear=False), \
+                                         "GITHUB_OUTPUT": "",
+                                         "GITHUB_SHA": "f" * 40}, clear=False), \
                  patch.object(h1, "load_source", return_value=(fake, fake_parser)), \
                  redirect_stdout(io.StringIO()) as output:
                 result = h1.run_h1(root, store, "123456", "unused-test-secret")
@@ -262,6 +263,63 @@ class TestCanaryAndStorage(unittest.TestCase):
                                     "worker@example.test", "synthetic-only", user_id)
         with self.assertRaisesRegex(RuntimeError, "H1_SUPABASE_METHOD_FORBIDDEN"):
             store._call("DELETE", store._url("akarfinder/h1/run-123/file"))
+
+
+class TestSupabaseStorageHttpContracts(unittest.TestCase):
+    @staticmethod
+    def store():
+        return h1.SupabasePrivateStore(
+            h1.PROJECT_REF, h1.BUCKET, "sb_publishable_synthetic",
+            "h1-worker@example.test", "not-a-real-password",
+            "11111111-1111-4111-8111-111111111111")
+
+    def test_login_uses_signed_app_metadata_not_user_metadata(self):
+        class FakeResponse:
+            status = 200
+            def __init__(self, data): self.data = data
+            def __enter__(self): return self
+            def __exit__(self, *_): return False
+            def read(self): return json.dumps(self.data).encode()
+
+        store = self.store()
+        valid = {
+            "access_token": "fake-JWT-not-a-credential", "expires_in": 3600,
+            "user": {"id": store.user_id, "app_metadata": {"h1_storage": "enabled"}}
+        }
+        with patch("h1_supabase_storage.request.urlopen", return_value=FakeResponse(valid)) as call:
+            self.assertEqual(store._auth(), "fake-JWT-not-a-credential")
+            self.assertEqual(store._auth(), "fake-JWT-not-a-credential")
+            self.assertEqual(call.call_count, 1)
+        fake_user_metadata = json.loads(json.dumps(valid))
+        fake_user_metadata["user"]["app_metadata"] = {}
+        fake_user_metadata["user"]["user_metadata"] = {"h1_storage": "enabled"}
+        other = self.store()
+        with patch("h1_supabase_storage.request.urlopen", return_value=FakeResponse(fake_user_metadata)):
+            with self.assertRaisesRegex(RuntimeError, "H1_SUPABASE_DEDICATED_USER_NOT_AUTHORIZED"):
+                other._auth()
+
+    def test_append_only_conflict_and_free_quota_guard(self):
+        store = self.store()
+        with tempfile.TemporaryDirectory() as td:
+            file = Path(td) / "synthetic.json"
+            file.write_bytes(b"only-synthetic-test-data")
+            key = "akarfinder/h1/run-123456/checkpoints/001.json"
+            with patch.object(store, "_get", return_value=b"conflicting-object"):
+                with self.assertRaisesRegex(RuntimeError, "H1_SUPABASE_APPEND_ONLY_CONFLICT"):
+                    store.put_file(file, key)
+            with patch.object(store, "_get", return_value=None):
+                store.bytes_used = h1.MAX_RUN_BYTES
+                with self.assertRaisesRegex(RuntimeError, "H1_SUPABASE_FREE_QUOTA_GUARD"):
+                    store.put_file(file, key)
+
+    def test_no_cross_bucket_upload_or_path_traversal(self):
+        store = self.store()
+        with self.assertRaisesRegex(RuntimeError, "H1_SUPABASE_KEY_INVALID"):
+            store._url("seller-property-drafts/private")
+        with self.assertRaisesRegex(RuntimeError, "H1_SUPABASE_KEY_INVALID"):
+            store._url("akarfinder/h1/run-12/../../private")
+        with self.assertRaisesRegex(RuntimeError, "H1_SUPABASE_METHOD_FORBIDDEN"):
+            store._call("PUT", store._url("akarfinder/h1/run-12/final-manifest.json"))
 
 
 class TestReadOnlyAndWorkflowContracts(unittest.TestCase):
