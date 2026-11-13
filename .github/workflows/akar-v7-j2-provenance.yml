@@ -1,0 +1,31 @@
+name: Akar V7 J2 FeenWay Provenance — Offline
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/v7_parallel/j2_feenway_provenance.py'
+      - 'scripts/acquisition/__tests__/test_v7_j2_feenway.py'
+      - '.github/workflows/akar-v7-j2-provenance.yml'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+jobs:
+  j2-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install parser dependency for L4/V3 offline replay
+        run: python -m pip install "beautifulsoup4==4.14.3"
+      - name: Provenance and genuine L4/V3 snapshot contract tests (no HTTP/DB)
+        run: |
+          python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_j2_feenway.py'
+          python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_detail_compare.py'
+          python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_snapshot_evidence.py'

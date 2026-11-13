@@ -41,6 +41,17 @@ class SnapshotIntegrityTests(unittest.TestCase):
         self.assertEqual(result["manifest"]["captured_at_utc"], "2026-11-12T22:00:00Z")
         self.assertEqual(result["raw_html"].encode(), RAW)
 
+    def test_mubawab_valid_percent_utf8_original_url_manifest(self):
+        mb = "https://www.mubawab.ma/fr/a/8449079/%C3%A0-vendre-%E2%80%93-bel-appartement-%C3%A0-hay-riad-rabat"
+        manifest = _manifest(mb, RAW, when=NOW, method="explicit_single_page_https_get")
+        self.manifest.write_text(json.dumps(manifest), encoding="utf-8")
+        result = verify_evidence(self.source, self.manifest)
+        self.assertEqual(result["manifest"]["source_url"], mb)
+        for bad in ("%2fadmin", "%2e%2e", "%FF", "%C3"):
+            with self.subTest(bad=bad), self.assertRaises(EvidenceError):
+                _manifest("https://www.mubawab.ma/fr/a/8449079/" + bad,
+                          RAW, when=NOW, method="explicit_single_page_https_get")
+
     def test_tampered_raw_bytes_are_rejected(self):
         self.source.write_bytes(RAW.replace(b"980 000", b"990 000"))
         with self.assertRaisesRegex(EvidenceError, "EVIDENCE_INTEGRITY_FAILED"):
@@ -71,6 +82,15 @@ class SnapshotIntegrityTests(unittest.TestCase):
         self.assertFalse(result["public_admission_authorized"])
         self.assertEqual(result["source_network_requests"], 0)
         self.assertEqual(result["db_writes"], 0)
+
+    def test_capture_error_classification_is_bounded_no_raw_body_leak(self):
+        from v7_multisource.snapshot_evidence import MAX_RAW_HTML_BYTES
+        with self.assertRaisesRegex(EvidenceError, "BODY_TOO_LARGE"):
+            _manifest(URL, b"<html>" + b"x" * MAX_RAW_HTML_BYTES, when=NOW,
+                      method="explicit_single_page_https_get")
+        with self.assertRaisesRegex(EvidenceError, "HTML_MAGIC_MISMATCH"):
+            _manifest(URL, b"<main>not a document</main>", when=NOW,
+                      method="explicit_single_page_https_get")
 
     def test_network_fetch_requires_both_runtime_and_cli_go(self):
         with patch.dict(os.environ, {}, clear=True):

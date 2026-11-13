@@ -66,6 +66,16 @@ class RealParsersOfflineTests(unittest.TestCase):
             compare_supplied_html({"source_url": AG, "raw_html": HTML,
                                    "published_at": "2026-11-12"}, as_of=AT)
 
+    def test_mubawab_encoded_unicode_slug_is_safe_and_ascii_escapes_rejected(self):
+        ok = "https://www.mubawab.ma/fr/a/8449079/%C3%A0-vendre-%E2%80%93-bel-appartement-%C3%A0-hay-riad-rabat"
+        res = compare_supplied_html({"source_url": ok, "raw_html": HTML}, as_of=AT)
+        self.assertEqual(res["source_domain"], "mubawab.ma")
+        for fragment in ("%2fadmin", "%2e%2e", "%25hack", "%ZZ", "%C3", "%E2%80%FF"):
+            with self.subTest(fragment=fragment), self.assertRaises(DetailBenchmarkError):
+                compare_supplied_html({
+                    "source_url": "https://www.mubawab.ma/fr/a/8449079/" + fragment,
+                    "raw_html": HTML}, as_of=AT)
+
     def test_missing_raw_html_cannot_pass_as_a_real_snapshot(self):
         for html in ("", "Appartement 850000 DH", None):
             with self.subTest(html=html), self.assertRaises(DetailBenchmarkError):
