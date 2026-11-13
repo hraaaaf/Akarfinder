@@ -39,3 +39,13 @@ Quatre jeux institutionnels distincts contiennent des ressources XLSX versionné
 
 ## NEXT
 Acquérir hors rendu un export institutionnel versionné, vérifier son schéma (en particulier GPS, année et couverture), confronter aux sources indépendantes puis produire un rapport machine lisible `accepted / rejected / manual_review`. Les pilotes restent 0 POI frais tant qu'aucune preuve suffisante n'entre dans le read-model unique. Aucune modification live/DB/Blob/endpoint par cet inventaire.
+
+## 13/11/2026 — Probe XLSX officielle sur GitHub Actions (version primaire)
+
+- Catalogue : [MENPS primaire](https://data.gov.ma/data/fr/dataset/liste-des-etablissements-publics-primaire), ressource id \`f98bdb47-19a8-4f4d-8407-ae08b56305d5\`.
+- Lien exact de la ressource officielle : https://data.gov.ma/data/fr/dataset/4de8f7dc-c536-44e8-93a8-3efd2aca2c52/resource/f98bdb47-19a8-4f4d-8407-ae08b56305d5/download/etablissements_publics_primaire_juillet-2026.xlsx .
+- Probe **uniquement dans le workflow GitHub Actions L7 existant**, via \`l7-probe-official-xlsx.ts\` ; pas de modification workflow YAML, pas de test local. Limites 3 Mio et 18 s, HTTPS data.gov.ma strict, contrôles ZIP et en-têtes du premier onglet.
+- Sortie : \`official-menps-primary-xlsx-header.json\` dans l'artefact qualité L7, avec téléchargement, octets, SHA256 et en-têtes candidats uniquement. **Le fichier brut et les lignes ne sont pas inclus dans l'artefact**.
+- Les horodatages \`dataset_as_of\`, \`fetched_at\`, \`individual_verified_at\` restent séparés. \`gps_columns_candidate=true\` n'est jamais \`gps_values_verified=true\`.
+- Contrat immutable du probe : \`accepted_public_pois=0\`, \`public_publish_allowed=false\`. L1/L2/L6 restent les seules gates métier ; pas de promotion automatique depuis un XLSX.
+- Issue effective à compléter **après run** ; ne pas déclarer le fichier reçu avant son SHA256 vérifié.

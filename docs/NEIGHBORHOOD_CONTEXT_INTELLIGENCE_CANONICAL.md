@@ -376,3 +376,16 @@ PR roadmap : #902. Lots : #904, #906, #907, #913.
 
 **NEXT** : CI exacte du commit, rapport d'artefact, acquisition hors rendu de ressources institutionnelles versionnées, preuve récente de l'existence et GPS de chaque objet, admission après validation. Aucun GO merge ni Vercel implicite, Lot 5 demeure ACTIVE.
 
+### 2026-11-13 — Lot 5/L7 : probe XLSX MENPS exécutée uniquement dans GitHub Actions
+
+**Goal** : récupérer le fichier primaire officiel MENPS « Juillet 2026 » dans le runner CI L7, contrôler son SHA256, son format XLSX et ses colonnes réellement affichées ; **ne pas publier** un POI en l'absence de vérification individuelle datée, GPS et relation territoriale prouvés.
+
+**Source primaire** : [MENPS — établissements publics primaires](https://data.gov.ma/data/fr/dataset/liste-des-etablissements-publics-primaire), ressource CKAN officielle XLSX \`f98bdb47-19a8-4f4d-8407-ae08b56305d5\`, URL de téléchargement référencée dans \`l7-probe-official-xlsx.ts\`. La version du catalogue est juillet 2026 ; ce n'est **pas** une observation de chaque école datée de novembre.
+
+**Implémentation candidate** : \`lib/neighborhood-context/institutional-xlsx-inspector.ts\` (ZIP XLSX limité, premier onglet et en-têtes candidats uniquement, sans ingestion des entités), \`scripts/neighborhood-context/l7-probe-official-xlsx.ts\` (un seul fichier, requête HTTPS autorisée vers data.gov.ma, limite 3 Mio, timeout 18 s et deux redirections sur même domaine), extension du générateur qualité L7 existant. Aucune modification du YAML GitHub. La suite L7 reçoit 4 tests adversariaux supplémentaires sur XLSX de synthèse. **Tous les tests s'exécutent dans GitHub Actions**, aucun test local ni script source en production.
+
+**SUCCESS observables attendus** : le run \`Neighborhood Context L7 Refresh Quality\` du nouveau HEAD rend un artefact \`official-menps-primary-xlsx-header.json\`. Deux issues honnêtes possibles : (\`downloaded_and_header_inspected\`, SHA256 et noms d'en-têtes réels) ou (\`unavailable_fail_closed\`, raison). Même avec les colonnes \`Latitude/Longitude\`, le rapport porte \`coordinates_verified=false\`, \`entity_identity_verified=false\`, \`accepted_public_pois=0\` et \`public_publish_allowed=false\`. Le validator L7 préexistant conserve ses seuils inchangés ; le mode refresh \`plan\` reste à zéro appel réseau, le probe source est une opération CI distincte, limitée à un fichier.
+
+**Important** : la présence d'une colonne GPS ne signifie pas qualité des coordonnées ou existence actuelle. Sans téléchargement/colonnes certifiées, ne pas élargir à d'autres XLSX. Le Lot 5 demeure ACTIVE et le seuil UX >=9,5/10 non prouvé ; Lot 6 OPEN. J18 OSM public OFF ; PR Draft, aucun merge ni Vercel sans GO séparés.
+
+**NEXT exact** : sur le nouveau SHA, inspecter CI, rapport JSON et preuve SHA256 ; si échec du script ou du test, corriger et revérifier sur GitHub Actions. Si le fichier est lisible, préparer l'échantillonnage d'identités et géolocalisations sans admission automatique, puis recouper avec une source indépendante dans le processus L1/L2/L6.

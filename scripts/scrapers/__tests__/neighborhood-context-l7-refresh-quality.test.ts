@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { getAnnL5CertifiedSeedPois } from "@/lib/neighborhood-context/certified-seed";
+import { inspectInstitutionalXlsxHeaders } from "@/lib/neighborhood-context/institutional-xlsx-inspector";
 import {
   INSTITUTIONAL_DATASETS_2026,
   buildInstitutionalAdmissionReport,
@@ -276,5 +277,86 @@ describe("NCI L5/L7 — 2026 institutional source admission, fail-closed", () =>
     const actual = reviewInstitutionalPoiV1(invalid, candidate, CHECK_DATE);
     assert.equal(actual.status, "rejected");
     assert.ok(actual.reasons.includes("invalid_source_provenance"));
+  });
+});
+
+
+// Tiny in-memory ZIP builder: tests the actual XLSX reader without network,
+// private files, paid browser services or a local test harness.
+function makeStoredXlsx(entries: Record<string, string>): Buffer {
+  const localParts: Buffer[] = [];
+  const centralParts: Buffer[] = [];
+  let start = 0;
+  for (const [filename, content] of Object.entries(entries)) {
+    const name = Buffer.from(filename, "utf8");
+    const data = Buffer.from(content, "utf8");
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt32LE(data.length, 18);
+    local.writeUInt32LE(data.length, 22);
+    local.writeUInt16LE(name.length, 26);
+    localParts.push(local, name, data);
+
+    const central = Buffer.alloc(46);
+    central.writeUInt32LE(0x02014b50, 0);
+    central.writeUInt16LE(20, 4);
+    central.writeUInt16LE(20, 6);
+    central.writeUInt32LE(data.length, 20);
+    central.writeUInt32LE(data.length, 24);
+    central.writeUInt16LE(name.length, 28);
+    central.writeUInt32LE(start, 42);
+    centralParts.push(central, name);
+    start += local.length + name.length + data.length;
+  }
+  const directory = Buffer.concat(centralParts);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(Object.keys(entries).length, 8);
+  end.writeUInt16LE(Object.keys(entries).length, 10);
+  end.writeUInt32LE(directory.length, 12);
+  end.writeUInt32LE(start, 16);
+  return Buffer.concat([...localParts, directory, end]);
+}
+
+function fixtureSheet(headers: string[]) {
+  return [
+    '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">',
+    '<dimension ref="A1:D2"/><sheetData><row r="1">',
+    ...headers.map((header, idx) =>
+      '<c r="' + String.fromCharCode(65 + idx) + '1" t="inlineStr"><is><t>' + header + '</t></is></c>'),
+    '</row></sheetData></worksheet>',
+  ].join("");
+}
+
+describe("L7 official MENPS XLSX read-only header probe", () => {
+  it("recognises potential Latitude/Longitude columns without verifying GPS values", () => {
+    const bytes = makeStoredXlsx({ "xl/worksheets/sheet1.xml": fixtureSheet(["Nom", "Latitude", "Longitude", "Commune"]) });
+    const result = inspectInstitutionalXlsxHeaders(bytes);
+    assert.equal(result.sheet_entries_found, 1);
+    assert.equal(result.sampled_row_count, 1);
+    assert.equal(result.gps_columns_candidate, true);
+    assert.equal(result.coordinates_verified, false);
+    assert.equal(result.individual_entity_verified, false);
+    assert.deepEqual(result.header_candidates, ["Nom", "Latitude", "Longitude", "Commune"]);
+  });
+
+  it("rejects any inference of GPS when source only contains names and cities", () => {
+    const bytes = makeStoredXlsx({ "xl/worksheets/sheet1.xml": fixtureSheet(["Nom", "Province", "Ville"]) });
+    const result = inspectInstitutionalXlsxHeaders(bytes);
+    assert.equal(result.gps_columns_candidate, false);
+    assert.equal(result.longitude_header_candidate, null);
+  });
+
+  it("fails closed on random bytes or a ZIP without worksheet", () => {
+    assert.throws(() => inspectInstitutionalXlsxHeaders(Buffer.from("CSV not Excel")), /invalid_archive_size|zip_eocd_missing/);
+    const zip = makeStoredXlsx({ "xl/workbook.xml": "<workbook/>" });
+    assert.throws(() => inspectInstitutionalXlsxHeaders(zip), /xlsx_no_worksheet/);
+  });
+
+  it("rejects malformed ZIP metadata instead of fabricating a readable header", () => {
+    const bytes = makeStoredXlsx({ "xl/worksheets/sheet1.xml": fixtureSheet(["Latitude", "Longitude"]) });
+    bytes.writeUInt32LE(0, bytes.length - 22);
+    assert.throws(() => inspectInstitutionalXlsxHeaders(bytes), /zip_eocd_missing/);
   });
 });
