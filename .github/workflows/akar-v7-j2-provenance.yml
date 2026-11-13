@@ -1,0 +1,22 @@
+name: Akar V7 J2 FeenWay Provenance — Offline
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/v7_parallel/j2_feenway_provenance.py'
+      - 'scripts/acquisition/__tests__/test_v7_j2_feenway.py'
+      - '.github/workflows/akar-v7-j2-provenance.yml'
+permissions:
+  contents: read
+jobs:
+  j2-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 5 deterministic provenance tests; NO portal requests, NO DB
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_j2_feenway.py'
