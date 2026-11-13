@@ -8,9 +8,7 @@ if (readerName !== "nvda" && readerName !== "voiceover") {
 const test = readerName === "nvda" ? nvdaTest : voiceOverTest;
 const normalise = (s) => String(s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-test("real screen reader announces Maârif and activates Limites", async (fixtures, testInfo) => {
-  const { page } = fixtures;
-  const reader = readerName === "nvda" ? fixtures.nvda : fixtures.voiceOver;
+async function exercise({ page, reader }, testInfo) {
   const response = await page.goto("/map?city=casablanca&district=maarif&layer=explore", { waitUntil: "domcontentloaded", timeout: 60_000 });
   expect(response?.status()).toBe(200);
 
@@ -60,4 +58,14 @@ test("real screen reader announces Maârif and activates Limites", async (fixtur
   await expect(control).toHaveAttribute("aria-expanded", "false");
   await expect(control).not.toHaveAttribute("aria-controls", /./);
   await page.screenshot({ path: `artifacts/native-sr/${readerName}-quartier-after-reader.png`, animations: "disabled" });
-});
+}
+
+if (readerName === "nvda") {
+  test("NVDA announces Maârif and activates Limites", async ({ page, nvda }, testInfo) => {
+    await exercise({ page, reader: nvda }, testInfo);
+  });
+} else {
+  test("VoiceOver announces Maârif and activates Limites", async ({ page, voiceOver }, testInfo) => {
+    await exercise({ page, reader: voiceOver }, testInfo);
+  });
+}
