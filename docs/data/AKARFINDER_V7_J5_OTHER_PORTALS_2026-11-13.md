@@ -29,3 +29,13 @@
 **Aucun effet de bord :** pas de requêtes réseau vers les portails, pas de DB, pas de staging, pas de cron live, pas de merge et aucun déploiement Vercel. Les changements sont uniquement sur la Draft PR.
 
 **NEXT exact :** conserver les sources non qualifiées en quarantaine et reprendre l'audit d'HTML source direct par un canal permis ; à défaut, poursuivre les travaux V7 indépendants, sans promouvoir les URL candidates.
+
+## J5 — Test de passage réel L8 Node → AkarParser V3 (13 novembre 2026)
+
+**GOAL :** prouver que la préparation J5 (Mubawab 600 + MarocAnnonces 400, URLs totalement synthétiques) correspond sans perte aux vrais enregistrements de `legacy_candidate_bridge.mjs` et passe la vérification `v7_multisource.legacy_url_intake.inspect_url_only_candidates` du **vrai** AkarParser V3, tout en restant en quarantaine.
+
+**Ajout :** `scripts/acquisition/__tests__/test_v7_j5_real_v3_handoff.py` exécute en mémoire `assessJ5` et `adaptLegacyReports` via Node, compare les 1000 triplets exacts (portail, ID, URL), et appelle `inspect_url_only_candidates` sur les 1000 vrais objets L8. Troisième test : interdiction des déclarations de date éditoriale ou d'éligibilité au staging. Workflow J5 étendu avec Python 3.11 et BeautifulSoup épinglé, uniquement en PR, sans collecte source ni connexion base.
+
+**Succès à vérifier :** CI au code SHA exact et compte des tests ; le résultat attendu est 1000/1000 `source_snippet_only`, zéro detail, zéro base, aucune admission privée ou publique. Cela **ne prouve aucune présence réelle d'annonces sur les portails**, aucune date de publication, aucune propriété unique, aucune disponibilité. Le corpus est synthétique.
+
+**Gate conservé :** J5 complet demeure ouvert sans HTML original. Pas d'appel HTTP portal, pas de staging, cron live, merge ni Vercel.
