@@ -75,3 +75,15 @@ La [PR Draft #1146](https://github.com/hraaaaf/Akarfinder/pull/1146) possède d�
 Relecture de la page directe /acheter/appartement-sale-bab-al-bahr-894012/ via lecteur web : seul le pied de page/navigateur apparaît dans le texte retourné, **aucun des prix/surface/chambres attribués précédemment n'y est indépendantement visible** lors de cette lecture. La lecture a été fournie depuis une copie indexée de trois mois, et une récupération réseau directe de l'URL a échoué sur DNS non résolu dans l'environnement local. Ce constat ne démontre ni disparition ni maintien de la fiche : il **annule toute qualification courante de ses champs**.
 
 Statut du témoin : URL à examiner, **0 HTML brut actuel vérifié, 0/7 champs présents et certifiés sur cette nouvelle lecture, 0 admission**. Conserver l'observation historique comme piste non vérifiée, pas comme preuve nouvelle. Aucun contournement de blocage, pas de source GET réussi, pas de DB/cron/merge/Vercel.
+
+
+
+## 13/11/2026 — Nouvelle lecture JS fraîche du détail Sarouty : original visible, non archivé brut
+
+Après la lecture textuelle partielle précédemment consignée, un **lecteur de contenu JS rendu avec fraîcheur demandée à zéro** a interrogé la fiche individuelle https://www.sarouty.ma/acheter/appartement-sale-bab-al-bahr-894012/ ; contrairement au rendu textuel précédent, la réponse fournit la section immobilière principale, URL finale identique, canonical et og:url concordants avec l'URL d'entrée, meta robots « index, follow ».
+
+Sept champs effectivement visibles dans le rendu sémantique renvoyé par la source : titre « Appartement 3 ch. 196 m² à vendre Bab al bahr, Sale – 3 500 000 DH », prix **3 500 000 DH**, surface **196 m²**, ville **Salé**, quartier **Bab al bahr**, type **appartement**, transaction **vente**. La fiche annonce 3 chambres, 2 SDB et référence commerciale **3199** (agence AYKANA). Métadonnées du document : publication déclarée 2025-10-28T09:49:57Z, modification déclarée 2026-09-07T10:25:44Z. Ces dates sont des métadonnées déclarées par le portail, **pas une preuve de mise en vente toujours active**.
+
+**Progrès :** 1/1 échantillon Sarouty dispose désormais d'un **rendu sémantique direct et d'une autodéclaration canonique concordante** (observation ponctuelle). **Limite bloquante :** ce contenu est du HTML sémantique NETTOYÉ par un lecteur, pas le HTML brut exact avec HTTP200 + SHA256/UTC immuable exigé par la gate j45_original_snapshot. Impossible de le requalifier en source.html à partir de ce texte sans fabriquer une origine. Aucune qualification d'exactitude terrain, fraîcheur ou unicité, aucune ligne staging. Avito/Yakeey n'ont pas bénéficié de cette lecture.
+
+**NEXT exact** : capture originale Sarouty par un chemin autorisé conservant octets HTTP et manifeste, validation ID/canonical/7 champs par le parseur existant, puis décision de revue. Un échec de fetch/cache par un lecteur ne doit pas écraser la preuve sémantique rendue par un autre ; les deux niveaux de preuve sont distingués. 0 DB, 0 admission, 0 merge, 0 cron live, 0 Vercel.
