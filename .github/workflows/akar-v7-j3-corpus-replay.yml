@@ -78,3 +78,34 @@ jobs:
             "representative_accuracy_certified":False,
           },sort_keys=True))
           PY
+
+      - name: Explain #445495 isolated surface divergence (offline only)
+        env:
+          PYTHONPATH: scripts/acquisition
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          from v7_multisource.snapshot_evidence import verify_evidence, offline_benchmark, _utc
+          from canonical_listing_extractor import extract_canonical
+          from akarparser_v3_raw_bulk import parse_raw
+          root=Path(".private-j3-445495")
+          e=verify_evidence(root/"source.html",root/"source.manifest.json")
+          m=e["manifest"]
+          l4=extract_canonical(m["source_url"],e["raw_html"])
+          v3=parse_raw({"source_url":m["source_url"],"raw_html":e["raw_html"]},_utc(m["captured_at_utc"]))
+          comparison=offline_benchmark(root/"source.html",root/"source.manifest.json")["field_comparison"]["surface_total_m2"]
+          l4_evidence=l4["fields"].get("surfaces.surface_total_m2",{}).get("evidence",{})
+          v3_evidence=v3.get("field_evidence",{}).get("surface_total_m2",{})
+          print(json.dumps({
+             "source_offer_id":"445495",
+             "html_sha256":m["html_sha256"],
+             "l4_surface_m2":comparison["l4"],
+             "v3_surface_m2":comparison["v3"],
+             "l4_evidence_method":l4_evidence.get("method"),
+             "v3_evidence_path":v3_evidence.get("path"),
+             "v3_evidence_method":v3_evidence.get("method"),
+             "ground_truth_independently_verified":False,
+             "capture_network_requests":0,"db_writes":0,
+          },ensure_ascii=False,sort_keys=True))
+          PY
