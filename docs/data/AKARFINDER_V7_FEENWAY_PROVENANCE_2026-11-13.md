@@ -92,3 +92,19 @@ Le poste utilisateur DESKTOP-3MAJEEH a été vérifié **Offline**, dernier cont
 **Réserve méthodologique :** FeenWay peut réutiliser dans une galerie les miniatures `/m/` d'autres annonces Mubawab ; le module exige donc le premier chemin primaire `/h/` et ne tire **aucune URL source** des images. L'ID reste une hypothèse à confronter à une vraie fiche source ; le doublon de photos n'est pas le doublon de biens.
 
 **Gates restantes :** collecteur Windows brut inaccessible (Desktop Commander offline ; AI Machine Bridge présence seule). Réexport du dossier brut avec vraies URLs amont et snapshots source ou accès authentifié aux documents de collecte ; validation par échantillons puis staging privé V3/Radar10 et gates DB/merge séparés. FeenWay toujours NOT_INTEGRATED dans la couverture live ; V7 2/8 jalons clos.
+
+
+## 13 novembre 2026 — Collecteur Windows original reçu / diagnostic déterministe
+
+**Nouveaux fichiers utilisateur effectivement lus** : `scraper_multiprocess.py` (SHA256 `6c8bf7e9d2f27b2f61e69fe332990e74c50f0e044ab6df0fe17b5a6071b30dcf`), `requirements.txt`, `README(4).md`, `feenway_urls.json` (SHA256 `da5bb0d3b08e5bbcf149e22334ffcdb5a3e6fd1d46d77af75d6f6ed160aa3acf`), benchmark 100 annonces, rapports benchmark/final.
+
+**Preuve croisée OFFLINE** : les 82 166 URL uniques du fichier `feenway_urls.json` correspondent **exactement** aux 82 166 URL du ZIP source (`feenway_akarfinder_import.zip`) ; 0 manquante et 0 ajoutée. ZIP CRC PASS. Rapport original *déclare* 82 166/82 166 sans échec, 4 workers × 8 connexions et 4 065,18 secondes : compte rendu de collecte, pas vérification de l'activité des offres.
+
+**Cause racine du blocage identifiée dans le vrai code source** :
+- `extract_listing()` extrait du JSON-LD exactement `nom_annonce, url, ville, quartier, superficie, prix, liens_photos` ; il **n'extrait pas** les liens explicites « Voir sur Avito / Mubawab / ... » présents dans les fiches HTML.
+- `fetch_one()` n'enregistre pas `response.text` ni l'en-tête de redirection / preuve d'origine, et `write_jsonl()` ne sauvegarde que les sept champs dans `feenway_part_<pid>.jsonl`.
+- **Correction du précédent next :** demander uniquement `feenway_parts` ne pourra donc **pas** restituer les URL/ID originaux, sauf s'il existe ailleurs un cache HTML/HAR qui n'a pas été fourni. Les nouveaux fichiers confirment la perte d'information lors du premier scraping.
+
+**Correctif préparé et vérifié en local, non commité dans la PR** : `feenway_collector_source_origin_patch_2026-11-13.zip` (15 250 octets ; SHA256 `a740c387d39bcc5e2c3f635c62fcbda1305b43fe2fb57f846debc10d60ba9c84`) contient le collecteur enrichi, ses 16 tests, les 10 URL de pilote, README PowerShell, requirements, manifeste SHA. Il conserve le schéma des 7 champs et enregistre séparément, sur les **futures** réponses HTML, le lien explicite du portail et l'ID extrait de son URL avec SHA256 + horodatage et statuts de quarantaine. URL source observée ≠ URL source vivante certifiée, aucun doublon certifié. Six portails supportés par l'extracteur ; les autres/ambigus restent en quarantaine. **16/16 tests unitaires hors ligne PASS**, syntaxe Python compilée, `--capture-origins` sans validation de masse refusé. **Aucune requête réseau et aucune DB n'ont été exécutées** ; ne pas attribuer ces tests à GitHub CI.
+
+**Next exact réaliste** : le pilote de 10 URL FeenWay doit être collecté en environnement autorisé avec les nouvelles options `--capture-origins --benchmark-only`, **dans un dossier neuf** (les checkpoints existants seraient insuffisants). Mesurer proportion de liens source explicites, URL/ID parseables, pages originales accessibles, divergences période prix/type/transaction. Ensuite décider du coût et de la charge d'un enrichissement plus large, avec gate séparé avant source live/DB. Le pipeline original V7 reste à 2/8 jalons, PR Draft, 82 166 candidats en quarantaine, 0 admission, pas de merge, cron ni Vercel.
