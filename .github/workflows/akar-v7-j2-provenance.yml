@@ -5,6 +5,10 @@ on:
       - 'scripts/acquisition/v7_parallel/j2_feenway_provenance.py'
       - 'scripts/acquisition/__tests__/test_v7_j2_feenway.py'
       - '.github/workflows/akar-v7-j2-provenance.yml'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 jobs:
