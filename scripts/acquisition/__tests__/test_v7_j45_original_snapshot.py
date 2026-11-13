@@ -48,6 +48,11 @@ class J45SourceTests(unittest.TestCase):
         self.folder=Path(tmp.name)
 
     def write(self,url,html=HTML):
+        if html == HTML:
+            # Synthetic test-only; this is NOT independent source attestation.
+            tag=('<link rel="canonical" href="'+url+'">'
+                 '<meta property="og:url" content="'+url+'">').encode("utf-8")
+            html=html.replace(b"</head>",tag+b"</head>")
         (self.folder/"source.html").write_bytes(html)
         self.manifest=_manifest(url,html,when=UTC,method="explicit_single_page_https_get")
         (self.folder/"source.manifest.json").write_text(json.dumps(self.manifest),encoding="utf-8")
@@ -67,6 +72,8 @@ class J45SourceTests(unittest.TestCase):
                 self.assertEqual(r["source_domain"],source)
                 self.assertEqual(len(r["l4_v3_fields"]),7)
                 self.assertTrue(r["html_sha256_verified"])
+                self.assertTrue(r["source_html_self_declaration"]["html_canonical_url_matches_candidate"])
+                self.assertFalse(r["source_html_self_declaration"]["self_declaration_is_independent_proof"])
                 self.assertFalse(r["external_pin_registry_authenticated"])
                 self.assertFalse(r["eligible_for_private_detail_staging"])
                 self.assertFalse(r["eligible_for_public_admission"])
@@ -91,6 +98,36 @@ class J45SourceTests(unittest.TestCase):
         ):
             with self.subTest(url=url), self.assertRaises(EvidenceError):
                 _url(url)
+
+    def test_missing_html_canonical_is_quarantined_even_when_sha_matches(self):
+        self.write(URLS["sarouty.ma"],html=HTML)
+        with self.assertRaisesRegex(OriginalSnapshotRejected,"HTML_CANONICAL_URL_MISSING"):
+            self.gate("sarouty.ma")
+
+    def test_canonical_of_different_listing_rejected_even_if_manifest_and_pin_match(self):
+        own=URLS["mubawab.ma"]
+        foreign=own.replace("9961000","9961001")
+        raw=HTML.replace(b"</head>",
+            ('<link rel="canonical" href="'+foreign+'">').encode("utf-8")+b"</head>")
+        self.write(own,html=raw)
+        with self.assertRaisesRegex(OriginalSnapshotRejected,"HTML_SOURCE_URL_CONFLICT"):
+            self.gate("mubawab.ma")
+
+    def test_conflicting_og_url_is_rejected(self):
+        own=URLS["avito.ma"]
+        alien=own.replace("12345678","87654321")
+        tag=('<link rel="canonical" href="'+own+'">'
+             '<meta property="og:url" content="'+alien+'">').encode("utf-8")
+        self.write(own,html=HTML.replace(b"</head>",tag+b"</head>"))
+        with self.assertRaisesRegex(OriginalSnapshotRejected,"HTML_SOURCE_URL_CONFLICT"):
+            self.gate("avito.ma")
+
+    def test_body_only_canonical_cannot_fake_source_head(self):
+        own=URLS["sarouty.ma"]
+        tag=('<link rel="canonical" href="'+own+'">').encode("utf-8")
+        self.write(own,html=HTML.replace(b"</body>",tag+b"</body>"))
+        with self.assertRaisesRegex(OriginalSnapshotRejected,"HTML_CANONICAL_URL_MISSING"):
+            self.gate("sarouty.ma")
 
     def test_forged_offer_id_rejected(self):
         self.write(URLS["avito.ma"])

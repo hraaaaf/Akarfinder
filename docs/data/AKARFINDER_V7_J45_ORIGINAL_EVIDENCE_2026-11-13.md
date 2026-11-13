@@ -45,3 +45,15 @@ Au **SHA code exact c2a7df04ffb169a971d5db82887397ea512564a3**, les **six workfl
 Au **SHA documentaire d9876922adc892f193d84e562cb7df7ea1ee0792**, six workflows supplémentaires ont également fini SUCCESS : V7 #43406198375, Radar10 #43406198374, V3 regression #43406198425, V3 privé #43406198347, J1 replay #43406198348 et CI policy #43406198618.
 
 **Sous-lot terminé** : contrat de vérification technique SHA/URL/ID/L4/V3, avec test contre HTML challenge et route Sarouty bornée. **J4/J5 non clôturés**, car zéro vrai HTML original de leurs portails a été vérifié. Prochaine étape conditionnelle : source externe autorisée délivrant un snapshot brut ; sinon ne pas activer le staging ni les collecteurs.
+
+## Source HTML self-identity (13/11/2026) — préparation supplémentaire
+
+**Contexte vérifié :** le bundle privé J3 consulté contient seulement les cinq archives Agenz (199159 octets). Le tree GitHub #1204 ne contient aucune vraie archive J4/J5, seulement des fixtures de tests et des pages ville Yakeey. Le portail MarocAnnonces a retourné une page `Please wait while your request is being verified` lors d'une consultation publique, et la page Sarouty disponible présente des annonces en liste, pas un fichier HTML original d'annonce individuelle. Ces observations ne permettent **aucune admission** ni affirmation qu'une annonce actuellement affichée ait été capturée en octets.
+
+**Problème de conception découvert :** le validateur du sous-lot J4/J5 liait l'URL d'un candidat au `source.manifest.json`, mais n'exigeait pas que les octets HTML se déclarent eux-mêmes appartenir à cette fiche. Un HTML d'une autre page, associé au bon `source_url` dans un manifeste recalculé, pouvait donc passer les contrôles d'enveloppe et de densité immobilière.
+
+**Correctif hors ligne :** `_HeadSourceIdentity` exige une balise `link rel=canonical` dans le `head` et sa correspondance **exacte** à l'URL candidate/manifest; si des `meta property=og:url` sont présents ils doivent aussi correspondre. Balise dans le corps, absente ou contradictoire : échec fermé. Le URL canonical reste une **déclaration contrôlée par le HTML**, pas une attestation cryptographique de l'origine du document ni une autorisation de réutilisation. Toute variante réelle de canonical (www, slash, UTM) exige revue et test sur une capture fiable plutôt que normalisation spéculative.
+
+**Tests synthétiques ajoutés :** HTML sans canonical, canonical d'une autre fiche, `og:url` contradictoire, fausse balise canonical dans le corps ; les quatre fixtures auparavant employées comportent désormais canonical + OG déclarés, sans prétendre être des sources originales.
+
+**Critère de succès :** CI au SHA code exact ; toujours 0/4 vrais HTML J4/J5 certifiés, aucun déploiement ni collecte live.

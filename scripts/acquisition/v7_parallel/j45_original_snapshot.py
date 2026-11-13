@@ -4,6 +4,7 @@ Strictly read-only. An externally supplied SHA pin is not an authenticated regis
 from __future__ import annotations
 import json
 from pathlib import Path
+from html.parser import HTMLParser
 import re
 import subprocess
 import sys
@@ -20,6 +21,50 @@ SHA=re.compile(r"^[0-9a-f]{64}$")
 
 class OriginalSnapshotRejected(ValueError):
     pass
+
+class _HeadSourceIdentity(HTMLParser):
+    """Only source-document HEAD metadata, never body links or generated URLs."""
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.in_head = False
+        self.canonical = []
+        self.og_url = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "head":
+            self.in_head = True
+        if not self.in_head:
+            return
+        values = dict(attrs)
+        if tag == "link" and "canonical" in (values.get("rel") or "").lower().split():
+            self.canonical.append(values.get("href"))
+        if tag == "meta" and (values.get("property") or "").lower() == "og:url":
+            self.og_url.append(values.get("content"))
+
+    def handle_endtag(self, tag):
+        if tag == "head":
+            self.in_head = False
+
+
+def _check_self_declared_source_url(html: str, expected: str) -> dict:
+    """Self-declared canonical corroboration, NOT trusted capture authenticity."""
+    parsed = _HeadSourceIdentity()
+    try:
+        parsed.feed(html)
+        parsed.close()
+    except (ValueError, TypeError) as exc:
+        raise OriginalSnapshotRejected("HTML_SOURCE_METADATA_INVALID") from exc
+    if not parsed.canonical:
+        raise OriginalSnapshotRejected("HTML_CANONICAL_URL_MISSING")
+    all_urls = parsed.canonical + parsed.og_url
+    if any(not isinstance(value, str) or value != expected for value in all_urls):
+        raise OriginalSnapshotRejected("HTML_SOURCE_URL_CONFLICT")
+    return {
+        "html_canonical_url_matches_candidate": True,
+        "html_og_url_matches_candidate": bool(parsed.og_url),
+        "self_declaration_is_independent_proof": False,
+    }
+
 
 def _real_l8_identity(domain:str,url:str)->dict:
     try:
@@ -72,6 +117,7 @@ def review_original_snapshot(*,lane:str,candidate:dict,folder:Path,expected_html
         not reasons.intersection({"structured_listing_type","listing_fact_density"}) or
         replay["v3_quality_status"]=="source_snippet_only"):
         raise OriginalSnapshotRejected("ORIGINAL_HTML_NOT_LISTING_DETAIL")
+    self_identity = _check_self_declared_source_url(evidence["raw_html"], url)
     fields=replay["field_comparison"]
     if set(fields)!={"title","price_mad","surface_total_m2","city","district",
                     "property_type","transaction_type"}:
@@ -79,7 +125,9 @@ def review_original_snapshot(*,lane:str,candidate:dict,folder:Path,expected_html
     return {
         "lane":lane, "source_domain":domain,"source_offer_id":offer,"source_url":url,
         "html_sha256_verified":manifest["html_sha256"],"capture_utc":manifest["captured_at_utc"],
-        "l8_source_url_identity_matched":True, "l4_v3_fields":fields,
+        "l8_source_url_identity_matched":True,
+        "source_html_self_declaration": self_identity,
+        "l4_v3_fields":fields,
         "conflicting_nonempty_fields":replay["conflicting_nonempty_fields"],
         "external_pin_registry_authenticated":False,
         "independent_field_labels_verified":False,
