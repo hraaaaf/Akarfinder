@@ -1,0 +1,22 @@
+name: Akar V7 J5 Remaining Portals — Offline
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/v7_parallel/j5_remaining_portals.mjs'
+      - 'scripts/acquisition/__tests__/v7-j5-portals.test.mjs'
+      - '.github/workflows/akar-v7-j5-portals.yml'
+permissions:
+  contents: read
+jobs:
+  j5-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Six merged/research portal registry checks, 0 portal requests, 0 DB
+        run: node --test scripts/acquisition/__tests__/v7-j5-portals.test.mjs
