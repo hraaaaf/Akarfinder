@@ -65,9 +65,20 @@ def _headers(data:bytes) -> tuple[str,dict[str,str],bytes]:
     fields={}
     for line in lines[1:]:
         key,sep,val=line.partition(':')
-        if not sep or not key or key.casefold() in fields:
+        if not sep or not key:
             raise ArchiveRejected('WARC_HEADER_DUPLICATE_OR_INVALID')
-        fields[key.casefold()] = val.strip()
+        normalized = key.casefold()
+        if normalized in fields:
+            # Valid WARC/HTTP often repeats WARC-Protocol, set-cookie, etc.
+            # Reject ambiguous repeated security-critical headers, but do not
+            # reject harmless metadata or cookie repetitions.
+            unique = {'warc-type', 'warc-date', 'warc-target-uri',
+                      'warc-payload-digest', 'content-length', 'content-type',
+                      'content-encoding', 'transfer-encoding', 'location'}
+            if normalized in unique:
+                raise ArchiveRejected('WARC_HEADER_DUPLICATE_OR_INVALID')
+            continue
+        fields[normalized] = val.strip()
     return lines[0],fields,body
 
 
