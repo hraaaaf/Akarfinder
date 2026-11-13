@@ -37,3 +37,11 @@ Le validateur L8 fusionné reconnaît une variante d'annonce individuelle Sarout
 **Sécurité et décisions :** aucune nouvelle requête source, aucun retry Avito HTTP403, aucune écriture DB, aucune admission, aucun changement de cron, aucun merge, aucun déploiement Vercel. La PR de base #1204 reste Draft ; #1207/#1208 restent des PR empilées de vérification URL-only. V7 continue à **2/8 jalons clôturés** (J0/J1).
 
 **NEXT exact :** prendre la première archive brute de fiche individuelle provenant d'un canal autorisé avec URL, identité de portail, hash et horodatage UTC vérifiables. La comparer aux sept labels source indépendants puis statuer source par source. Sans archive, garder les données en quarantaine et avancer uniquement les autres chantiers autorisés ; ne pas relancer les sites ayant bloqué la requête.
+
+## Confirmation CI définitive du lot de préparation J4/J5
+
+Au **SHA code exact c2a7df04ffb169a971d5db82887397ea512564a3**, les **six workflows** ont fini SUCCESS : V7 #43405965131 (13/13 tests J4/J5), Radar10 #43405965218, V3 regression #43405965393, V3 privé #43405965061, J1 replay #43405965450, CI policy #43405965322. Les 13 tests du nouveau sous-lot sont synthétiques et ne constituent pas une certification de captures originales.
+
+Au **SHA documentaire d9876922adc892f193d84e562cb7df7ea1ee0792**, six workflows supplémentaires ont également fini SUCCESS : V7 #43406198375, Radar10 #43406198374, V3 regression #43406198425, V3 privé #43406198347, J1 replay #43406198348 et CI policy #43406198618.
+
+**Sous-lot terminé** : contrat de vérification technique SHA/URL/ID/L4/V3, avec test contre HTML challenge et route Sarouty bornée. **J4/J5 non clôturés**, car zéro vrai HTML original de leurs portails a été vérifié. Prochaine étape conditionnelle : source externe autorisée délivrant un snapshot brut ; sinon ne pas activer le staging ni les collecteurs.
