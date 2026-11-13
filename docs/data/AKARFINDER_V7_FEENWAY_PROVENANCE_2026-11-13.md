@@ -125,3 +125,28 @@ Le poste utilisateur DESKTOP-3MAJEEH a été vérifié **Offline**, dernier cont
 - [V7 CI #43440408179](https://github.com/hraaaaf/Akarfinder/actions/runs/43440408179) SUCCESS et [CI Policy #43440408276](https://github.com/hraaaaf/Akarfinder/actions/runs/43440408276) SUCCESS sur commit de code pilote. Le nouveau test est maintenant intégré **aussi à la CI V7 offline récurrente**, sans répéter le job réseau.
 
 **Limites de preuve** : le lien original est une déclaration dans la fiche FeenWay, pas une preuve de disponibilité/activité/fraîcheur ni de transaction/type/période prix ; 0 source amont indépendamment consultée dans ce pilote. Il n'existe aucune raison de certifier ou importer toutes les 82 166 annonces sur cette preuve. Conserver l'enrichissement prudent en quarantaine. **NEXT :** revue/admission après validation indépendante des pages amont pour les 10 candidats, qualité des prix/périodes, représentativité, doublons, avant un éventuel pilote multi-portails élargi sous gate distinct. **Aucun Vercel, DB, merge, cron live.** Roadmap V7 demeure **2/8 jalons clôturés**.
+
+
+## 13 novembre 2026 — Closeout du pilote 10 pages d'origine via GitHub Actions
+
+**GOAL:** vérifier de façon indépendante, par des requêtes bornées et conformes au contrôle robots propre à chaque portail, les dix liens « Voir sur » retrouvés lors du pilote FeenWay (six domaines). **Succès attendu :** preuves ou motifs précis de non-preuve par fiche, sans admissions ni contrôle informatique Windows. **Résultat :** 10/10 fiches qualifiées en états explicites, 1 identité de page amont confirmée par URL canonique sur Agenz, **0 disponibilité ou cohérence prix/surface certifiée**.
+
+**Code + CI :**
+- Premier commit d'audit `cc2176a2e5e0cc47719158779fc1d9e6da36ad2e` ; [GitHub Actions run original #43445997766](https://github.com/hraaaaf/Akarfinder/actions/runs/43445997766) **SUCCESS**, 22/22 tests sécurité PASS, 6 domaines/10 candidats.
+- Bug réel détecté : `UnicodeEncodeError` lors de l'utilisation directe d'URLs Avito accentuées avec `urllib`, sans requête métier exploitable. Correctif au commit `1b410921acc8999ac8f37c39abe2b460d726d24f` : encodage ASCII RFC de la portion path seulement, contrôle que le domaine et l'ID de fiche restent identiques, raison d'échec explicite dans le rapport. [Second run #43446700779](https://github.com/hraaaaf/Akarfinder/actions/runs/43446700779) **SUCCESS**, **24/24 tests** du nouveau sous-lot PASS, [CI V7 #43446712582](https://github.com/hraaaaf/Akarfinder/actions/runs/43446712582) SUCCESS et [CI Policy #43446712504](https://github.com/hraaaaf/Akarfinder/actions/runs/43446712504) SUCCESS.
+- Deux runs source volontairement one-shot avec entrée figée ; aucun scan élargi, aucun retry HTTP de contournement, aucune redirection suivie, aucun import/DB/cron/Vercel.
+
+**Statut final du second run sur les 10 offres :**
+1. `feenway/186197` → **Agenz 169490**, HTTP 200, URL canonique `agenz.ma` porte le bon ID. Le parseur V3 n'extrait **ni prix, ni surface, ni transaction, ni type** ; le titre source indique une location cohérente avec la claim FeenWay, mais la comparaison détaillée et la disponibilité restent indéterminées. Donc **observation d'identité de fiche seulement**, non admission.
+2. `feenway/199629` → Avito : **HTTP 403** une fois après correctif ; les **2 autres Avito** (`273928, 197602`) arrêtées avant requête selon stop-on-denial. Aucun contournement.
+3. Trois Mubawab (`222666,239051,219504`) : réponses non reconnues comme document HTML brut par le validateur (`NOT_HTML_DOCUMENT`), **pas** une redirection prouvée, pas d'ID canonique établi dans ce run. Ne pas déduire une fiche supprimée.
+4. Yakeey `183868` et Masaken `180678` : `robots.txt` injoignable/non utilisable (HTTPError) ; aucune requête fiche. Sarouty `179960` : redirection sur `robots.txt` refusée ; aucune requête fiche.
+
+**Statuts rapport second run :** 1 `SOURCE_CANONICAL_ID_MATCH`, 3 `ROBOTS_BLOCKED_OR_UNAVAILABLE`, 4 `SOURCE_FETCH_UNAVAILABLE` (dont 1 HTTP403 et 3 `NOT_HTML_DOCUMENT`), 2 `PORTAL_ACCESS_STOPPED` (Avito non tentées). Le premier run avait 1/3/6 selon ces trois premières catégories et incluait le bug de transport Avito. **Ne pas interpréter le statut technique SUCCESS du workflow comme validation des annonces.**
+
+**Artefacts réellement téléchargés et contrôlés :**
+- Première passe : [#14046954140](https://github.com/hraaaaf/Akarfinder/actions/runs/43445997766/artifacts/14046954140), ZIP SHA256 `df1e6acdd9078278eb0d9313a93c064ba268f8f26e3d1af45bf6e6c08aa38596`, CRC PASS.
+- Deuxième passe : [#14047988025](https://github.com/hraaaaf/Akarfinder/actions/runs/43446700779/artifacts/14047988025), ZIP SHA256 `2a63e4a486999b3bdbe1536e004fd091e3c1bd74fe77b99ef4f422284153f756`, CRC PASS.
+- Livrable local audit croisé `feenway_v7_original_portals_10_checked_2026-11-13.zip` (8 333 octets), SHA256 `b890b7b86b017b6084659052db20a20ee135978d2a5feb2f52ef262da757edfb`, CRC PASS, 10 statuts rapprochés aux deux observations GitHub. Aucune capture HTML brute originale dans les artefacts distribués.
+
+**Conséquence sur la roadmap :** 82 166/82 166 observations FeenWay restent inéligibles à une admission publique, aucun doublon immobilier certifié, V7 toujours **2/8 jalons clôturés**. Le problème d'accès Windows est résolu pour les contrôles via Actions. **Gate restant réel :** sans accès autorisé exploitable à un HTML original pertinent et sans champs métiers corroborés, ne pas injecter V3/Radar10. Ne pas relancer les mêmes URLs restreintes en boucle ; étudier des canaux première partie autorisés / export original/caches apportés, et améliorer le parser V3 depuis preuve brute autorisée avant tout élargissement. PR #1211 Draft non mergée, aucun Vercel/DB.
