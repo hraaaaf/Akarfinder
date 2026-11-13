@@ -30,10 +30,18 @@ CREATE OR REPLACE FUNCTION v7_schedule.claim_slot(
   requested_slot bigint, worker_token uuid
 ) RETURNS boolean
 LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = pg_catalog, v7_schedule
+SET search_path = pg_catalog, v7_schedule, pg_temp
 AS $$
+DECLARE
+ current_slot bigint;
 BEGIN
  IF requested_slot IS NULL OR requested_slot < 0 OR worker_token IS NULL THEN
+  RETURN false;
+ END IF;
+ -- PostgreSQL authoritative UTC epoch: never allow remote workers to reserve
+ -- arbitrary future slots or long-ago slots permanently.
+ current_slot := floor(extract(epoch FROM clock_timestamp()) / 600)::bigint;
+ IF requested_slot > current_slot OR requested_slot < current_slot - 2 THEN
   RETURN false;
  END IF;
  INSERT INTO v7_schedule.slots(slot_index, claim_token)
@@ -46,14 +54,15 @@ CREATE OR REPLACE FUNCTION v7_schedule.finish_slot(
   requested_slot bigint, worker_token uuid
 ) RETURNS boolean
 LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = pg_catalog, v7_schedule
+SET search_path = pg_catalog, v7_schedule, pg_temp
 AS $$
 BEGIN
  IF requested_slot IS NULL OR worker_token IS NULL THEN
   RETURN false;
  END IF;
  UPDATE v7_schedule.slots SET status='completed', finished_at=clock_timestamp()
- WHERE slot_index=requested_slot AND claim_token=worker_token AND status='claimed';
+ WHERE slot_index=requested_slot AND claim_token=worker_token AND status='claimed'
+   AND claimed_at > clock_timestamp() - interval '30 minutes';
  RETURN FOUND;
 END;
 $$;
@@ -61,14 +70,15 @@ CREATE OR REPLACE FUNCTION v7_schedule.fail_slot(
   requested_slot bigint, worker_token uuid
 ) RETURNS boolean
 LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = pg_catalog, v7_schedule
+SET search_path = pg_catalog, v7_schedule, pg_temp
 AS $$
 BEGIN
  IF requested_slot IS NULL OR worker_token IS NULL THEN
   RETURN false;
  END IF;
  UPDATE v7_schedule.slots SET status='failed', finished_at=clock_timestamp()
- WHERE slot_index=requested_slot AND claim_token=worker_token AND status='claimed';
+ WHERE slot_index=requested_slot AND claim_token=worker_token AND status='claimed'
+   AND claimed_at > clock_timestamp() - interval '30 minutes';
  RETURN FOUND;
 END;
 $$;
@@ -107,7 +117,7 @@ CREATE OR REPLACE FUNCTION v7_schedule.record_fenced_marker(
   evidence_sha256 text
 ) RETURNS boolean
 LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = pg_catalog, v7_schedule
+SET search_path = pg_catalog, v7_schedule, pg_temp
 AS $$
 BEGIN
  IF requested_slot IS NULL OR requested_slot < 0 OR worker_token IS NULL
@@ -119,7 +129,8 @@ BEGIN
  -- Serializes against a concurrent finish/fail; stale or foreign tokens fail.
  PERFORM 1 FROM v7_schedule.slots
  WHERE slot_index=requested_slot AND claim_token=worker_token
-   AND status='claimed' FOR UPDATE;
+   AND status='claimed'
+   AND claimed_at > clock_timestamp() - interval '30 minutes' FOR UPDATE;
  IF NOT FOUND THEN
   RETURN false;
  END IF;
