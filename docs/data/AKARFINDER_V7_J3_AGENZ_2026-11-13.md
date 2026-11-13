@@ -64,7 +64,7 @@
 
 **NEXT exact :** audit indépendant des sept champs, quantification `present/missing/correct/incorrect` par source, puis décision de validation du lot J3 ; continuer J4 et J5 en parallèle. Toutes les activations réseau périodiques, SQL staging, merge et Vercel restent non autorisées.
 
-## Audit indépendant des valeurs affichées — 13 novembre 2026 (CI additionnelle en vérification)
+## Audit indépendant des 35 valeurs affichées — 13 novembre 2026 (CI PASS, géolocalisation NON CERTIFIÉE)
 
 **GOAL :** comparer les 35 champs (5 fiches × 7 champs) à des annotations produites par lecture directe des HTML originaux **sans dériver les labels de L4 ni V3**. Les cinq ZIP privés ont été retéléchargés le 13/11 ; les SHA-256 des fichiers `source.html` concordent tous avec les manifestes historiques déjà consignés.
 
@@ -77,6 +77,6 @@
 
 Le contrôle compare la **fidélité aux champs visibles dans l'en-tête** ; il normalise les diacritiques/casse pour comparer les toponymes (ex. `Sale` vs `Salé`), sans interpréter cette normalisation comme précision géographique indépendante. Trois quartiers restent **contestés dans la source même**. La date de publication, disponibilité, réalité géographique et représentativité sont **non certifiées**. Ne pas confondre `35 valeurs annotées` avec `35 valeurs correctes`.
 
-**Preuve prévue :** CI du nouveau commit avec replay des 5 mêmes ZIP privés SHA-pinnés, contrôle des 70 comparaisons individuelles (2 extracteurs × 35 labels) et liste des éventuels écarts. Le script échoue sur valeur manquante ou erronée par rapport à la **source affichée**, mais n'autorise **aucun staging** même si le contrôle passe.
+**Preuve CI vérifiée :** [replay GitHub #43391085979](https://github.com/hraaaaf/Akarfinder/actions/runs/43391085979) **SUCCESS** au SHA `004412f65d2fcdb21697cc82a7ef54d35f534720` : 5/5 archives SHA vérifiées, **35/35 labels affichés couverts, 70/70 comparaisons L4/V3 conformes après normalisation, 0 champ manquant, 0 erreur face à l'en-tête**, et 16 différences mineures de casse/diacritiques comptées pour les deux parseurs (notamment `Sale`/`Salé`). **Six workflows SUCCESS** au même SHA ; capture one-shot toujours désactivée. La conformité au texte principal affiché n'autorise **aucun staging** et n'est pas une certification géographique/fraîcheur.
 
-**Statut :** J3 reste avancé, non clôturé. J0–J1 clôturés ; V7 = 2/8 jalons, et non 25 % du travail. Aucun DB, activation cron, capture réseau, merge ou déploiement Vercel. Next : lire les nouveaux logs, corriger les écarts démontrés, documenter les trois ambiguïtés et décider du gate J3.
+**Statut :** J3 reste avancé, non clôturé, car trois descriptions contredisent le quartier affiché en en-tête ; aucune géolocalisation réelle indépendante n'est établie. J0–J1 clôturés ; V7 = 2/8 jalons, et non 25 % du travail. Aucun DB, activation cron, capture réseau, merge ou déploiement Vercel. **Next exact :** spécifier une règle de publication/staging qui traite les quartiers conflictuels en incertains, puis valider les sources si un usage géographique est envisagé. Les 16 variantes d'accents/casse sont un sujet de rendu/normalisation, distinct d'une erreur géographique.
