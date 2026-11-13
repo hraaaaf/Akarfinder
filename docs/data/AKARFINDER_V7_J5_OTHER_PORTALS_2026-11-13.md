@@ -58,3 +58,13 @@
 **Risques à garder explicitement** : déduplication inter-portails sur identité de l'offre + référence commerciale quand la provenance l'autorise ; éviter de confondre duplication de contenu et certification de la propriété physique, ou de transférer automatiquement le quartier d'un portail à l'autre. La ref peut aussi se répéter, donc ne suffit pas seule à unir des biens physiques. Les 7 champs Mubawab n'ont pas été extraits/rejoués sur HTML brut SHA256/UTC original. Source visible dans un lecteur public seulement. MarocAnnonces reste sans telle fiche réelle qualifiée.
 
 **Statut J5 :** candidat direct de revue documentaire, pas un nouveau connecteur certifié ; **0 admission privée/publique, 0 DB, 0 cron, 0 merge, 0 Vercel**. Next exact = un HTML source Mubawab original archivé et signé + contrôle ID/canonical/7 champs, puis dédup sur preuves réelles avant J6.
+
+
+
+## 13/11/2026 — Vérification directe Mubawab #8413785 : fiche redirigée, doublon historique non actualisé
+
+Un lecteur d'origine JS, avec rafraîchissement demandé, a tenté la fiche individuelle https://www.mubawab.ma/fr/a/8413785/appartement-%C3%A0-vendre-104-m%C2%B2-3-chambres-al-qods-sal%C3%A9. **URL finale observée :** https://www.mubawab.ma/fr/sd/sal%C3%A9/el-qods/appartements-a-vendre — une **page de résultats de recherche de quartier**, titre « Appartement à Vendre El Qods, Salé », et non la page individuelle 8413785. Le HTML sémantique renvoyé contient diverses autres offres et NE peut pas servir de source originale de 8413785.
+
+**Conclusion limitée et vérifiée :** la référence SAL-TA-1004 et le texte reproduit d'Agenz constituent au mieux un recoupement documentaire antérieur. La fiche originale Mubawab #8413785 **n'est pas directement vérifiable dans la réponse actuelle**. Cela ne prouve ni la vente ni la disparition ni le même bien physique ; pas de rapprochement géographique certifié. Aucun nouvel original HTTP200/HTML brut signé J5, aucune identité de cette offre autorisée pour staging.
+
+**Action :** garder cette URL en quarantaine avec motif SOURCE_DETAIL_REDIRECTS_TO_SEARCH, sans attribuer au bien 8413785 les prix/attributs des annonces de la page de résultats. Next = utiliser une fiche originale actuellement individuelle Mubawab disponible directement ou un export officiel, puis SHA/UTC + ID/canonical + 7 champs via gate existant. Pas de nouveau scraper ni de contournement, pas d'import/cron/merge/Vercel.
