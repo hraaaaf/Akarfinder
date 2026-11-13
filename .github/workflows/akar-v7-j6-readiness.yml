@@ -1,4 +1,4 @@
-name: Akar V7 J6 Private Staging Readiness (NO DB WRITES)
+name: Akar V7 J6 Source Proof + Isolated PostgreSQL (NO PROD)
 on:
   pull_request:
     paths:
@@ -14,7 +14,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
-  j6-no-write-check:
+  j6-ephemeral-provenance-check:
     runs-on: ubuntu-latest
     timeout-minutes: 9
     services:

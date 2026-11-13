@@ -45,6 +45,17 @@ class J6EvidenceTests(unittest.TestCase):
         self.assertFalse(res["eligible_for_private_staging"])
         self.assertFalse(res["capture_registry_authenticated_here"])
 
+    def test_combined_provenance_and_staging_gate_is_no_write(self):
+        from v7_parallel.j6_staging_readiness import review_with_verified_bytes
+        result = review_with_verified_bytes(
+            self.record, self.html, self.manifest,
+            independently_pinned_html_sha256=self.proof["html_sha256"])
+        self.assertTrue(result["source_proof"]["html_sha256"])
+        self.assertEqual(result["readiness"]["eligible_for_private_staging"], 0)
+        self.assertFalse(result["eligible_for_private_staging"])
+        self.assertEqual(result["db_writes"], 0)
+        self.assertIn("quarantined", result["status"])
+
     def test_missing_or_wrong_pin_rejected(self):
         with self.assertRaisesRegex(ProvenanceRejected, "SEPARATE_HTML_SHA256_PIN_REQUIRED"):
             self.run_gate(pin="")

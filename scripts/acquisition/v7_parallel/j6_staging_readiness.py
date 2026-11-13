@@ -93,6 +93,25 @@ def review_batch(records: list[dict]) -> dict:
     }
 
 
+def review_with_verified_bytes(record: dict, html_file: Path, manifest_file: Path,
+                               *, independently_pinned_html_sha256: str) -> dict:
+    """Run both mandatory gates together. Never calls PostgreSQL."""
+    from v7_parallel.j6_source_evidence import review_original_bytes
+
+    proof = review_original_bytes(
+        record, html_file, manifest_file,
+        independently_pinned_html_sha256=independently_pinned_html_sha256)
+    readiness = review_batch([record])
+    return {
+        "source_proof": proof,
+        "readiness": readiness,
+        "status": "quarantined_pending_authenticated_registry_and_human_gate",
+        "eligible_for_private_staging": False,
+        "publication_authorized": False,
+        "source_http_requests": 0, "db_reads": 0, "db_writes": 0,
+    }
+
+
 def main() -> int:
     import argparse
     parser = argparse.ArgumentParser(description="Offline V7 J6 gate only, NO DB")
