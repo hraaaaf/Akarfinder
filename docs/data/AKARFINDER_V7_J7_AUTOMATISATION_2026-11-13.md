@@ -58,3 +58,13 @@ CODE SQL (toujours PostgreSQL17 EPHEMERE CI) : j7_ephemeral_ledger.sql / v7_sche
 ADVERSARIAL TESTS : test_v7_j7_postgres_ledger.py se fonde sur l'horloge serveur PostgreSQL pour calculer son créneau réel (plus de fixture 09:03 codée en dur) ; nouveaux tests refus future/old claims, rejet de tokens stale dans la même base, inspection effective de proconfig pour les quatre fonctions. Les preuves historiques 21/21 de la version antérieure restent distinctes ; nouveau SHA code/test 886da0e7db95138df07525c90c4eebf5aef7997b, [J7 CI #43530915708](https://github.com/hraaaaf/Akarfinder/actions/runs/43530915708), [policy #43530915732](https://github.com/hraaaaf/Akarfinder/actions/runs/43530915732) QUEUED au premier contrôle. NE PAS déclarer 24/24 PASS sans CI terminale.
 
 LIMITES / ARBITRAGE : un job arrivé à plus de 20 minutes de retard ne peut plus réclamer son ancien slot : perte de collecte délibérément préférée aux claims vieux non contrôlés. Une exécution >30 minutes ne peut plus enregistrer une preuve ; le run 10 minutes est par ailleurs supposé avoir timeout 9 minutes en CI. Cela n'est PAS une garantie d'exactitude de cadence GitHub, de fencing de side effects réseau ou d'authentification de véritable opérateur. Aucun cron live ou registre durable n'a été activé, aucun merge ni DB extérieure. J7 métier OUVERT.
+
+## 14/11/2026 — Closeout CI du durcissement High J7
+
+**Goal :** empêcher les créneaux arbitraires et tokens zombies dans la proposition de ledger PostgreSQL local sans activation de cadence.
+
+**SUCCESS vérifié au HEAD exact** `3f6281efdbb7be2f3338fb2b18f41de01c6565c8` de [PR Draft #1210](https://github.com/hraaaaf/Akarfinder/pull/1210) : [J7 #43531236057](https://github.com/hraaaaf/Akarfinder/actions/runs/43531236057) **COMPLETED SUCCESS, 24/24 tests** (9 intention UTC/SQLite offline, **15 PostgreSQL17 éphémères**, dont les trois nouveaux cas : future/old slot, claim expiré, pg_temp en dernier). [Policy #43531236041](https://github.com/hraaaaf/Akarfinder/actions/runs/43531236041) **COMPLETED SUCCESS**.
+
+**Portée :** le bornage s'appuie sur le temps du serveur DB, refuse futur/plus de 2 créneaux anciens et empêche les preuves/finish/fail d'un claim de plus de 30 min. Aucune garantie d'exactitude temporelle des runners ou de fencing des effets externes. DB PostgreSQL CI seulement, aucun cron source live, merge ni Vercel. **Sous-lot High J7 clos techniquement, J7 métier OUVERT** tant qu'absence de registre durable partagé, source J6 autorisée et GO opérateur.
+
+**Next :** tester continuité du registre partagé réel et les retards/crash/effets externes avec gate d'activation séparé.
