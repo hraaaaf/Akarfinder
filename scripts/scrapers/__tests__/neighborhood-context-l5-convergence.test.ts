@@ -84,8 +84,8 @@ test("L5 resolves the exact same Agdal read-model by names and slugs", () => {
   assert.ok(byName);
   assert.equal(bySlug.canonical_neighborhood_id, "district_rabat_agdal");
   assert.equal(byName.canonical_neighborhood_id, bySlug.canonical_neighborhood_id);
-  assert.equal(bySlug.coverage_status, "covered");
-  assert.equal(bySlug.anchor_count, 5);
+  assert.equal(bySlug.coverage_status, "partial");
+  assert.equal(bySlug.anchor_count, 4);
   assert.deepEqual(byName.anchors.map((anchor) => anchor.poi_id), bySlug.anchors.map((anchor) => anchor.poi_id));
   assert.ok(bySlug.anchors.every((anchor) => anchor.freshness_status === "fresh"));
   assert.ok(bySlug.anchors.every((anchor) => anchor.attribution && anchor.observed_at));
@@ -108,8 +108,8 @@ test("neighborhood-centroid listings use NCI without any provider network call",
   assert.equal(fetchCalls, 0);
   assert.ok(hasLivingHereNeighborhoodContext(model));
   assert.equal(model.neighborhoodContext.canonicalNeighborhoodId, readModel.canonical_neighborhood_id);
-  assert.equal(model.neighborhoodContext.coverageStatus, "covered");
-  assert.equal(model.neighborhoodContext.anchorCount, 5);
+  assert.equal(model.neighborhoodContext.coverageStatus, "partial");
+  assert.equal(model.neighborhoodContext.anchorCount, 4);
   assert.equal(model.canShowPreciseRouteTimes, false);
   assert.deepEqual(model.pois.map((poi) => poi.id), readModel.anchors.map((anchor) => anchor.poi_id));
   assert.ok(model.pois.every((poi) => poi.routes.length === 0));
@@ -148,6 +148,25 @@ test("stale NCI seed fails closed instead of publishing old anchors", () => {
   assert.equal(model.neighborhoodContext.anchorCount, 0);
   assert.equal(model.pois.length, 0);
   assert.equal(model.canShowPreciseRouteTimes, false);
+});
+
+test("November 2026 live runtime never republishes the expired August seed", () => {
+  const now = new Date("2026-11-13T12:00:00.000Z");
+  for (const [city, district] of [["rabat", "agdal"], ["casablanca", "maarif"], ["marrakech", "gueliz"]] as const) {
+    const model = getNeighborhoodContextReadModelBySlugs(city, district, now);
+    assert.ok(model, `${city}/${district} runtime model must exist`);
+    assert.equal(model.coverage_status, "unavailable");
+    assert.equal(model.anchor_count, 0);
+    assert.deepEqual(model.anchors, []);
+  }
+});
+
+test("homepage Vivre ici mounts the common read-model and hides unsourced price signals", () => {
+  const home = readFileSync(resolve("app/page.tsx"), "utf8");
+  const cards = readFileSync(resolve("components/landing/SignatureMapSection.tsx"), "utf8");
+  assert.match(home, /<HomeVivreIciSection\s*\/>/);
+  assert.match(cards, /buildNeighborhoodContextRuntimeCatalog/);
+  assert.doesNotMatch(cards, /point\.priceSignal\.label/);
 });
 
 test("product surfaces no longer publish legacy proximity/lifestyle arrays as neighborhood truth", () => {

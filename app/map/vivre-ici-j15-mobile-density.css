@@ -1,0 +1,22 @@
+/* J15 Maârif QA mobile density: remove the duplicated floating OSM card ONLY
+   when the indicative source has loaded. Preserve the native provider/ODbL
+   attribution, the accessible aria-live status and warnings for zoom/errors. */
+@media (max-width: 1023px) {
+  [data-vivre-ici-page] [data-l3-maarif-pilot="true"][data-j11c-qa-state="ready"] .maplibre-qa-osm-status {
+    position: absolute;
+    box-sizing: border-box;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Place the mode controls after the 44px Morocco return, no overlap. */
+  [data-vivre-ici-page] [data-l3-maarif-pilot="true"] .l3-maarif-view-controls {
+    top: 174px;
+  }
+}

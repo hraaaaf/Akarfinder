@@ -1,0 +1,92 @@
+name: Vivre Ici J11 National OSM Landmark Index Contracts
+
+on:
+  pull_request:
+    paths:
+      - "scripts/neighborhood-context/national-osm-landmark-index.py"
+      - "scripts/neighborhood-context/national-osm-tile-pack.py"
+      - "scripts/neighborhood-context/private-national-qa-tiles.mjs"
+      - "scripts/neighborhood-context/j18-public-indicative-candidate.mjs"
+      - "scripts/neighborhood-context/j18-indicative-candidate-reader.mjs"
+      - "scripts/neighborhood-context/j18-indicative-candidate-reader.d.mts"
+      - "scripts/neighborhood-context/j18-review-route-gate.mjs"
+      - "scripts/neighborhood-context/j18-cdn-upload-plan.mjs"
+      - "scripts/neighborhood-context/j18-differential-plan.mjs"
+      - "scripts/neighborhood-context/j18-distributed-redis-quota.mjs"
+      - "scripts/neighborhood-context/j18-distributed-redis-quota.d.mts"
+      - "scripts/neighborhood-context/fixtures/j18-distributed-redis-quota.test.mjs"
+      - "scripts/neighborhood-context/fixtures/j18-redis-live-run.mjs"
+      - "scripts/neighborhood-context/fixtures/j18-redis-live-worker.mjs"
+      - "scripts/neighborhood-context/J18I_DISTRIBUTED_REDIS_QUOTA_2026-11-11.md"
+      - "scripts/neighborhood-context/j18-public-release-policy.mjs"
+      - "scripts/neighborhood-context/j18-public-release-policy.d.mts"
+      - "scripts/neighborhood-context/fixtures/j18-public-release-policy.test.mjs"
+      - "app/api/geo/indicative-landmarks/route.ts"
+      - "scripts/neighborhood-context/J18H_INDICATIVE_RELEASE_GATE_2026-11-10.md"
+      - "scripts/neighborhood-context/fixtures/j18-differential-plan.test.mjs"
+      - "scripts/neighborhood-context/J18G_DIFFERENTIAL_OSM_REVIEW_2026-11-10.md"
+      - "scripts/neighborhood-context/j18-private-blob-read-model.mjs"
+      - "scripts/neighborhood-context/j18-private-blob-read-model.d.mts"
+      - "scripts/neighborhood-context/j18-blob-review-gate.mjs"
+      - "scripts/neighborhood-context/j18-blob-review-gate.d.mts"
+      - "scripts/neighborhood-context/fixtures/j18-private-blob-read-model.test.mjs"
+      - "scripts/neighborhood-context/fixtures/j18-blob-review-gate.test.mjs"
+      - "app/api/geo/j18-blob-review/route.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/neighborhood-context/j18-review-route-gate.d.mts"
+      - "scripts/neighborhood-context/fixtures/j18-review-route-gate.test.mjs"
+      - "app/api/geo/j18-indicative-review/route.ts"
+      - "scripts/neighborhood-context/fixtures/j18-public-indicative-candidate.test.mjs"
+      - "scripts/neighborhood-context/J18_PUBLIC_INDICATIVE_CANDIDATE_2026-11-10.md"
+      - "scripts/neighborhood-context/private-qa-host-guard.mjs"
+      - "scripts/neighborhood-context/private-qa-host-guard.d.mts"
+      - "scripts/neighborhood-context/private-national-qa-tiles.d.mts"
+      - "app/api/geo/qa-national-landmarks/route.ts"
+      - "scripts/neighborhood-context/fixtures/test_national_osm_landmark_index.py"
+      - "scripts/neighborhood-context/fixtures/test_national_osm_tile_pack.py"
+      - "scripts/neighborhood-context/fixtures/private-national-qa-tiles.test.mjs"
+      - "scripts/neighborhood-context/fixtures/private-qa-host-guard.test.mjs"
+      - "scripts/neighborhood-context/fixtures/vivre-ici-j11c-ui-contract.test.mjs"
+      - "components/map/MapLibreNeighborhood3D.tsx"
+      - "components/map/P4MapDecisionRail.tsx"
+      - "app/map/l2d-attribution.css"
+      - "app/map/vivre-ici-j12-touch-targets.css"
+      - "app/map/vivre-ici-j12-keyboard-poi.css"
+      - "app/map/vivre-ici-j15-mobile-density.css"
+      - "app/map/vivre-ici-j17-a11y.css"
+      - "app/map/page.tsx"
+      - "scripts/neighborhood-context/fixtures/vivre-ici-j12-ui-contract.test.mjs"
+      - "scripts/neighborhood-context/fixtures/vivre-ici-j15-density-contract.test.mjs"
+      - "scripts/neighborhood-context/fixtures/vivre-ici-j16-glyph-contract.test.mjs"
+      - "scripts/neighborhood-context/fixtures/vivre-ici-j17-a11y-contract.test.mjs"
+      - ".github/workflows/vivre-ici-j11-national-landmarks.yml"
+      - "scripts/neighborhood-context/NATIONAL_OSM_TILE_READMODEL_J11B.md"
+      - "scripts/neighborhood-context/NATIONAL_OSM_LOCAL_PREVIEW_J11C.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-vivre-ici-j11-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  national-osm-index-contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python unit contracts (no PBF, no prod DB)
+        run: |
+          python -m unittest discover -s scripts/neighborhood-context/fixtures -p test_national_osm_landmark_index.py -v
+          python -m unittest discover -s scripts/neighborhood-context/fixtures -p test_national_osm_tile_pack.py -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: J11-C local-only QA tile reader contracts
+        run: node --test scripts/neighborhood-context/fixtures/private-national-qa-tiles.test.mjs scripts/neighborhood-context/fixtures/private-qa-host-guard.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j11c-ui-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j12-ui-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j15-density-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j16-glyph-contract.test.mjs scripts/neighborhood-context/fixtures/vivre-ici-j17-a11y-contract.test.mjs scripts/neighborhood-context/fixtures/j18-public-indicative-candidate.test.mjs scripts/neighborhood-context/fixtures/j18-review-route-gate.test.mjs scripts/neighborhood-context/fixtures/j18-private-blob-read-model.test.mjs scripts/neighborhood-context/fixtures/j18-blob-review-gate.test.mjs scripts/neighborhood-context/fixtures/j18-differential-plan.test.mjs scripts/neighborhood-context/fixtures/j18-public-release-policy.test.mjs scripts/neighborhood-context/fixtures/j18-distributed-redis-quota.test.mjs

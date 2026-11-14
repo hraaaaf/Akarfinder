@@ -171,7 +171,7 @@ describe("ANN-L6 taxonomy and verified POI model", () => {
 });
 
 describe("ANN-L6 anti-dup and route coherence", () => {
-  it("deduplicates same-category same-name POIs within 80 m and rejects malformed POIs", () => {
+  it("deduplicates exact IDs only; similar nearby names stay separate pending manual review", () => {
     const model = buildLivingHereModel({
       geo: geo(),
       nearby: nearby({
@@ -186,8 +186,25 @@ describe("ANN-L6 anti-dup and route coherence", () => {
       now: NOW,
     });
 
+    assert.equal(model.pois.length, 3);
+    assert.deepEqual(model.pois.map((poi) => poi.id), ["b", "a", "c"]); // closest-first within category
+  });
+
+  it("preserves two same-name transport platforms under 10 m apart with different OSM identities", () => {
+    const model = buildLivingHereModel({
+      geo: geo(),
+      nearby: nearby({
+        pois: [
+          {id:"osm:node:12180986678",name:"Résidence Loubna II",category:"bus_stop",coordinate:{latitude:33.5979353,longitude:-7.6445017}},
+          {id:"osm:node:10164169864",name:"Résidence Loubna II",category:"bus_stop",coordinate:{latitude:33.5979729,longitude:-7.6445432}},
+          {id:"osm:node:12180986678",name:"Résidence Loubna II",category:"bus_stop",coordinate:{latitude:33.5979353,longitude:-7.6445017}},
+        ],
+      }),
+      now: NOW,
+    });
     assert.equal(model.pois.length, 2);
-    assert.deepEqual(model.pois.map((poi) => poi.id), ["a", "c"]);
+    assert.deepEqual(new Set(model.pois.map(p=>p.id)),
+      new Set(["osm:node:12180986678","osm:node:10164169864"]));
   });
 
   it("publishes a route only when its recorded destination matches the POI coordinate", () => {

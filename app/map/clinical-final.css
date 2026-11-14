@@ -227,7 +227,7 @@
     text-transform: uppercase !important;
   }
 
-  .p4-premium-context-header h2 {
+  .p4-premium-context-header :is(h1,h2) {
     display: block !important;
     margin: 3px 0 0 !important;
     color: #132f35 !important;
@@ -467,7 +467,7 @@
     max-height: min(34svh, 308px) !important;
   }
 
-  .p4-premium-context-header h2 {
+  .p4-premium-context-header :is(h1,h2) {
     font-size: 23px !important;
   }
 

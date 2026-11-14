@@ -63,7 +63,7 @@
     color: #0b6668 !important;
   }
 
-  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header h2 {
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header :is(h1,h2) {
     margin-top: 5px !important;
     font-size: 41px !important;
     line-height: .94 !important;

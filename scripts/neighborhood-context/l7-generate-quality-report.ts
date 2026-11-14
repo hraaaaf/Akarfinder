@@ -3,6 +3,8 @@ import path from "node:path";
 import { performance } from "node:perf_hooks";
 
 import { buildNeighborhoodContextNationalBaseline } from "@/lib/neighborhood-context/national-baseline";
+import { buildInstitutionalAdmissionReport } from "@/lib/neighborhood-context/institutional-admission";
+import { runL7OfficialXlsxHeaderProbe } from "./l7-probe-official-xlsx";
 import { buildNeighborhoodContextRuntimeCatalog } from "@/lib/neighborhood-context/read-model";
 import {
   NEIGHBORHOOD_CONTEXT_L7_FRESHNESS_MAX_AGE_MS,
@@ -104,7 +106,10 @@ async function main() {
       findings: provenanceFindings,
     },
     operational_cost: {
+      // Applies ONLY to the default neighborhood refresh plan. The separate
+      // official XLSX header probe uses at most one bounded HTTP request.
       default_network_calls: 0,
+      official_source_probe_max_downloads: process.env.GITHUB_ACTIONS === "true" ? 1 : 0,
       live_queryable_targets: queryableTargets,
       provider_monetary_cost: null,
       monetary_cost_certified: false,
@@ -137,6 +142,28 @@ async function main() {
 
   await mkdir(OUTPUT_DIR, { recursive: true });
   await writeFile(path.join(OUTPUT_DIR, "quality-report.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  // Strict, zero-network candidate catalogue. This is a provenance preflight,
+  // NOT an admission of live POI or a replacement for L1/L2 coverage gates.
+  const institutionalPreflight = buildInstitutionalAdmissionReport(now);
+  await writeFile(
+    path.join(OUTPUT_DIR, "institutional-source-admission.json"),
+    `${JSON.stringify(institutionalPreflight, null, 2)}\n`,
+    "utf8",
+  );
+  // One bounded official MENPS download on GitHub Actions only.
+  // Never propagates raw rows into the app, the seed or the public read-model.
+  const menpsProbe = await runL7OfficialXlsxHeaderProbe(now);
+  await writeFile(
+    path.join(OUTPUT_DIR, "official-menps-primary-xlsx-header.json"),
+    `${JSON.stringify(menpsProbe, null, 2)}\n`,
+    "utf8",
+  );
+  console.log(JSON.stringify({
+    institutional_probe_status: menpsProbe.download_status,
+    dataset_id: menpsProbe.source_id,
+    gps_headers_possible: menpsProbe.header_inspection?.gps_columns_candidate ?? false,
+    accepted_public_pois: 0,
+  }));
   console.log(JSON.stringify(report, null, 2));
 }
 

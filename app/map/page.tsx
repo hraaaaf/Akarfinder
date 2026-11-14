@@ -25,6 +25,11 @@ import "./ux-convergence-l9.css";
 import "./l2c-sheet.css";
 import "./l2d-attribution.css";
 import "./l3-maarif-modes.css";
+import "./vivre-ici-daily-evidence.css";
+import "./vivre-ici-j12-touch-targets.css";
+import "./vivre-ici-j12-keyboard-poi.css";
+import "./vivre-ici-j15-mobile-density.css";
+import "./vivre-ici-j17-a11y.css";
 
 export const dynamic = "force-dynamic";
 
@@ -64,7 +69,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
         <PremiumInteractiveMapBridge />
       ) : (
         <>
-          <div className="flex-1" data-p4-map-layout>
+          <main className="flex-1" data-p4-map-layout>
             <div data-p4-map-canvas>
               <NationalMapRouter initialState={initialState} />
               {hasNeighborhoodSelection ? (
@@ -80,7 +85,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
               ) : null}
             </div>
             <P4MapDecisionRail />
-          </div>
+          </main>
 
           {!hasNeighborhoodSelection ? (
             <section className="vivre-ici-target-outro" aria-label="Découvrir les quartiers autrement">

@@ -10,13 +10,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-type QaState = "exact" | "context" | "no-route" | "hidden";
+type QaState = "exact" | "context" | "no-route" | "hidden" | "live";
 
 const L5_QA_NOW = new Date("2026-08-26T12:00:00.000Z");
 
 function normalizeState(value: string | string[] | undefined): QaState {
   const first = Array.isArray(value) ? value[0] : value;
-  if (first === "context" || first === "no-route" || first === "hidden") return first;
+  if (first === "context" || first === "no-route" || first === "hidden" || first === "live") return first;
   return "exact";
 }
 
@@ -60,9 +60,9 @@ function listing(state: QaState): Listing {
     production_allowed: false,
     latitude: state === "hidden" ? null : 33.9908,
     longitude: state === "hidden" ? null : -6.8481,
-    geo_precision: state === "context" ? "neighborhood_centroid" : state === "hidden" ? undefined : "exact",
-    geo_source: state === "context" ? "neighborhood_centroid" : state === "hidden" ? undefined : "manual_import",
-    geo_label: state === "context" ? "Contexte quartier QA" : state === "hidden" ? undefined : "Coordonnées exactes QA",
+    geo_precision: (state === "context" || state === "live") ? "neighborhood_centroid" : state === "hidden" ? undefined : "exact",
+    geo_source: (state === "context" || state === "live") ? "neighborhood_centroid" : state === "hidden" ? undefined : "manual_import",
+    geo_label: state === "live" ? "Contexte quartier courant QA" : state === "context" ? "Contexte quartier QA" : state === "hidden" ? undefined : "Coordonnées exactes QA",
   };
 }
 
@@ -197,8 +197,10 @@ export default async function AnnouncementPageLivingHereVisualQa({
     generated_at: "2026-08-16T12:00:00.000Z",
   });
   if (!detail) throw new Error("ANN-L6 QA fixture must remain publishable.");
-  const livingHere = state === "context"
-    ? await buildConvergedLivingHereForListing(currentListing, { now: L5_QA_NOW })
+  const livingHere = state === "live"
+    ? await buildConvergedLivingHereForListing(currentListing, { now: new Date() })
+    : state === "context"
+      ? await buildConvergedLivingHereForListing(currentListing, { now: L5_QA_NOW })
     : state === "exact"
       ? await buildConvergedLivingHereForListing(currentListing, {
           now: L5_QA_NOW,

@@ -177,7 +177,7 @@
     box-shadow: inset 1px 0 0 rgb(255 255 255 / .72) !important;
   }
 
-  .p4-premium-context-header h2 {
+  .p4-premium-context-header :is(h1,h2) {
     letter-spacing: -.045em !important;
   }
 
@@ -277,7 +277,7 @@
     gap: 2px !important;
   }
 
-  .p4-premium-context-header h2 {
+  .p4-premium-context-header :is(h1,h2) {
     font-size: clamp(22px, 7vw, 28px) !important;
     line-height: 1.02 !important;
   }

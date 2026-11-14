@@ -37,8 +37,23 @@
 }
 
 @media (min-width: 1024px) {
+  /* J12: prevent OSM attribution from stretching under the right-side decision rail. */
   [data-vivre-ici-page] [data-p4-map-layout]:has([data-maplibre-spike]) .maplibregl-ctrl-bottom-right {
-    right: 10px;
-    bottom: 10px;
+    right: 64px;
+    bottom: 18px;
+    max-width: min(320px, calc(100% - 84px));
+  }
+
+  [data-vivre-ici-page] [data-p4-map-layout]:has([data-maplibre-spike]) .maplibregl-ctrl-attrib {
+    box-sizing: border-box;
+    max-width: 320px;
+    padding: 4px 7px;
+    border-radius: 7px;
+    background: rgb(255 255 255 / .94);
+    color: #16334c;
+    font-size: 10px;
+    line-height: 1.4;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }

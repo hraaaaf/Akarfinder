@@ -1,0 +1,65 @@
+name: Neighborhood Context L3 Visual Evidence Postmerge
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lib/neighborhood-context/**"
+      - "app/api/geo/neighborhood-context/**"
+      - "scripts/neighborhood-context/**"
+      - ".github/workflows/neighborhood-context-l3-read-model-visual-postmerge.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  capture-l3-main:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      NCI_L3_OUTPUT_DIR: artifacts/neighborhood-context-l3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Production build
+        run: npm run build
+
+      - name: Generate report
+        run: npx tsx scripts/neighborhood-context/l3-generate-report.ts
+
+      - name: Validate runtime truth
+        run: node scripts/neighborhood-context/l3-validate-report.mjs
+
+      - name: Install Chromium for screenshot
+        run: npx playwright install --with-deps chromium
+
+      - name: Capture report proof
+        run: node scripts/neighborhood-context/l3-capture-report.mjs
+
+      - name: Upload L3 postmerge visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neighborhood-context-l3-postmerge-${{ github.run_id }}
+          path: artifacts/neighborhood-context-l3/
+          if-no-files-found: error
+          retention-days: 14

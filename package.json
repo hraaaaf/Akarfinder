@@ -54,7 +54,9 @@
     "node": ">=22.5.0"
   },
   "dependencies": {
+    "@neondatabase/serverless": "1.1.0",
     "@supabase/supabase-js": "^2.108.2",
+    "@vercel/blob": "2.9.0",
     "d3-geo": "3.1.1",
     "d3-selection": "3.0.0",
     "d3-zoom": "3.0.0",
@@ -64,8 +66,7 @@
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "topojson-client": "3.1.0",
-    "@neondatabase/serverless": "1.1.0"
+    "topojson-client": "3.1.0"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.4",

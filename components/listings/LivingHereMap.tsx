@@ -18,6 +18,7 @@ export function LivingHereMap({ model, pois, selectedMinutes, styleUrl }: Living
     if (!containerRef.current || !styleUrl || !model.origin.coordinate) return;
     let disposed = false;
     let map: import("maplibre-gl").Map | null = null;
+    containerRef.current.dataset.l6MapReady = "loading";
 
     void import("maplibre-gl").then((maplibregl) => {
       if (disposed || !containerRef.current || !model.origin.coordinate) return;
@@ -85,11 +86,22 @@ export function LivingHereMap({ model, pois, selectedMinutes, styleUrl }: Living
             });
           }
         }
+        // A canvas can exist before the style, POI layer and first render are
+        // ready. The QA browser should wait for actual MapLibre idle instead of
+        // using a fixed sleep or treating canvas hydration as complete rendering.
+        map.once("idle", () => {
+          if (!disposed && containerRef.current) {
+            containerRef.current.dataset.l6MapReady = "true";
+          }
+        });
       });
-    }).catch(() => undefined);
+    }).catch(() => {
+      if (!disposed && containerRef.current) containerRef.current.dataset.l6MapReady = "failed";
+    });
 
     return () => {
       disposed = true;
+      if (containerRef.current) delete containerRef.current.dataset.l6MapReady;
       map?.remove();
     };
   }, [model, pois, selectedMinutes, styleUrl]);

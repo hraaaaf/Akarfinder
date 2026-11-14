@@ -6,10 +6,10 @@ const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3206";
 const outputDir = path.resolve(process.env.AUDIT_OUTPUT_DIR ?? "artifacts/announcement-page-l6-living-here");
 const route = "/visual-qa/announcement-page-living-here";
 const scenarios = [
-  { name: "exact-390", state: "exact", width: 390, height: 844, section: true, map: true, routes: true, isochrones: true },
-  { name: "exact-430", state: "exact", width: 430, height: 932, section: true, map: true, routes: true, isochrones: true },
-  { name: "exact-768", state: "exact", width: 768, height: 900, section: true, map: true, routes: true, isochrones: true },
-  { name: "exact-1280", state: "exact", width: 1280, height: 900, section: true, map: true, routes: true, isochrones: true },
+  { name: "exact-390", state: "exact", width: 390, height: 844, section: true, map: true, routes: true, isochrones: false, separateMeasurements: true },
+  { name: "exact-430", state: "exact", width: 430, height: 932, section: true, map: true, routes: true, isochrones: false, separateMeasurements: true },
+  { name: "exact-768", state: "exact", width: 768, height: 900, section: true, map: true, routes: true, isochrones: false, separateMeasurements: true },
+  { name: "exact-1280", state: "exact", width: 1280, height: 900, section: true, map: true, routes: true, isochrones: false, separateMeasurements: true },
   { name: "context-390", state: "context", width: 390, height: 844, section: true, map: true, routes: false, isochrones: false },
   { name: "context-1280", state: "context", width: 1280, height: 900, section: true, map: true, routes: false, isochrones: false },
   { name: "no-route-390", state: "no-route", width: 390, height: 844, section: true, map: true, routes: false, isochrones: false },
@@ -29,6 +29,7 @@ try {
     const localFindings = [];
     page.on("response", (response) => { if (response.status() >= 400) failedResponses.push({ url: response.url(), status: response.status() }); });
     page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
+    page.on("pageerror", (error) => { consoleErrors.push(`PAGE_ERROR_${error.message}`); });
 
     try {
       const response = await page.goto(`${baseUrl}${route}?state=${scenario.state}`, { waitUntil: "networkidle", timeout: 60_000 });
@@ -57,8 +58,20 @@ try {
         if (scenario.map && mapCount !== 1) localFindings.push(`MAP_COUNT_${mapCount}_EXPECTED_1`);
         if (!scenario.map && mapCount !== 0) localFindings.push(`MAP_COUNT_${mapCount}_EXPECTED_0`);
         if (scenario.map && mapCount === 1) {
-          await page.waitForTimeout(500);
-          const canvasCount = await section.locator("canvas.maplibregl-canvas").count();
+          // Dynamic MapLibre hydration can finish after networkidle. A fixed 500ms
+          // sleep produced false negatives on seven otherwise valid maps.
+          const canvas = section.locator("canvas.maplibregl-canvas");
+          try {
+            await canvas.waitFor({ state: "visible", timeout: 15000 });
+          } catch {
+            localFindings.push("MAP_CANVAS_NOT_VISIBLE_AFTER_15S");
+          }
+          try {
+            await section.locator('[data-l6-map-ready="true"]').waitFor({ state: "attached", timeout: 15000 });
+          } catch {
+            localFindings.push("MAP_STYLE_AND_POI_LAYER_NOT_IDLE_AFTER_15S");
+          }
+          const canvasCount = await canvas.count();
           if (canvasCount !== 1) localFindings.push(`MAP_CANVAS_COUNT_${canvasCount}_EXPECTED_1`);
         }
 
@@ -69,13 +82,29 @@ try {
         if (!scenario.routes && hasRouteCopy) localFindings.push("UNMEASURED_ROUTE_COPY_EXPOSED");
 
         const isochroneButtons = await section.locator('[aria-label="Isochrones à pied"] button').count();
-        if (scenario.isochrones && isochroneButtons !== 4) localFindings.push(`ISOCHRONE_BUTTON_COUNT_${isochroneButtons}_EXPECTED_4`);
+        // L5 convergence keeps the quartier map context-only. Do not put
+        // measured route geometry/isochrones on a neighborhood centroid.
+        if (scenario.state === "exact" && isochroneButtons !== 0) localFindings.push(`EXACT_ISOCHRONES_LEAKED_INTO_NEIGHBORHOOD_${isochroneButtons}`);
         if (!scenario.isochrones && isochroneButtons !== 0) localFindings.push(`UNEXPECTED_ISOCHRONE_BUTTONS_${isochroneButtons}`);
         const verifiedPlaces = await section.locator("li").count();
         if (verifiedPlaces !== 4) localFindings.push(`POI_COUNT_${verifiedPlaces}_EXPECTED_4`);
-        if (!text.includes("Fixture QA interne")) localFindings.push("ATTRIBUTION_MISSING");
+        // The converged NCI context has OSM attribution, while exact measured
+        // fixtures carry separate internal attribution. Check each in its surface.
+        if (scenario.state === "no-route" ? !text.includes("Fixture QA interne") : !text.includes("OpenStreetMap")) localFindings.push("SOURCE_ATTRIBUTION_MISSING");
+        const measurementCard = section.locator('[data-exact-property-measurements="ann-l6"]');
+        const measuredCount = await measurementCard.count();
+        if (scenario.separateMeasurements) {
+          if (measuredCount !== 1) localFindings.push(`EXACT_MEASUREMENTS_COUNT_${measuredCount}_EXPECTED_1`);
+          else {
+            const exactText=await measurementCard.innerText();
+            if (!exactText.includes("Fixture QA interne")) localFindings.push("MEASUREMENTS_ATTRIBUTION_MISSING");
+            if (!/7 min/.test(exactText) || !/540 m/.test(exactText)) localFindings.push("EXACT_MEASURED_ROUTE_MISSING");
+          }
+        } else if (measuredCount !== 0) {
+          localFindings.push("UNMEASURED_CONTEXT_HAS_EXACT_CARD");
+        }
         if (!text.includes("observé le 16/08/2026")) localFindings.push("POI_FRESHNESS_MISSING");
-        if (scenario.state === "context" && !text.includes("aucun temps de trajet depuis ce bien")) localFindings.push("CONTEXT_DISCLAIMER_MISSING");
+        if (scenario.state === "context" && !/aucun temps de trajet.*centroïde/i.test(text)) localFindings.push("CONTEXT_DISCLAIMER_MISSING");
       }
 
       const screenshot = `${scenario.name}.png`;

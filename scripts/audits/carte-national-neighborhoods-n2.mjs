@@ -9,7 +9,11 @@ await mkdir(outDir, { recursive: true });
 // Focused L6-B unit coverage belongs inside the already-authorized N2 audit.
 // Do not modify the legacy heavy PR workflow: efficiency policy forbids it.
 execFileSync(process.execPath, [
-  "--import", "tsx", "--test", "scripts/scrapers/__tests__/carto-basemap-style.test.ts",
+  "--import", "tsx", "--test",
+  "scripts/scrapers/__tests__/carto-basemap-style.test.ts",
+  "scripts/scrapers/__tests__/vivre-ici-maarif-osm-admin-shadow.test.ts",
+  "scripts/scrapers/__tests__/vivre-ici-maarif-poi-private-qa.test.mjs",
+  "scripts/scrapers/__tests__/vivre-ici-maarif-osm-pbf-gate.test.mjs",
 ], { stdio: "inherit" });
 
 const viewports = [
@@ -248,7 +252,7 @@ try {
       if (satelliteRequests.length) throw new Error(`Esri satellite requested: ${satelliteRequests.length}`);
       const rail = page.locator('[data-p4-map-decision-rail]');
       await rail.waitFor({ state: "visible", timeout: 10000 });
-      const activeHref = await rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i }).getAttribute("href");
+      const activeHref = await rail.getByRole("link", { name: /Rechercher des biens à Maârif/i }).getAttribute("href");
       if (!activeHref?.includes("city=Casablanca") || !activeHref.includes("district=Ma%C3%A2rif")) throw new Error(`Maârif Search handoff ${activeHref}`);
       overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (overflow > 1) throw new Error(`MapLibre horizontal overflow ${overflow}`);

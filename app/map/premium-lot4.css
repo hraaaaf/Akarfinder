@@ -153,7 +153,7 @@
   [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header > p:first-child {
     display: none !important;
   }
-  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header h2 {
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header :is(h1,h2) {
     margin-top: 2px !important;
     font-size: 34px !important;
     line-height: .98 !important;

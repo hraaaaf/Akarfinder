@@ -1,0 +1,228 @@
+{
+  "schema": "NCI_L5_MAARIF_SCHOOL_EVIDENCE_DOSSIERS_V1",
+  "prepared_on": "2026-11-13",
+  "basis_github_actions_run": 43481434417,
+  "basis_artifact_id": 14066330313,
+  "basis_source_document": "https://data.gov.ma/data/fr/dataset/liste-des-etablissements-publics-primaire",
+  "source_file_rows_inspected": 7963,
+  "dataset_candidate_count": 3,
+  "no_gps_in_source": true,
+  "independent_onsite_verification_count": 0,
+  "admitted_count": 0,
+  "public_publish_allowed": false,
+  "provenance_caveat": "Institutional names/codes do not establish a coordinate, school operation within 30 days, or inclusion in an uncertified Maârif central polygon. Third party mirrors may all inherit older MENPS data.",
+  "candidates": [
+    {
+      "administrative_commune": "El Maarif (Arrond.)",
+      "prefecture": "Préf. d’Arr. Casablanca A",
+      "region": "Casablanca-Settat",
+      "source_dataset_id": "menps-primary-2026-07",
+      "source_xlsx_sha256": "e3967f57b114c01c07e5664b01a02fab6393796af4be28fb66d59945880ab148",
+      "source_dataset_version": "2026-07",
+      "coordinates": null,
+      "individual_activity_verified_at": null,
+      "territorial_relation_verified": false,
+      "official_code_row_join_verified": false,
+      "admission_status": "rejected",
+      "publication_allowed": false,
+      "candidate_id": "menps-primary-2026-07:row:227",
+      "sheet_row": 227,
+      "name": "ATTABARI",
+      "address": "76 RUE OUSSAMA BNOU ZAIDCOMMUNE MAARIF",
+      "potential_menps_school_code": null,
+      "evidence": [
+        {
+          "evidence_type": "menps_primary_2026_xlsx",
+          "url": "https://data.gov.ma/data/fr/dataset/liste-des-etablissements-publics-primaire",
+          "sheet_row": 227,
+          "as_of": "2026-07",
+          "supports": [
+            "name",
+            "text_address",
+            "administrative_commune"
+          ],
+          "per_entity_recent_activity": false,
+          "latlon": false
+        },
+        {
+          "evidence_type": "institutional_fm6_landmark",
+          "url": "https://www.fm6education.ma/ar/%D8%A7%D9%84%D8%A7%D8%AA%D8%B5%D8%A7%D9%84/",
+          "as_of": "not_individually_dated",
+          "supports": [
+            "existence_as_landmark_near_fm6_casablanca_office"
+          ],
+          "verified_coords": false,
+          "individually_verified_recent_activity": false
+        },
+        {
+          "evidence_type": "unverified_school_directory",
+          "url": "https://www.etenma.com/ecole.php?code_ecole=8101P01",
+          "as_of": "unknown",
+          "supports": [
+            "primary_school_name",
+            "administrative_maârif"
+          ],
+          "same_underlying_source_possible": true
+        }
+      ],
+      "ambiguous_matches": [
+        {
+          "other_entity": "Collège Attabari — Lissasfa, Casablanca",
+          "url": "https://www.telecontact.ma/college-attabari/ecole/casablanca/3110569",
+          "reason": "other_cycle_and_other_district"
+        },
+        {
+          "other_entity": "Attabari private school — Guercif",
+          "url": "https://www.annuaire-gratuit.ma/ecoles-privees/attabari-s234191.html",
+          "reason": "other_city_and_private"
+        }
+      ]
+    },
+    {
+      "administrative_commune": "El Maarif (Arrond.)",
+      "prefecture": "Préf. d’Arr. Casablanca A",
+      "region": "Casablanca-Settat",
+      "source_dataset_id": "menps-primary-2026-07",
+      "source_xlsx_sha256": "e3967f57b114c01c07e5664b01a02fab6393796af4be28fb66d59945880ab148",
+      "source_dataset_version": "2026-07",
+      "coordinates": null,
+      "individual_activity_verified_at": null,
+      "territorial_relation_verified": false,
+      "official_code_row_join_verified": false,
+      "admission_status": "rejected",
+      "publication_allowed": false,
+      "candidate_id": "menps-primary-2026-07:row:228",
+      "sheet_row": 228,
+      "name": "AL IMAM MALIK",
+      "address": "RUE MUSTAPHA CHOKRI PETCHOU MAARIF",
+      "potential_menps_school_code": "01442S",
+      "evidence": [
+        {
+          "evidence_type": "menps_primary_2026_xlsx",
+          "url": "https://data.gov.ma/data/fr/dataset/liste-des-etablissements-publics-primaire",
+          "sheet_row": 228,
+          "as_of": "2026-07",
+          "supports": [
+            "name",
+            "text_address",
+            "administrative_commune"
+          ],
+          "per_entity_recent_activity": false,
+          "latlon": false
+        },
+        {
+          "evidence_type": "menps_pioneer_2026_pdf",
+          "url": "https://www.men.gov.ma/sites/default/files/2026-10/%D9%84%D8%A7%D8%A6%D8%AD%D8%A9%20%D8%A7%D9%84%D9%85%D8%A4%D8%B3%D8%B3%D8%A7%D8%AA%20%D8%A7%D9%84%D8%AA%D8%B9%D9%84%D9%8A%D9%85%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AD%D8%A7%D8%B5%D9%84%D8%A9%20%D8%B9%D9%84%D9%89%20%D8%B9%D9%84%D8%A7%D9%85%D8%A9%20%D9%85%D8%A4%D8%B3%D8%B3%D8%A9%20%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%AF%D8%A9%20%D8%A5%D8%B5%D8%AF%D8%A7%D8%B1%20%20-%20%D8%A7%D9%84%D8%B3%D9%84%D9%83%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8A_0.pdf",
+          "source_page": 7,
+          "reported_code": "01442S",
+          "directorate": "Anfa",
+          "as_of": "2026_ed",
+          "supports": [
+            "school_name",
+            "code_candidate",
+            "directorate_anfa"
+          ],
+          "individual_activity_in_last_30_days": false,
+          "join_to_xlsx_row_proven": false
+        },
+        {
+          "evidence_type": "unverified_school_directory",
+          "url": "https://www.etenma.com/ecole.php?code_ecole=81010P05",
+          "as_of": "unknown",
+          "supports": [
+            "primary_school_name",
+            "administrative_maarif"
+          ],
+          "same_underlying_source_possible": true
+        },
+        {
+          "evidence_type": "third_party_reposted_social_activity",
+          "url": "https://www.schoolandcollegelistings.com/MA/Casablanca/109579014126047/",
+          "as_of": "2026-05",
+          "supports": [
+            "historical_school_community_post"
+          ],
+          "individual_activity_in_last_30_days": false
+        }
+      ],
+      "ambiguous_matches": [
+        {
+          "other_entity": "École Imam Malik — Moulay Rachid, Casablanca",
+          "url": "https://www.etenma.com/ecole.php?code_ecole=79030P31",
+          "reason": "same_name_other_district"
+        }
+      ]
+    },
+    {
+      "administrative_commune": "El Maarif (Arrond.)",
+      "prefecture": "Préf. d’Arr. Casablanca A",
+      "region": "Casablanca-Settat",
+      "source_dataset_id": "menps-primary-2026-07",
+      "source_xlsx_sha256": "e3967f57b114c01c07e5664b01a02fab6393796af4be28fb66d59945880ab148",
+      "source_dataset_version": "2026-07",
+      "coordinates": null,
+      "individual_activity_verified_at": null,
+      "territorial_relation_verified": false,
+      "official_code_row_join_verified": false,
+      "admission_status": "rejected",
+      "publication_allowed": false,
+      "candidate_id": "menps-primary-2026-07:row:229",
+      "sheet_row": 229,
+      "name": "SAKINA BENT AL HOSSEIN",
+      "address": "RUE SOUMAYA DERB GHALEF COMMUNE MAARIF",
+      "potential_menps_school_code": "01443T",
+      "evidence": [
+        {
+          "evidence_type": "menps_primary_2026_xlsx",
+          "url": "https://data.gov.ma/data/fr/dataset/liste-des-etablissements-publics-primaire",
+          "sheet_row": 229,
+          "as_of": "2026-07",
+          "supports": [
+            "name",
+            "text_address",
+            "administrative_commune"
+          ],
+          "per_entity_recent_activity": false,
+          "latlon": false
+        },
+        {
+          "evidence_type": "menps_pioneer_2026_pdf",
+          "url": "https://www.men.gov.ma/sites/default/files/2026-10/%D9%84%D8%A7%D8%A6%D8%AD%D8%A9%20%D8%A7%D9%84%D9%85%D8%A4%D8%B3%D8%B3%D8%A7%D8%AA%20%D8%A7%D9%84%D8%AA%D8%B9%D9%84%D9%8A%D9%85%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AD%D8%A7%D8%B5%D9%84%D8%A9%20%D8%B9%D9%84%D9%89%20%D8%B9%D9%84%D8%A7%D9%85%D8%A9%20%D9%85%D8%A4%D8%B3%D8%B3%D8%A9%20%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%AF%D8%A9%20%D8%A5%D8%B5%D8%AF%D8%A7%D8%B1%20%20-%20%D8%A7%D9%84%D8%B3%D9%84%D9%83%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8A_0.pdf",
+          "source_page": 7,
+          "reported_code": "01443T",
+          "directorate": "Anfa",
+          "as_of": "2026_ed",
+          "supports": [
+            "school_name",
+            "code_candidate",
+            "directorate_anfa"
+          ],
+          "individual_activity_in_last_30_days": false,
+          "join_to_xlsx_row_proven": false
+        },
+        {
+          "evidence_type": "unverified_school_directory",
+          "url": "https://www.communesmaroc.com/fr/arrondissement/el-maarif/place/view/el-maarif-ecole-sakina-bent-al-hossein",
+          "as_of": "unknown",
+          "supports": [
+            "school_name",
+            "text_address"
+          ],
+          "same_underlying_source_possible": true
+        }
+      ],
+      "ambiguous_matches": [
+        {
+          "other_entity": "École Sakina Bent ElHousseine — Hay Sidi Othmane, Casablanca",
+          "url": "https://www.telecontact.ma/annonceur/ecole-sakina-bent-elhousseine/3112439/casablanca.php",
+          "reason": "same_name_other_district"
+        },
+        {
+          "other_entity": "École Sakina Bent Al Hossein — Rabat",
+          "url": "https://www.men.gov.ma/sites/default/files/2026-10/%D9%84%D8%A7%D8%A6%D8%AD%D8%A9%20%D8%A7%D9%84%D9%85%D8%A4%D8%B3%D8%B3%D8%A7%D8%AA%20%D8%A7%D9%84%D8%AA%D8%B9%D9%84%D9%8A%D9%85%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AD%D8%A7%D8%B5%D9%84%D8%A9%20%D8%B9%D9%84%D9%89%20%D8%B9%D9%84%D8%A7%D9%85%D8%A9%20%D9%85%D8%A4%D8%B3%D8%B3%D8%A9%20%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%AF%D8%A9%20%D8%A5%D8%B5%D8%AF%D8%A7%D8%B1%20%20-%20%D8%A7%D9%84%D8%B3%D9%84%D9%83%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8A_0.pdf",
+          "reason": "same_name_other_city"
+        }
+      ]
+    }
+  ]
+}

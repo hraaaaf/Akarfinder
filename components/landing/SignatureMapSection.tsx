@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, TrendingUp } from "lucide-react";
+import { ArrowRight, MapPinned } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
 import { LIVING_HERE_CATEGORY_LABELS } from "@/lib/geo/living-here";
@@ -49,10 +49,12 @@ function NeighborhoodCard({ point, context }: { point: NeighborhoodPoint; contex
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <span className={`rounded-full border px-2.5 py-1 text-[9.5px] font-extrabold uppercase tracking-[0.08em] ${coverageTone(coverage)}`}>
-          {neighborhoodCoverageLabel(coverage)}
+        <span className={`rounded-full border px-3 py-2 text-[11.5px] font-bold leading-4 ${coverageTone(coverage)}`}>
+          {anchors.length ? neighborhoodCoverageLabel(coverage) : "Repères indisponibles"}
         </span>
-        <span className="text-[11px] font-extrabold text-[#0B1F3A]">{anchors.length} repère{anchors.length > 1 ? "s" : ""} vérifié{anchors.length > 1 ? "s" : ""}</span>
+        {anchors.length > 0 ? (
+          <span className="text-[12px] font-bold text-[#0B1F3A]">{anchors.length} repère{anchors.length > 1 ? "s" : ""} sourcé{anchors.length > 1 ? "s" : ""}</span>
+        ) : null}
       </div>
 
       {categories.length > 0 ? (
@@ -64,18 +66,12 @@ function NeighborhoodCard({ point, context }: { point: NeighborhoodPoint; contex
           ))}
         </div>
       ) : (
-        <p className="mt-3 text-[10.5px] font-semibold leading-5 text-slate-500">Aucun repère frais certifié disponible. Rien n’est complété artificiellement.</p>
+        <p className="mt-3 text-[12.5px] font-medium leading-5 text-slate-600">Sources locales à revalider.</p>
       )}
 
-      <div className="mt-5 flex items-start gap-2 border-t border-slate-100 pt-4">
-        <TrendingUp size={15} className="mt-0.5 shrink-0 text-[#0B63CE]" aria-hidden="true" />
-        <div>
-          <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-slate-400">Repère prix</p>
-          <p className="mt-1 text-[11px] font-bold leading-5 text-[#0B1F3A]">{point.priceSignal.label}</p>
-        </div>
-      </div>
 
-      <span className="mt-auto inline-flex min-h-11 items-center gap-1.5 pt-4 text-[12px] font-extrabold text-[#0B63CE]">
+
+      <span className="mt-auto inline-flex min-h-11 items-center gap-1.5 border-t border-slate-100 pt-4 text-[13.5px] font-extrabold text-[#0B63CE]">
         Explorer {point.neighborhood}
         <ArrowRight size={14} strokeWidth={2.3} aria-hidden="true" />
       </span>
@@ -96,14 +92,19 @@ export function SignatureMapSection() {
     <section data-home-neighborhood-intelligence="nci-l5" className="bg-[#F7FAFE] py-10 sm:py-14 lg:py-16">
       <Container>
         <div className="mx-auto max-w-[1240px]">
-          <div className="max-w-[720px]">
-            <p className="text-[0.72rem] font-extrabold uppercase tracking-[0.2em] text-[#0B63CE]">Vivre ici</p>
-            <h2 className="mt-2 text-[1.8rem] font-extrabold leading-[1.05] tracking-[-0.04em] text-[#0B1F3A] sm:text-[2.35rem]">
-              Comprendre le quartier avant de visiter
-            </h2>
-            <p className="mt-2 max-w-[650px] text-[0.88rem] leading-6 text-slate-600 sm:text-[0.96rem]">
-              Repères vérifiés et couverture réellement disponible, sans transformer des slogans de quartier en faits de proximité.
-            </p>
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-[780px]">
+              <p className="text-[0.72rem] font-extrabold uppercase tracking-[0.2em] text-[#0B63CE]">Vivre ici · repères sourcés</p>
+              <h2 className="mt-2 text-[1.8rem] font-extrabold leading-[1.08] tracking-[-0.04em] text-[#0B1F3A] sm:text-[2.2rem]">
+                Comprendre le quartier avant de visiter
+              </h2>
+              <p className="mt-2 max-w-[690px] text-[0.86rem] leading-6 text-slate-600">
+                Les repères locaux n’apparaissent qu’après vérification récente. L’absence de données ne signifie pas l’absence de services.
+              </p>
+            </div>
+            <Link href="/map?layer=explore" className="inline-flex min-h-11 w-fit shrink-0 items-center gap-2 rounded-full bg-[#0B63CE] px-5 py-3 text-[13px] font-extrabold text-white transition hover:bg-[#084ea4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE] focus-visible:ring-offset-2">
+              <MapPinned size={16} aria-hidden="true" /> Explorer la carte
+            </Link>
           </div>
 
           <div className="-mx-4 mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
@@ -116,6 +117,9 @@ export function SignatureMapSection() {
               );
             })}
           </div>
+          <p className="mt-3 text-[11.5px] leading-5 text-slate-500">
+            Aucun prix de quartier, temps de trajet ni POI n’est déduit de données non vérifiées.
+          </p>
         </div>
       </Container>
     </section>
