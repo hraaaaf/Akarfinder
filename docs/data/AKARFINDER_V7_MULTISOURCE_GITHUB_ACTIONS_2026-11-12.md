@@ -496,3 +496,31 @@ monitoring 24h. Aucun merge/Vercel/Supabase PROD/cron live.
 **État global** : V7 **2/8 jalons métier J0/J1 historiquement clos**, pas un pourcentage de travail. J1 **preuve CI actuelle bloquée par artefact**, J6/J7 sous-lots High validés, J3/J4/J5/J6/J7 métier ouverts ; aucun merge, DB réelle, cron, source active, publication ou Vercel.
 
 **NEXT exact** : arbitrer (A)/(B) pour la chaîne de preuve J1 sans divulguer HTML original ni dégrader ses required checks ; rétablir un test reproductible, vérifier CI de la PR mère au HEAD final, puis poursuivre J6 identité d'émetteur et registre réel uniquement après gate opérateur.
+
+## 14/11/2026 — Exécution parallèle A/B/C/D (J1, sources J3–J5, J6, J7)
+
+**GOAL demandé :** progresser sur quatre voies indépendantes en branches/PR séparées, preuves avant promotion, aucune écriture réelle, activation, merge ou Vercel.
+
+### Voie A — J1, préflight privé indépendant du required check historique
+
+[PR Draft #1213](https://github.com/hraaaaf/Akarfinder/pull/1213), base = PR mère #1204, code HEAD `9f02259d34cd1f663349fa2295ce038ecee5640a`. Nouveau `scripts/acquisition/v7_parallel/v7_private_archive_preflight.py` + 10 tests synthétiques dont doublon JSON, faux domaine, HTML altéré, ZIP traversal et **ZIP signé par une empreinte SHA-256 fournie indépendamment par l'opérateur**. CI exactes [préflight #43579149292](https://github.com/hraaaaf/Akarfinder/actions/runs/43579149292) **SUCCESS** ; [CI Policy #43579149261](https://github.com/hraaaaf/Akarfinder/actions/runs/43579149261) **SUCCESS**. Test **10/10 PASS** local et CI, aucune archive privée embarquée dans Git.
+
+**Preuve d'archive privée (lecture locale, pas CI GitHub historique) :** bundle Agenz 5/5 SHA ZIP/HTML/manifest HTTP200, Sarouty 1/1, WARC Mubawab 1/1 historique, avec **3 pins de ZIP indépendants exigés en entrée** : J3 `a1fb0a2ccf59fc57955abf15b4a4e4986e44bd7e534aeddd1d256dd45b37f037`, J4 `e1dff0dcc93c61853977e1dd1be5c65e7d19e0913a15ebd90e77c59473b755c5`, J5 `8701db5a09462f9e895ae46808ba97c990836dcb25a66d8b4e007008e177c7d5`. **7/7 archives intègres, 0 admissible, 0 source HTTP, 0 DB**. Preuve JSON (sans HTML) persistée en Library privée `/AkarFinder/V7/private/AKARFINDER_V7_J1_J3_J4_J5_ARCHIVE_PREFLIGHT_2026-11-14.json` ; fichiers WIP de transfert supprimés.
+
+**Limite honnête :** le CI synthétique PR #1213 ne remplace PAS le replay réel L4/V3 ancien ; [CI mère J1 #43536820628](https://github.com/hraaaaf/Akarfinder/actions/runs/43536820628) échoue sur **artefact privé expiré** (non sur un parseur). Aucun mécanisme privé renouvelable n'a été provisionné ; l'erreur de required check reste à traiter sans exposer HTML ou supprimer ce check.
+
+### Voie B — J3/J4/J5 sources (PR existantes, distinctes)
+
+Les trois documents canoniques ont été mis à jour sur leurs branches indépendantes : J3 [PR #1206](https://github.com/hraaaaf/Akarfinder/pull/1206), SHA doc `ce8e0af902104bfb96f991deaefcf517636bdd69` ; J4 [PR #1207](https://github.com/hraaaaf/Akarfinder/pull/1207), SHA doc `0e286fb084a3e52369cc5ab94d5cc9e4467c09bb` ; J5 [PR #1208](https://github.com/hraaaaf/Akarfinder/pull/1208), SHA doc `c8f52e41801c18a7ca2ad780ab19460d8e0399ac`. Les preuves anciennes sur HTML réel subsistent : Agenz 5/5 octets mais 0/5 localisation indépendante ; Sarouty #894012 octets valides mais coords source incompatibles avec Salé ; Mubawab #8205911 location historique (pas offre de vente actuelle, canonical absent). **Aucun changement d'admission ou de collecteur.** J2 FeenWay reste hors chemin critique.
+
+### Voies C/D — J6 sécurité et J7 ordonnanceur
+
+J6 [PR Draft #1209](https://github.com/hraaaaf/Akarfinder/pull/1209), HEAD doc `061fbf554b2fb5b3962580be3410b0c0e24282f5` : gate réel clarifié pour émetteur Ed25519 identifié, registre partagé externe anti-rollback, ledger v2 distinct de la MAC HMAC v1 et contrôle staging par humain. [CI J6 #43578990000](https://github.com/hraaaaf/Akarfinder/actions/runs/43578990000) + [Policy #43578990031](https://github.com/hraaaaf/Akarfinder/actions/runs/43578990031) **2/2 SUCCESS** ; suite technique High 84 tests sur PostgreSQL17 éphémère et fixtures synthétiques.
+
+J7 [PR Draft #1210](https://github.com/hraaaaf/Akarfinder/pull/1210), HEAD doc `afab8ab36596bef9a3350f23d844110b16e5ea39` : gate de shared DB durable, slots UTC bornés, refus token expiré et idempotence au **point réel d'écriture**, pas uniquement au ledger. [CI J7 #43578984462](https://github.com/hraaaaf/Akarfinder/actions/runs/43578984462) + [Policy #43578984453](https://github.com/hraaaaf/Akarfinder/actions/runs/43578984453) **2/2 SUCCESS** ; suite technique High 24 tests, pas de cron live.
+
+### Verdict / Next
+
+**Sous-lot préparation en parallèle :** preuves et contrats poussés dans PRs Draft, pas d'activation. **J0/J1 historiques clôturés = 2/8 jalons métiers**, J3–J7 non clos ; aucun pourcentage global artificiel, 0 annonce admise.
+
+**Next exact** : restaurer le vrai replay J1 depuis stockage privé durable à accès autorisé (ou exécution attestée séparée validée par responsable des required checks), sans faux vert ; puis obtenir au moins une source native actuelle éligible et géo indépendante par portail ; préparer les ressources durables J6/J7 avec autorisation d'opérateur, et seulement ensuite envisager staging/cron. **Aucun merge ni Vercel sans GO séparé.**
