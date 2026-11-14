@@ -102,6 +102,9 @@ class J6Ed25519ReceiptV2Tests(unittest.TestCase):
             self.assertEqual(sorted(f.result() for f in futures),[False,True])
 
     def test_legacy_hmac_and_ed25519_receipts_must_be_distinct(self):
+        previous_hmac_count=self.admin.execute(
+            "SELECT count(*) FROM v7_capture.capture_receipts"
+        ).fetchone()[0]
         self.assertTrue(self.advance())
         self.assertTrue(self.record())
         self.assertEqual(self.admin.execute(
@@ -109,7 +112,7 @@ class J6Ed25519ReceiptV2Tests(unittest.TestCase):
         ).fetchone()[0],1)
         self.assertEqual(self.admin.execute(
             "SELECT count(*) FROM v7_capture.capture_receipts"
-        ).fetchone()[0],0)
+        ).fetchone()[0],previous_hmac_count)
         self.assertFalse(self.admin.execute(
             "SELECT has_table_privilege('v7_capture_ed_reviewer',"
             "'v7_capture.capture_receipts','INSERT')"
