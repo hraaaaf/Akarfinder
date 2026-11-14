@@ -38,3 +38,20 @@ Lot 5 ACTIVE, Lot 6 OPEN. Aucun merge ni Vercel autorisé.
 **Accessibilité et périmètre d'acceptation** : la V1 sur #1197 a reçu la validation humaine et des essais NVDA/VoiceOver PASS, mais **ces lecteurs d'écran natifs n'ont pas été réexécutés sur le port #1212** (PC distant hors ligne). L'identité pixel ne prouve pas une identité de comportement vocal ou une conformité WCAG globale. Statut : **sous-lot UI isolé, visuel PASS**, fusion/release **NO-GO** tant que gouvernance de merge, dépendance L1 pertinente et risque d'accessibilité ne sont pas arbitrés. **Lots 5 ACTIVE, 6 OPEN, 4/6 historiques CLOSED** ; J18 OSM public OFF.
 
 **NEXT exact** : conserver PR #1212 Draft, obtenir une revalidation ciblée des lecteurs natifs quand exécutable et traiter L1 externe sans tricher sur les données ; vérifier le HEAD documentaire après closeout puis préparer la revue/autorisation **distincte** de merge. Aucun merge ni déploiement Vercel sans autorisation explicite.
+
+
+### 2026-11-14 — Audit natif NVDA/VoiceOver prêt sur la branche isolée (NON EXÉCUTÉ)
+
+**Préflight de disponibilité** : le contrôle Desktop Commander `DESKTOP-3MAJEEH` retourne **OFFLINE** (77 h depuis dernière présence). Le plugin AI Machine Bridge voit une présence Windows en ligne, mais retourne `mode=presence_only, remote_commands=false, capabilities=[]`. Impossible d'exécuter la validation native sur le PC actuellement ; n'en pas déduire un PASS.
+
+**Portage autorisé et à portée zéro produit** : les deux fichiers `scripts/audits/vivre-ici-native-screen-reader.spec.mjs` et `scripts/audits/vivre-ici-native-screen-reader.config.mjs` sont importés tels quels depuis le commit source #1197 `fff905186dc7f2fbabe7c8694398cc1461d38180`. Ils vérifient la **vraie voix NVDA/VoiceOver**, l'annonce du H1 Maârif, l'action native du bouton Limites, la présence du message indisponible, les attributs `aria-pressed`/`aria-expanded`/`aria-controls`, le retour au Quartier et la preuve `speech.json` ; ils ne simulent pas un lecteur d'écran. Ils ne changent **aucune interface**, aucun runtime, aucun workflow GitHub YAML, aucun flag / DB / OSM / Vercel. Le test sera valable seulement si exécuté sur le **HEAD exact** (sans déduire un succès de #1197).
+
+**Commande de test sur environnement autorisé macOS ou Windows avec vrai lecteur** :
+1. `git checkout <SHA exact de la PR #1212>`, `npm ci`, puis `npm install --no-save --package-lock=false @guidepup/guidepup@0.40.0 @guidepup/playwright@0.21.0 @guidepup/setup@0.29.3 @playwright/test@1.65.0`.
+2. `npx @guidepup/setup setup --ci`, puis `npx @guidepup/setup install` ; installer `chromium` sur Windows ou `webkit` sur macOS via `npx playwright install <browser>`.
+3. `npm run build`; démarrer l'application localement sur le port 3205 et attendre HTTP 200 sur `/map?city=casablanca&district=maarif&layer=explore`.
+4. Définir `NATIVE_READER=nvda` (Windows) ou `NATIVE_READER=voiceover` (macOS), `BASE_URL=http://127.0.0.1:3205`, et exécuter `npx playwright test --config scripts/audits/vivre-ici-native-screen-reader.config.mjs`. Captures, speech log et rapport sont stockés dans `artifacts/native-sr` ; ne pas afficher un PASS sans ces preuves. Le navigateur local n'est pas un déploiement Vercel.
+
+**Gate complémentaire L1 distinct** : [L1 run #43578844675](https://github.com/hraaaaf/Akarfinder/actions/runs/43578844675) échoue seulement sur disponibilité externe Overpass (0/6 quartiers) après tests/tsc/build PASS. Conserver la politique fail-closed ; aucune donnée d'emprunt, aucun changement du seuil. Le screenshot-pass et ce gate ne doivent pas être fusionnés en un « ALL GREEN ».
+
+**Next exact** : allumer/connecter une session de vrai contrôle distant sur Windows, puis lancer les scripts natifs au SHA de #1212 ; à défaut, garder le gate bloqué et passer à la prochaine action réellement autorisée dans le Lot 5.
