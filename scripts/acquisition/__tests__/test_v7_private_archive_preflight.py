@@ -6,7 +6,7 @@ import unittest
 from zipfile import ZipFile, ZIP_DEFLATED
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from v7_parallel.v7_private_archive_preflight import _validated_pair, _entries, _json_bytes, EvidenceRejected
+from v7_parallel.v7_private_archive_preflight import _validated_pair, _entries, _json_bytes, _operator_pin, audit_all, EvidenceRejected
 
 HTML = b'<!doctype html><html><title>synthetic fixture</title></html>'
 
@@ -39,6 +39,19 @@ class PrivatePreflightTests(unittest.TestCase):
     def test_sarouty_slug_identity(self):
         r=_validated_pair(HTML,manifest('https://www.sarouty.ma/acheter/appartement-sale-bab-al-bahr-894012/'),'sarouty.ma')
         self.assertEqual(r['id'],'894012')
+
+    def test_wrong_operator_bundle_pin_rejected(self):
+        from tempfile import TemporaryDirectory
+        with TemporaryDirectory() as d:
+            path=Path(d)/'fixture.zip'
+            path.write_bytes(b'synthetic')
+            with self.assertRaisesRegex(EvidenceRejected,'OPERATOR_BUNDLE_PIN_MISMATCH'):
+                _operator_pin(path,'0'*64)
+            _operator_pin(path,hashlib.sha256(b'synthetic').hexdigest())
+
+    def test_three_independent_operator_pins_mandatory(self):
+        with self.assertRaisesRegex(EvidenceRejected,'EXTERNAL_OPERATOR_PINS_REQUIRED'):
+            audit_all(Path('/tmp/j3.zip'),Path('/tmp/j4.zip'),Path('/tmp/j5.zip'),operator_pins={})
 
     def test_zip_member_traversal_refused(self):
         b=io.BytesIO()
