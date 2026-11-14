@@ -224,6 +224,10 @@ def _evaluate_capture(folder:Path,expected_url:str) -> dict:
         return dict(status='OVERSIZE_CAPTURE_REJECTED')
     try:
         raw=html.read_bytes()
+        stripped=raw.lstrip(b'\xef\xbb\xbf \t\r\n')
+        html_prefix=stripped.startswith((b'<!doctype html',b'<!DOCTYPE html',b'<html',b'<HTML'))
+        xml_html_prefix=(stripped[:128].lower().startswith(b'<?xml')
+                         and b'<html' in stripped[:2048].lower())
         m=json.loads(manifest.read_text(encoding='utf-8'))
         required={'schema_version','source_url','captured_at_utc','http_status',
                   'content_type','html_sha256','bytes','capture_method'}
@@ -239,7 +243,7 @@ def _evaluate_capture(folder:Path,expected_url:str) -> dict:
                 or hashlib.sha256(raw).hexdigest()!=m['html_sha256']
                 or not str(m['captured_at_utc']).endswith('Z')
                 or dt.utcoffset()!=timezone.utc.utcoffset(dt)
-                or not raw.startswith((b'<!doctype html',b'<!DOCTYPE html',b'<html',b'<HTML'))):
+                or not (html_prefix or xml_html_prefix)):
             raise ProofRejected('CAPTURE_INTEGRITY_OR_IDENTITY_MISMATCH')
         decoded=raw.decode('utf-8',errors='strict')
         status=_observed_identity(expected_url,decoded)
@@ -288,7 +292,9 @@ def audit(requests:Path,request_sha256:str,evidence_root:Path,output:Path) -> di
                  private_staging_authorized=False,public_admission_authorized=False,
                  note='Manifest and HTML hash are self-declared integrity checks, not independent authenticity.')
     output.mkdir(mode=0o700,parents=True)
-    (output/'receipt_QUARANTINE.json').write_text(json.dumps(dict(summary=summary,cases=reports),ensure_ascii=False,indent=2,sort_keys=True)+'\n')
+    (output/'receipt_QUARANTINE.json').write_text(
+        json.dumps(dict(summary=summary,cases=reports),ensure_ascii=False,indent=2,sort_keys=True)+'\n',
+        encoding='utf-8')
     return summary
 
 
@@ -313,3 +319,4 @@ def main():
     print(json.dumps(r,ensure_ascii=False,sort_keys=True))
 
 if __name__=='__main__':main()
+
