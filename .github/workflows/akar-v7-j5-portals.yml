@@ -1,0 +1,42 @@
+name: Akar V7 J5 Remaining Portals — Offline
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/v7_parallel/j5_remaining_portals.mjs'
+      - 'scripts/acquisition/__tests__/v7-j5-portals.test.mjs'
+      - 'scripts/acquisition/v7_parallel/j5_commercial_mirror_review.mjs'
+      - 'scripts/acquisition/__tests__/v7-j5-commercial-mirror-review.test.mjs'
+      - 'scripts/acquisition/__tests__/test_v7_j5_real_v3_handoff.py'
+      - 'scripts/acquisition/v7_parallel/j5_commoncrawl_warc_evidence.py'
+      - 'scripts/acquisition/__tests__/test_v7_j5_commoncrawl_warc_evidence.py'
+      - 'scripts/acquisition/v7_parallel/fixtures/j5_cc_8205911_index.json'
+      - '.github/workflows/akar-v7-j5-portals.yml'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+jobs:
+  j5-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: J5 L8 URL-only and commercial mirror observations (NO HTTP)
+        run: node --test scripts/acquisition/__tests__/v7-j5-portals.test.mjs scripts/acquisition/__tests__/v7-j5-commercial-mirror-review.test.mjs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify bounded historical WARC index and archive reader (NO HTTP)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_j5_commoncrawl_warc_evidence.py'
+      - name: Install isolated parser dependency (no portal access)
+        run: python -m pip install "beautifulsoup4==4.14.3"
+      - name: J5 L8 Node -> actual V3 on 1000 URL-only candidates
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_j5_real_v3_handoff.py'
+
