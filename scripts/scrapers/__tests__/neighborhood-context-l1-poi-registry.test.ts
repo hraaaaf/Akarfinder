@@ -182,7 +182,7 @@ describe("Neighborhood Context L1 — certified continuity seed", () => {
         assert.ok(haversineMeters(pilot.query_origin, poi) <= pilot.query_radius_m, `${pilot.neighborhood}: ${poi.poi_id}`);
       }
     }
-    assert.equal(total, 13);
+    assert.equal(total, 12); // 12 historical seed rows; do not invent a 13th POI
   });
 });
 

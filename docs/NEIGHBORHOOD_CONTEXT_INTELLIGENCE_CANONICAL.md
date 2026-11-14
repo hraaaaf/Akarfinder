@@ -203,3 +203,31 @@ PR roadmap : #902. Lots : #904, #906, #907, #913.
 4. figer un mockup cible de convergence ;
 5. seulement ensuite implémenter la convergence sur `NeighborhoodContextReadModelV1` ;
 6. aucun Vercel.
+
+### 2026-11-14 — Vivre Ici V1 Maârif : gate humain accepté, isolation J18 préparée
+
+**Décision explicite** : propriétaire valide les 12 captures de la V1 limitée (Quartier 2D, Rue zoom, « Limites non disponibles ») et son compromis UX, tout en sachant que le score global ≥9,5/10 reste non démontré. Cette validation n'autorise pas le merge, Vercel, l'OSM public ni l'affichage d'une frontière Maârif centrale non certifiée.
+
+**Preuves sur l'ancienne branche composite** : PR [#1197](https://github.com/hraaaaf/Akarfinder/pull/1197), SHA applicatif `c5e9bf10a48a20acab731fd1cd761798d937647d` ; [QA 12 captures 3×4 #43536821001](https://github.com/hraaaaf/Akarfinder/actions/runs/43536821001) PASS (Rue 17,1 / Limites 14,6, cibles ≥44px, 0 JS/overflow, 0 POI public) et [NVDA/VoiceOver #43536820786](https://github.com/hraaaaf/Akarfinder/actions/runs/43536820786) PASS ciblé. Décision enregistrée dans [Notion J18](https://app.notion.com/p/41777c66336281968368d299b5e79143) et [commentaire GitHub](https://github.com/hraaaaf/Akarfinder/pull/1197#issuecomment-6874627963).
+
+**Isolation contrôlée** : PR #1197 regroupe 84 commits / 162 fichiers, notamment routes J18, Blob/Redis/CDN et QA OSM non publiables avec V1. Une nouvelle PR Draft, **V1 limitée uniquement**, reprend de la base de #1197 les composants cartes/fiches, styles et QA sans importer ces routes, frontières shadow ni flux de publication. Tests complets et captures de la nouvelle branche requis **avant** toute équivalence de rendu ; les preuves de #1197 ne certifient pas automatiquement la nouvelle branche.
+
+**Roadmap inchangée** : lots 1–4 CLOSED, Lot 5 ACTIVE, Lot 6 OPEN (4/6 lots = 66,7 %). Prochaine étape : CI/captures isolées et revue humaine de différences éventuelles, puis GO merge distinct et, ultérieurement, GO Vercel distinct.
+
+### 2026-11-14 — V1 isolée #1212 : première CI rouge, corrections d'interface/contrats ciblées
+
+**État vérifié avant correctif** : SHA `329e0e97` de [PR #1212](https://github.com/hraaaaf/Akarfinder/pull/1212) (11 fichiers, aucun route J18) ; 11 workflows terminés : 6 SUCCESS / 4 FAILURE / 1 SKIPPED. Les 4 échecs : L1 contrat historique 13 POI alors que source seed en recense 12 ; Casablanca Visual rail mobile 390px tronqué (158px client / 181px scroll) parce que les sélecteurs CSS du H1 n'étaient pas tous repris ; N2 et N3 attendent l'ancien libellé CTA. **Aucun de ces points n'autorise à publier de nouveaux POI.**
+
+**Correction candidate** : ajustement du test L1 à la cardinalité réelle 12 sans données nouvelles, portage des sélecteurs H1 et attribution CSS déjà vérifiés sur le SHA de #1197, et ciblage du vrai libellé CTA dans les audits N2/N3 ; nouveau SHA/CI/captures requis avant PASS. Pas de J18, pas de merge/Vercel. Lots NCI 5 ACTIVE, 6 OPEN.
+
+### 2026-11-14 — PR #1212 isolée : VALIDATION VISUELLE 12/12, blocages externes conservés
+
+**Goal** : isoler la V1 Maârif approuvée (Quartier 2D, Rue zoom, Limites non disponibles) sans embarquer les 162 fichiers de #1197 ni aucun module de publication J18. **Success scope** : [PR #1212](https://github.com/hraaaaf/Akarfinder/pull/1212) Draft/non mergée, SHA code+tests `feca15d47665c3f820086792e8ef2329611d4435` (2 commits depuis `72a1f4ef`, 19 fichiers). GitHub Compare prouve zéro route `app/api/geo`, zéro workflow nouveau, zéro GeoShadow OSM, Blob/Redis/CDN, aucune donnée/DB/POI, aucune publication.
+
+**Preuve UX stricte** : [Carte Lot 8 Casablanca Visual After #43578162428](https://github.com/hraaaaf/Akarfinder/actions/runs/43578162428) SUCCESS. Artefact GitHub **14107681924**, ZIP **7 717 893 octets** SHA256 local concordant avec GitHub : `8d4326ef2f15659ce460df04fba0c0eaebab8fe37bca94e66d70c194cadb8406`. Les 12 PNG `Quartier/Rue/Limites × 390/430/768/1280` sont **strictement identiques pixel-par-pixel (différence RGB=0 pour 12/12)** à la version V1 acceptée `c5e9bf10`, artefact SHA256 `7512e1abc5068e9f1e13cab605941f3c638ccee5d082392a4593d9619374a0b9`. Rapport Playwright `ok=true` : zoom Rue=17,1 et Limites=14,6 tous viewports, retour Maroc ≥44px/12px, message 12–12,5px, 0 erreur JS, 0 overflow horizontal, **0 POI public**. Comparatifs visuels contrôlés dans ChatGPT.
+
+**CI complète sur ce SHA** : **11 workflows = 9 SUCCESS / 1 SKIPPED / 1 FAILURE** ; N2, N3, Casablanca, C7, Market, Zillow, Mockup PASS. [L1 POI Registry #43578162438](https://github.com/hraaaaf/Akarfinder/actions/runs/43578162438) FAILED uniquement à son **Final L1 truth + availability gate**, alors que contrats, TypeScript, build et capture L1 ont passé. Les deux endpoints Overpass ont renvoyé `upstream_error`, état `external_degraded`, `available=0/6`, `findings=0`. **Fail-closed maintenu, aucun faux repère : ne pas annoncer CI green ni désactiver le gate**. La couverture nationale L1 reste non certifiée ; cela ne retire pas le PASS du rendu limité explicitement sans POI.
+
+**Accessibilité et périmètre d'acceptation** : la V1 sur #1197 a reçu la validation humaine et des essais NVDA/VoiceOver PASS, mais **ces lecteurs d'écran natifs n'ont pas été réexécutés sur le port #1212** (PC distant hors ligne). L'identité pixel ne prouve pas une identité de comportement vocal ou une conformité WCAG globale. Statut : **sous-lot UI isolé, visuel PASS**, fusion/release **NO-GO** tant que gouvernance de merge, dépendance L1 pertinente et risque d'accessibilité ne sont pas arbitrés. **Lots 5 ACTIVE, 6 OPEN, 4/6 historiques CLOSED** ; J18 OSM public OFF.
+
+**NEXT exact** : conserver PR #1212 Draft, obtenir une revalidation ciblée des lecteurs natifs quand exécutable et traiter L1 externe sans tricher sur les données ; vérifier le HEAD documentaire après closeout puis préparer la revue/autorisation **distincte** de merge. Aucun merge ni déploiement Vercel sans autorisation explicite.

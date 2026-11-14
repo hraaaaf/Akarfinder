@@ -50,7 +50,7 @@
   top: 118px;
   z-index: 52;
   display: inline-flex;
-  min-height: 36px;
+  min-height: 44px;
   align-items: center;
   gap: 7px;
   border: 1px solid rgb(207 220 235 / .9);
@@ -58,8 +58,8 @@
   background: rgb(255 255 255 / .94);
   padding: 7px 12px;
   color: #071b33;
-  font-size: 10px;
-  font-weight: 900;
+  font-size: 12px;
+  font-weight: 800;
   letter-spacing: .04em;
   box-shadow: 0 10px 28px rgb(7 27 51 / .16);
   backdrop-filter: blur(14px);
@@ -125,9 +125,9 @@
   [data-vivre-ici-page] .vivre-ici-territory-back {
     left: 12px;
     top: 101px;
-    min-height: 32px;
-    padding: 6px 10px;
-    font-size: 9px;
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 12px;
   }
 
   /* Mobile N3 is map-first: title + reliability contract + real action.
@@ -149,7 +149,7 @@
     display: none !important;
   }
 
-  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-context-header h2 {
+  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-context-header :is(h1,h2) {
     margin-top: 2px !important;
     font-size: 22px !important;
     line-height: 1.02 !important;
@@ -183,9 +183,9 @@
   display: block;
   margin: 6px 0 4px;
   color: #52657a;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 /* L4-B: the city-wide sourced national map does not mount the neighborhood
@@ -211,4 +211,20 @@
   font-size: 11px !important;
   line-height: 1.55 !important;
   overflow-wrap: normal !important;
+}
+
+/* J18 UI: the source-honest city fallback already has a labelled native
+ * “Return to Morocco” arrow in its territory header. Hide only the redundant
+ * floating Maroc link to prevent it covering the city CTA or search field.
+ * Qualified neighborhood MapLibre views keep their floating back control. */
+[data-vivre-ici-page] [data-p4-map-canvas]:has([data-akarfinder-national-map][data-akarfinder-national-view="city"]) > .vivre-ici-territory-back {
+  display: none !important;
+}
+
+/* City fallback already explains missing local evidence in the district decision
+ * sheet; the extra unavailable-POI pill was covering its primary city CTA.
+ * Hide only that redundant empty-state pill in fallback, keeping genuine POI
+ * filters on supported maps and the city decision copy visible. */
+[data-vivre-ici-page] [data-p4-map-canvas]:has([data-akarfinder-national-map][data-akarfinder-national-view="city"]) [data-neighborhood-context-poi-unavailable] {
+  display: none !important;
 }

@@ -70,7 +70,7 @@ export function MapLibreNeighborhood3D({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const isMaarifPilot = citySlug === "casablanca" && districtSlug === "maarif";
-  const [pilotView, setPilotView] = useState<"quartier" | "rue">("quartier");
+  const [pilotView, setPilotView] = useState<"quartier" | "rue" | "limites">("quartier");
   const [observedCamera, setObservedCamera] = useState({ pitch: -1, bearing: -1, zoom: -1 });
   const [ready, setReady] = useState(false);
   const [renderState, setRenderState] = useState<"loading" | "ready" | "error">("loading");
@@ -85,12 +85,12 @@ export function MapLibreNeighborhood3D({
   useEffect(() => { setPilotView("quartier"); }, [citySlug, districtSlug]);
 
   // L3-A: user-triggered camera changes, never pretend to offer a published boundary.
-  const selectMaarifView = (view: "quartier" | "rue") => {
+  const selectMaarifView = (view: "quartier" | "rue" | "limites") => {
     if (!isMaarifPilot) return;
     const map = mapInstanceRef.current;
-    if (!map) return;
-    // Flat Maârif camera centers on the sourced neighborhood point.
-    // The historical northwest 3D camera offset placed its marker at the bottom edge on desktop.
+    if (!map) { setPilotView(view); return; }
+    // No unreviewed geometry or OSM administration preview in the V1 limited cut.
+    // Limites is an explanatory panel; both Quartier and Limites use zoom 14.6.
     map.easeTo({
       center,
       zoom: view === "rue" ? 17.1 : 14.6,
@@ -342,7 +342,17 @@ export function MapLibreNeighborhood3D({
         <div className="l3-maarif-view-controls" data-l3-map-modes role="group" aria-label="Modes de la carte Maârif">
           <button type="button" data-l3-go-quarter aria-pressed={pilotView === "quartier"} onClick={() => selectMaarifView("quartier")}>Quartier · 2D</button>
           <button type="button" data-l3-go-street aria-pressed={pilotView === "rue"} onClick={() => selectMaarifView("rue")}>Rue · zoom</button>
-          <span role="status" data-l3-admin-unavailable>Limites administratives indisponibles · source non revue</span>
+          <button type="button" data-l3-go-admin aria-pressed={pilotView === "limites"}
+            aria-controls={pilotView === "limites" ? "maarif-admin-boundary-explanation" : undefined}
+            aria-expanded={pilotView === "limites"} onClick={() => selectMaarifView("limites")}>Limites</button>
+          {pilotView === "limites" ? (
+            <div id="maarif-admin-boundary-explanation" role="status" className="l3-maarif-admin-panel"
+              data-l3-admin-unavailable="true">
+              <strong>Limites non disponibles</strong>
+              <p>Le contour officiel de l’arrondissement Maârif n’est pas encore vérifié. Le repère sur la carte indique le quartier, pas sa frontière.</p>
+              <button type="button" data-l3-admin-return onClick={() => selectMaarifView("quartier")}>Retour au quartier</button>
+            </div>
+          ) : null}
         </div>
       ) : null}
 
@@ -352,10 +362,12 @@ export function MapLibreNeighborhood3D({
 
       </div>
 
-      <div className="maplibre-spike-filters" aria-label={`Filtres des repères de ${districtLabel}`}>
-        <button className={activeCategory === "all" ? "active" : ""} onClick={() => setActiveCategory("all")}>Repères</button>
-        {categories.map((category) => <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => setActiveCategory(category)}>{CATEGORY_META[category].label}</button>)}
-      </div>
+      {(context?.anchor_count ?? 0) > 0 ? (
+        <div className="maplibre-spike-filters" role="group" aria-label={`Filtres des repères de ${districtLabel}`}>
+          <button type="button" aria-pressed={activeCategory === "all"} className={activeCategory === "all" ? "active" : ""} onClick={() => setActiveCategory("all")}>Repères</button>
+          {categories.map((category) => <button type="button" key={category} aria-pressed={activeCategory === category} className={activeCategory === category ? "active" : ""} onClick={() => setActiveCategory(category)}>{CATEGORY_META[category].label}</button>)}
+        </div>
+      ) : null}
 
       <div className="maplibre-spike-controls" aria-label="Contrôles de la carte">
         <button type="button" className="maplibre-spike-control-primary" onClick={restoreCamera} aria-label="Recentrer sur le quartier"><LocateFixed size={18} /></button>
@@ -376,7 +388,7 @@ export function MapLibreNeighborhood3D({
 
       <style jsx global>{`
         .maplibre-spike-shell{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 372px;grid-template-rows:minmax(0,1fr) 68px;gap:0;height:calc(100svh - 64px);padding:0;background:#e7eeeb;color:#102f32;overflow:hidden}.maplibre-spike-shell[data-maplibre-reserve-rail="false"]{grid-template-columns:minmax(0,1fr)}
-        .maplibre-spike-map{position:relative;grid-column:1;grid-row:1;min-width:0;overflow:hidden;border-radius:0;background:#dce8e5}.maplibre-spike-canvas{position:absolute;inset:0}.maplibre-spike-canvas,.maplibre-spike-canvas .maplibregl-map,.maplibre-spike-canvas .maplibregl-canvas-container,.maplibre-spike-canvas canvas{width:100%!important;height:100%!important}.maplibre-spike-canvas canvas{outline:none}.maplibre-spike-map-grade{position:absolute;z-index:2;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(1,38,39,.08) 0%,rgba(7,50,49,.015) 38%,rgba(3,32,34,.08) 100%);mix-blend-mode:multiply}
+        .maplibre-spike-map{position:relative;grid-column:1;grid-row:1;min-width:0;overflow:hidden;border-radius:0;background:#dce8e5}.maplibre-spike-canvas{position:absolute;inset:0}.maplibre-spike-canvas,.maplibre-spike-canvas .maplibregl-map,.maplibre-spike-canvas .maplibregl-canvas-container,.maplibre-spike-canvas canvas{width:100%!important;height:100%!important}.maplibre-spike-canvas canvas{outline:none}.maplibre-spike-canvas canvas:focus-visible{outline:3px solid #0B63CE!important;outline-offset:-3px}.maplibre-spike-map-grade{position:absolute;z-index:2;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(1,38,39,.08) 0%,rgba(7,50,49,.015) 38%,rgba(3,32,34,.08) 100%);mix-blend-mode:multiply}
         .maplibre-spike-dom-labels{position:absolute;z-index:9;inset:0;pointer-events:none;overflow:hidden}.maplibre-spike-neighborhood-label{position:absolute;display:flex;flex-direction:column;align-items:center;gap:7px;transform:translate(-50%,-112%);filter:drop-shadow(0 8px 18px rgb(0 42 43/.28));white-space:nowrap}.maplibre-spike-neighborhood-label span{padding:9px 14px;border:1px solid rgb(255 255 255/.58);border-radius:999px;background:rgb(3 113 108/.92);box-shadow:inset 0 1px 0 rgb(255 255 255/.22);color:#fff;font-size:13px;font-weight:850;letter-spacing:-.01em}.maplibre-spike-neighborhood-label i{display:block;width:10px;height:10px;border:3px solid #fff;border-radius:999px;background:#07928c;box-shadow:0 0 0 4px rgb(5 178 166/.22)}.maplibre-spike-poi-label{position:absolute;display:flex;flex-direction:column;align-items:center;gap:5px;transform:translate(-50%,-100%)}.maplibre-spike-poi-label span{max-width:250px;padding:7px 13px;border:1px solid rgb(255 255 255/.78);border-radius:999px;background:rgb(251 252 249/.9);backdrop-filter:blur(14px);box-shadow:0 8px 20px rgb(14 45 44/.15);color:#254441;font-size:10px;font-weight:780;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.maplibre-spike-poi-label i{display:block;width:9px;height:9px;border:2px solid #fff;border-radius:999px;box-shadow:0 2px 8px rgb(30 46 47/.22)}
         .maplibre-spike-map-chrome{position:absolute;z-index:14;left:22px;right:22px;top:20px;display:grid;grid-template-columns:auto minmax(260px,580px) auto;justify-content:space-between;gap:10px;pointer-events:none}.maplibre-spike-shell[data-maplibre-reserve-rail="true"] .maplibre-spike-map-chrome{right:394px}.maplibre-spike-brand,.maplibre-spike-search,.maplibre-spike-mode{min-height:48px;display:flex;align-items:center;border:1px solid rgb(255 255 255/.8);background:rgb(250 252 251/.88);backdrop-filter:blur(18px) saturate(1.15);box-shadow:0 12px 34px rgb(7 34 35/.16);color:#173638}.maplibre-spike-brand{gap:9px;padding:0 15px 0 9px;border-radius:999px}.maplibre-spike-brand b{display:grid;width:32px;height:32px;place-items:center;border-radius:999px;background:#063b54;color:#fff;font-size:11px;letter-spacing:-.04em}.maplibre-spike-brand span{font-size:14px;font-weight:900;letter-spacing:-.025em}.maplibre-spike-search{gap:10px;padding:0 15px;border-radius:999px}.maplibre-spike-search strong{font-size:14px;font-weight:850}.maplibre-spike-search span{overflow:hidden;color:#73817f;font-size:10px;font-weight:650;text-overflow:ellipsis;white-space:nowrap}.maplibre-spike-mode{gap:4px;padding:4px;border-radius:999px;font-size:10px;font-weight:850}.maplibre-spike-mode span,.maplibre-spike-mode strong{display:grid;place-items:center;min-width:62px;min-height:38px;border-radius:999px}.maplibre-spike-mode strong{background:#087873;color:#fff;box-shadow:0 5px 14px rgb(3 105 101/.22)}
         .maplibre-spike-view-chips{position:absolute;z-index:14;left:22px;top:80px;display:flex;gap:7px;pointer-events:none}.maplibre-spike-view-chips span{padding:8px 12px;border:1px solid rgb(255 255 255/.76);border-radius:999px;background:rgb(250 252 251/.88);backdrop-filter:blur(16px);box-shadow:0 7px 22px rgb(7 34 35/.12);color:#2b4a48;font-size:9px;font-weight:850}.maplibre-spike-view-chips span.active{background:rgb(4 112 107/.92);color:#fff}
