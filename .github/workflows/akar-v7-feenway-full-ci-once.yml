@@ -133,6 +133,7 @@ jobs:
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_j2_quarantine_triage.py'
       - name: FeenWay J2 mask ambiguous/conflicting source claims, preserve raw (offline)
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_j2_safe_claims.py'
+      # 2026-11-14: one-shot verification of XML-declaration + UTF-8 receipt regressions (19 tests).
       - name: FeenWay J2 primary source snapshot receipts fail-closed offline
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_j2_primary_evidence.py'
       - name: Existing Radar10 private staging regression
