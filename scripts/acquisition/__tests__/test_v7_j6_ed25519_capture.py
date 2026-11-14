@@ -195,12 +195,10 @@ class J6Ed25519Tests(unittest.TestCase):
             signed_att(issuer='unsafe\ud800')
 
     def test_real_v3_html_replay_and_original_bytes_are_indispensable(self):
-        # Import actual modules only in the GitHub repository CI where available.
-        try:
-            from akarparser_v3_raw_bulk import parse_raw
-            from v7_multisource.snapshot_evidence import _manifest
-        except ImportError:
-            self.skipTest('real AkarParser imports available on repo CI only')
+        # CI MUST prove the actual AkarParser and source-manifest path;
+        # never silently skip this critical end-to-end source replay.
+        from akarparser_v3_raw_bulk import parse_raw
+        from v7_multisource.snapshot_evidence import _manifest
         with TemporaryDirectory() as d:
             html=Path(d)/'source.html'; manifest=Path(d)/'source.manifest.json'
             html.write_bytes(HTML)
