@@ -9,7 +9,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from v7_multisource.feenway_j2_primary_evidence import prepare,audit,ProofRejected,_url_key
+from v7_multisource.feenway_j2_primary_evidence import prepare,audit,ProofRejected,_url_key,_case_key
 
 AVITO1='https://www.avito.ma/fr/casa/appartements/A_58917466.htm'
 AVITO2='https://www.avito.ma/fr/casa/appartements/B_58917466.htm'
@@ -80,6 +80,24 @@ class PrimaryProofTests(unittest.TestCase):
         self.assertTrue(row['supplied_bytes_integrity_verified'])
         self.assertFalse(row['independently_authenticated_original_source'])
         self.assertFalse(row['source_price_verified'])
+    def test_html_with_xml_declaration_is_replayed_without_rewriting_bytes(self):
+        r,root=self.evidence()
+        html='<?xml version="1.0" encoding="UTF-8"?><!doctype html><html><head><link rel="canonical" href="'+AVITO1+'"></head><body>Listing</body></html>'
+        self.supply(r,root,content=html)
+        out=self.audit(r,root)
+        self.assertEqual(out['statuses']['SOURCE_CANONICAL_SELF_CLAIM_MATCH_NOT_AUTHENTICATED'],1)
+        self.assertEqual((root/json.loads(r.read_text())['cases'][0]['case_key']/'source.html').read_bytes(),html.encode('utf-8'))
+    def test_receipt_is_utf8_for_unicode_source_url(self):
+        r,root=self.evidence()
+        packet=json.loads(r.read_text(encoding='utf-8'))
+        source_url='https://www.avito.ma/fr/casa/appartements/Studio_à_louer_58917466.htm'
+        packet['cases'][0]['source_url']=source_url
+        packet['cases'][0]['case_key']=_case_key(source_url)
+        r.write_text(json.dumps(packet,ensure_ascii=False),encoding='utf-8')
+        self.audit(r,root)
+        receipt=(self.root/'audit'/'receipt_QUARANTINE.json').read_bytes()
+        self.assertIn(source_url.encode('utf-8'),receipt)
+        self.assertEqual(json.loads(receipt.decode('utf-8'))['cases'][0]['source_url'],source_url)
     def test_changed_html_bytes_rejected(self):
         r,root=self.evidence();folder=self.supply(r,root)
         (folder/'source.html').write_text('<!doctype html><html>MODIFIED</html>')
@@ -139,3 +157,4 @@ class PrimaryProofTests(unittest.TestCase):
             prepare(self.gzip,a,self.csv,b,repo/'x',max_groups=1)
 
 if __name__=='__main__':unittest.main()
+
