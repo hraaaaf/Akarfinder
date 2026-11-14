@@ -119,3 +119,7 @@ Sept champs effectivement visibles dans le rendu sémantique renvoyé par la sou
 **Autre défaut détecté et résolu :** [CI Policy #43474550923](https://github.com/hraaaaf/Akarfinder/actions/runs/43474550923) FAILED pour cancel-in-progress=false ; le paramètre a été corrigé puis le workflow de capture entièrement retiré. Les nouveaux tests hors ligne J4 géographie restent en CI indépendante, à vérifier sur HEAD final.
 
 **Aucune fausse promotion :** vrai HTML Sarouty prouvé pour un identifiant, district L4/V3 toujours NULL, coordonnées JSON-LD incohérentes avec Salé, aucun lien d'authentification J6, aucune annonce indexée/écrite/publiee, J4/J5 non clos.
+
+### 14/11/2026 — Contrôle croisé de l'original Sarouty #894012
+
+Nouvel audit local en lecture seule ([PR J1 #1213](https://github.com/hraaaaf/Akarfinder/pull/1213)) de l'archive privée Library `AKARFINDER_V7_J4_SAROUTY_894012_SOURCE_ORIGINALE_2026-11-13.zip` : ZIP SHA256 `e1dff0dcc93c61853977e1dd1be5c65e7d19e0913a15ebd90e77c59473b755c5`, original `source.html` **183331 octets**, SHA256 `019a2cf51b6e188270b4a7c9d4f830cc31245fe9d1dbee50ac9e7e9bad12e145`, manifeste HTTP200/URL Sarouty ID #894012 PASS. **La latitude/longitude incohérente reste explicitement rejetée**, source non localisée indépendamment, 0 staging. Les portails Avito et Yakeey n'ont toujours aucune source native HTML certifiée dans ce contrôle. **NEXT :** géolocalisation indépendante de Sarouty, originales Avito/Yakeey par canal autorisé, vérification ID et freshness. Aucun nouveau GET ni réactivation du workflow problématique.
