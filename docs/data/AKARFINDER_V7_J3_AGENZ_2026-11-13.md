@@ -146,3 +146,23 @@ Le 13/11/2026, un bundle ZIP privé de **199 159 octets** a été créé depuis 
 ### 14/11/2026 — Contrôle croisé hors ligne des 5 archives privées Agenz
 
 Contrôle indépendant en lecture seule par `v7_private_archive_preflight.py` (nouvelle [PR Draft J1 #1213](https://github.com/hraaaaf/Akarfinder/pull/1213), encore non mergée) sur l'archive Library privée `AKARFINDER_V7_J3_AGENZ_ARCHIVES_PRIVEES_2026-11-13.zip`. SHA256 du ZIP original `a1fb0a2ccf59fc57955abf15b4a4e4986e44bd7e534aeddd1d256dd45b37f037`. **5/5 ZIP internes, manifestes HTTP200, SHA256 des HTML et IDs distincts PASS** : #387448 (186116 octets), #420510 (216245), #444291/J1 (237450), #445495 (248662), #500006 (271176). Aucun contenu HTML injecté dans Git. La géographie demeure **0/5 attestée**, coordonnées chiffrées non exploitées ; **0 staging / 0 DB / 0 requête source**. Cela confirme l'intégrité et pas une indépendance géographique ni la fraîcheur actuelle. **NEXT :** pièces d'identité géographique de chaque bien, par source réellement indépendante ; ne pas supprimer les avis de contradiction internes.
+
+## 14/11/2026 — J3 : replay privé des cinq HTML depuis archive originale (CI synthétique distincte)
+
+**GOAL :** ne plus dépendre exclusivement de cinq artifacts GitHub dont la rétention est éphémère pour rendre le rejeu Agenz original reproductible. Ne rien publier des HTML, et ne jamais dégrader les required checks existants.
+
+**CAUSE CI CONFIRMÉE** : [run J3 #43578584200](https://github.com/hraaaaf/Akarfinder/actions/runs/43578584200) échoue en étape `actions/download-artifact@v4` : `Artifact not found for name: akar-v7-j1-agenz-source-private` du run `43330609367`. Aucun rejeu des cinq pages n'a commencé. La copie privée des cinq HTML est conservée dans Library et ses SHA sont intègres.
+
+**CODE** : `scripts/acquisition/v7_parallel/j3_private_original_replay.py` : exige le ZIP privé `AKARFINDER_V7_J3_AGENZ_ARCHIVES_PRIVEES_2026-11-13.zip`, un SHA256 du ZIP **indépendant de l'archive**, les cinq IDs exacts 444291/445495/420510/387448/500006, contrôle ZIP CRC/fichiers bornés, extrait temporairement les `source.html` et manifestes en dehors de Git. Le CLI appelle le **vrai** `j3_agenz_corpus.assess_corpus` (comparaison L4/V3 des cinq originaux) puis `j3_source_internal_consistency.audit_verified_snapshot`. Il refuse tout désaccord L4/V3 sur ville/quartier/surface totale, exige le conflit 4 chambres vs 3 dans la fiche #387448, refuse de prendre les coordonnées chiffrées comme preuve de localisation indépendante, retourne seulement des métadonnées/hash, **0 staging/DB/GET source**.
+
+**TESTS** : `test_v7_j3_private_original_replay.py` : 7 scénarios synthétiques (5 IDs, champs divergents, quartier faux, conflit chambres dissimulé, pin ZIP invalide, archive hostile). Ils sont ajoutés à la CI corpus hors réseau `.github/workflows/akar-v7-j3-corpus.yml`; cet ajout ne convertit PAS le replay réel en synthétique. Code HEAD `680ef00367b8a0c8bd2bf5a57e9d071529ef2ad4`, [CI J3 corpus #43583537139](https://github.com/hraaaaf/Akarfinder/actions/runs/43583537139) initialement IN_PROGRESS ; [CI réel #43583537152](https://github.com/hraaaaf/Akarfinder/actions/runs/43583537152) lancé, mais sans preuve de disponibilité des artefacts privés. Ne pas déclarer les tests verts avant leur conclusion exacte.
+
+**Commande sur un poste autorisé disposant du checkout et du ZIP privé** :
+
+```bash
+PYTHONPATH=scripts/acquisition python -m v7_parallel.j3_private_original_replay \
+  --j3 "/chemin/prive/AKARFINDER_V7_J3_AGENZ_ARCHIVES_PRIVEES_2026-11-13.zip" \
+  --operator-pin "a1fb0a2ccf59fc57955abf15b4a4e4986e44bd7e534aeddd1d256dd45b37f037"
+```
+
+**SUCCESS métier non démontré :** ni localisation de bien indépendante, ni fraîcheur réelle, ni admission ; 0/5 logements qualifiés géographiquement. Réel replay au nouveau HEAD doit être exécuté dans un environnement autorisé ayant le ZIP ; requiert l'accès opérateur à une archive privée durable. Aucun merge/staging, DB, cron, Vercel.
