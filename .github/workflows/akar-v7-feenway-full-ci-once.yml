@@ -65,6 +65,8 @@ jobs:
           scripts/acquisition/v7_multisource/feenway_agenz_primary_scope.py
           scripts/acquisition/akarparser_v3_raw_bulk.py
           scripts/acquisition/v7_multisource/feenway_v2_dual_identity_intake.py
+          scripts/acquisition/v7_multisource/feenway_j2_quarantine_triage.py
+          scripts/acquisition/__tests__/test_v7_feenway_j2_quarantine_triage.py
           scripts/acquisition/__tests__/test_v7_feenway_v2_dual_identity_intake.py
           scripts/acquisition/v7_multisource/pipeline.py
           scripts/acquisition/v7_multisource/legacy_url_intake.py
@@ -123,6 +125,8 @@ jobs:
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_v2_dual_identity_intake.py'
       - name: FeenWay J2 pinned evidence reconciliation safety tests (offline)
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_j2_evidence_reconcile.py'
+      - name: FeenWay J2 source ID and ambiguity quarantine triage (offline)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_j2_quarantine_triage.py'
       - name: Existing Radar10 private staging regression
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_radar10_*.py'
 
