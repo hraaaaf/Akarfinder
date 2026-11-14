@@ -379,3 +379,6 @@ NEXT EXACT / human gate : obtenir par un canal autorisé les captures HTML origi
 **Validateur J2** : correction du préfixe HTML pour accepter le document servi par Mubawab avec déclaration XML avant `<html>`, tout en conservant les octets bruts, et écriture explicite UTF-8 du reçu. Suite locale du validateur : 19/19 PASS, dont les deux nouveaux tests de non-régression. Ces modifications restent sur cette PR Draft; aucun merge.
 
 **Décision** : NO-GO pour admission et clôture métier J2. Les 82 166 annonces FeenWay demeurent en quarantaine; aucun staging, DB, cron live ou déploiement Vercel. Le dossier privé et le registre exhaustif restent côté utilisateur. La concordance du hash manifeste l’intégrité des octets enregistrés, pas l’authenticité ou la fraîcheur indépendantes.
+
+
+**Capture byte scope note:** the saved `source.html` files are HTTPX response entity bytes after automatic content-encoding decompression (for example gzip), not a packet-level capture of transport bytes. Manifest SHA/byte count apply to the preserved entity body.
