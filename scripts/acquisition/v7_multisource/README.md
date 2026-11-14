@@ -1,0 +1,192 @@
+# AkarFinder V7 multi-site, GitHub Actions
+
+## Objective and proof boundary
+
+Goal: grow beyond V6.4.6 Mubawab-only into a centrally normalized,
+multi-source Akarfinder discovery architecture, ultimately scheduled every
+ten minutes via GitHub Actions, staged privately through AkarParser V3.
+
+This draft introduces **two offline connectors**, NOT two active live scrapers.
+V6.4.6 is reused as a signed Mubawab snapshot producer; Agenz accepts
+externally supplied observations of individual pages with an exact URL/ID.
+Neither adapter establishes freshness, rights, availability or site coverage.
+
+## Source priorities (onboarding order, NOT live coverage)
+
+| Priority | Portal | Adapter status | Important constraint |
+| --- | --- | --- | --- |
+| 1 | FeenWay | NOT integrated | Aggregator; use upstream URLs and IDs, avoid duplicates |
+| 2 | Agenz | offline individual observation | independent live source verification |
+| 3 | Avito | NOT integrated | source onboarding |
+| 4 | Yakeey | NOT integrated | source onboarding |
+| 5 | Sarouty | NOT integrated | source onboarding |
+| 6 | Mubawab | offline HMAC snapshot | approved live source + durable trusted-head |
+| 7 | MarocAnnonces | NOT integrated | source onboarding |
+| 8 | Masaken | NOT integrated | source onboarding |
+| 9 | Immoneuf Avito | NOT integrated | program-neuf category |
+| 10 | Mitula | NOT integrated | aggregator/dedup review |
+| 11 | Portail-Immobilier | NOT integrated | source onboarding |
+
+FeenWay's official site describes it as aggregating ads from other portals,
+including Mubawab, Agenz, Yakeey and Sarouty. Reviewing it first does not
+justify relabeling its mirror pages as original newly published properties.
+Canonical upstream URL+site ID and a cross-site physical-duplicate review
+are essential before any private ingestion. Site inventory is not permission
+to copy or re-publish, not guaranteed coverage and not LIVE certification.
+
+Other agency/developer portals may be onboarded after evidence and a
+specific source adapter. This inventory is NOT an assertion of exhaustive
+Moroccan site coverage or permission to collect.
+
+## Onboarding per source
+
+1. Verify permitted entry points, terms, robots, and stable retrieval
+   without bypassing challenges or retrying 403/429.
+2. Capture *authorised* individual-page snapshots and representative
+   ground-truth labels; no site-derived accuracy claim from synthetic tests.
+3. Identify canonical domain, page vs SERP, portal listing ID, redirects,
+   transaction, property type, currency, price and area semantics.
+4. Implement a source adapter that is reject-by-default, then run
+   adversarial parsing and manual source-precision benchmarks.
+5. Preserve URL/ID and provenance; **first discovered** is not editorial
+   **published_at**. Keep uncertain fields empty.
+6. Stage with real AkarParser V3 and the private Radar10 DB layer.
+   No automated public admission or cross-site physical-property identity.
+7. Evaluate source yield, latency, access blocks, 0/partial records,
+   revisit churn, suspected physical duplicates, and measured coverage.
+
+## Tests and API
+
+The real pipeline lives in pipeline.py and only uses supplied inputs:
+- signed V646 snapshot: --verified-v646-root ROOT; it invokes the actual
+  immutable read_verified_publication code, never unsigned artifacts
+- externally supplied Agenz individual records: --agenz-jsonl FILE
+- all output local to a private temporary directory
+- code pathway: source-specific bridge -> AkarParser V3 run() ->
+  Radar10 strict normalization -> aggregate counters
+- 0 network calls, 0 DB writes, 0 published listing admissions
+
+An Agenz record must contain source_url, evidence_url (exact URL),
+source_offer_id, observation_kind=individual_page, transaction_type=sale,
+property_type=apartment and optional explicit title, city, district,
+price_mad and surface_m2. The evidence assertion is supplied by the
+input producer; the adapter does not verify the website content. Only
+sale-apartment pages are currently covered by this connector.
+
+The normalizer in ../radar10/ingest.py now accepts only canonical V646
+and Agenz individual-page URL/ID formats. The source domain is canonical,
+so www and non-www aliases share the same source/offer identity.
+The existing PostgreSQL private staging transaction and RLS checks are
+unchanged except for multi-domain identity support.
+
+## GitHub Actions 10-minute plan: NOT ACTIVE
+
+.github/workflows/akar-v7-multisource-gate.yml defines cron on minute
+3,13,23,33,43,53. GitHub scheduled workflows execute only when the
+workflow is on the default branch, and timing can be delayed or dropped.
+This workflow is currently only a stacked Draft PR. Its **only**
+scheduled job is a guarded NO-NETWORK status probe, disabled by default
+without repo variable AKAR_V7_SCHEDULE_PROBE_APPROVED=approved.
+
+The Pull Request CI job tests signed V646 synthetic fixture -> genuine
+V3 -> Radar10 validator, separate Agenz synthetic fields and ephemeral
+PostgreSQL 17. It never contacts real estate portals or production DB.
+No special GitHub Actions secret is needed for CI. No raw page artifact is
+uploaded. CI green != live portal correctness.
+
+Critical unsolved blockers for live ingestion on GitHub-hosted runners:
+- Runners are ephemeral. They cannot maintain V646 SQLite history or
+  a tamper-resistant trusted HMAC generation log between runs without
+  separately designed and reviewed persistent external state.
+- Source-specific live acquisition is not implemented/certified for Agenz
+  or the other nine inventoried portals; current V646 source limits
+  and source site restrictions still apply.
+- Notion's hourly ChatGPT discovery radar is separate. There is no
+  approved live feed that promotes its observations into V7.
+- No private Supabase migration/login/CA secret is provisioned.
+- The workflow has not been approved for main or real collection.
+- A ten-minute cron does not guarantee site completeness or run precision.
+
+## Next exact sequence
+1. Observe the CI at the latest source SHA and fix red tests.
+2. Finalize documentation and update Notion with confirmed evidence.
+3. After distinct source/live + security approval, add one genuine
+   network connector at a time with offline golden fixtures and
+   source-specific accuracy reports.
+4. Design external durable anti-replay state for Actions; provision
+   least-privilege staging secret with explicit operator approval.
+5. Review and approve a main-branch workflow, test source canaries,
+   then verify 24h schedule and actual new URL yield.
+6. Only then retire the hourly ChatGPT radar and consider separate
+   public admission/merge/Vercel approvals.
+
+
+## Existing L8 collectors: reusable URL-only contract (new V7 bridge)
+
+**Do not rewrite the already merged L8 collection modules.** Import their
+existing individual-URL validators and consume their returned listingUrls,
+without invoking any network enumerator. This is a separate candidate path
+from the authenticated V646 / Agenz detail-observation V7 path above.
+
+- legacy_candidate_bridge.mjs (Node 22) imports real functions from:
+  agenz-source-first.mjs (#993), avito-sitemap-enumerator.mjs (#989),
+  sarouty-sitemap-enumerator.mjs (#990),
+  mubawab-exhaustive-enumerator.mjs (#988), and
+  marocannonces-source-first.mjs (#992). All are already on main.
+- adaptLegacyReport(source, existingEnumeratorReport) insists on
+  zeroDbWrites=true, no stoppedEarly, a bounded listingUrls array and exact
+  source URL / numeric ID evidence. URL-only records are deduplicated strictly
+  by (portal, ID); contradictory ID+URL pairs halt the whole batch.
+- legacy_url_intake.py feeds only validated source URL / ID observations into
+  actual AkarParser V3, as a URL-only source snippet. It asserts the V3 status
+  source_snippet_only. No detailed record passes to Radar10 private SQL.
+- FeenWay, Yakeey and non-integrated portals intentionally have no source
+  validator in this bridge. FeenWay-origin mirrors must first be traced back
+  to original portal URLs and IDs. The Kaynly Yakeey lane #1146 is Draft.
+- Source-specific output reports are **not authenticated input** by this
+  bridge and never prove permission, active status, freshness, physical
+  property uniqueness, or source field accuracy. No live calls are made.
+- The pre-existing source collectors may produce partial or hard-blocked
+  output: fail closed rather than counting their URL list as new usable ads.
+- No caller may transform a URL-only record into a V3 detailed observation
+  by inventing title, city, price, surface, transaction or publication date.
+
+**Safe data flow:**
+old L8 collectors (authorized, separately approved run) → report listingUrls
+→ V7 legacy URL-candidate bridge → V3 source_snippet_only preview (0 DB)
+→ separately authorized individual-page capture and real evidence →
+AkarParser V3 detail parsing → Radar10 private staging (separate gates).
+
+CI exercises the real legacy JS functions offline with adversarial URL and
+source ID cases, then executes actual V3 via a Python/Node cross-language
+test. This is the first *compatibility* slice, not a live 5-source service.
+
+
+## Sous-lot snapshots HTML L4 / V3 — préparation technique du 12 novembre 2026
+
+Goal: comparer de façon déterministe le canonical listing extractor L4 et
+AkarParser V3 avec exactement les mêmes octets HTML de détail.
+
+Code préparé: v7_multisource/detail_compare.py et
+__tests__/test_v7_detail_compare.py. Entrées: snapshots HTML explicitement
+fournis, URL source et référence de capture facultative. Sorties: SHA256 HTML,
+comparaison L4/V3 pour 7 champs, contradictions, qualité V3. Aucune requête
+HTTP, aucune DB, zéro promotion publique, aucun droit ni fraîcheur présumés.
+
+Indices externes indexés, NON des snapshots HTML:
+- https://www.feenway.com/listings/258638 : fiche Rabat, 4,35M DH, 169 m²,
+  indique Source mubawab. L'URL source Mubawab originale n'est pas certifiée.
+- https://www.feenway.com/listings/256946 : fiche Rabat, 5,5M DH, 165 m²,
+  indique Source Avito. Pas de preuve d'URL originale ni de disponibilité.
+- FeenWay utilise « Première apparition / Détectée » : pas date éditoriale.
+- Agenz publie aussi des chemins récents /fr/annonces-achat/... selon son
+  robots.txt, alors que la V7 actuelle reconnaît essentiellement
+  /fr/annonces/immo-... . Étendre les routes seulement après preuve réelle.
+
+L'utilisateur arbitre les conditions d'accès; le lot ici est technique,
+hors ligne et sans contournement ni prétendue capture de page réelle.
+
+Les 5 tests du nouveau module vérifient le contrat synthétique, pas la
+précision sur des snapshots réels. Next exact: collecter un corpus permis
+et horodaté de fiches individuelles, comparer l'extraction des 7 champs
+source par source, corriger les divergences, puis canary privé sous GO.

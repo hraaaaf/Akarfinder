@@ -52,8 +52,10 @@ export function agenzListingId(raw) {
   try {
     const u = new URL(raw, BASE_URL);
     if (u.hostname !== 'agenz.ma') return null;
-    const m = u.pathname.match(/^\/fr\/annonces\/immo-[^/]+\/(?:vente|location)-[^/]+\/[^/]+\/(\d+)\/?$/i);
-    return m ? m[1] : null;
+    const legacy = u.pathname.match(/^\/fr\/annonces\/immo-[^/]+\/(?:vente|location)-[^/]+\/[^/]+\/(\d+)\/?$/i);
+    // Agenz also advertises modern regional detail routes in robots.txt.
+    const regional = u.pathname.match(/^\/(?:fr\/)?annonces-achat\/appartement\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+\/appartement-a-vendre-(\d{5,12})\/?$/i);
+    return legacy?.[1] || regional?.[1] || null;
   } catch { return null; }
 }
 

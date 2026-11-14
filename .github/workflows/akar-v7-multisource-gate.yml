@@ -1,0 +1,122 @@
+name: Akar V7 Multi-Source Offline Contracts and Ten-Minute Gate
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/v7_multisource/**'
+      - 'scripts/acquisition/radar10/ingest.py'
+      - 'scripts/acquisition/__tests__/test_v7_multisource.py'
+      - 'scripts/acquisition/__tests__/test_v7_legacy_url_intake.py'
+      - 'scripts/acquisition/__tests__/test_v7_detail_compare.py'
+      - 'scripts/acquisition/__tests__/test_v7_snapshot_evidence.py'
+      - 'scripts/acquisition/v7_parallel/j45_l8_identity.mjs'
+      - 'scripts/acquisition/v7_parallel/j45_original_snapshot.py'
+      - 'scripts/acquisition/__tests__/test_v7_j45_original_snapshot.py'
+      - 'scripts/acquisition/__tests__/agenz-source-first.test.mjs'
+      - 'scripts/acquisition/__tests__/test_akarparser_v3_portals.py'
+      - 'scripts/acquisition/__tests__/test_canonical_listing_extractor.py'
+      - 'scripts/acquisition/akarparser_v3_portals.py'
+      - 'scripts/acquisition/canonical_listing_extractor.py'
+      - 'scripts/acquisition/__tests__/v7-legacy-candidate-bridge.test.mjs'
+      - 'scripts/acquisition/agenz-source-first.mjs'
+      - 'scripts/acquisition/avito-sitemap-enumerator.mjs'
+      - 'scripts/acquisition/sarouty-sitemap-enumerator.mjs'
+      - 'scripts/acquisition/mubawab-exhaustive-enumerator.mjs'
+      - 'scripts/acquisition/marocannonces-source-first.mjs'
+      - '.github/workflows/akar-v7-multisource-gate.yml'
+  workflow_dispatch:
+  schedule:
+    # Every ten minutes, shifted off minute zero. NOT a live crawl.
+    - cron: '3,13,23,33,43,53 * * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  multi-portal-offline:
+    if: ${{ github.event_name != 'schedule' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: akarfinder_v7_ci
+          POSTGRES_PASSWORD: testpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d akarfinder_v7_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      V646_OFFLINE_DIR: ${{ github.workspace }}/v646-pinned/scripts/pilots/mubawab-v646
+      RADAR_TEST_DSN: postgresql://postgres:testpass@127.0.0.1:5432/akarfinder_v7_ci
+    steps:
+      - name: Checkout code under review (not main)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout immutable V646 signer and fixtures
+        uses: actions/checkout@v4
+        with:
+          ref: 4022a9a7dd3c47391ab01246f010bdc8a6433344
+          path: v646-pinned
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install offline parser and isolated PostgreSQL client
+        run: python -m pip install "psycopg[binary]==3.3.8" "beautifulsoup4==4.14.3"
+      - name: Compile V7 and private staging Python
+        run: >-
+          python -m py_compile
+          scripts/acquisition/v7_multisource/sources.py
+          scripts/acquisition/v7_multisource/pipeline.py
+          scripts/acquisition/v7_multisource/legacy_url_intake.py
+          scripts/acquisition/v7_multisource/detail_compare.py
+          scripts/acquisition/v7_multisource/snapshot_evidence.py
+          scripts/acquisition/__tests__/test_v7_snapshot_evidence.py
+          scripts/acquisition/__tests__/test_v7_detail_compare.py
+          scripts/acquisition/__tests__/test_v7_legacy_url_intake.py
+          scripts/acquisition/radar10/ingest.py
+          scripts/acquisition/__tests__/test_v7_multisource.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate reused legacy collectors without portal network
+        run: node --test scripts/acquisition/__tests__/v7-legacy-candidate-bridge.test.mjs scripts/acquisition/__tests__/agenz-source-first.test.mjs
+      - name: Regional Agenz route in actual V3 portal and L4 canonical extractor
+        run: |
+          python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v3_portals.py'
+          python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_canonical_listing_extractor.py'
+      - name: Cross-language L8 URLs to true V3 quarantine (no DB)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_legacy_url_intake.py'
+      - name: Compare supplied detail HTML with existing L4 + V3 parsers
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_detail_compare.py'
+      - name: Verify immutable raw HTML evidence and safety gates
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_snapshot_evidence.py'
+      - name: J4/J5 original HTML and actual merged L8 identity tests (offline)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_j45_original_snapshot.py'
+      - name: V7 source and actual V3 PostgreSQL tests
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_multisource.py'
+      - name: Existing Radar10 private staging regression
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_radar10_*.py'
+
+  # Even on main, schedule NEVER ingests data; disabled by default.
+  ten-minute-gate:
+    if: ${{ github.event_name == 'schedule' && vars.AKAR_V7_SCHEDULE_PROBE_APPROVED == 'approved' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: No-network scheduled gate only
+        run: |
+          echo "V7_GATE_ONLY: schedule triggered, LIVE_SOURCE_NO_GO"
+          echo "Two offline adapters are not proof of live multi-site coverage"
+          echo "0 source fetches, 0 database writes, no listing publication"

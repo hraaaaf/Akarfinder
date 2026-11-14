@@ -1,0 +1,83 @@
+name: Akar V7 J1 Offline Replay of Immutable HTML (NO SOURCE HTTP)
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/akar-v7-j1-once.yml'
+      - '.github/v7-j1-once-enabled'
+      - 'scripts/acquisition/akarparser_v3_portals.py'
+      - 'scripts/acquisition/canonical_listing_extractor.py'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  j1-real-immutable-offline-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout code from PR without credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install only local parsing library
+        run: python -m pip install "beautifulsoup4==4.14.3"
+      - name: Download ORIGINAL J1 immutable artifact from confirmed prior run
+        uses: actions/download-artifact@v4
+        with:
+          name: akar-v7-j1-agenz-source-private
+          run-id: 43330609367
+          github-token: ${{ github.token }}
+          path: .private-j1-replay
+      - name: Replay byte-for-byte HTML against updated L4 and V3; no source requests
+        env:
+          PYTHONPATH: scripts/acquisition
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from v7_multisource.snapshot_evidence import verify_evidence, offline_benchmark, _utc
+          from akarparser_v3_raw_bulk import parse_raw
+          import json
+          root = Path(".private-j1-replay")
+          data = verify_evidence(root / "source.html", root / "source.manifest.json")
+          m = data["manifest"]
+          assert m["html_sha256"] == "788355d9050f4b3ee6061c51ebf259c89acff19bb583a03a895ab8889ece6d61"
+          assert m["bytes"] == 237450 and m["http_status"] == 200
+          report = offline_benchmark(root / "source.html", root / "source.manifest.json")
+          expected = 980000
+          assert report["field_comparison"]["price_mad"]["v3"] == expected, "V3_WRONG_OLD_PRICE"
+          assert report["field_comparison"]["price_mad"]["l4"] == expected, "L4_WRONG_OLD_PRICE"
+          assert report["field_comparison"]["surface_total_m2"]["v3"] == 104
+          assert report["field_comparison"]["surface_total_m2"]["l4"] == 104
+          assert report["field_comparison"]["city"]["v3"] == "Sale"
+          assert report["field_comparison"]["district"]["v3"] == "Al Qods"
+          assert report["field_comparison"]["property_type"]["v3"] == "apartment"
+          assert report["field_comparison"]["transaction_type"]["v3"] == "sale"
+          parsed = parse_raw({
+             "source_url": m["source_url"], "raw_html": data["raw_html"]
+          }, _utc(m["captured_at_utc"]))
+          assert "AGENZ_EXPLICIT_NEIGHBORHOOD_CONFLICT_REQUIRES_REVIEW" in parsed["quality"]["review_reasons"]
+          assert not parsed["quality"]["neon_product_admission_authorized"]
+          summary = {
+              "real_html_sha256": m["html_sha256"],
+              "captured_at_utc": m["captured_at_utc"],
+              "real_html_bytes": m["bytes"],
+              "l4_price_mad": report["field_comparison"]["price_mad"]["l4"],
+              "v3_price_mad": report["field_comparison"]["price_mad"]["v3"],
+              "v3_surface_m2": report["field_comparison"]["surface_total_m2"]["v3"],
+              "neighborhood_conflict_requires_review": True,
+              "network_requests_to_portal": 0,
+              "db_writes": 0,
+              "public_admission": False,
+              "human_ground_truth_accuracy_certified": False,
+          }
+          print(json.dumps(summary, ensure_ascii=False, sort_keys=True))
+          PY

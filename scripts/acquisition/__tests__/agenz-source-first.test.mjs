@@ -13,6 +13,13 @@ test('extracts Agenz numeric listing id', () => {
   assert.equal(agenzListingId('https://agenz.ma/fr/acheter/immo-casablanca'), null);
 });
 
+test('accepts regional Agenz detail routes, not search pages', () => {
+  assert.equal(agenzListingId('https://agenz.ma/fr/annonces-achat/appartement/rabat-sale-kenitra/sale/tabriquet/appartement-a-vendre-259645'), '259645');
+  assert.equal(agenzListingId('https://agenz.ma/fr/annonces-achat/appartement/rabat-sale-kenitra/sale'), null);
+  const html = '<a href="/fr/annonces-achat/appartement/rabat-sale-kenitra/sale/tabriquet/appartement-a-vendre-259645">x</a>';
+  assert.deepEqual(extractListingUrls(html), ['https://agenz.ma/fr/annonces-achat/appartement/rabat-sale-kenitra/sale/tabriquet/appartement-a-vendre-259645']);
+});
+
 test('extracts and deduplicates listing links', () => {
   const html = '<a href="/fr/annonces/immo-casablanca/vente-appartements/2-mars/540241">a</a><a href="/fr/annonces/immo-casablanca/vente-appartements/2-mars/540241">dup</a><a href="/fr/annonces/immo-casablanca/vente-villas/oasis/103821">b</a>';
   assert.equal(extractListingUrls(html).length, 2);

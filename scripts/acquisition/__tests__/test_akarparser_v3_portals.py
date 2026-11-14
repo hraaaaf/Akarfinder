@@ -56,6 +56,93 @@ class TestPortalAdapters(unittest.TestCase):
         self.assertEqual(fields["property_type"], "apartment")
         self.assertEqual(item["quality"]["status"], "ready_internal")
 
+    def test_agenz_regional_url_portal_evidence(self):
+        url = "https://agenz.ma/fr/annonces-achat/appartement/rabat-sale-kenitra/sale/tabriquet/appartement-a-vendre-259645"
+        html = "<html><head><title>Appartement a vendre</title></head><body>Fiche de test</body></html>"
+        rec = v3.parse_raw({"source_url": url, "raw_html": html}, NOW)
+        fields = rec["fields"]
+        self.assertEqual(fields["city"], "Sale")
+        self.assertEqual(fields["district"], "Tabriquet")
+        self.assertEqual(fields["property_type"], "apartment")
+        self.assertEqual(fields["transaction_type"], "sale")
+        self.assertIsNone(fields["price_mad"])
+        self.assertIsNone(fields["surface_total_m2"])
+        self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+
+    def test_agenz_discounted_price_is_current_not_struck_or_syndic(self):
+        html = """<html><body><h1>Appartement à vendre</h1>
+        <p>1 100 000<s>DH</s></p><p>980 000 DH</p>
+        <p>Salé – Al Qods</p><p>Frais de syndic : 100 DH / mois</p>
+        <p>104 m²</p></body></html>"""
+        rec = v3.parse_raw({"raw_html": html,
+                            "source_url": "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291"}, NOW)
+        self.assertEqual(rec["fields"]["price_mad"], 980000.0)
+        self.assertEqual(rec["field_evidence"]["price_mad"]["path"],
+                         "agenz.detail_primary.discounted_current_price")
+        self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+
+    def test_agenz_real_dom_markup_repeated_does_not_select_old(self):
+        html = """<html><head><title>Appartement à vendre</title>
+        <meta property="og:description" content="dans le quartier de Tabriquet">
+        </head><body>
+        <div><span><span item-prop="price" data-old-price="1100000">1 100 000</span><s>DH</s></span>
+        <span><span data-price="980000">980 000</span> DH</span></div>
+        <div><span><span item-prop="price" data-old-price="1100000">1 100 000</span><s>DH</s></span>
+        <span><span data-price="980000">980 000</span> DH</span></div>
+        <p>104 m²</p></body></html>"""
+        rec = v3.parse_raw({"source_url":
+            "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291",
+            "raw_html": html}, NOW)
+        self.assertEqual(rec["fields"]["price_mad"], 980000.0)
+        self.assertIn("AGENZ_EXPLICIT_NEIGHBORHOOD_CONFLICT_REQUIRES_REVIEW",
+                      rec["quality"]["review_reasons"])
+
+    def test_agenz_unverifiable_current_price_forces_review(self):
+        html = """<html><head><title>Appartement à vendre</title></head>
+        <body><div><span><span item-prop="price"
+        data-old-price="1100000">1 100 000</span><s>DH</s></span>
+        <span><span data-price="980000">950 000</span> DH</span></div>
+        <p>104 m²</p></body></html>"""
+        rec = v3.parse_raw({"source_url":
+            "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291",
+            "raw_html": html}, NOW)
+        self.assertIsNone(rec["fields"]["price_mad"])
+        self.assertIn("AGENZ_DISCOUNT_CURRENT_PRICE_AMBIGUOUS",
+                      rec["quality"]["review_reasons"])
+
+    def test_agenz_no_strike_cannot_invent_discounted_current_price(self):
+        html = "<html><body><p>1 100 000 DH</p><p>980 000 DH</p></body></html>"
+        from akarparser_v3_portals import agenz_explicit_discounted_price
+        self.assertIsNone(agenz_explicit_discounted_price(html))
+        bad = "<p>1 100 000<s>DH</s></p><p>980 000 DH</p><p>1 100 000<s>DH</s></p><p>950 000 DH</p>"
+        self.assertIsNone(agenz_explicit_discounted_price(bad))
+
+    def test_agenz_explicit_quartier_conflicting_with_route_flags_review(self):
+        html = """<html><head>
+        <meta property="og:description" content="Appartement de 104 m² situé
+        dans le quartier de Tabriquet à Salé."></head><body>
+        <h1>Grand appartement</h1><p>1 100 000<s>DH</s></p>
+        <p>980 000 DH</p><p>Salé – Al Qods</p><p>104 m²</p></body></html>"""
+        rec = v3.parse_raw({"source_url":
+            "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291",
+            "raw_html": html}, NOW)
+        self.assertEqual(rec["fields"]["district"], "Al Qods")
+        self.assertEqual(rec["fields"]["price_mad"], 980000.0)
+        self.assertIn("AGENZ_EXPLICIT_NEIGHBORHOOD_CONFLICT_REQUIRES_REVIEW",
+                      rec["quality"]["review_reasons"])
+        self.assertTrue(rec["quality"]["human_review_required"])
+        self.assertFalse(rec["quality"]["neon_product_admission_authorized"])
+
+    def test_agenz_same_quartier_claim_does_not_flag_review(self):
+        html = """<html><head><meta property="og:description"
+        content="Appartement dans le quartier de Al Qods à Salé."></head>
+        <body><h1>Appartement à vendre</h1><p>980 000 DH</p><p>104 m²</p></body></html>"""
+        rec = v3.parse_raw({"source_url":
+            "https://agenz.ma/fr/annonces/immo-sale/vente-appartements/al-qods/444291",
+            "raw_html": html}, NOW)
+        self.assertNotIn("AGENZ_EXPLICIT_NEIGHBORHOOD_CONFLICT_REQUIRES_REVIEW",
+                         rec["quality"]["review_reasons"])
+
     def test_mubawab_neighborhood_from_primary_breadcrumb_only(self):
         html = """<html><head><title>Appartement vente</title></head><body>
         <p>Immobilier Maroc</p><p>Immobilier Casablanca</p>

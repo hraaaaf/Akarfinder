@@ -280,6 +280,27 @@ def adapt(raw: dict) -> tuple[dict, dict]:
                         evidence["district"] = {"path": "domio.listing_hero.location",
                                                "method": "hero_label", "verified": False}
         portals.enrich(page, row, evidence)
+        # Discounted Agenz primary offer: the old price is struck through.
+        # Explicit HTML element order is essential; avoid first-number regex.
+        host = (urlparse(str(row.get("source_url") or "")).hostname or "").removeprefix("www.")
+        if host == "agenz.ma" and isinstance(html, str):
+            current = portals.agenz_explicit_discounted_price(html)
+            if current is not None:
+                row["price_mad"] = current
+                row["price"] = current  # also override stale JSON-LD old offer
+                row["price_currency"] = "MAD"
+                evidence["price_mad"] = {
+                    "path": "agenz.detail_primary.discounted_current_price",
+                    "method": "explicit_struck_old_followed_by_current",
+                    "verified": False,
+                }
+            elif "data-old-price" in html:
+                # Fail-closed: microdata first price is the obsolete value.
+                row["price_mad"] = None
+                row["price"] = None
+                row["price_currency"] = None
+                evidence.pop("price_mad", None)
+                row["_agenz_discounted_current_price_ambiguous"] = True
         body = "\n".join(x.strip() for x in "".join(page.text).splitlines() if x.strip())[:250000]
     else:
         body = str(raw.get("raw_text") or raw.get("text") or "")[:250000]
@@ -415,6 +436,13 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
         e["price_amount_raw"] = None
         e["price_currency_raw"] = None
         base["quality"]["issues"].append("DOMIO_UNIT_RATE_SUPPRESSED_AS_TOTAL")
+    if host == "agenz.ma" and row.get("_agenz_discounted_current_price_ambiguous"):
+        # Even if V3 dropped obsolete price, V2 may independently reparse it
+        # from page prose. Do not re-admit this historic price as current.
+        e["price_mad"] = None
+        e["price_amount_raw"] = None
+        e["price_currency_raw"] = None
+        base["quality"]["issues"].append("AGENZ_STRUCK_OLD_PRICE_SUPPRESSED")
     # V2 can independently infer a number from description text. For Avito,
     # an undifferentiated 5 002 DH/month financing figure must never become
     # a sale price, even if its source was not picked by the V3 regex.
@@ -457,6 +485,10 @@ def parse_raw(raw: dict, clock: datetime) -> dict:
         review_reasons.append("EXTREME_REPORTED_PRICE_PER_M2_REQUIRES_REVIEW")
     if row.get("_mubawab_schema_offer_sell") and e.get("transaction_type") == "rent":
         review_reasons.append("SCHEMA_SELL_CONTRADICTS_RENTAL_TEXT")
+    if row.get("_agenz_neighborhood_claim_conflicts_with_route"):
+        review_reasons.append("AGENZ_EXPLICIT_NEIGHBORHOOD_CONFLICT_REQUIRES_REVIEW")
+    if row.get("_agenz_discounted_current_price_ambiguous"):
+        review_reasons.append("AGENZ_DISCOUNT_CURRENT_PRICE_AMBIGUOUS")
     if row.get("_mubawab_title_area_mismatch"):
         review_reasons.append("PRIMARY_AREA_DIFFERS_FROM_TITLE_AREA")
     if row.get("_mubawab_title_transaction_ambiguous"):

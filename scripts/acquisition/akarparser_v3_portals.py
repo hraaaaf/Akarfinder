@@ -66,6 +66,60 @@ def explicit_primary_sentence_transaction(description: str) -> str | None:
     return "sale" if sale and not rent else "rent" if rent and not sale else None
 
 
+
+
+def agenz_explicit_discounted_price(html: str) -> int | None:
+    """Agenz current price from old-price and new-price DOM attributes.
+
+    The original HTML marks the former offer with data-old-price and its
+    struck DH, followed by data-price for the current amount. Mobile and
+    desktop duplicates must agree. Uses stdlib regex: no new V3 dependency.
+    """
+    if not isinstance(html, str):
+        return None
+    source = html[:2_000_000]
+    candidates: set[int] = set()
+    old_pat = re.compile(
+        r"<span\b(?=[^>]*\bdata-old-price=['\"](\d{4,10})['\"])[^>]*>"
+        r"\s*([\d\s\u00a0\u202f.,]+)\s*</span>", re.I
+    )
+    new_pat = re.compile(
+        r"<span\b(?=[^>]*\bdata-price=['\"](\d{4,10})['\"])[^>]*>"
+        r"\s*([\d\s\u00a0\u202f.,]+)\s*</span>", re.I
+    )
+    for old_match in old_pat.finditer(source):
+        old = v2.number(old_match.group(1))
+        shown_old = v2.number(old_match.group(2))
+        if not isinstance(old, (int, float)) or old != shown_old:
+            continue
+        # A bounded 550-character offer block, with explicit struck DH.
+        # No broad document search and no financing/related listing cards.
+        tail = source[old_match.end():old_match.end() + 550]
+        strike = re.search(r"<s\b[^>]*>\s*(?:DH|MAD)\s*</s>", tail[:180], re.I)
+        new_match = new_pat.search(tail) if strike else None
+        if not new_match:
+            continue
+        current = v2.number(new_match.group(1))
+        shown_new = v2.number(new_match.group(2))
+        if (isinstance(current, (int, float)) and current == shown_new
+                and 1000 <= current < old <= 1_000_000_000):
+            candidates.add(round(current))
+    # Preserve the older documented <p>old<s>DH</s></p><p>new DH</p> form.
+    for old_text, current_text in re.findall(
+        r"<p(?:\s[^>]*)?>\s*(\d[\d\s\u00a0\u202f.,]{2,18})"
+        r"\s*<s(?:\s[^>]*)?>\s*(?:DH|MAD)\s*</s>\s*</p>"
+        r"\s*<p(?:\s[^>]*)?>\s*(\d[\d\s\u00a0\u202f.,]{2,18})"
+        r"\s*(?:DH|MAD)\s*</p>",
+        source, flags=re.I,
+    ):
+        old = v2.number(old_text)
+        current = v2.number(current_text)
+        if (isinstance(old, (int, float)) and isinstance(current, (int, float))
+                and 1000 <= current < old <= 1_000_000_000):
+            candidates.add(round(current))
+    return next(iter(candidates)) if len(candidates) == 1 else None
+
+
 def enrich(page, row: dict, evidence: dict) -> None:
     source_url = row.get("source_url")
     if not isinstance(source_url, str):
@@ -125,6 +179,42 @@ def enrich(page, row: dict, evidence: dict) -> None:
                       "terrains": "land", "studios": "studio", "bureaux": "office"}
             _set(row, evidence, "property_type", mapped.get(ptype.lower()),
                  "agenz.detail_url.property_type")
+        else:
+            # Current Agenz regional URLs, distinct from the legacy route.
+            # Only route tokens are inferred; no price, area or publication.
+            modern = re.fullmatch(
+                r"/(?:fr/)?annonces-achat/appartement/([^/]+)/([^/]+)/([^/]+)/appartement-a-vendre-(\d{5,12})/?",
+                path, flags=re.I,
+            )
+            if modern:
+                _region, city, district, _offer = modern.groups()
+                _set(row, evidence, "city", _title_slug(city), "agenz.regional_url.city")
+                _set(row, evidence, "district", _title_slug(district), "agenz.regional_url.district")
+                _set(row, evidence, "transaction_type", "sale", "agenz.regional_url.transaction")
+                _set(row, evidence, "property_type", "apartment", "agenz.regional_url.property_type")
+
+
+        # A page can display a route district but explicitly name a different
+        # neighborhood in its OWN listing description. Retain route location
+        # and force manual review rather than choosing either as truth.
+        summary = str(page.meta.get("og:description") or page.meta.get("description") or "")
+        route_district = row.get("district")
+        if route_district and summary:
+            claim = re.search(
+                r"\bquartier\s+(?:de\s+|d['’])([A-ZÀ-Ÿ][\wÀ-ÿ'’-]{1,40}"
+                r"(?:\s+[A-ZÀ-Ÿ][\wÀ-ÿ'’-]{1,40}){0,2})\b",
+                summary[:800],
+            )
+            if claim:
+                route_norm = " ".join(str(route_district).casefold().replace("-", " ").split())
+                claim_norm = " ".join(claim.group(1).casefold().replace("-", " ").split())
+                if route_norm != claim_norm:
+                    row["_agenz_neighborhood_claim_conflicts_with_route"] = True
+                    evidence["district_conflict"] = {
+                        "path": "agenz.html.meta.description.explicit_quartier",
+                        "method": "compare_explicit_claim_to_route",
+                        "verified": False,
+                    }
 
     elif host == "mubawab.ma":
         if not re.match(r"^/fr/a/\d+/", path):

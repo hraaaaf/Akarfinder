@@ -200,7 +200,12 @@ def _known_portal_detail_url(source_url: str) -> bool:
         return bool(re.search(r"-\d{5,9}/?$", path, re.I))
 
     if host == "agenz.ma":
-        return bool(re.search(r"^/fr/annonces/immo-[^/]+/(?:vente|location)-[^/]+/[^/]+/\d+/?$", path, re.I))
+        legacy = bool(re.search(r"^/fr/annonces/immo-[^/]+/(?:vente|location)-[^/]+/[^/]+/\d+/?$", path, re.I))
+        regional = bool(re.search(
+            r"^/(?:fr/)?annonces-achat/appartement/[^/]+/[^/]+/[^/]+/appartement-a-vendre-\d{5,12}/?$",
+            path, re.I,
+        ))
+        return legacy or regional
 
     return False
 
@@ -290,6 +295,25 @@ def extract_canonical(source_url: str, html: str) -> dict[str, Any]:
         fact = _regex_fact(PRICE_RE, combined, source_url, "text:price")
         if fact and 1_000 <= fact.value <= 1_000_000_000:
             fields["offer.price_amount"] = fact
+
+    if (urlparse(source_url).hostname or "").removeprefix("www.") == "agenz.ma" and "data-old-price" in html:
+        # Original real DOM may expose a struck historical price as microdata.
+        # L4 is also loaded standalone by importlib; explicitly locate its
+        # adjacent trusted module rather than assuming caller PYTHONPATH.
+        import sys
+        from pathlib import Path
+        module_dir = str(Path(__file__).resolve().parent)
+        if module_dir not in sys.path:
+            sys.path.insert(0, module_dir)
+        from akarparser_v3_portals import agenz_explicit_discounted_price
+        current = agenz_explicit_discounted_price(html)
+        if current is None:
+            fields.pop("offer.price_amount", None)
+            result["rejected"].append("agenz:discounted_current_price_ambiguous")
+        else:
+            fields["offer.price_amount"] = FieldFact(
+                current, Evidence(source_url, "agenz.primary:data-old-price+data-price",
+                                  str(current)))
 
     floor_size, floor_key = _first_jsonld(nodes, ("floorSize",))
     if isinstance(floor_size, dict):
