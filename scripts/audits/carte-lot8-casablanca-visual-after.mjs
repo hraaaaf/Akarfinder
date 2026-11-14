@@ -250,6 +250,16 @@ try {
       if (await page.locator('[data-l3-admin-preview="true"]').count() !== 0) {
         throw new Error(`${viewport.name}: unreviewed administrative outline exposed`);
       }
+      // The Limites view returns to the Quartier camera (14.6), but React
+      // renders its panel before the 450ms MapLibre easeTo settles. A screenshot
+      // taken at the intermediate Rue camera is a false visual comparison.
+      await page.waitForFunction(() => {
+        const root = document.querySelector('[data-l3-maarif-pilot="true"]');
+        const zoom = Number(root?.getAttribute('data-l3-camera-zoom'));
+        return root?.getAttribute('data-l3-maarif-view') === 'limites'
+          && Number.isFinite(zoom) && Math.abs(zoom - 14.6) <= 0.1;
+      }, null, { timeout: 30000 });
+      const limitesZoom = Number(await shell.getAttribute('data-l3-camera-zoom'));
       await page.screenshot({ path: `${outDir}/casablanca-maarif-limites-${viewport.width}x${viewport.height}.png`, fullPage: false, animations: "disabled" });
       await unavailable.locator('[data-l3-admin-return]').click();
       await page.waitForFunction(() => document.querySelector('[data-l3-maarif-pilot="true"]')?.getAttribute("data-l3-maarif-view") === "quartier");
@@ -263,7 +273,7 @@ try {
         throw new Error(`${viewport.name}: V1 mode regression ${JSON.stringify({ afterOverflow, pageErrors: diagnostics.pageErrors })}`);
       }
       const v1 = {
-        streetZoom: rueZoom,
+        streetZoom: rueZoom, limitsZoom: limitesZoom,
         desktopEmptyDisclosure: viewport.width >= 1024 && !privateQa && publicAnchors === 0,
         modes: ["quartier", "rue", "limites", "quartier"], keyboardStreet: true,
         touchTargets: targetSizes, publicAnchors, privateQa, emptyFiltersHidden: !privateQa && publicAnchors === 0,
