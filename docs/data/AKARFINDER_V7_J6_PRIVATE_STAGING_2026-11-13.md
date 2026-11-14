@@ -132,3 +132,17 @@ Le premier commit J6 `2b44c1533bfc3761128ab6f5b1763adcc28bbfaf` a obtenu [CI J6 
 **Portée stricte :** signatures et clé privées synthétiques seulement. La validation de clé publique ne constitue pas une identification externe de l'émetteur, une qualification physique/geo du bien ou une autorisation de collecter. Aucun changement de DB réelle, cron, promotion, merge ni Vercel. **Sous-lot High J6 clos techniquement ; J6 métier toujours OUVERT** avant enregistrement d'émetteurs réels, ledger Ed25519 v2 durable et gate opérateur.
 
 **Next :** émetteur opérateur authentifié (gate humain), registre partagé durable et attestations réelles auditées, aucune réutilisation du reçu HMAC pour Ed25519.
+
+## 14/11/2026 — Voie parallèle J6 : gate opérationnel explicite (préparation, pas activation)
+
+**GOAL observable :** pouvoir recevoir une preuve Ed25519 d'un émetteur réel approuvé sans révéler de clé privée à la CI, au vérificateur, à Git, à Notion ou à un runner ; refuser tout staging sans provenance, géographie et politique indépendante.
+
+**Décisions techniques préparées :**
+1. Conserver la validation asymétrique `j6_ed25519_capture.py`, testée [CI J6 #43536709662](https://github.com/hraaaaf/Akarfinder/actions/runs/43536709662) SUCCESS, totalement distincte du registre HMAC v1.
+2. Exiger **une version v2 du reçu** avec `proof_algorithm='Ed25519'`, `signature_sha256` (SHA256 des 64 octets), `key_id`, `registry_generation`, `registry_sha256`, `html_sha256`, `source_domain`, `source_offer_id`. Aucun champ ancien `attestation_mac_sha256` réutilisé. Signature Ed25519 vérifiée **avant** insertion par le validateur ; SQL seul n'authentifie pas l'émetteur.
+3. Rôles séparés : opérateur politique (rotation/revocation), émetteur détenant une clé privée hors repo, reviewer en lecture source et reçus limités, service staging sans privilège sur annonces publiques. Protéger la génération de registre contre restauration ancienne par témoin externe immuable à la DB.
+4. Les annonces de J3/J4/J5 restent **0 admissible** (7 originaux intègres mais pas de géographie/fraîcheur/vente actuelle indépendantes). Un reçu n'implique ni droit d'indexer ni vérité immobilière.
+
+**SUCCESS/PREUVE AVANT GO DE STAGING :** émetteur authentifié et documenté hors Git, signature produite par SDK indépendant testée en cross-language contre le vérificateur, rotation et révocation effectives, tentatives de replay/rollback/concurrence refusées par stockage partagé durable avec preuve de restauration, RLS sur roles réels, insertion impossible sans validation humaine et source actuelle autorisée, logs caviardés des secrets. Aucune de ces conditions externes n'est aujourd'hui prouvée.
+
+**NEXT J6 :** préparer ledger de preuve Ed25519 v2 isolé, puis soumettre le provisionnement du registre/secret store de l'émetteur et du stockage partagé à un gate humain spécifique. Ne pas déployer tant que les preuves sources J3–J5 et l'autorisation DB manquent. **J6 métier ouvert ; aucun staging, merge, Vercel ou DB réelle.**
