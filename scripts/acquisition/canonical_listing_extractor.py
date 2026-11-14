@@ -42,7 +42,7 @@ DISCOVERY_PATH_PATTERNS = [
 ]
 
 PRICE_RE = re.compile(r"(?<!\d)(\d{1,3}(?:[\s\u00a0.,]\d{3})+|\d{4,10})(?:[\s\u00a0]*(?:MAD|DH|DHS|درهم))", re.I)
-SURFACE_RE = re.compile(r"(?<!\d)(\d{1,5}(?:[.,]\d{1,2})?)\s*(?:m²|m2|m\^2)\b", re.I)
+SURFACE_RE = re.compile(r"(?<!\d)(\d{1,5}(?:[.,]\d{1,2})?)\s*(?:m²(?!\w)|m2\b|m\^2\b)", re.I)
 BEDROOM_RE = re.compile(r"(?<!\d)(\d{1,2})\s*(?:chambres?|ch(?:\.|\b)|bedrooms?)", re.I)
 BATHROOM_RE = re.compile(r"(?<!\d)(\d{1,2})\s*(?:salles?\s+de\s+bains?|sdb|bathrooms?)", re.I)
 FLOOR_RE = re.compile(r"(?:étage|etage|floor)\s*[:\-]?\s*(\d{1,2})", re.I)
@@ -322,7 +322,15 @@ def extract_canonical(source_url: str, html: str) -> dict[str, Any]:
         if parsed and 5 <= parsed <= 100_000:
             fields["surfaces.surface_total_m2"] = FieldFact(parsed, Evidence(source_url, f"jsonld:{floor_key}.value", str(value)))
     if "surfaces.surface_total_m2" not in fields:
-        fact = _regex_fact(SURFACE_RE, combined, source_url, "text:surface")
+        # On Agenz detail pages, the visible hero surface is a total-area
+        # label; meta descriptions may first advertise HABITABLE area and
+        # a separate terrace, e.g. 105 + 45 against 150 total. We use the
+        # first visible area before the marketing meta-description fallback.
+        portal = (urlparse(source_url).hostname or "").removeprefix("www.")
+        visible = (_regex_fact(SURFACE_RE, text, source_url,
+                               "agenz.visible_first_surface")
+                   if portal == "agenz.ma" else None)
+        fact = visible or _regex_fact(SURFACE_RE, combined, source_url, "text:surface")
         if fact and 5 <= fact.value <= 100_000:
             fields["surfaces.surface_total_m2"] = fact
 
@@ -343,6 +351,33 @@ def extract_canonical(source_url: str, html: str) -> dict[str, Any]:
             fields["location.city"] = FieldFact(city, Evidence(source_url, f"jsonld:{address_key}.addressLocality", city))
         if neighborhood:
             fields["location.neighborhood"] = FieldFact(neighborhood, Evidence(source_url, f"jsonld:{address_key}.streetAddress", neighborhood))
+
+    # Only individual Agenz detail URLs. Route-level city/district are
+    # evidence from the URL, not independent geolocation; preserve any
+    # structured address (JSON-LD) previously extracted.
+    parsed_url = urlparse(source_url)
+    if (parsed_url.hostname or "").removeprefix("www.") == "agenz.ma":
+        old_route = re.fullmatch(
+            r"/fr/annonces/immo-([^/]+)/(?:vente|location)-[^/]+/([^/]+)/(\d+)/?",
+            parsed_url.path, re.I,
+        )
+        regional_route = re.fullmatch(
+            r"/(?:fr/)?annonces-achat/appartement/[^/]+/([^/]+)/([^/]+)/appartement-a-vendre-(\d{5,12})/?",
+            parsed_url.path, re.I,
+        )
+        if old_route or regional_route:
+            match = old_route or regional_route
+            city_slug, district_slug, _offer = match.groups()
+            for key, slug, method in (
+                ("location.city", city_slug, "agenz.detail_url.city"),
+                ("location.neighborhood", district_slug, "agenz.detail_url.district"),
+            ):
+                if key not in fields:
+                    value = " ".join(slug.replace("-", " ").replace("_", " ").split()).title()
+                    if value:
+                        fields[key] = FieldFact(
+                            value, Evidence(source_url, method, slug)
+                        )
 
     bool_signals = {
         "features.has_parking": ("parking", "place de parking"),

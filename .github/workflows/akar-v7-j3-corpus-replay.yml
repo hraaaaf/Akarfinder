@@ -1,0 +1,191 @@
+name: Akar V7 J3 Five Real HTML Offline Replay (NO PORTAL REQUESTS)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/akar-v7-j3-corpus-replay.yml'
+      - 'scripts/acquisition/canonical_listing_extractor.py'
+      - 'scripts/acquisition/__tests__/test_canonical_listing_extractor.py'
+      - 'scripts/acquisition/v7_parallel/j3_independent_labels.json'
+      - 'scripts/acquisition/v7_parallel/j3_source_label_audit.py'
+      - 'scripts/acquisition/v7_parallel/j3_geo_qualification.py'
+      - 'scripts/acquisition/__tests__/test_v7_j3_geo_qualification.py'
+      - 'scripts/acquisition/v7_parallel/j3_source_internal_consistency.py'
+      - 'scripts/acquisition/__tests__/test_v7_j3_consistency.py'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  five-snapshot-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install only existing local parser dependency
+        run: python -m pip install "beautifulsoup4==4.14.3"
+      - uses: actions/download-artifact@v4
+        with:
+          name: akar-v7-j1-agenz-source-private
+          run-id: 43330609367
+          github-token: ${{ github.token }}
+          path: .private-j3-444291
+      - uses: actions/download-artifact@v4
+        with:
+          name: akar-v7-j3-agenz-445495-private
+          run-id: 43339490949
+          github-token: ${{ github.token }}
+          path: .private-j3-445495
+      - uses: actions/download-artifact@v4
+        with:
+          name: akar-v7-j3-agenz-420510-private
+          run-id: 43339490949
+          github-token: ${{ github.token }}
+          path: .private-j3-420510
+      - uses: actions/download-artifact@v4
+        with:
+          name: akar-v7-j3-agenz-387448-private
+          run-id: 43339490949
+          github-token: ${{ github.token }}
+          path: .private-j3-387448
+      - uses: actions/download-artifact@v4
+        with:
+          name: akar-v7-j3-agenz-500006-private
+          run-id: 43339490949
+          github-token: ${{ github.token }}
+          path: .private-j3-500006
+      - name: Replay exact 5 source HTML bytes against updated L4 and existing V3
+        env:
+          PYTHONPATH: scripts/acquisition
+        run: |
+          python - <<'PY'
+          from v7_parallel.j3_agenz_corpus import assess_corpus
+          import json
+          ids=["444291","445495","420510","387448","500006"]
+          r=assess_corpus([{"folder":".private-j3-"+x, "expected":{}} for x in ids])
+          assert r["snapshots"]==5 and r["independent_source_ids"]==5
+          assert r["status"]=="corpus_ready_for_human_labels"
+          assert r["disagreements_by_field"].get("city",0)==0, "L4_V3_CITY_STILL_DIVERGE"
+          assert r["disagreements_by_field"].get("district",0)==0, "L4_V3_DISTRICT_STILL_DIVERGE"
+          assert r["disagreements_by_field"].get("surface_total_m2",0)==0, "L4_V3_TOTAL_SURFACE_STILL_DIVERGE"
+          assert r["db_writes"]==0 and not r["representative_accuracy_certified"]
+          print(json.dumps({
+            "snapshots":r["snapshots"],
+            "source_ids":[x["source_offer_id"] for x in r["results"]],
+            "source_hashes":[x["sha256"] for x in r["results"]],
+            "disagreements_by_field":r["disagreements_by_field"],
+            "capture_network_requests":0,
+            "db_writes":0,
+            "representative_accuracy_certified":False,
+          },sort_keys=True))
+          PY
+
+      - name: Explain #445495 isolated surface divergence (offline only)
+        env:
+          PYTHONPATH: scripts/acquisition
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          from v7_multisource.snapshot_evidence import verify_evidence, offline_benchmark, _utc
+          from canonical_listing_extractor import extract_canonical
+          from akarparser_v3_raw_bulk import parse_raw
+          root=Path(".private-j3-445495")
+          e=verify_evidence(root/"source.html",root/"source.manifest.json")
+          m=e["manifest"]
+          l4=extract_canonical(m["source_url"],e["raw_html"])
+          v3=parse_raw({"source_url":m["source_url"],"raw_html":e["raw_html"]},_utc(m["captured_at_utc"]))
+          comparison=offline_benchmark(root/"source.html",root/"source.manifest.json")["field_comparison"]["surface_total_m2"]
+          l4_evidence=l4["fields"].get("surfaces.surface_total_m2",{}).get("evidence",{})
+          v3_evidence=v3.get("field_evidence",{}).get("surface_total_m2",{})
+          print(json.dumps({
+             "source_offer_id":"445495",
+             "html_sha256":m["html_sha256"],
+             "l4_surface_m2":comparison["l4"],
+             "v3_surface_m2":comparison["v3"],
+             "l4_evidence_method":l4_evidence.get("method"),
+             "v3_evidence_path":v3_evidence.get("path"),
+             "v3_evidence_method":v3_evidence.get("method"),
+             "ground_truth_independently_verified":False,
+             "capture_network_requests":0,"db_writes":0,
+          },ensure_ascii=False,sort_keys=True))
+          PY
+
+      - name: Inspect bounded surface label contexts from #445495 real HTML (offline)
+        env:
+          PYTHONPATH: scripts/acquisition
+        run: |
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          from bs4 import BeautifulSoup
+          from v7_multisource.snapshot_evidence import verify_evidence
+          root=Path(".private-j3-445495")
+          data=verify_evidence(root/"source.html", root/"source.manifest.json")
+          soup=BeautifulSoup(data["raw_html"],"html.parser")
+          for tag in soup(["script","style"]): tag.decompose()
+          text=" ".join(soup.stripped_strings)
+          result={}
+          for num in (105,150):
+              sample=[]
+              for m in re.finditer(r"(?<!\d)"+str(num)+r"\s*m(?:²|2)(?!\w)",text,re.I):
+                  left=text[max(0,m.start()-90):m.start()]
+                  right=text[m.end():m.end()+70]
+                  snippet=(left+" ["+str(num)+"m2] "+right).strip()
+                  snippet=re.sub(r"\b\d{8,}\b","[number-redacted]",snippet)
+                  if snippet not in sample: sample.append(snippet)
+                  if len(sample)>=5:break
+              result[str(num)]={"occurrences_limited":len(sample),"nearby_labels":sample}
+          print(json.dumps({
+              "source_offer_id":"445495",
+              "sha256":data["manifest"]["html_sha256"],
+              "contexts":result,
+              "network_requests":0,"db_writes":0
+          },ensure_ascii=False,sort_keys=True))
+          PY
+
+      - name: Cross-check 35 independently reviewed source-visible labels (NO PORTAL REQUESTS)
+        env:
+          PYTHONPATH: scripts/acquisition
+        run: |
+          python - <<'PY'
+          from v7_parallel.j3_source_label_audit import equivalent
+          assert equivalent("city", "Sale", "Salé")
+          assert equivalent("district", "Zone Industrielle Tabriquet", "Zone industrielle Tabriquet")
+          assert not equivalent("district", "Al Qods", "Tabriquet")
+          assert equivalent("surface_total_m2", 150.0, 150)
+          assert not equivalent("surface_total_m2", None, 150)
+          PY
+          python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j3_geo_qualification.py' -v
+          python scripts/acquisition/v7_parallel/j3_source_label_audit.py
+
+      - name: J3 real source internal consistency + map provenance (NO PORTAL REQUESTS)
+        env:
+          PYTHONPATH: scripts/acquisition
+        run: |
+          python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j3_consistency.py' -v
+          python - <<'PY'
+          import json
+          from v7_parallel.j3_source_internal_consistency import audit_verified_snapshot
+          ids = ("444291", "445495", "420510", "387448", "500006")
+          results = {k: audit_verified_snapshot(".private-j3-" + k) for k in ids}
+          mismatches = [k for k, result in results.items() if result["source_bedroom_count_disagreement"]]
+          assert mismatches == ["387448"], mismatches
+          assert results["387448"]["title_bedrooms"] == 4
+          assert results["387448"]["characteristics_bedrooms"] == 3
+          assert all(result["source_map_attribute_kind"] ==
+              "source_encrypted_coordinates_not_independent_proof" for result in results.values())
+          assert all(not result["independent_physical_location_attestation"] and
+              not result["eligible_for_private_staging"] for result in results.values())
+          print(json.dumps({"checked_source_ids": list(ids), "source_room_conflicts": mismatches,
+                            "encrypted_map_coordinate_sets": len(ids),
+                            "independent_geolocations_verified": 0,
+                            "private_staging_admissions": 0, "network_requests": 0,
+                            "db_writes": 0}, sort_keys=True))
+          PY
