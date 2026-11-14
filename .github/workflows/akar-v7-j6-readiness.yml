@@ -14,7 +14,9 @@ on:
       - 'scripts/acquisition/v7_parallel/j6_ed25519_capture.py'
       - 'scripts/acquisition/__tests__/test_v7_j6_ed25519_capture.py'
       - 'scripts/acquisition/v7_parallel/j6_ephemeral_receipt_ledger.sql'
-      - 'scripts/acquisition/__tests__/test_v7_j6_ephemeral_receipts.py'
+      - 'scripts/acquisition/v7_parallel/j6_ed25519_ephemeral_receipt_v2.sql'
+      - 'scripts/acquisition/__tests__/test_v7_j6_ed25519_receipt_v2.py'
+      - 'scripts/acquisition/__tests__/test_v7_j6_ephemeral_receipts.py scripts/acquisition/__tests__/test_v7_j6_ed25519_receipt_v2.py'
       - 'scripts/acquisition/__tests__/test_v7_j6_postgres_isolation.py'
       - '.github/workflows/akar-v7-j6-readiness.yml'
 permissions:
@@ -73,3 +75,5 @@ jobs:
         run: python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j6_ed25519_capture.py' -v
       - name: PostgreSQL17 operator policy generation and one-time capture receipt (CI ONLY)
         run: python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j6_ephemeral_receipts.py' -v
+      - name: PostgreSQL17 Ed25519 V2 receipt isolated from legacy HMAC (CI ONLY)
+        run: python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j6_ed25519_receipt_v2.py' -v
