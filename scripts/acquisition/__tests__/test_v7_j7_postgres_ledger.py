@@ -43,7 +43,7 @@ class J7EphemeralLedgerTests(unittest.TestCase):
         cls.admin.close()
 
     def setUp(self):
-        self.admin.execute("TRUNCATE v7_schedule.fenced_markers, v7_schedule.slots")
+        self.admin.execute("TRUNCATE v7_schedule.private_review_outbox, v7_schedule.fenced_markers, v7_schedule.slots")
         self.slot=self.admin.execute(
             "SELECT floor(extract(epoch FROM clock_timestamp()) / 600)::bigint"
         ).fetchone()[0]
@@ -168,6 +168,7 @@ class J7EphemeralLedgerTests(unittest.TestCase):
             "v7_schedule.finish_slot(bigint,uuid)",
             "v7_schedule.fail_slot(bigint,uuid)",
             "v7_schedule.record_fenced_marker(bigint,uuid,text,text)",
+            "v7_schedule.enqueue_private_review_intent(bigint,uuid,text,text)",
         )
         for signature in signatures:
             with self.subTest(signature=signature):
@@ -177,6 +178,81 @@ class J7EphemeralLedgerTests(unittest.TestCase):
                 ).fetchone()[0]
                 self.assertIn(
                     "search_path=pg_catalog, v7_schedule, pg_temp", configs)
+
+    def outbox(self,slot,token,channel="private_review_only",sha="a"*64):
+        with self.role() as conn:
+            return conn.execute(
+                "SELECT v7_schedule.enqueue_private_review_intent(%s,%s,%s,%s)",
+                (slot,token,channel,sha)
+            ).fetchone()[0]
+
+    def test_private_review_outbox_once_and_fixed_dispatch_key(self):
+        ok,token=self.claim()
+        self.assertTrue(ok)
+        self.assertTrue(self.outbox(self.slot,token))
+        self.assertFalse(self.outbox(self.slot,token))
+        self.assertFalse(self.outbox(self.slot,token,sha="b"*64))
+        self.assertEqual(self.admin.execute(
+            "SELECT channel,dispatch_key,evidence_sha256 "
+            "FROM v7_schedule.private_review_outbox"
+        ).fetchall(),[("private_review_only",
+                       "v7-j7-slot:"+str(self.slot)+":private-review",
+                       "a"*64)])
+
+    def test_outbox_rejects_foreign_expired_or_completed_claim(self):
+        self.assertFalse(self.outbox(self.slot,uuid4()))
+        ok,token=self.claim()
+        self.assertTrue(ok)
+        self.assertFalse(self.outbox(self.slot,uuid4()))
+        self.assertFalse(self.outbox(self.slot,token,"public"))
+        self.assertFalse(self.outbox(self.slot,token,"https://external.example"))
+        self.assertFalse(self.outbox(self.slot,token,"private_review_only","bad"))
+        self.admin.execute(
+            "UPDATE v7_schedule.slots SET claimed_at="
+            "clock_timestamp() - interval '31 minutes'"
+        )
+        self.assertFalse(self.outbox(self.slot,token))
+        self.admin.execute(
+            "UPDATE v7_schedule.slots SET claimed_at=clock_timestamp()"
+        )
+        with self.role() as con:
+            self.assertTrue(con.execute(
+                "SELECT v7_schedule.finish_slot(%s,%s)",(self.slot,token)
+            ).fetchone()[0])
+        self.assertFalse(self.outbox(self.slot,token))
+        self.assertEqual(self.admin.execute(
+            "SELECT count(*) FROM v7_schedule.private_review_outbox"
+        ).fetchone()[0],0)
+
+    def test_concurrent_outbox_intents_have_one_winner(self):
+        ok,token=self.claim()
+        self.assertTrue(ok)
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            futures=[pool.submit(self.outbox,self.slot,token) for _ in range(2)]
+            self.assertEqual(sorted(f.result() for f in futures),[False,True])
+        self.assertEqual(self.admin.execute(
+            "SELECT count(*) FROM v7_schedule.private_review_outbox"
+        ).fetchone()[0],1)
+
+    def test_outbox_role_isolation_and_force_rls(self):
+        with self.role() as con:
+            with self.assertRaises(self.psycopg.errors.InsufficientPrivilege):
+                con.execute("SELECT * FROM v7_schedule.private_review_outbox")
+            with self.assertRaises(self.psycopg.errors.InsufficientPrivilege):
+                con.execute("DELETE FROM v7_schedule.private_review_outbox")
+        with self.role("v7_schedule_observer") as con:
+            with self.assertRaises(self.psycopg.errors.InsufficientPrivilege):
+                con.execute(
+                    "SELECT v7_schedule.enqueue_private_review_intent(%s,%s,%s,%s)",
+                    (self.slot,uuid4(),"private_review_only","a"*64))
+        self.assertEqual(self.admin.execute(
+            "SELECT relrowsecurity,relforcerowsecurity FROM pg_class "
+            "WHERE oid='v7_schedule.private_review_outbox'::regclass"
+        ).fetchone(),(True,True))
+        self.assertEqual(self.admin.execute(
+            "SELECT pg_get_userbyid(proowner) FROM pg_proc "
+            "WHERE oid='v7_schedule.enqueue_private_review_intent(bigint,uuid,text,text)'::regprocedure"
+        ).fetchone()[0],"v7_schedule_owner")
 
     def test_local_test_ledger_never_enables_collection(self):
         self.assertTrue(self.claim()[0])
