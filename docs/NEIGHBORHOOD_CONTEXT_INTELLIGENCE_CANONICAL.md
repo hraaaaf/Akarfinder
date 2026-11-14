@@ -213,3 +213,9 @@ PR roadmap : #902. Lots : #904, #906, #907, #913.
 **Isolation contrôlée** : PR #1197 regroupe 84 commits / 162 fichiers, notamment routes J18, Blob/Redis/CDN et QA OSM non publiables avec V1. Une nouvelle PR Draft, **V1 limitée uniquement**, reprend de la base de #1197 les composants cartes/fiches, styles et QA sans importer ces routes, frontières shadow ni flux de publication. Tests complets et captures de la nouvelle branche requis **avant** toute équivalence de rendu ; les preuves de #1197 ne certifient pas automatiquement la nouvelle branche.
 
 **Roadmap inchangée** : lots 1–4 CLOSED, Lot 5 ACTIVE, Lot 6 OPEN (4/6 lots = 66,7 %). Prochaine étape : CI/captures isolées et revue humaine de différences éventuelles, puis GO merge distinct et, ultérieurement, GO Vercel distinct.
+
+### 2026-11-14 — V1 isolée #1212 : première CI rouge, corrections d'interface/contrats ciblées
+
+**État vérifié avant correctif** : SHA `329e0e97` de [PR #1212](https://github.com/hraaaaf/Akarfinder/pull/1212) (11 fichiers, aucun route J18) ; 11 workflows terminés : 6 SUCCESS / 4 FAILURE / 1 SKIPPED. Les 4 échecs : L1 contrat historique 13 POI alors que source seed en recense 12 ; Casablanca Visual rail mobile 390px tronqué (158px client / 181px scroll) parce que les sélecteurs CSS du H1 n'étaient pas tous repris ; N2 et N3 attendent l'ancien libellé CTA. **Aucun de ces points n'autorise à publier de nouveaux POI.**
+
+**Correction candidate** : ajustement du test L1 à la cardinalité réelle 12 sans données nouvelles, portage des sélecteurs H1 et attribution CSS déjà vérifiés sur le SHA de #1197, et ciblage du vrai libellé CTA dans les audits N2/N3 ; nouveau SHA/CI/captures requis avant PASS. Pas de J18, pas de merge/Vercel. Lots NCI 5 ACTIVE, 6 OPEN.

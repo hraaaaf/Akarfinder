@@ -35,7 +35,7 @@
     outline-offset: 2px !important;
   }
 
-  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail] .p4-premium-context-header h2 {
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail] .p4-premium-context-header :is(h1,h2) {
     padding-right: 54px !important;
   }
 
@@ -49,7 +49,7 @@
   [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="false"] .p4-premium-lede,
   [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="false"] .p4-premium-kicker,
   [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="false"] .p4-premium-context-location,
-  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="false"] [data-l2b-listings] > h3 {
+  [data-vivre-ici-page] [data-p4-map-layout] [data-p4-map-decision-rail][data-sheet-expanded="false"] [data-l2b-listings] > :is(h2,h3) {
     display: none !important;
   }
 

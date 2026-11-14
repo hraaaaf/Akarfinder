@@ -155,7 +155,7 @@ try {
       if (satelliteRequests.length) throw new Error(`Esri imagery leaked: ${satelliteRequests.length}`);
       const rail = page.locator("[data-p4-map-decision-rail]");
       await rail.waitFor({ state: "visible", timeout: 10000 });
-      const handoff = rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i });
+      const handoff = rail.getByRole("link", { name: /Rechercher des biens à Maârif/i });
       const href = await handoff.getAttribute("href");
       if (!href) throw new Error("search handoff href missing");
       const handoffUrl = new URL(href, baseUrl);

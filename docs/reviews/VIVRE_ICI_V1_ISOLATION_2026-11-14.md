@@ -19,3 +19,10 @@ Isoler les trois modes Maârif acceptés et les améliorations de lisibilité, d
 ## Gouvernance
 V1 human gate accepté dans [commentaire #1197](https://github.com/hraaaaf/Akarfinder/pull/1197#issuecomment-6874627963). Le code isolé est une adaptation minimale : les preuves historiques montrent l'intention UX, mais **ne sont pas une validation automatique du nouveau SHA**.
 Lot 5 ACTIVE, Lot 6 OPEN. Aucun merge ni Vercel autorisé.
+
+## Premier audit CI sur 329e0e97 : 4 workflows RED, causes identifiées, aucun changement de données
+
+- L1 Registry #43577681646 : ancien contrat test attend 13 POI ANN-L5, mais `lib/neighborhood-context/certified-seed.ts` contient exactement 12 entrées ; corriger uniquement l'assertion 13 → 12, **sans créer de POI** ni modifier le dédoublonnage runtime (qui appartient à une décision distincte Lot 5).
+- Casablanca Visual #43577681675 : à 390px, le rail compact avait `clientHeight=158` et `scrollHeight=181`, texte/CTA potentiellement tronqués. Cause de portage : le composant accessible est `h1` mais plusieurs sélecteurs CSS de la base ne stylent que `h2`. Reprendre de #1197 uniquement les styles de présentation H1 dans `l2c-sheet`, `clinical-final`, `premium-lot8`, `target-alignment`, et l'espacement d'attribution `l2d-attribution` ; **vérifier par nouvelle capture**, ne pas annoncer réparé avant.
+- N2 #43577681712 et N3 #43577681641 : anciens tests cherchent « Voir les biens disponibles à Maârif » tandis que la V1 approuvée dit « Rechercher des biens à Maârif ». Corriger les sélecteurs dans les deux tests, sans importer les tests J18/OSM de #1197.
+- Aucun workflow YAML, route, source SIG, données POI, DB, stockage ou flag public modifié. Aucun merge ni Vercel.

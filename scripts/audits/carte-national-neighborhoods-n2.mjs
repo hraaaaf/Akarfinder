@@ -248,7 +248,7 @@ try {
       if (satelliteRequests.length) throw new Error(`Esri satellite requested: ${satelliteRequests.length}`);
       const rail = page.locator('[data-p4-map-decision-rail]');
       await rail.waitFor({ state: "visible", timeout: 10000 });
-      const activeHref = await rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i }).getAttribute("href");
+      const activeHref = await rail.getByRole("link", { name: /Rechercher des biens à Maârif/i }).getAttribute("href");
       if (!activeHref?.includes("city=Casablanca") || !activeHref.includes("district=Ma%C3%A2rif")) throw new Error(`Maârif Search handoff ${activeHref}`);
       overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (overflow > 1) throw new Error(`MapLibre horizontal overflow ${overflow}`);
