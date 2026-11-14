@@ -366,3 +366,16 @@ ARTEFACT PRIVÉ : Akarfinder_J2_118_demandes_preuves_originales_2026-11-14.zip (
 RESULTAT : sous-lot de préparation et validation des preuves primaire clos techniquement. J2 METIER RESTE OUVERT ; V7 2/8 jalons métier clos ; 82 166/82 166 FeenWay en quarantaine, 0 admission, DB, cron, merge, déploiement Vercel. Conflit Agenz 7500/7700 MAD/mois NON tranché, 50 groupes prioritaires NON revus sur source originale.
 
 NEXT EXACT / human gate : obtenir par un canal autorisé les captures HTML originales avec URL/ID, timestamp UTC et SHA (sans contournement d'accès) pour les 118 cas ; exécuter la recette hors ligne ; arbitrer les vrais champs et doublons physiques avant tout gate privé d'admission distinct. Si aucune capture autorisée n'est disponible, blocage externe réel, ne pas remplacer par des annonces voisines ni par des simulations.
+
+
+## 14 novembre 2026 — J2 : captures originales et arbitrage hors ligne (NO-GO admission)
+
+**Préflight vérifié** : archive privée `AKAR_J2_118.zip`, SHA-256 attendu/observé `bcd60b32845f96b880c08cf982dd1e17a7a7b39af8b6a6170c4dffd48b004010`. ZIP CRC PASS sur ses 4 membres ; 118/118 dossiers, clés uniques et reçus concordants. Aucune URL individuelle ni HTML privé n’est copié dans cette documentation.
+
+**Capture de source** : 118 URL d’origine demandées une fois, après prélecture robots.txt; zéro cookie, authentification, retry ou contournement. 40 réponses HTML ont été archivées avec manifestes, et leurs SHA/octets/URL/statut/content-type/schema vérifiés 40/40. 78 réponses Avito HTTP 403 ont été mises en quarantaine; aucun contournement. 22 redirections suivies; deux dossiers Mubawab ont abouti à une page catégorie au lieu d’une fiche. Les règles robots vérifiées ne constituent pas une conclusion CGU ni une preuve d’authenticité.
+
+**Arbitrage hors ligne** : 78 `SOURCE_ACCESS_BLOCKED`, 25 `SOURCE_CONTENT_CONFLICT`, 15 `EVIDENCE_INTEGRITY_PASS`; 118/118 statuts documentés. Sur 39 captures Mubawab, 22 diffèrent des revendications du paquet en prix (22) et/ou surface (20), deux redirigent vers une page catégorie, et 15 concordent sur ces deux champs structurés. Agenz 169490 affiche 7 500 DH/mois dans le résumé et 7 700 DH/mois dans la description : montant non retenu. Aucun doublon physique certifié, aucun prix/statut de disponibilité arbitré. Catégories de ce rapport, sans prétention de statuts implémentés au logiciel.
+
+**Validateur J2** : correction du préfixe HTML pour accepter le document servi par Mubawab avec déclaration XML avant `<html>`, tout en conservant les octets bruts, et écriture explicite UTF-8 du reçu. Suite locale du validateur : 19/19 PASS, dont les deux nouveaux tests de non-régression. Ces modifications restent sur cette PR Draft; aucun merge.
+
+**Décision** : NO-GO pour admission et clôture métier J2. Les 82 166 annonces FeenWay demeurent en quarantaine; aucun staging, DB, cron live ou déploiement Vercel. Le dossier privé et le registre exhaustif restent côté utilisateur. La concordance du hash manifeste l’intégrité des octets enregistrés, pas l’authenticité ou la fraîcheur indépendantes.
