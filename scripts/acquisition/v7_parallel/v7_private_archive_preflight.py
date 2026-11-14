@@ -135,15 +135,29 @@ def audit_j5(path:Path) -> dict:
     return {"bundle_sha256":hashlib.sha256(path.read_bytes()).hexdigest(),"records":[{"source":"mubawab.ma","id":"8205911","html_sha256":hashlib.sha256(html).hexdigest(),"bytes":len(html),"integrity":"historical_archive_sha_verified","original_capture_current":False,"transaction_type":"rent","canonical_verified":False,"eligible_for_private_staging":False}],"qualified_for_staging":0,"source_http_requests":0,"db_writes":0}
 
 
-def audit_all(j3:Path,j4:Path,j5:Path)->dict:
+def _operator_pin(path: Path, independent_sha256: str) -> None:
+    # A self-reported ZIP hash is not an authentication pin.
+    if (not isinstance(independent_sha256, str) or not _HEX.fullmatch(independent_sha256)
+        or not Path(path).is_file() or Path(path).stat().st_size > MAX_ZIP
+        or hashlib.sha256(Path(path).read_bytes()).hexdigest() != independent_sha256):
+        raise EvidenceRejected("OPERATOR_BUNDLE_PIN_MISMATCH")
+
+
+def audit_all(j3:Path,j4:Path,j5:Path,*, operator_pins:dict[str,str])->dict:
+    if not isinstance(operator_pins,dict) or set(operator_pins)!={"j3","j4","j5"}:
+        raise EvidenceRejected("EXTERNAL_OPERATOR_PINS_REQUIRED")
+    for name, path in (("j3",j3),("j4",j4),("j5",j5)):
+        _operator_pin(path,operator_pins[name])
     a,b,c=audit_j3(j3),audit_j4(j4),audit_j5(j5)
     rows=a["records"]+b["records"]+c["records"]
-    return {"schema_version":"akar-v7-private-archive-audit-v1","source_counts":{"agenz":5,"sarouty":1,"mubawab_historical":1},"verified_archived_records":len(rows),"qualified_for_staging":0,"sources":{"j3":a,"j4":b,"j5":c},"source_http_requests":0,"db_writes":0}
+    return {"schema_version":"akar-v7-private-archive-audit-v1","source_counts":{"agenz":5,"sarouty":1,"mubawab_historical":1},"verified_archived_records":len(rows),"qualified_for_staging":0,"sources":{"j3":a,"j4":b,"j5":c},"source_http_requests":0,"db_writes":0,"operator_bundle_pins_verified":True}
 
 if __name__=="__main__":
     import argparse
     p=argparse.ArgumentParser()
     for x in ("j3","j4","j5"):
         p.add_argument("--"+x,type=Path,required=True)
+    for name in ("j3","j4","j5"):
+        p.add_argument("--pin-"+name,required=True,help="sha256 from independent operator channel, NOT from archive")
     args=p.parse_args()
-    print(json.dumps(audit_all(args.j3,args.j4,args.j5),sort_keys=True,ensure_ascii=False,indent=2))
+    print(json.dumps(audit_all(args.j3,args.j4,args.j5,operator_pins={"j3":args.pin_j3,"j4":args.pin_j4,"j5":args.pin_j5}),sort_keys=True,ensure_ascii=False,indent=2))
