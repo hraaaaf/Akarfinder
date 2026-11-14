@@ -5,7 +5,7 @@ import sys
 import unittest
 from zipfile import ZipFile, ZIP_DEFLATED
 from pathlib import Path
-sys.path.insert(0,str(Path(__file__).parent))
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from v7_parallel.v7_private_archive_preflight import _validated_pair, _entries, _json_bytes, EvidenceRejected
 
 HTML = b'<!doctype html><html><title>synthetic fixture</title></html>'
