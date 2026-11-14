@@ -1,0 +1,102 @@
+/* Vivre Ici LOT01-H — contextual categories from the vetted read-model ONLY.
+ * Missing source evidence is not evidence that a category has no places. */
+[data-vivre-ici-page] [data-l2b-daily-context] [data-vivre-ici-daily-grid] {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin: 11px 0 0;
+  padding: 0;
+  list-style: none;
+}
+[data-vivre-ici-page] [data-l2b-daily-context] [data-daily-category] {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  min-height: 53px;
+  padding: 7px 9px;
+  border: 1px solid rgb(214 226 237 / .8);
+  border-radius: 11px;
+  background: rgb(249 251 253 / .95);
+}
+[data-vivre-ici-page] [data-l2b-daily-context] [data-daily-category] span {
+  display: block;
+  color: #122f4d;
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 750;
+}
+[data-vivre-ici-page] [data-l2b-daily-context] [data-daily-category] strong {
+  display: block;
+  margin-top: 3px;
+  color: #617186;
+  font-size: 10px;
+  line-height: 1.25;
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+[data-vivre-ici-page] [data-l2b-daily-context] [data-daily-state="sourced"] {
+  border-color: rgb(69 126 190 / .42);
+  background: rgb(235 245 255 / .66);
+}
+[data-vivre-ici-page] [data-l2b-daily-context] [data-daily-state="sourced"] strong {
+  color: #245c8d;
+}
+[data-vivre-ici-page] [data-l2b-daily-context] [data-daily-evidence-disclaimer] {
+  margin: 9px 0 0;
+  color: #63748b;
+  font-size: 10px;
+  line-height: 1.45;
+}
+[data-theme="dark"] [data-vivre-ici-page] [data-l2b-daily-context] [data-daily-category] {
+  border-color: rgb(87 113 150 / .7);
+  background: rgb(10 29 54 / .94);
+}
+[data-theme="dark"] [data-vivre-ici-page] [data-l2b-daily-context] [data-daily-category] span {
+  color: #e8eef6;
+}
+[data-theme="dark"] [data-vivre-ici-page] [data-l2b-daily-context] [data-daily-category] strong,
+[data-theme="dark"] [data-vivre-ici-page] [data-l2b-daily-context] [data-daily-evidence-disclaimer] {
+  color: #a6b6ca;
+}
+[data-theme="dark"] [data-vivre-ici-page] [data-l2b-daily-context] [data-daily-state="sourced"] {
+  background: rgb(13 42 75 / .94);
+}
+
+
+/* Native details prevents evidence cards from pushing the property CTA below the fold. */
+[data-vivre-ici-page] [data-l2b-daily-context] [data-vivre-ici-daily-details] {
+  margin-top: 9px;
+}
+[data-vivre-ici-page] [data-l2b-daily-context] [data-vivre-ici-daily-details] > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid rgb(214 226 237 / .95);
+  border-radius: 10px;
+  background: rgb(250 252 255 / .96);
+  color: #183b60;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1.3;
+  font-weight: 750;
+  list-style: none;
+}
+[data-vivre-ici-page] [data-l2b-daily-context] [data-vivre-ici-daily-details] > summary::-webkit-details-marker {
+  display: none;
+}
+[data-vivre-ici-page] [data-l2b-daily-context] [data-vivre-ici-daily-details] > summary:focus-visible {
+  outline: 3px solid #0b63ce;
+  outline-offset: 2px;
+}
+[data-vivre-ici-page] [data-l2b-daily-context] [data-vivre-ici-daily-details][open] > summary span {
+  transform: rotate(180deg);
+}
+[data-theme="dark"] [data-vivre-ici-page] [data-l2b-daily-context] [data-vivre-ici-daily-details] > summary {
+  background: rgb(12 34 63 / .94);
+  border-color: rgb(87 113 150 / .7);
+  color: #e8eef6;
+}

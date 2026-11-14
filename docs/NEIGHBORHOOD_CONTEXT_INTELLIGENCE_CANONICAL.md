@@ -203,3 +203,13 @@ PR roadmap : #902. Lots : #904, #906, #907, #913.
 4. figer un mockup cible de convergence ;
 5. seulement ensuite implémenter la convergence sur `NeighborhoodContextReadModelV1` ;
 6. aucun Vercel.
+
+### 2026-11-14 — Vivre Ici V1 Maârif : gate humain accepté, isolation J18 préparée
+
+**Décision explicite** : propriétaire valide les 12 captures de la V1 limitée (Quartier 2D, Rue zoom, « Limites non disponibles ») et son compromis UX, tout en sachant que le score global ≥9,5/10 reste non démontré. Cette validation n'autorise pas le merge, Vercel, l'OSM public ni l'affichage d'une frontière Maârif centrale non certifiée.
+
+**Preuves sur l'ancienne branche composite** : PR [#1197](https://github.com/hraaaaf/Akarfinder/pull/1197), SHA applicatif `c5e9bf10a48a20acab731fd1cd761798d937647d` ; [QA 12 captures 3×4 #43536821001](https://github.com/hraaaaf/Akarfinder/actions/runs/43536821001) PASS (Rue 17,1 / Limites 14,6, cibles ≥44px, 0 JS/overflow, 0 POI public) et [NVDA/VoiceOver #43536820786](https://github.com/hraaaaf/Akarfinder/actions/runs/43536820786) PASS ciblé. Décision enregistrée dans [Notion J18](https://app.notion.com/p/41777c66336281968368d299b5e79143) et [commentaire GitHub](https://github.com/hraaaaf/Akarfinder/pull/1197#issuecomment-6874627963).
+
+**Isolation contrôlée** : PR #1197 regroupe 84 commits / 162 fichiers, notamment routes J18, Blob/Redis/CDN et QA OSM non publiables avec V1. Une nouvelle PR Draft, **V1 limitée uniquement**, reprend de la base de #1197 les composants cartes/fiches, styles et QA sans importer ces routes, frontières shadow ni flux de publication. Tests complets et captures de la nouvelle branche requis **avant** toute équivalence de rendu ; les preuves de #1197 ne certifient pas automatiquement la nouvelle branche.
+
+**Roadmap inchangée** : lots 1–4 CLOSED, Lot 5 ACTIVE, Lot 6 OPEN (4/6 lots = 66,7 %). Prochaine étape : CI/captures isolées et revue humaine de différences éventuelles, puis GO merge distinct et, ultérieurement, GO Vercel distinct.
