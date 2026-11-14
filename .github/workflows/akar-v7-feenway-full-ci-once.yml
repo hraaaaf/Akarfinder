@@ -64,6 +64,8 @@ jobs:
           scripts/acquisition/v7_multisource/feenway_agenz_v3_replay.py
           scripts/acquisition/v7_multisource/feenway_agenz_primary_scope.py
           scripts/acquisition/akarparser_v3_raw_bulk.py
+          scripts/acquisition/v7_multisource/feenway_v2_dual_identity_intake.py
+          scripts/acquisition/__tests__/test_v7_feenway_v2_dual_identity_intake.py
           scripts/acquisition/v7_multisource/pipeline.py
           scripts/acquisition/v7_multisource/legacy_url_intake.py
           scripts/acquisition/v7_multisource/detail_compare.py
@@ -117,6 +119,8 @@ jobs:
       # J2 FeenWay: full V7 + PG17 + Radar10 gate must include real V3 review propagation.
       - name: V3 canonical identity, source-scoped Agenz and safe review routing (offline)
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_akarparser_v3_source_review_gate.py'
+      - name: FeenWay J2 V2 dual-identity ZIP intake adversarial tests (offline)
+        run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_v2_dual_identity_intake.py'
       - name: FeenWay J2 pinned evidence reconciliation safety tests (offline)
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_feenway_j2_evidence_reconcile.py'
       - name: Existing Radar10 private staging regression
