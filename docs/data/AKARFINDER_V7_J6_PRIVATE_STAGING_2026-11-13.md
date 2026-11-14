@@ -122,3 +122,13 @@ Le premier commit J6 `2b44c1533bfc3761128ab6f5b1763adcc28bbfaf` a obtenu [CI J6 
 **HARDENING SQL** : les deux fonctions SECURITY DEFINER du registre J6 isolé ont maintenant search_path pg_catalog, v7_capture, pg_temp (temp en dernier), vérifié par proconfig en tests. Cela respecte la recommandation PostgreSQL17 de limiter les schémas susceptibles d'être masqués. Aucun changement de privilège réel n'est appliqué.
 
 **PLAN / GATES** : voir docs/data/AKARFINDER_V7_J6_J7_TRUST_AUDIT_2026-11-13.md, modèle de menaces inclus dans la PR J6. GO prod exige identité et clé privée de l'émetteur hors système, preuve et rotation d'inscription par opérateur indépendant, registre durable partagé protégé contre rollback/replay et schéma v2 de reçus Ed25519 distinct, géographie/champs commerciaux indépendants, décision humaine, tests PG sur base de préproduction puis activation autorisée. J6 métier OUVERT ; V7 J0/J1 seuls clos 2/8. Aucun merge, migration DB réelle, cron live ou Vercel.
+
+## 14/11/2026 — Closeout CI du durcissement High J6
+
+**Goal :** ajouter une vérification de source Ed25519 séparée de HMAC, conserver les refus d'admission et durcir le search_path SECURITY DEFINER.
+
+**SUCCESS vérifié au HEAD exact** `208d7c6c4cb749fc92b6cf8f1fc11d91e6773ac5` de [PR Draft #1209](https://github.com/hraaaaf/Akarfinder/pull/1209) : [CI J6 #43531521681](https://github.com/hraaaaf/Akarfinder/actions/runs/43531521681) **COMPLETED SUCCESS** ; **84/84 tests** (10 readiness, 7 original HTML, 10 HMAC, 7 Sarouty, 14 politique opérateur, 6 PostgreSQL initial, **19 Ed25519** et 11 reçus PostgreSQL). [Policy #43531521782](https://github.com/hraaaaf/Akarfinder/actions/runs/43531521782) **COMPLETED SUCCESS**. Le test source/V3 réel Ed25519 figure dans les 19 cas, et le job Ed25519 a conclu SUCCESS.
+
+**Portée stricte :** signatures et clé privées synthétiques seulement. La validation de clé publique ne constitue pas une identification externe de l'émetteur, une qualification physique/geo du bien ou une autorisation de collecter. Aucun changement de DB réelle, cron, promotion, merge ni Vercel. **Sous-lot High J6 clos techniquement ; J6 métier toujours OUVERT** avant enregistrement d'émetteurs réels, ledger Ed25519 v2 durable et gate opérateur.
+
+**Next :** émetteur opérateur authentifié (gate humain), registre partagé durable et attestations réelles auditées, aucune réutilisation du reçu HMAC pour Ed25519.
