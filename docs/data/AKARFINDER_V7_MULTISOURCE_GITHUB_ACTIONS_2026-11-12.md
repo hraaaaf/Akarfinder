@@ -446,3 +446,8 @@ The earlier pending-CI section is superseded by [full offline gate run #43519074
 ## 2026-11-13 — J2 pinned evidence reconcile / private quarantine
 
 Private source artifacts 2a63e4a4… (10 original checks) and f6d93772… (Agenz contradiction) independently integrity-checked: 10 cases, one canonical source ID claim, one conflicting source rent 7500/7700 MAD/month, three robots/access blockers, four source-fetch failures and two portal-stop results. No raw original HTML in archive, no active listing proof or physical dedup. New offline fail-closed reconciliation module and 11 adversarial tests added to one-shot V7/PG17/Radar10 gate; CI of this commit to be checked. FeenWay 82,166 quarantined, 0 DB/cron/merge/Vercel; J2 open, V7 2/8 business milestones.
+
+
+## 2026-11-14 — J2 FeenWay second upload audit: 82,021 source URLs, NO-GO admission
+
+User ZIP SHA256 3261f45870d19fbff5bdabb910d63e05fd91db03d04ccba18eb17db7e611c353, CRC PASS. 82,166 records, 82,021 distinct nonempty source HTTPS URLs and 145 blanks, no FeenWay ID/URL preserved, so prior-origin join has been lost. Native claimed source-ID collisions: 3,001 groups / 6,287 rows, including 1,126 price disagreements and 707 surface disagreements, without physical uniqueness proof. 1,057 URL patterns need new/nonstandard route handling, 14,395 missing districts and 6 numeric cities. No independently sourced HTML, per-listing freshness, activity or HTTP proof; no public admission. Need corrected non-destructive dual FeenWay/source-URL export and independent source evidence, then bounded parser/dedup checks. J2 stays open, V7 2/8 closed, all 82,166 candidates quarantined; no DB/cron/merge/Vercel.
