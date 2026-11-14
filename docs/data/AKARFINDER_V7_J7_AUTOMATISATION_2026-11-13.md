@@ -68,3 +68,19 @@ LIMITES / ARBITRAGE : un job arrivé à plus de 20 minutes de retard ne peut plu
 **Portée :** le bornage s'appuie sur le temps du serveur DB, refuse futur/plus de 2 créneaux anciens et empêche les preuves/finish/fail d'un claim de plus de 30 min. Aucune garantie d'exactitude temporelle des runners ou de fencing des effets externes. DB PostgreSQL CI seulement, aucun cron source live, merge ni Vercel. **Sous-lot High J7 clos techniquement, J7 métier OUVERT** tant qu'absence de registre durable partagé, source J6 autorisée et GO opérateur.
 
 **Next :** tester continuité du registre partagé réel et les retards/crash/effets externes avec gate d'activation séparé.
+
+## 14/11/2026 — Voie parallèle J7 : acceptance gate de l'ordonnanceur durable (sans cron live)
+
+**GOAL observable :** exécuter au maximum une décision de traitement par créneau UTC de 600 secondes, même avec plusieurs runners GitHub, redémarrage ou retard, sans écriture externe doublonnée.
+
+**Invariants existants, contrôlés en CI sur la PR #1210 :** [run #43536731249](https://github.com/hraaaaf/Akarfinder/actions/runs/43536731249) SUCCESS, 24/24 tests offline/PG17 ; clé unique `slot_index`, jeton de claim UUID, limitation serveur aux créneaux courant/2 précédents, refus de tokens âgés de plus de 30 minutes, fonctions SECURITY DEFINER en rôles limités et pg_temp dernier. Le ledger en CI est **éphémère** et n'est ni un vrai ordonnanceur ni un fencing des effets externes.
+
+**Design minimal fiable avant activation :**
+1. Un seul stockage PostgreSQL **durable et partagé** accessible à tous les workers d'un environnement défini ; schéma J7 versionné et migration réversible validée sur staging isolé, jamais sur prod par défaut.
+2. Définir `run_id`/source/slot et l'ID d'idempotence à la destination : réserver un slot ne garantit PAS les effets HTTP, message ou écriture dans une autre DB. Tant que la destination ne déduplique pas la mutation elle-même, **ne pas raccorder un crawler source**.
+3. Conserver la politique **pas de takeover d'un slot déjà revendiqué**, même après crash ; un créneau perdu est préférable à une ingestion doublée. Établir un tableau de bord « missed/delayed/failed/completed » indépendant des succès de GitHub.
+4. Configurer cron actif uniquement après J6 et sources qualifiées ; canary en mode zéro effet extérieur d'abord, puis tests 24 h de slots consécutifs, arrêt/rollback prouvé. L'absence de garantie GitHub d'exactitude à la minute interdit de promettre exactement six exécutions par heure.
+
+**SUCCESS/PREUVE AVANT GO LIVE :** test deux runners concurrents -> 1 claim ; crash après claim -> 0 second claim ; retard >20 min -> refus ; UUID expiré -> 0 marker ; aucune fuite table/roles ; restauration du ledger/rollback testées ; idempotence prouvée au point réel d'écriture ; mesures de fréquence réelles ; identité et source J6 approuvées. **Aucun de ces prérequis réels n'est encore validé.**
+
+**NEXT J7 :** migration seulement sur DB d'essai explicitement autorisée puis simulation multi-runners sans requête source. Aucune activation schedule/crawler, merge, Vercel. **J7 métier ouvert.**
