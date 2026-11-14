@@ -132,6 +132,92 @@ class J6Ed25519ReceiptV2Tests(unittest.TestCase):
             "SELECT count(*) FROM v7_capture_ed.receipts"
         ).fetchone()[0],0)
 
+    def test_verified_original_ed25519_v3_replay_reaches_only_v2_receipt(self):
+        """Real V3+source HTML signature proof -> isolated Ed25519 receipt.
+
+        Synthetic issuer ONLY. SQL does NOT verify signatures; the reviewer
+        must call the verifier before the DB function and still cannot stage.
+        """
+        import hashlib
+        import json
+        import sys
+        from datetime import timedelta
+        from tempfile import TemporaryDirectory
+        sys.path.insert(0, str(ROOT))
+        from akarparser_v3_raw_bulk import parse_raw
+        from v7_multisource.snapshot_evidence import _manifest
+        from v7_parallel.j6_ed25519_capture import (
+            Ed25519CaptureRejected, review_ed25519_capture
+        )
+        from test_v7_j6_ed25519_capture import (
+            AT, HTML, URL, raw_registry, signed_att, KEY_ID
+        )
+
+        with TemporaryDirectory() as work:
+            html = Path(work) / "source.html"
+            manifest = Path(work) / "source.manifest.json"
+            html.write_bytes(HTML)
+            m = _manifest(URL, HTML, when=AT, method="explicit_single_page_https_get")
+            manifest.write_text(json.dumps(m), encoding="utf-8")
+            actual_record = parse_raw(
+                {"source_url":URL, "raw_html":HTML.decode()}, AT
+            )
+            registry = raw_registry()
+            pin = hashlib.sha256(registry).hexdigest()
+            att = signed_att(
+                manifest_sha256=hashlib.sha256(manifest.read_bytes()).hexdigest()
+            )
+            args = dict(
+                registry_json_bytes=registry,
+                operator_pinned_registry_sha256=pin,
+                now_utc=AT + timedelta(minutes=10),
+            )
+            invalid = dict(att, signature_hex="0" * 128)
+            with self.assertRaises(Ed25519CaptureRejected):
+                review_ed25519_capture(
+                    actual_record, html, manifest, invalid, **args
+                )
+            self.assertEqual(
+                self.admin.execute(
+                    "SELECT count(*) FROM v7_capture_ed.receipts"
+                ).fetchone()[0], 0
+            )
+            verified = review_ed25519_capture(
+                actual_record, html, manifest, att, **args
+            )
+            self.assertTrue(verified["signature_valid"])
+            self.assertTrue(verified["operator_public_registry_pin_checked"])
+            self.assertEqual(verified["source_proof"]["v3_fields_replayed"], 7)
+            self.assertFalse(verified["eligible_for_private_staging"])
+            self.assertFalse(verified["public_admission_authorized"])
+            self.assertEqual(verified["db_writes"], 0)
+            self.assertNotIn("review_receipt_intent", verified)
+            assert verified["attested_source_domain"] == "agenz.ma"
+            assert verified["attested_source_offer_id"] == "444291"
+            self.assertTrue(self.advance(pin=pin))
+            self.assertTrue(self.record(
+                pin=pin,
+                signature=hashlib.sha256(bytes.fromhex(att["signature_hex"])).hexdigest(),
+                key=KEY_ID,
+                source=verified["attested_source_domain"],
+                offer=verified["attested_source_offer_id"],
+                html=hashlib.sha256(HTML).hexdigest(),
+            ))
+            self.assertFalse(self.record(
+                pin=pin,
+                signature=hashlib.sha256(bytes.fromhex(att["signature_hex"])).hexdigest(),
+                key=KEY_ID,
+                source=verified["attested_source_domain"],
+                offer=verified["attested_source_offer_id"],
+                html=hashlib.sha256(HTML).hexdigest(),
+            ))
+            self.assertEqual(self.admin.execute(
+                "SELECT count(*) FROM v7_capture_ed.receipts"
+            ).fetchone()[0], 1)
+            self.assertEqual(self.admin.execute(
+                "SELECT count(*) FROM v7_capture.capture_receipts"
+            ).fetchone()[0], 0)
+
     def test_separation_no_select_delete_or_cross_signing_and_force_rls(self):
         for role in ("v7_capture_ed_operator","v7_capture_ed_reviewer"):
             with self.role(role) as con:
