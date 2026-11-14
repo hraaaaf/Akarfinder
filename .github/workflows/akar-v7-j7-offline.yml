@@ -1,0 +1,51 @@
+name: Akar V7 J7 Ten Minute Contract — Offline Only
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/v7_parallel/j7_ten_minute_contract.py'
+      - 'scripts/acquisition/__tests__/test_v7_j7_ten_minute_contract.py'
+      - 'scripts/acquisition/v7_parallel/j7_ephemeral_ledger.sql'
+      - 'scripts/acquisition/__tests__/test_v7_j7_postgres_ledger.py'
+      - '.github/workflows/akar-v7-j7-offline.yml'
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  j7-offline-simulation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: akarfinder_v7_j7_ci
+          POSTGRES_PASSWORD: testpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d akarfinder_v7_j7_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      AKAR_J7_TEST_DSN: postgresql://postgres:testpass@127.0.0.1:5432/akarfinder_v7_j7_ci
+      AKAR_J7_EPHEMERAL_ONLY: 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and verify no-live J7 schedule semantics
+        run: |
+          python -m py_compile scripts/acquisition/v7_parallel/j7_ten_minute_contract.py scripts/acquisition/__tests__/test_v7_j7_ten_minute_contract.py
+          python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j7_ten_minute_contract.py' -v
+
+      - name: Install isolated PostgreSQL 17 client
+        run: python -m pip install "psycopg[binary]==3.3.8"
+      - name: Prove unique-slot claims and restricted fenced finishes (NO LIVE)
+        run: python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_j7_postgres_ledger.py' -v
