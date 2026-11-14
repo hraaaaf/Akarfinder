@@ -161,6 +161,6 @@ class J6Ed25519ReceiptV2Tests(unittest.TestCase):
                 "FROM pg_proc WHERE oid=%s::regprocedure",(sig,)
             ).fetchone()
             self.assertEqual(row[0],"v7_capture_ed_owner")
-            self.assertIn("search_path=pg_catalog,v7_capture_ed,pg_temp",row[1])
+            self.assertIn("search_path=pg_catalog,v7_capture_ed,pg_temp", [value.replace(" ","") for value in row[1]])
 
 if __name__=="__main__":unittest.main()
