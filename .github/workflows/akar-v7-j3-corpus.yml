@@ -4,6 +4,8 @@ on:
     paths:
       - 'scripts/acquisition/v7_parallel/j3_agenz_corpus.py'
       - 'scripts/acquisition/__tests__/test_v7_j3_agenz.py'
+      - 'scripts/acquisition/v7_parallel/j3_private_original_replay.py'
+      - 'scripts/acquisition/__tests__/test_v7_j3_private_original_replay.py'
       - '.github/workflows/akar-v7-j3-corpus.yml'
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -26,5 +28,9 @@ jobs:
         run: python -m pip install "beautifulsoup4==4.14.3"
       - name: Snapshot corpus contracts; synthetic fixtures, 0 HTTP, 0 DB
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_j3_agenz.py'
+      - name: Private five-original replay CLI deny contract (SYNTHETIC ONLY)
+        run: |
+          python -m py_compile scripts/acquisition/v7_parallel/j3_private_original_replay.py scripts/acquisition/__tests__/test_v7_j3_private_original_replay.py
+          python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_v7_j3_private_original_replay.py'
       - name: L4 canonical detail URL fallback regression without network
         run: python -m unittest discover -v -s scripts/acquisition/__tests__ -p 'test_canonical_listing_extractor.py'
