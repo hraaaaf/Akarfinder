@@ -1,0 +1,27 @@
+name: Akar V7 Private Archive Preflight Contract (SYNTHETIC CI)
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/v7_parallel/v7_private_archive_preflight.py'
+      - 'scripts/acquisition/__tests__/test_v7_private_archive_preflight.py'
+      - '.github/workflows/akar-v7-private-archive-preflight.yml'
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  private-archive-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Syntax (NO source network / DB / real archive)
+        run: python -m py_compile scripts/acquisition/v7_parallel/v7_private_archive_preflight.py scripts/acquisition/__tests__/test_v7_private_archive_preflight.py
+      - name: Fail-closed contracts using SYNTHETIC fixtures ONLY
+        run: python -m unittest discover -s scripts/acquisition/__tests__ -p 'test_v7_private_archive_preflight.py' -v
