@@ -153,6 +153,9 @@ class J6Ed25519ReceiptV2Tests(unittest.TestCase):
             AT, HTML, URL, raw_registry, signed_att, KEY_ID
         )
 
+        baseline_hmac_count = self.admin.execute(
+            "SELECT count(*) FROM v7_capture.capture_receipts"
+        ).fetchone()[0]
         with TemporaryDirectory() as work:
             html = Path(work) / "source.html"
             manifest = Path(work) / "source.manifest.json"
@@ -216,7 +219,7 @@ class J6Ed25519ReceiptV2Tests(unittest.TestCase):
             ).fetchone()[0], 1)
             self.assertEqual(self.admin.execute(
                 "SELECT count(*) FROM v7_capture.capture_receipts"
-            ).fetchone()[0], 0)
+            ).fetchone()[0], baseline_hmac_count)
 
     def test_separation_no_select_delete_or_cross_signing_and_force_rls(self):
         for role in ("v7_capture_ed_operator","v7_capture_ed_reviewer"):
